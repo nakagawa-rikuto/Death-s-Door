@@ -5,8 +5,7 @@
 // Game
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Object/Ground/Ground.h"
-#include "application/Game/Entity/Enemy/CloseRange/CloseRangeEnemy.h"
-#include "application/Game/Entity/Enemy/LongRange/LongRangeEnemy.h"
+#include "application/Game/Entity/Enemy/Manager/EnemyManager.h"
 
 ///=====================================================/// 
 /// ゲームシーン
@@ -33,8 +32,7 @@ private:/// ===メンバ変数=== ///
 	// Player
 	std::unique_ptr<Player> player_;
 	// Enemy
-	std::unique_ptr<CloseRangeEnemy> closeEnemy_;
-	std::unique_ptr<LongRangeEnemy> longEnemy_;
+	std::unique_ptr<EnemyManager> enemyManager_;
 	// Ground
 	std::unique_ptr<Ground> ground_;
 	// Camera

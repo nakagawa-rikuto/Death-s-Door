@@ -124,33 +124,19 @@ void BaseEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void BaseEnemy::UpdateImGui() {
 #ifdef USE_IMGUI
-	// Base情報
-	ImGui::Text("BaseInfo");
-	ImGui::DragFloat3("translate", &baseInfo_.translate.x, 0.1f);
-	ImGui::DragFloat4("rotate", &baseInfo_.rotate.x, 0.1f);
-	ImGui::DragFloat3("velocity", &baseInfo_.velocity.x, 0.1f);
-
 	// MoveInfo
 	ImGui::Text("MoveInfo");
-	ImGui::DragFloat("MoveTimer", &moveInfo_.timer, 0.1f);
 	ImGui::DragFloat("MoveSpeed", &moveInfo_.speed, 0.1f);
 	ImGui::DragFloat("MoveRange", &moveInfo_.range, 0.1f);
 	ImGui::DragFloat("MoveInterval", &moveInfo_.interval, 0.1f);
 	ImGui::DragFloat("MoveWaitTime", &moveInfo_.waitTime, 0.1f);
-	ImGui::DragFloat3("MoveCenter", &moveInfo_.rangeCenter.x, 0.1f);
-	ImGui::DragFloat3("MoveDirection", &moveInfo_.direction.x, 0.1f);
-	ImGui::Checkbox("IsWating", &moveInfo_.isWating);
 
 	// AttackInfo
 	ImGui::Text("AttackInfo");
-	ImGui::DragFloat("AttackTimer", &attackInfo_.timer, 0.1f);
 	ImGui::DragFloat("AttackDistance", &attackInfo_.distance, 0.1f);
 	ImGui::DragFloat("AttackRange", &attackInfo_.range, 0.1f);
 	ImGui::DragFloat("AttackInterval", &attackInfo_.interval, 0.1f);
 	ImGui::DragInt("Power", &attackInfo_.power, 1);
-	ImGui::DragFloat3("AttackDirection", &attackInfo_.direction.x, 0.1f);
-	ImGui::DragFloat3("PlayerPos", &attackInfo_.playerPos.x, 0.1f);
-	ImGui::Checkbox("IsAttack", &attackInfo_.isAttack);
 #endif // USE_IMGUI
 }
 
