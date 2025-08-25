@@ -66,7 +66,11 @@ void BaseEnemy::SetPlayer(Player* player) { player_ = player; }
 void BaseEnemy::Initialize() {
 
 	// ランダムエンジンの初期化
-	randomEngine_.seed(static_cast<unsigned int>(std::time(nullptr)));
+	std::seed_seq seq{
+		static_cast<uint32_t>(std::time(nullptr)),
+		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
+	};
+	randomEngine_.seed(seq);
 
 	// カメラの取得
 	camera_ = CameraService::GetActiveCamera().get();
@@ -103,6 +107,7 @@ void BaseEnemy::Update() {
 	object3d_->SetRotate(baseInfo_.rotate);
 	object3d_->SetColor(baseInfo_.color);
 
+	// 重くなっている場合は描画範囲外の物はこの部分だけ通るようにすればいい。
 	// SphereColliderの更新
 	OBBCollider::Update();
 }
@@ -168,8 +173,6 @@ void BaseEnemy::OnCollision(Collider* collider) {
 /// 移動処理の開始処理
 ///-------------------------------------------///
 void BaseEnemy::CommonMoveInit() {
-	// 移動範囲の中心を設定
-	moveInfo_.rangeCenter = attackInfo_.playerPos;
 	// 速度をリセット
 	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
 }
@@ -180,7 +183,6 @@ void BaseEnemy::CommonMoveInit() {
 void BaseEnemy::CommonMove() {
 	// 移動範囲の中心との方向ベクトルを計算（XZ平面）
 	Vector3 toCenter = moveInfo_.rangeCenter - baseInfo_.translate;
-
 	// 中心からの距離を取得
 	float distanceFromCenter = Length(toCenter);
 
@@ -190,7 +192,7 @@ void BaseEnemy::CommonMove() {
 		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 待機中は移動しない
 
 		// 向く方向に回転
-		UpdateRotationTowards(moveInfo_.direction, 0.2f);
+		UpdateRotationTowards(moveInfo_.direction, 0.1f);
 
 		if (moveInfo_.timer <= 0.0f) {
 			// ランダムな時間を設定
@@ -202,7 +204,7 @@ void BaseEnemy::CommonMove() {
 			moveInfo_.isWating = false; // 待機フラグを解除
 		}
 
-	} else if (distanceFromCenter > moveInfo_.range) { /// ===待機中=== ///
+	} else if (distanceFromCenter > moveInfo_.range) { /// ===範囲外に出ていた場合=== ///
 
 		// 方向の設定と待機処理の準備
 		PreparNextMove(toCenter);

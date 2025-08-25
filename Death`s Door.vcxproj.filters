@@ -159,6 +159,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\State\Base\EnemyState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyMoveState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\State\EnemyAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\Manager\EnemyManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\System\Service\AudioService.h" />
@@ -307,6 +308,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyMoveState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\State\EnemyAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\Manager\EnemyManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Particle\Particle.hlsli" />

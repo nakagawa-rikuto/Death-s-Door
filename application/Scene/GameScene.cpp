@@ -58,14 +58,12 @@ void GameScene::Initialize() {
 
 	/// ===Enemy=== ///
 	closeEnemy_ = std::make_unique<CloseRangeEnemy>();
-	closeEnemy_->Initialize();
+	closeEnemy_->InitGameScene({ -10.0f, 1.0f, 10.0f });
 	closeEnemy_->SetPlayer(player_.get()); // Playerを設定
-	closeEnemy_->SetTranslate({ -10.0f, 1.0f, 10.0f });
 
 	longEnemy_ = std::make_unique<LongRangeEnemy>();
-	longEnemy_->Initialize();
-	longEnemy_->SetPlayer(player_.get());
-	longEnemy_->SetTranslate({ 10.0f, 1.0f, 10.0f });
+	longEnemy_->InitGameScene({ 10.0f, 1.0f, 10.0f });
+	longEnemy_->SetPlayer(player_.get()); // Playerを設定
 
 	/// ===Ground=== ///
 	ground_ = std::make_unique<Ground>();

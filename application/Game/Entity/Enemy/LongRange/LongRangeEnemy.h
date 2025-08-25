@@ -12,6 +12,8 @@ public:
 	LongRangeEnemy() = default;
 	~LongRangeEnemy();
 
+	// 初期化（GameScene用）
+	void InitGameScene(const Vector3& translate);
 	// 初期化
 	void Initialize()override;
 	// 更新
