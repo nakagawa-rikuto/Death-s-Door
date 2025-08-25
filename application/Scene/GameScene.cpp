@@ -30,8 +30,7 @@ GameScene::~GameScene() {
 	// Ground
 	ground_.reset();
 	// Enemy
-	closeEnemy_.reset();
-	longEnemy_.reset();
+	enemyManager_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -57,15 +56,10 @@ void GameScene::Initialize() {
 	player_->Initialize();
 
 	/// ===Enemy=== ///
-	closeEnemy_ = std::make_unique<CloseRangeEnemy>();
-	closeEnemy_->Initialize();
-	closeEnemy_->SetPlayer(player_.get()); // Playerを設定
-	closeEnemy_->SetTranslate({ -10.0f, 1.0f, 10.0f });
-
-	longEnemy_ = std::make_unique<LongRangeEnemy>();
-	longEnemy_->Initialize();
-	longEnemy_->SetPlayer(player_.get());
-	longEnemy_->SetTranslate({ 10.0f, 1.0f, 10.0f });
+	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->SetPlayer(player_.get()); // Playerを設定
+	enemyManager_->Spawn(EnemyType::CloseRange, { -10.0f, 1.0f, 10.0f });
+	enemyManager_->Spawn(EnemyType::LongRange, { 10.0f, 1.0f, 10.0f });
 
 	/// ===Ground=== ///
 	ground_ = std::make_unique<Ground>();
@@ -96,8 +90,7 @@ void GameScene::Update() {
 	player_->UpdateImGui();
 
 	// Enemy
-	closeEnemy_->UpdateImGui();
-	longEnemy_->UpdateImGui();
+	enemyManager_->UpdateImGui();
 
 #endif // USE_IMGUI
 
@@ -108,8 +101,7 @@ void GameScene::Update() {
 	player_->Update();
 
 	/// ===Enemy=== ///
-	closeEnemy_->Update();
-	longEnemy_->Update();
+	enemyManager_->Update();
 
 	/// ===Groundの更新=== ///
 	ground_->Update();
@@ -138,8 +130,7 @@ void GameScene::Draw() {
 	// Ground
 	//ground_->Draw();
 	// Enemy
-	closeEnemy_->Draw();
-	longEnemy_->Draw();
+	enemyManager_->Draw();
 	// Player
 	player_->Draw();
 

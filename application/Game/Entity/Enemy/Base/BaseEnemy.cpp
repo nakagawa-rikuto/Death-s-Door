@@ -66,7 +66,11 @@ void BaseEnemy::SetPlayer(Player* player) { player_ = player; }
 void BaseEnemy::Initialize() {
 
 	// ランダムエンジンの初期化
-	randomEngine_.seed(static_cast<unsigned int>(std::time(nullptr)));
+	std::seed_seq seq{
+		static_cast<uint32_t>(std::time(nullptr)),
+		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
+	};
+	randomEngine_.seed(seq);
 
 	// カメラの取得
 	camera_ = CameraService::GetActiveCamera().get();
@@ -103,6 +107,7 @@ void BaseEnemy::Update() {
 	object3d_->SetRotate(baseInfo_.rotate);
 	object3d_->SetColor(baseInfo_.color);
 
+	// 重くなっている場合は描画範囲外の物はこの部分だけ通るようにすればいい。
 	// SphereColliderの更新
 	OBBCollider::Update();
 }
@@ -119,33 +124,19 @@ void BaseEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void BaseEnemy::UpdateImGui() {
 #ifdef USE_IMGUI
-	// Base情報
-	ImGui::Text("BaseInfo");
-	ImGui::DragFloat3("translate", &baseInfo_.translate.x, 0.1f);
-	ImGui::DragFloat4("rotate", &baseInfo_.rotate.x, 0.1f);
-	ImGui::DragFloat3("velocity", &baseInfo_.velocity.x, 0.1f);
-
 	// MoveInfo
 	ImGui::Text("MoveInfo");
-	ImGui::DragFloat("MoveTimer", &moveInfo_.timer, 0.1f);
 	ImGui::DragFloat("MoveSpeed", &moveInfo_.speed, 0.1f);
 	ImGui::DragFloat("MoveRange", &moveInfo_.range, 0.1f);
 	ImGui::DragFloat("MoveInterval", &moveInfo_.interval, 0.1f);
 	ImGui::DragFloat("MoveWaitTime", &moveInfo_.waitTime, 0.1f);
-	ImGui::DragFloat3("MoveCenter", &moveInfo_.rangeCenter.x, 0.1f);
-	ImGui::DragFloat3("MoveDirection", &moveInfo_.direction.x, 0.1f);
-	ImGui::Checkbox("IsWating", &moveInfo_.isWating);
 
 	// AttackInfo
 	ImGui::Text("AttackInfo");
-	ImGui::DragFloat("AttackTimer", &attackInfo_.timer, 0.1f);
 	ImGui::DragFloat("AttackDistance", &attackInfo_.distance, 0.1f);
 	ImGui::DragFloat("AttackRange", &attackInfo_.range, 0.1f);
 	ImGui::DragFloat("AttackInterval", &attackInfo_.interval, 0.1f);
 	ImGui::DragInt("Power", &attackInfo_.power, 1);
-	ImGui::DragFloat3("AttackDirection", &attackInfo_.direction.x, 0.1f);
-	ImGui::DragFloat3("PlayerPos", &attackInfo_.playerPos.x, 0.1f);
-	ImGui::Checkbox("IsAttack", &attackInfo_.isAttack);
 #endif // USE_IMGUI
 }
 
@@ -168,8 +159,6 @@ void BaseEnemy::OnCollision(Collider* collider) {
 /// 移動処理の開始処理
 ///-------------------------------------------///
 void BaseEnemy::CommonMoveInit() {
-	// 移動範囲の中心を設定
-	moveInfo_.rangeCenter = attackInfo_.playerPos;
 	// 速度をリセット
 	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
 }
@@ -180,7 +169,6 @@ void BaseEnemy::CommonMoveInit() {
 void BaseEnemy::CommonMove() {
 	// 移動範囲の中心との方向ベクトルを計算（XZ平面）
 	Vector3 toCenter = moveInfo_.rangeCenter - baseInfo_.translate;
-
 	// 中心からの距離を取得
 	float distanceFromCenter = Length(toCenter);
 
@@ -190,7 +178,7 @@ void BaseEnemy::CommonMove() {
 		baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 待機中は移動しない
 
 		// 向く方向に回転
-		UpdateRotationTowards(moveInfo_.direction, 0.2f);
+		UpdateRotationTowards(moveInfo_.direction, 0.1f);
 
 		if (moveInfo_.timer <= 0.0f) {
 			// ランダムな時間を設定
@@ -202,7 +190,7 @@ void BaseEnemy::CommonMove() {
 			moveInfo_.isWating = false; // 待機フラグを解除
 		}
 
-	} else if (distanceFromCenter > moveInfo_.range) { /// ===待機中=== ///
+	} else if (distanceFromCenter > moveInfo_.range) { /// ===範囲外に出ていた場合=== ///
 
 		// 方向の設定と待機処理の準備
 		PreparNextMove(toCenter);

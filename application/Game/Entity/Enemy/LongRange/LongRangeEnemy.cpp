@@ -26,12 +26,17 @@ void LongRangeEnemy::SetTranslate(const Vector3& pos) {baseInfo_.translate = pos
 void LongRangeEnemy::SetlastYaw() { lastYaw_ = baseInfo_.rotate.y; }
 
 ///-------------------------------------------/// 
+/// GameScene用初期化
+///-------------------------------------------///
+void LongRangeEnemy::InitGameScene(const Vector3& translate) {
+	baseInfo_.translate = translate;
+	Initialize();
+}
+
+///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void LongRangeEnemy::Initialize() {
-
-	// シードの設定
-	srand(static_cast<unsigned int>(time(nullptr)));
 
 	/// ===MoveInfoの設定=== ///
 	moveInfo_.interval = 5.0f;
@@ -44,10 +49,10 @@ void LongRangeEnemy::Initialize() {
 	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
-	attackInfo_.range = 2.0f;
-	attackInfo_.distance = 10.0f;
+	attackInfo_.range = 3.0f;
+	attackInfo_.distance = 30.0f;
 	attackInfo_.interval = 8.0f;
-	attackInfo_.timer = attackInfo_.interval;
+	attackInfo_.timer = 1.0;
 	attackInfo_.power = 1;
 	attackInfo_.direction = { 0.0f, 0.0f, 0.0f };
 	attackInfo_.isAttack = false;
@@ -79,8 +84,6 @@ void LongRangeEnemy::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void LongRangeEnemy::Update() {
-
-	if (!player_) return;
 
 	// BaseEnemyの更新
 	BaseEnemy::Update();
@@ -134,29 +137,36 @@ void LongRangeEnemy::OnCollision(Collider* collider) {
 /// 攻撃処理
 ///-------------------------------------------///
 void LongRangeEnemy::Attack() {
+	// 早期リターン
+	if (!player_) return;
 
 	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
+		// プレイヤー位置を取得
+		attackInfo_.playerPos = player_->GetTranslate();
+
+		// プレイヤー位置への方向ベクトル
+		Vector3 dir = attackInfo_.playerPos - baseInfo_.translate;
+		attackInfo_.direction = Normalize(dir); // 方向を保存
+
 		// 攻撃時はやや速めに回転
 		UpdateRotationTowards(attackInfo_.direction, 0.2f);
-		// 差分（絶対値）
-		float diff = std::fabs(baseInfo_.rotate.y - lastYaw_);
 
-		// 差が小さいなら
-		if (diff < 0.05f) {
-			// フラグをtrue
+		// 少し待つ
+		if (attackInfo_.timer <= 0.0f) { // タイマーが0以下
+			// 攻撃開始
 			attackInfo_.isAttack = true;
 		}
-	} else {
+
+	} else { /// ===IsAttackがtrue=== ///
+
 		// 弾の生成
 		auto bullet = std::make_unique<LongRangeEnemeyBullet>();
 		bullet->Create(baseInfo_.translate, attackInfo_.direction);
 		bulletInfo_.bullets_.push_back(std::move(bullet));
 		// フラグをfalse
 		attackInfo_.isAttack = false;
-		baseInfo_.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
 		attackInfo_.timer = attackInfo_.interval; // クールダウン再設定
-	}
 
-	// 次のフレーム用に保存
-	lastYaw_ = baseInfo_.rotate.y;
+		baseInfo_.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
+	}
 }

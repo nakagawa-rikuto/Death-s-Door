@@ -30,17 +30,25 @@ CloseRangeEnemy::~CloseRangeEnemy() {
 void CloseRangeEnemy::SetTranslate(const Vector3& pos) {baseInfo_.translate = pos;}
 
 ///-------------------------------------------/// 
+/// GameScene用初期化
+///-------------------------------------------///
+void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
+	baseInfo_.translate = translate;
+	Initialize();
+}
+
+///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
 void CloseRangeEnemy::Initialize() {
 
 	// シードの設定
-	srand(static_cast<unsigned int>(time(nullptr)));
+	//srand(static_cast<unsigned int>(time(nullptr)));
 
 	/// ===MoveInfoの設定=== ///
 	moveInfo_.interval = 5.0f;
 	moveInfo_.timer = 1.0f;
-	moveInfo_.waitTime = 1.0f;
+	moveInfo_.waitTime = 1.5f;
 	moveInfo_.range = 10.0f;
 	moveInfo_.speed = 0.05f;
 	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
@@ -48,16 +56,16 @@ void CloseRangeEnemy::Initialize() {
 	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
-	attackInfo_.range = 2.0f;
-	attackInfo_.distance = 10.0f;
-	attackInfo_.interval = 8.0f;
-	attackInfo_.timer = 5.0f;
+	attackInfo_.range = 4.0f;
+	attackInfo_.distance = 15.0f;
+	attackInfo_.interval = 6.0f;
+	attackInfo_.timer = 0.0f;
 	attackInfo_.power = 1;
 	attackInfo_.direction = { 0.0f, 0.0f, 0.0f };
 	attackInfo_.isAttack = false;
 
 	/// ===ChargeInfo=== ///
-	chargeInfo_.moveSpeed = 0.5f;
+	chargeInfo_.moveSpeed = 0.9f;
 	chargeInfo_.stopTime = 1.0f;
 
 	/// ===Object=== ///
@@ -86,7 +94,6 @@ void CloseRangeEnemy::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void CloseRangeEnemy::Update() {
-	if (!player_) return;
 
 	// BaseEnemyの更新
 	BaseEnemy::Update();
@@ -125,6 +132,8 @@ void CloseRangeEnemy::OnCollision(Collider* collider) {
 /// 攻撃処理
 ///-------------------------------------------///
 void CloseRangeEnemy::Attack() {
+	// 早期リターン
+	if (!player_) return;
 
 	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
 		// プレイヤー位置を取得
@@ -156,6 +165,8 @@ void CloseRangeEnemy::Attack() {
 			attackInfo_.isAttack = false; // 攻撃終了フラグをfalseに
 			baseInfo_.velocity = { 0.0f, 0.0f, 0.0f }; // 移動ベクトルをリセット
 			attackInfo_.timer = attackInfo_.interval; // クールダウン再設定
+			// 移動範囲の中心を設定
+			moveInfo_.rangeCenter = attackInfo_.playerPos;
 
 			baseInfo_.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
 		}
