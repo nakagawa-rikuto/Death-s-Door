@@ -38,4 +38,7 @@ private: /// ===変数=== ///
 		float stopTime;
 	};
 	ChargeInfo chargeInfo_;
+
+protected:
+	void CopyTypeTuningFromThisTo(BaseEnemy* dst) const override;
 };

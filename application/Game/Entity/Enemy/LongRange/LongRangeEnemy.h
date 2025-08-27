@@ -47,4 +47,7 @@ private: /// ===変数=== ///
 
 	// 前フレームのYawを保持
 	float lastYaw_;
+
+protected:
+	void CopyTypeTuningFromThisTo(BaseEnemy* dst) const override;
 };

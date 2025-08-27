@@ -79,43 +79,60 @@ void EnemyManager::UpdateImGui() {
 
 	// EnemyMangerのウィンドウ(ウィンドウを閉じた時に中身を書かないようにするため)
 	if (ImGui::Begin("EnemyManager")) {
-		// ===== 集計とサンプル取得 ===== //
-		int countClose = 0;
-		int countLong = 0;
-		CloseRangeEnemy* sampleClose = nullptr; // 表示用サンプル1体
-		LongRangeEnemy* sampleLong = nullptr; // 表示用サンプル1体
 
-		for (auto& e : enemies_) {
-			if (!e) continue;
-			if (auto* c = dynamic_cast<CloseRangeEnemy*>(e.get())) {
-				++countClose;
-				if (!sampleClose) sampleClose = c;
-			} else if (auto* l = dynamic_cast<LongRangeEnemy*>(e.get())) {
-				++countLong;
-				if (!sampleLong) sampleLong = l;
+		// ===== 統計情報 ===== //
+		int closeCount = GetEnemyCount(EnemyType::CloseRange);
+		int longCount = GetEnemyCount(EnemyType::LongRange);
+		int totalCount = GetTotalEnemyCount();
+
+		ImGui::Text("Enemy Statistics:");
+		ImGui::Text("  CloseRange: %d", closeCount);
+		ImGui::Text("  LongRange : %d", longCount);
+		ImGui::Text("  Total     : %d", totalCount);
+		ImGui::Separator();
+
+		// ===== CloseRangeEnemy の調整 ===== //
+		BaseEnemy* closeRep = GetRepresentative(EnemyType::CloseRange);
+		if (closeRep) {
+			ImGui::Text("CloseRange Enemy Settings:");
+			closeRep->UpdateImGui(); // 代表1体のImGuiを表示
+
+			if (ImGui::Button("Apply to All CloseRange")) {
+				ApplySettingsToType(EnemyType::CloseRange, closeRep);
 			}
+			ImGui::SameLine();
+			if (ImGui::Button("Apply CloseRange to ALL Enemies")) {
+				ApplySettingsToAll(closeRep);
+			}
+		} else {
+			ImGui::TextDisabled("No CloseRange enemies exist.");
 		}
-
-		// ===== 種類別カウント＋合計 ===== //
-		ImGui::Text("CloseRange: %d", countClose);
-		ImGui::Text("LongRange : %d", countLong);
-		ImGui::Text("Total     : %d", countClose + countLong);
 
 		ImGui::Separator();
-		ImGui::TextDisabled("Per-type config (one window each):");
 
-		// ===== CloseRangeEnemy の UI を1つだけ ===== //
-		if (sampleClose) {
-			sampleClose->UpdateImGui();   // CloseRange 用ウィンドウが1つだけ開く
+		// ===== LongRangeEnemy の調整 ===== //
+		BaseEnemy* longRep = GetRepresentative(EnemyType::LongRange);
+		if (longRep) {
+			ImGui::Text("LongRange Enemy Settings:");
+			longRep->UpdateImGui(); // 代表1体のImGuiを表示
+
+			if (ImGui::Button("Apply to All LongRange")) {
+				ApplySettingsToType(EnemyType::LongRange, longRep);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Apply LongRange to ALL Enemies")) {
+				ApplySettingsToAll(longRep);
+			}
 		} else {
-			ImGui::TextDisabled("No CloseRangeEnemy exists.");
+			ImGui::TextDisabled("No LongRange enemies exist.");
 		}
 
-		// ===== LongRangeEnemy の UI を1つだけ ===== //
-		if (sampleLong) {
-			sampleLong->UpdateImGui();    // LongRange 用ウィンドウが1つだけ開く
-		} else {
-			ImGui::TextDisabled("No LongRangeEnemy exists.");
+		ImGui::Separator();
+
+		// ===== 全体操作 ===== //
+		ImGui::Text("Bulk Operations:");
+		if (ImGui::Button("Clear All Enemies")) {
+			Clear();
 		}
 	}
 	ImGui::End();
@@ -127,4 +144,112 @@ void EnemyManager::UpdateImGui() {
 ///-------------------------------------------///
 void EnemyManager::Clear() {
 	enemies_.clear(); // unique_ptr 破棄で各Enemyのデストラクトへ
+}
+
+//-------------------------------------------/// 
+/// 指定タイプの全敵に設定をコピー
+///-------------------------------------------///
+void EnemyManager::ApplySettingsToType(EnemyType type, const BaseEnemy* sourceEnemy) {
+	if (!sourceEnemy) return;
+
+	for (auto& e : enemies_) {
+		if (!e) continue;
+
+		// 同じタイプかチェック
+		if (GetEnemyType(e.get()) == type) {
+			// ソースと同じオブジェクトは除外
+			if (e.get() != sourceEnemy) {
+				sourceEnemy->CopyTuningTo(e.get());
+			}
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// 全敵に設定をコピー
+///-------------------------------------------///
+void EnemyManager::ApplySettingsToAll(const BaseEnemy* sourceEnemy) {
+	if (!sourceEnemy) return;
+
+	for (auto& e : enemies_) {
+		if (!e) continue;
+
+		// ソースと同じオブジェクトは除外
+		if (e.get() != sourceEnemy) {
+			sourceEnemy->CopyTuningTo(e.get());
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// 指定タイプの代表敵を取得
+///-------------------------------------------///
+BaseEnemy* EnemyManager::GetRepresentative(EnemyType type) {
+	for (auto& e : enemies_) {
+		if (!e) continue;
+
+		if (GetEnemyType(e.get()) == type) {
+			return e.get();
+		}
+	}
+	return nullptr;
+}
+
+///-------------------------------------------/// 
+/// 指定タイプの敵数を取得
+///-------------------------------------------///
+int EnemyManager::GetEnemyCount(EnemyType type) const {
+	int count = 0;
+	for (const auto& e : enemies_) {
+		if (!e) continue;
+
+		if (GetEnemyType(e.get()) == type) {
+			count++;
+		}
+	}
+	return count;
+}
+
+///-------------------------------------------/// 
+/// 全敵数を取得
+///-------------------------------------------///
+int EnemyManager::GetTotalEnemyCount() const {
+	int count = 0;
+	for (const auto& e : enemies_) {
+		if (e) count++;
+	}
+	return count;
+}
+
+///-------------------------------------------/// 
+/// 代表敵の設定を同タイプ全体に適用
+///-------------------------------------------///
+void EnemyManager::ApplyRepresentativeSettingsToType(EnemyType type) {
+	BaseEnemy* representative = GetRepresentative(type);
+	if (representative) {
+		ApplySettingsToType(type, representative);
+	}
+}
+
+///-------------------------------------------/// 
+/// 代表敵の設定を全敵に適用
+///-------------------------------------------///
+void EnemyManager::ApplyRepresentativeSettingsToAll(EnemyType sourceType) {
+	BaseEnemy* representative = GetRepresentative(sourceType);
+	if (representative) {
+		ApplySettingsToAll(representative);
+	}
+}
+
+///-------------------------------------------/// 
+/// タイプ判定
+///-------------------------------------------///
+EnemyType EnemyManager::GetEnemyType(BaseEnemy* enemy) const {
+	if (dynamic_cast<CloseRangeEnemy*>(enemy)) {
+		return EnemyType::CloseRange;
+	} else if (dynamic_cast<LongRangeEnemy*>(enemy)) {
+		return EnemyType::LongRange;
+	}
+	// デフォルト（本来ここは通らない想定）
+	return EnemyType::CloseRange;
 }
