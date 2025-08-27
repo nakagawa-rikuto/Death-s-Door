@@ -81,9 +81,18 @@ void LevelManager::LoadobjectRecursive(nlohmann::json object, LevelData* levelDa
             // 今追加した要素の参照を得る
             LevelData::JsonObjectData& objectData = levelData->objects.back();
 
+            /// ===FileName=== ///
             if (object.contains("file_name")) {
                 // ファイル名
                 objectData.fileName = object["file_name"];
+            }
+
+            /// ===ClassName=== ///
+            if (object.contains("class_name")) {
+                std::string classStr = object["class_name"].get<std::string>();
+                objectData.classType = StringToClassType(classStr);
+            } else {
+                objectData.classType = LevelData::ClassType::None;
             }
 
             /// ===トランスフォームのパラメータ=== ///
@@ -111,6 +120,63 @@ void LevelManager::LoadobjectRecursive(nlohmann::json object, LevelData* levelDa
             LoadobjectRecursive(object, levelData);
         }
     }
+}
+
+///-------------------------------------------/// 
+/// 文字列からClassTypeに変換
+///-------------------------------------------///
+LevelData::ClassType LevelManager::StringToClassType(const std::string& str) {
+    if (str == "NoClass")   return LevelData::ClassType::None;
+
+    if (str == "Player1")   return LevelData::ClassType::Player1;
+    if (str == "Player2")   return LevelData::ClassType::Player2;
+
+    if (str == "Enemy1")    return LevelData::ClassType::Enemy1;
+    if (str == "Enemy2")    return LevelData::ClassType::Enemy2;
+    if (str == "Enemy3")    return LevelData::ClassType::Enemy3;
+    if (str == "Enemy4")    return LevelData::ClassType::Enemy4;
+    if (str == "Enemy5")    return LevelData::ClassType::Enemy5;
+    if (str == "Enemy6")    return LevelData::ClassType::Enemy6;
+    if (str == "Enemy7")    return LevelData::ClassType::Enemy7;
+    if (str == "Enemy8")    return LevelData::ClassType::Enemy8;
+    if (str == "Enemy9")    return LevelData::ClassType::Enemy9;
+    if (str == "Enemy10")   return LevelData::ClassType::Enemy10;
+
+    if (str == "Object1")   return LevelData::ClassType::Object1;
+    if (str == "Object2")   return LevelData::ClassType::Object2;
+    if (str == "Object3")   return LevelData::ClassType::Object3;
+    if (str == "Object4")   return LevelData::ClassType::Object4;
+    if (str == "Object5")   return LevelData::ClassType::Object5;
+    if (str == "Object6")   return LevelData::ClassType::Object6;
+    if (str == "Object7")   return LevelData::ClassType::Object7;
+    if (str == "Object8")   return LevelData::ClassType::Object8;
+    if (str == "Object9")   return LevelData::ClassType::Object9;
+    if (str == "Object10")  return LevelData::ClassType::Object10;
+
+    if (str == "Ground1")   return LevelData::ClassType::Ground1;
+    if (str == "Ground2")   return LevelData::ClassType::Ground2;
+    if (str == "Ground3")   return LevelData::ClassType::Ground3;
+    if (str == "Ground4")   return LevelData::ClassType::Ground4;
+    if (str == "Ground5")   return LevelData::ClassType::Ground5;
+    if (str == "Ground6")   return LevelData::ClassType::Ground6;
+    if (str == "Ground7")   return LevelData::ClassType::Ground7;
+    if (str == "Ground8")   return LevelData::ClassType::Ground8;
+    if (str == "Ground9")   return LevelData::ClassType::Ground9;
+    if (str == "Ground10")  return LevelData::ClassType::Ground10;
+
+    if (str == "SkyDome1")  return LevelData::ClassType::SkyBox1;
+    if (str == "SkyDome2")  return LevelData::ClassType::SkyBox2;
+    if (str == "SkyDome3")  return LevelData::ClassType::SkyBox3;
+    if (str == "SkyDome4")  return LevelData::ClassType::SkyBox4;
+    if (str == "SkyDome5")  return LevelData::ClassType::SkyBox5;
+    if (str == "SkyDome6")  return LevelData::ClassType::SkyBox6;
+    if (str == "SkyDome7")  return LevelData::ClassType::SkyBox7;
+    if (str == "SkyDome8")  return LevelData::ClassType::SkyBox8;
+    if (str == "SkyDome9")  return LevelData::ClassType::SkyBox9;
+    if (str == "SkyDome10") return LevelData::ClassType::SkyBox10;
+
+    // デフォルトは None
+    return LevelData::ClassType::None;
 }
 
 ///-------------------------------------------/// 
