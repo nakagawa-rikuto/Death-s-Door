@@ -172,3 +172,13 @@ void CloseRangeEnemy::Attack() {
 		}
 	}
 }
+
+///-------------------------------------------/// 
+/// 派生用の拡張ポイント
+///-------------------------------------------///
+void CloseRangeEnemy::CopyTypeTuningFromThisTo(BaseEnemy* dst) const {
+	if (auto* d = dynamic_cast<CloseRangeEnemy*>(dst)) {
+		d->chargeInfo_.moveSpeed = this->chargeInfo_.moveSpeed;
+		d->chargeInfo_.stopTime = this->chargeInfo_.stopTime;
+	}
+}

@@ -34,6 +34,8 @@ public:
 	virtual void UpdateImGui();
 	// 攻撃処理
 	virtual void Attack() = 0;
+	// 変更↓値をコピー
+	void CopyTuningTo(BaseEnemy* enemy) const;
 
 public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
@@ -126,6 +128,9 @@ protected: /// ===変数の宣言=== ///
 protected: /// ===関数の宣言=== ///
 	// 回転更新関数
 	void UpdateRotationTowards(const Vector3& direction, float lerpT);
+
+	// 派生用の拡張ポイント
+	virtual void CopyTypeTuningFromThisTo(BaseEnemy* enemy) const {};
 
 private:
 	// 方向の設定と待機時間の設定

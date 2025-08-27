@@ -118,11 +118,11 @@ void LongRangeEnemy::Draw(BlendMode mode) {
 /// 更新（ImGui）
 ///-------------------------------------------///
 void LongRangeEnemy::UpdateImGui() {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Begin("LongRangeEnemy");
 	BaseEnemy::UpdateImGui();
 	ImGui::End();
-#endif // _DEBUG
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
@@ -168,5 +168,16 @@ void LongRangeEnemy::Attack() {
 		attackInfo_.timer = attackInfo_.interval; // クールダウン再設定
 
 		baseInfo_.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
+	}
+}
+
+///-------------------------------------------/// 
+/// 派生用の拡張ポイント
+///-------------------------------------------///
+void LongRangeEnemy::CopyTypeTuningFromThisTo(BaseEnemy* dst) const {
+	if (auto* d = dynamic_cast<LongRangeEnemy*>(dst)) {
+		d->bulletInfo_.interval = this->bulletInfo_.interval;
+		d->bulletInfo_.reloadTime = this->bulletInfo_.reloadTime;
+		// isShot / isHit / bullets_ はランタイム値なのでコピーしない
 	}
 }

@@ -124,6 +124,10 @@ void BaseEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------///
 void BaseEnemy::UpdateImGui() {
 #ifdef USE_IMGUI
+	// BaseInfo
+	ImGui::Text("BaseInfo");
+	ImGui::ColorEdit4("Color", &baseInfo_.color.x);
+
 	// MoveInfo
 	ImGui::Text("MoveInfo");
 	ImGui::DragFloat("MoveSpeed", &moveInfo_.speed, 0.1f);
@@ -138,6 +142,30 @@ void BaseEnemy::UpdateImGui() {
 	ImGui::DragFloat("AttackInterval", &attackInfo_.interval, 0.1f);
 	ImGui::DragInt("Power", &attackInfo_.power, 1);
 #endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// 変更した値をコピー
+///-------------------------------------------///
+void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
+	if (!enemy) return;
+
+	enemy->baseInfo_.color = baseInfo_.color;
+
+	// ===== Move 系（設計値） ===== //
+	enemy->moveInfo_.speed = moveInfo_.speed;
+	enemy->moveInfo_.range = moveInfo_.range;
+	enemy->moveInfo_.interval = moveInfo_.interval;
+	enemy->moveInfo_.waitTime = moveInfo_.waitTime;
+
+	// ===== Attack 系（設計値） ===== //
+	enemy->attackInfo_.distance = attackInfo_.distance;
+	enemy->attackInfo_.range = attackInfo_.range;
+	enemy->attackInfo_.interval = attackInfo_.interval;
+	enemy->attackInfo_.power = attackInfo_.power;
+
+	// 型固有の値を派生側でコピー
+	this->CopyTypeTuningFromThisTo(enemy);
 }
 
 ///-------------------------------------------/// 
