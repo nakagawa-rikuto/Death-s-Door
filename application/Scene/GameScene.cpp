@@ -6,6 +6,7 @@
 #include "Engine/System/Service/ParticleService.h"
 #include "Engine/System/Service/ColliderService.h"
 #include "Engine/System/Service/InputService.h"
+#include "Engine/System/Service/GraphicsResourceGetter.h"
 // Particle
 #include "Engine/Graphics/Particle/Derivative/ConfettiParticle.h"
 #include "Engine/Graphics/Particle/Derivative/ExplosionParticle.h"
@@ -13,6 +14,7 @@
 #include "Engine/Graphics/Particle/Derivative/HitEffectParticle.h"
 #include "Engine/Graphics/Particle/Derivative/RingParticle.h"
 #include "Engine/Graphics/Particle/Derivative/CylinderParticle.h"
+// Math
 #include "Math/SMath.h"
 
 ///-------------------------------------------/// 
@@ -57,10 +59,11 @@ void GameScene::Initialize() {
 
 	/// ===Enemy=== ///
 	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 	enemyManager_->Spawn(EnemyType::CloseRange, { -10.0f, 1.0f, 10.0f });
-	enemyManager_->Spawn(EnemyType::LongRange, { 10.0f, 1.0f, 10.0f });
-
+	enemyManager_->Spawn(EnemyType::CloseRange, { 10.0f, 1.0f, 10.0f });
+	//enemyManager_->Spawn(EnemyType::LongRange, { 10.0f, 1.0f, 10.0f });
+	// EnemyのSpaw後に呼ぶ
+	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 	/// ===Ground=== ///
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
@@ -120,12 +123,12 @@ void GameScene::Update() {
 ///-------------------------------------------///
 void GameScene::Draw() {
 #pragma region 背景スプライト描画
-	
+
 #pragma endregion
 
 #pragma region モデル描画
 
-	line_->DrawGrid({ 0.0f,-2.0f, 0.0f }, { 1000.0f, 1.0f, 1000.0f }, 100, {1.0f, 1.0f, 1.0f, 1.0f});
+	line_->DrawGrid({ 0.0f,-2.0f, 0.0f }, { 1000.0f, 1.0f, 1000.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// Ground
 	//ground_->Draw();
@@ -140,4 +143,42 @@ void GameScene::Draw() {
 
 #pragma region 前景スプライト描画
 #pragma endregion
+}
+
+///-------------------------------------------/// 
+/// 配置関数
+///-------------------------------------------///
+void GameScene::SpawnObjects(const std::string& json_name) {
+	LevelData* levelData = GraphicsResourceGetter::GetLevelData(json_name);
+
+	// オブジェクト分回す
+	for (const auto& obj : levelData->objects) {
+
+		/// ===クラス名で分岐=== ///
+		switch (obj.classType) {
+		case LevelData::ClassType::Player1:
+			// 初期化と座標設定
+			player_->Initialize();
+			player_->SetTranslate(obj.translation);
+			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
+			break;
+		case LevelData::ClassType::Enemy1:
+			// Enemyの座標設定
+			enemyManager_->Spawn(EnemyType::LongRange, obj.translation);
+			break;
+		case LevelData::ClassType::Enemy2:
+			// Enemyの座標設定
+			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation);
+			break;
+		case LevelData::ClassType::Object1:
+			//NOTE:Objectクラス（名所はGPTに聞く）を作成。当たり判定を付けれるようにする。
+			break;
+		case LevelData::ClassType::Ground1:
+			//NOTE:今後地面を複数個作成する可能性あり。当たり判定を付けれるようにする。
+			ground_->Initialize();
+			break;
+		default:
+			break;
+		}
+	}
 }

@@ -35,5 +35,7 @@ private:
 
 	// 再帰用関数
 	void LoadobjectRecursive(nlohmann::json object, LevelData* levelData);
+	// ClassType変換関数
+	static LevelData::ClassType StringToClassType(const std::string& str);
 };
 

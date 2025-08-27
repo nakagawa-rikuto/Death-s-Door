@@ -87,7 +87,7 @@ private: /// ===変数の宣言=== ///
 		Vector3 translate = { 0.0f, 1.0f, 0.0f };
 		Quaternion rotate = { 0.0f, 0.0f, 0.0f, 1.0f };
 		Vector3 scale = { 1.0f, 1.0f, 1.0f };
-		Vector4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
+		Vector4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
 		Vector3 velocity = { 0.0f, 0.0f, 0.0f };
 	};
 	BaseInfo baseInfo_;

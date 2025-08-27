@@ -110,14 +110,14 @@ void CloseRangeEnemy::Draw(BlendMode mode) {
 /// 更新（ImGui）
 ///-------------------------------------------///
 void CloseRangeEnemy::UpdateImGui() {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Begin("CloseRangeEnemy");
 	BaseEnemy::UpdateImGui();
 	ImGui::Text("ChargeInfo");
 	ImGui::DragFloat("moveSpeed", &chargeInfo_.moveSpeed, 0.1f);
 	ImGui::DragFloat("StopTime", &chargeInfo_.stopTime, 0.1f);
 	ImGui::End();
-#endif // _DEBUG
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 

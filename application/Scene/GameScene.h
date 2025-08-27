@@ -45,5 +45,9 @@ private:/// ===メンバ変数=== ///
 		Quaternion rotate = { 0.372f, 0.0f, 0.0f, 1.055f };
 	};
 	CameraInfo cameraInfo_;
+
+private: /// ===メンバ関数=== ///
+	// 配置関数
+	void SpawnObjects(const std::string& json_name);
 };
 
