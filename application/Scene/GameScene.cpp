@@ -70,6 +70,9 @@ void GameScene::Initialize() {
 	ground_ = std::make_unique<Ground>();
 	ground_->Initialize();
 
+	/// ===Line=== ///
+	line_ = std::make_unique<Line>();
+
 	// Particleの追加
 	ParticleService::AddParticle("Confetti", std::make_unique<ConfettiParticle>());
 	ParticleService::AddParticle("Explosion", std::make_unique<ExplosionParticle>());
@@ -112,9 +115,6 @@ void GameScene::Update() {
 	ground_->Update();
 
 	/// ===ColliderManager=== ///
-
-	/// ===Line=== ///
-	line_ = std::make_unique<Line>();
 
 	/// ===ISceneの更新=== ///
 	IScene::Update();
