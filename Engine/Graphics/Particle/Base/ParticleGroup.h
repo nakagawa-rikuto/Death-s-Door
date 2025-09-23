@@ -5,7 +5,7 @@
 #include <random>
 
 /// ===Camera=== ///
-class Camera;
+class GameCamera;
 
 ///=====================================================/// 
 /// パーティクルのグループ
@@ -17,14 +17,14 @@ public:
 	virtual ~ParticleGroup();
 
 	// 初期化
-	virtual void Initialze(const Vector3& translate, Camera* camera) = 0;
+	virtual void Initialze(const Vector3& translate) = 0;
 	// 更新
 	virtual void Update() = 0;
 	// 描画
 	virtual void Draw(BlendMode mode);
 	
 	// 初期化
-	void InstancingInit(const std::string& modelName, const Vector3& translate, const uint32_t maxInstance, Camera* camera, shapeType type = shapeType::kNone);
+	void InstancingInit(const std::string& modelName, const Vector3& translate, const uint32_t maxInstance, shapeType type = shapeType::kNone);
 	// 更新
 	void InstancingUpdate(std::list<ParticleData>::iterator it);
 	// 生存判定
@@ -46,7 +46,7 @@ protected:
 		uint32_t frequencyCount; // パーティクルの発生頻度のカウント
 		float frequency; // パーティクルの発生頻度
 		float frequencyTime; // パーティクルの発生頻度の時間
-		Camera* camera = nullptr;
+		GameCamera* camera = nullptr;
 	};
 
 	// エミッタ

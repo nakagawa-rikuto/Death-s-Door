@@ -13,9 +13,9 @@ public:
 	~MoveState() override = default;
 
 	// 状態に入ったときに呼ばれる
-	void Enter(Player* player, Camera* camera) override;
+	void Enter(Player* player, GameCamera* camera) override;
 	// 状態の更新処理
-	void Update(Player* player, Camera* camera) override;
+	void Update(Player* player, GameCamera* camera) override;
 	// 終了処理はPlayerStateのFinalizeを呼び出す
 	void Finalize() override;
 

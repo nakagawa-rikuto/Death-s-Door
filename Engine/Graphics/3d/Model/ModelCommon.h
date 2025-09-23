@@ -11,7 +11,7 @@
 #include <string>
 
 /// ===前方宣言=== ///
-class Camera;
+class GameCamera;
 
 ///=====================================================/// 
 /// モデル共通部
@@ -57,7 +57,7 @@ protected: /// ===継承先で使用する変数=== ///
 	LightInfo light_;
 
 	/// ===Camera=== ///
-	Camera* camera_ = nullptr;
+	GameCamera* camera_ = nullptr;
 
 	/// ===環境マップ=== ///
 	EnviromentMapInfo enviromentMapInfo_;

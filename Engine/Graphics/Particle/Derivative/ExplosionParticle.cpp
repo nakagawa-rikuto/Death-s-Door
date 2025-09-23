@@ -16,9 +16,9 @@ ExplosionParticle::~ExplosionParticle() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void ExplosionParticle::Initialze(const Vector3& translate, Camera* camera) {
+void ExplosionParticle::Initialze(const Vector3& translate) {
     /// ===初期化=== ///
-    ParticleGroup::InstancingInit("Particle", translate, 150, camera);
+    ParticleGroup::InstancingInit("Particle", translate, 150);
 
     /// ===フラグと設定の初期化=== ///
     hasExploded_ = false;

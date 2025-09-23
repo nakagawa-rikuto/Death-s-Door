@@ -23,6 +23,12 @@ void OBBCollider::Initialize() {
 ///-------------------------------------------///
 void OBBCollider::Update() {
 
+	/// ===Object3Dの更新=== ///
+	object3d_->SetTranslate(transform_.translate);
+	object3d_->SetRotate(transform_.rotate);
+	object3d_->SetScale(transform_.scale);
+	object3d_->SetColor(color_);
+
 	//センターの位置を更新
 	obb_.center = object3d_->GetTranslate();
 	// 回転によってOBBの軸を更新
@@ -50,8 +56,9 @@ void OBBCollider::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 情報
 ///-------------------------------------------///
-void OBBCollider::Info() {
+void OBBCollider::Information() {
 #ifdef USE_IMGUI
+	Collider::Information();
 	ImGui::Text("OBBInfo");
 	ImGui::DragFloat3("Center", &obb_.center.x, 0.1f);
 	ImGui::SliderFloat3("HalfSize", &obb_.halfSize.x, 0.1f, 10.0f);

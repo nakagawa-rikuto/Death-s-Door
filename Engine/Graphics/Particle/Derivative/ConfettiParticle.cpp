@@ -17,10 +17,10 @@ ConfettiParticle::~ConfettiParticle() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void ConfettiParticle::Initialze(const Vector3& translate, Camera* camera) {
+void ConfettiParticle::Initialze(const Vector3& translate) {
 
     /// ===初期化=== ///
-    ParticleGroup::InstancingInit("plane", translate, 300, camera);
+    ParticleGroup::InstancingInit("plane", translate, 300);
 
     /// ===フラグと設定の初期化=== ///
     hasExploded_ = false;

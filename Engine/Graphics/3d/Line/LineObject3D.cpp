@@ -4,7 +4,7 @@
 #include "Engine/System/Service/Render.h"
 #include "Engine/System/Service/CameraService.h"
 // Camera
-#include "application/Game/Camera/camera.h"
+#include "application/Game/Camera/GameCamera.h"
 // DXCommon
 #include "Engine/Core/DXCommon.h"
 // Math

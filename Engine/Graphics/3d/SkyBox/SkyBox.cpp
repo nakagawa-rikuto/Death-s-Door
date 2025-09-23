@@ -7,7 +7,7 @@
 #include "Engine/System/Service/Render.h"
 #include "Engine/System/Service/CameraService.h"
 // camera
-#include "application/Game/Camera/camera.h"
+#include "application/Game/Camera/GameCamera.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"

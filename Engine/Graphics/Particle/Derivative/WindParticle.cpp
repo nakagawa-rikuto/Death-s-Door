@@ -19,10 +19,10 @@ WindParticle::~WindParticle() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void WindParticle::Initialze(const Vector3& translate, Camera* camera) {
+void WindParticle::Initialze(const Vector3& translate) {
 
 	/// ===初期化=== ///
-	ParticleGroup::InstancingInit("plane", translate, 150, camera);
+	ParticleGroup::InstancingInit("plane", translate, 150);
 
 	/// ===Fildの設定=== ///
 	accelerationFild_.acceleration = { 15.0f, 0.0f, 0.0f };

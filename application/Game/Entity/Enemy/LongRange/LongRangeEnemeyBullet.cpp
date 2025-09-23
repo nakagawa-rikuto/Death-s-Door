@@ -11,10 +11,6 @@ LongRangeEnemeyBullet::~LongRangeEnemeyBullet() {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-Vector3 LongRangeEnemeyBullet::GetTranslate() const {
-	return info_.translate;
-}
-
 bool LongRangeEnemeyBullet::GetIsAlive() {
 	return isAlive_;
 }
@@ -27,7 +23,7 @@ void LongRangeEnemeyBullet::Initialize() {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
 	// Object3dの初期設定
-	object3d_->SetTranslate(info_.translate);
+	object3d_->SetTranslate(transform_.translate);
 
 	// Sphereの設定
 	SphereCollider::Initialize();
@@ -51,10 +47,7 @@ void LongRangeEnemeyBullet::Update() {
 		/// ===タイマー=== ///
 		PromoteTimer();
 
-		info_.translate += info_.velocity;
-
-		// Objectに設定
-		object3d_->SetTranslate(info_.translate);
+		transform_.translate += info_.velocity;
 
 		// コライダーの更新
 		SphereCollider::Update();
@@ -74,7 +67,7 @@ void LongRangeEnemeyBullet::Draw(BlendMode mode) {
 /// 生成
 ///-------------------------------------------///
 void LongRangeEnemeyBullet::Create(const Vector3& pos, const Vector3& vel) {
-	info_.translate = pos;
+	transform_.translate = pos;
 	info_.direction = vel;
 
 	// 生存フラグをtrue

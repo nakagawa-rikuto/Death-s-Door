@@ -10,11 +10,8 @@
 #include "Engine/System/Service/ServiceLocator.h"
 #include "Engine/System/Service/GraphicsResourceGetter.h"
 #include "Engine/System/Service/Render.h"
-#include "Engine/System/Service/CameraService.h"
 // Manager
 #include "Engine/System/Managers/SRVManager.h"
-// camera
-#include "application/Game/Camera/Camera.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -93,8 +90,6 @@ void AnimationModel::Initialize(const std::string & filename, LightType type) {
 /// 更新
 ///-------------------------------------------///
 void AnimationModel::Update() {
-	/// ===カメラの設定=== ///
-	camera_ = CameraService::GetActiveCamera().get();
 
 	/// ===Animationの再生=== ///
 	float duration = animation_[animationName_].duration;

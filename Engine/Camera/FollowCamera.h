@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "Engine/DataInfo/CData.h"
+#include "NormalCaemra.h"
 
 /// === カメラの種類を表す列挙型 === ///
 enum class FollowCameraType {
@@ -12,64 +12,29 @@ enum class FollowCameraType {
 };
 
 ///=====================================================/// 
-/// カメラ
+/// 追従カメラクラス
 ///=====================================================///
-class Camera {
+class FollowCamera : public NormalCaemra {
 public:
-
-	Camera() = default;
-	~Camera();
+	FollowCamera() = default;
+	~FollowCamera() override;
 
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize();
+	void Initialize() override;
 
 	/// <summary>
 	/// 更新
 	/// </summary>
-	void Update();
-
-	/// <summary>
-	/// デバッグ用の更新
-	/// </summary>
-	void DebugUpdate();
+	void Update() override;
 
 	/// <summary>
 	/// FollowTypeの設定
 	/// </summary>
 	void SetFollowCamera(FollowCameraType type);
 
-	// カメラの情報
-	void UpdateImGui();
-
-public:/// ===Getter=== ///
-	// WorldMatrix
-	const Matrix4x4& GetWorldMatrix()const;
-	// ViewMatrix
-	const Matrix4x4& GetViewMatrix()const;
-	// ProjectionMatrix
-	const Matrix4x4& GetProjectionMatrix()const;
-	// ViewProjectionMatrix
-	const Matrix4x4& GetViewProjectionMatrix()const;
-	// Translate
-	const Vector3& GetTranslate()const;
-	// Rotate
-	const Quaternion& GetRotate()const;
-
 public:/// ===Setter=== ///
-	// Translate
-	void SetTranslate(const Vector3& translate);
-	// Rotate
-	void SetRotate(const Quaternion& rotate);
-	// ForY
-	void SetForY(const float& forY);
-	// Aspect
-	void SetAspectRatio(const float& aspect);
-	// NearClip
-	void SetNearClip(const float& nearClip);
-	// FarClip
-	void SetFarClip(const float& farClip);
 	// 追従対象の座標を設定
 	void SetTarget(Vector3* position, Quaternion* rotation);
 	// 追従オフセット
@@ -80,42 +45,23 @@ public:/// ===Setter=== ///
 	void SetFollowSpeed(float speed);
 	// 回転補間速度を設定
 	void SetLerpSpeed(float speed);
-	// スティック
+	// スティック入力
 	void SetStick(const Vector2& stickValue);
-	
 
 private:/// ===変数=== ///
-
-	/// ===ビュー行列関連データ=== ///
-	QuaternionTransform transform_;
-	QuaternionTransform addTransform_;
-	Matrix4x4 worldMatrix_;
-	Matrix4x4 viewMatrix_;
-
-	/// ===プロジェクション行列関連データ=== ///
-	Matrix4x4 projectionMatrix_;
-	float horizontalView_; // 水平方向視野角
-	float aspect_;         // アスペクト比
-	float nearClip_;       // ニアクリップ距離
-	float farClip_;        // ファークリップ距離
-
-	/// ===合成行列=== ///
-	Matrix4x4 viewProjectionMatrix_;
-
 	/// ===追従=== ///
 	Vector3* targetPos_ = nullptr;  // 追従対象の座標ポインタ
 	Quaternion* targetRot_ = nullptr;  // 追従対象の回転ポインタ
 	Vector3 offset_ = { 0.0f, 0.0f, -20.0f }; // カメラの初期オフセット
-	Vector3 OrbitingOffset_ = { 0.0f, 0.5f, -20.0f };
+	Vector3 OrbitingOffset_ = { 0.0f, 0.5f, -20.0f }; // 回転カメラ用オフセット
 	float followSpeed_ = 0.1f;      // 追従速度
 	float rotationLerpSpeed_ = 0.1f; // 回転補間速度
 
-	Vector2 stickValue_;
+	Vector2 stickValue_ = { 0.0f, 0.0f }; // スティック入力値
 
 	FollowCameraType cameraType_ = FollowCameraType::FixedOffset; // デフォルトカメラタイプ
 
 private:
-
 	// カメラの種類に応じた更新処理
 	void UpdateFollowCamera();
 	// 固定オフセット型カメラの処理 
@@ -129,4 +75,3 @@ private:
 	// 上からの見下ろし追従カメラの処理
 	void FollowTopDown();
 };
-

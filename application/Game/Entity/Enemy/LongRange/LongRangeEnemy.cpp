@@ -1,12 +1,8 @@
 #include "LongRangeEnemy.h"
-// Camera
-#include "application/Game/Camera/Camera.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
-#include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/CameraService.h"
 // ImGui
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -22,14 +18,13 @@ LongRangeEnemy::~LongRangeEnemy() {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-void LongRangeEnemy::SetTranslate(const Vector3& pos) {baseInfo_.translate = pos;}
-void LongRangeEnemy::SetlastYaw() { lastYaw_ = baseInfo_.rotate.y; }
+void LongRangeEnemy::SetlastYaw() { lastYaw_ = transform_.rotate.y; }
 
 ///-------------------------------------------/// 
 /// GameScene用初期化
 ///-------------------------------------------///
 void LongRangeEnemy::InitGameScene(const Vector3& translate) {
-	baseInfo_.translate = translate;
+	transform_.translate = translate;
 	Initialize();
 }
 
@@ -45,7 +40,7 @@ void LongRangeEnemy::Initialize() {
 	moveInfo_.range = 10.0f;
 	moveInfo_.speed = 0.05f;
 	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = baseInfo_.translate;
+	moveInfo_.rangeCenter = transform_.translate;
 	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
@@ -61,11 +56,6 @@ void LongRangeEnemy::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
-	// Object3dの初期設定
-	object3d_->SetTranslate(baseInfo_.translate);
-	object3d_->SetRotate(baseInfo_.rotate);
-	object3d_->SetScale(baseInfo_.scale);
-	object3d_->SetColor(baseInfo_.color);
 
 	/// ===SphereCollider=== ///
 	// Sphereの設定
@@ -73,11 +63,11 @@ void LongRangeEnemy::Initialize() {
 	name_ = ColliderName::Enemy;
 	obb_.halfSize = { 2.0f, 2.0f, 2.0f };
 
+	// 攻撃用の前フレームを初期化
+	lastYaw_ = transform_.rotate.y;
+
 	// BaseEnemyの初期化
 	BaseEnemy::Initialize();
-	
-	// 攻撃用の前フレームを初期化
-	lastYaw_ = baseInfo_.rotate.y;
 }
 
 ///-------------------------------------------/// 
@@ -117,10 +107,10 @@ void LongRangeEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 更新（ImGui）
 ///-------------------------------------------///
-void LongRangeEnemy::UpdateImGui() {
+void LongRangeEnemy::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("LongRangeEnemy");
-	BaseEnemy::UpdateImGui();
+	BaseEnemy::Information();
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -142,10 +132,10 @@ void LongRangeEnemy::Attack() {
 
 	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
 		// プレイヤー位置を取得
-		attackInfo_.playerPos = player_->GetTranslate();
+		attackInfo_.playerPos = player_->GetTransform().translate;
 
 		// プレイヤー位置への方向ベクトル
-		Vector3 dir = attackInfo_.playerPos - baseInfo_.translate;
+		Vector3 dir = attackInfo_.playerPos - transform_.translate;
 		attackInfo_.direction = Normalize(dir); // 方向を保存
 
 		// 攻撃時はやや速めに回転
@@ -161,13 +151,13 @@ void LongRangeEnemy::Attack() {
 
 		// 弾の生成
 		auto bullet = std::make_unique<LongRangeEnemeyBullet>();
-		bullet->Create(baseInfo_.translate, attackInfo_.direction);
+		bullet->Create(transform_.translate, attackInfo_.direction);
 		bulletInfo_.bullets_.push_back(std::move(bullet));
 		// フラグをfalse
 		attackInfo_.isAttack = false;
 		attackInfo_.timer = attackInfo_.interval; // クールダウン再設定
 
-		baseInfo_.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
+		color_ = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
 	}
 }
 

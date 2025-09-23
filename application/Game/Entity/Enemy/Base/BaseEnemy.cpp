@@ -1,6 +1,6 @@
 #include "BaseEnemy.h"
 // Camera
-#include "application/Game/Camera/Camera.h"
+#include "application/Game/Camera/GameCamera.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
@@ -29,9 +29,6 @@ BaseEnemy::~BaseEnemy() {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-// Transform
-Vector3 BaseEnemy::GetTranslate() const { return baseInfo_.translate; }
-Quaternion BaseEnemy::GetRotate() const { return baseInfo_.rotate; }
 // AttackTimer
 float BaseEnemy::GetAttackTimer() const { return attackInfo_.timer; }
 // AttackFlag
@@ -40,13 +37,6 @@ bool BaseEnemy::GetAttackFlag() const { return attackInfo_.isAttack; }
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-// Transform
-void BaseEnemy::SetTranslate(const Vector3& translate) { baseInfo_.translate = translate; }
-void BaseEnemy::SetRotate(const Quaternion& rotate) { baseInfo_.rotate = rotate; }
-// 移動量 
-void BaseEnemy::SetVelocity(const Vector3& vel) { baseInfo_.velocity = vel; }
-// 色
-void BaseEnemy::SetColor(const Vector4& color) { baseInfo_.color = color; }
 // タイマー
 void BaseEnemy::SetTimer(StateType type, float time) {
 	switch (type) {
@@ -82,7 +72,7 @@ void BaseEnemy::Initialize() {
 	ColliderService::AddCollider(this);
 
 	// object3dの更新を一回行う
-	object3d_->Update();
+	GameCharacter::Update();
 }
 
 ///-------------------------------------------/// 
@@ -99,35 +89,22 @@ void BaseEnemy::Update() {
 		currentState_->Update(this);
 	}
 
-	/// ===移動量の反映=== ///
-	baseInfo_.translate += baseInfo_.velocity;
-
-	/// ===Object3dの更新=== ///
-	object3d_->SetTranslate(baseInfo_.translate);
-	object3d_->SetRotate(baseInfo_.rotate);
-	object3d_->SetColor(baseInfo_.color);
-
-	// 重くなっている場合は描画範囲外の物はこの部分だけ通るようにすればいい。
 	// SphereColliderの更新
-	OBBCollider::Update();
+	GameCharacter::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
 void BaseEnemy::Draw(BlendMode mode) {
-	OBBCollider::Draw(mode);
+	GameCharacter::Draw(mode);
 }
 
 ///-------------------------------------------/// 
 /// ImGui
 ///-------------------------------------------///
-void BaseEnemy::UpdateImGui() {
+void BaseEnemy::Information() {
 #ifdef USE_IMGUI
-	// BaseInfo
-	ImGui::Text("BaseInfo");
-	ImGui::ColorEdit4("Color", &baseInfo_.color.x);
-
 	// MoveInfo
 	ImGui::Text("MoveInfo");
 	ImGui::DragFloat("MoveSpeed", &moveInfo_.speed, 0.1f);
@@ -150,7 +127,7 @@ void BaseEnemy::UpdateImGui() {
 void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 	if (!enemy) return;
 
-	enemy->baseInfo_.color = baseInfo_.color;
+	enemy->color_ = color_;
 
 	// ===== Move 系（設計値） ===== //
 	enemy->moveInfo_.speed = moveInfo_.speed;
@@ -177,7 +154,7 @@ void BaseEnemy::OnCollision(Collider* collider) {
 		// Plaeyrの突進に対しての衝突判定
 		if (player_->GetStateFlag(actionType::kCharge)) {
 			// パーティクルを発生
-			ParticleService::Emit("Explosion", baseInfo_.translate);
+			ParticleService::Emit("Explosion", transform_.translate);
 			//ServiceParticle::SetTexture("Cylinder", "gradationLine");
 		}
 	}
@@ -196,7 +173,7 @@ void BaseEnemy::CommonMoveInit() {
 ///-------------------------------------------///
 void BaseEnemy::CommonMove() {
 	// 移動範囲の中心との方向ベクトルを計算（XZ平面）
-	Vector3 toCenter = moveInfo_.rangeCenter - baseInfo_.translate;
+	Vector3 toCenter = moveInfo_.rangeCenter - transform_.translate;
 	// 中心からの距離を取得
 	float distanceFromCenter = Length(toCenter);
 
@@ -241,10 +218,10 @@ void BaseEnemy::CommonMove() {
 
 		// 移動先の座標を計算
 		Vector3 target = moveInfo_.rangeCenter + offset;
-		target.y = baseInfo_.translate.y;
+		target.y = transform_.translate.y;
 
 		// 方向の設定と待機処理の準備
-		PreparNextMove(target - baseInfo_.translate);
+		PreparNextMove(target - transform_.translate);
 	}
 }
 
@@ -268,14 +245,14 @@ void BaseEnemy::PreparNextMove(const Vector3& vector) {
 bool BaseEnemy::CheckAttackable() {
 
 	// 敵の前方向ベクトル（Y軸回転を使用）
-	float yaw = baseInfo_.rotate.y;
+	float yaw = transform_.rotate.y;
 	Vector3 forward = {
 		std::sinf(yaw),
 		0.0f,
 		std::cosf(yaw)
 	};
 
-	Vector3 toPlayer = player_->GetTranslate() - baseInfo_.translate;;
+	Vector3 toPlayer = player_->GetTransform().translate - transform_.translate;;
 	toPlayer.y = 0.0f;
 	float distance = Length(toPlayer);
 
@@ -322,8 +299,8 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 	Quaternion targetRotation = Math::LookRotation(direction, Vector3(0.0f, 1.0f, 0.0f));
 
 	// SLerp補間
-	Quaternion result = Math::SLerp(baseInfo_.rotate, targetRotation, slerpT);
-	baseInfo_.rotate = Normalize(result); // ★ 正規化でスケール崩れ防止
+	Quaternion result = Math::SLerp(transform_.rotate, targetRotation, slerpT);
+	transform_.rotate = Normalize(result); // ★ 正規化でスケール崩れ防止
 }
 
 ///-------------------------------------------/// 
@@ -331,10 +308,10 @@ void BaseEnemy::UpdateRotationTowards(const Vector3& direction, float slerpT) {
 ///-------------------------------------------///
 void BaseEnemy::advanceTimer() {
 	// 無敵タイマーを進める
-	moveInfo_.timer -= deltaTime_;
+	moveInfo_.timer -= baseInfo_.deltaTIme;
 
 	// 攻撃用のタイマーを進める
 	if (attackInfo_.timer > 0.0f) {
-		attackInfo_.timer -= deltaTime_;
+		attackInfo_.timer -= baseInfo_.deltaTIme;
 	}
 }

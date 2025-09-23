@@ -13,9 +13,9 @@ CylinderParticle::~CylinderParticle() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void CylinderParticle::Initialze(const Vector3& translate, Camera* camera) {
+void CylinderParticle::Initialze(const Vector3& translate) {
 	/// ===初期化=== ///
-	ParticleGroup::InstancingInit("plane", translate, 100, camera, shapeType::kCylinder);
+	ParticleGroup::InstancingInit("plane", translate, 100, shapeType::kCylinder);
 	/// ===フラグと設定の初期化=== ///
 	hasExploded_ = false;
 }

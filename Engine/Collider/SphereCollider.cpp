@@ -19,6 +19,12 @@ void SphereCollider::Initialize() {
 ///-------------------------------------------///
 void SphereCollider::Update() {
 	
+	/// ===Object3Dの更新=== ///
+	object3d_->SetTranslate(transform_.translate);
+	object3d_->SetRotate(transform_.rotate);
+	object3d_->SetScale(transform_.scale);
+	object3d_->SetColor(color_);
+
 	// Sphereのセンター座標を更新
 	sphere_.center = object3d_->GetTranslate();
 
@@ -45,8 +51,9 @@ void SphereCollider::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 情報
 ///-------------------------------------------///
-void SphereCollider::Info() {
+void SphereCollider::Information() {
 #ifdef USE_IMGUI
+	Collider::Information();
 	ImGui::Text("SphereInfo");
 	ImGui::DragFloat("Radius", &sphere_.radius, 0.1f, 0.0f);
 #endif // USE_IMGUI

@@ -19,6 +19,12 @@ void AABBCollider::Initialize() {
 ///-------------------------------------------///
 void AABBCollider::Update() {
 
+	/// ===Object3Dの更新=== ///
+	object3d_->SetTranslate(transform_.translate);
+	object3d_->SetRotate(transform_.rotate);
+	object3d_->SetScale(transform_.scale);
+	object3d_->SetColor(color_);
+
 	// Colliderの更新処理
 	Collider::Update();
 }
@@ -42,8 +48,9 @@ void AABBCollider::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 情報
 ///-------------------------------------------///
-void AABBCollider::Info() {
+void AABBCollider::Information() {
 #ifdef USE_IMGUI
+	Collider::Information();
 	ImGui::Text("OBBInfo");
 	ImGui::DragFloat3("Min", &aabb_.min.x, 0.1f);
 	ImGui::DragFloat3("Max", &aabb_.max.x, 0.1f);

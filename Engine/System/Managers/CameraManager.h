@@ -1,7 +1,7 @@
 #pragma once
 /// ===Include=== ///
-// Engine
-#include "application/Game/Camera/Camera.h"
+// GameCamera
+#include "application/Game/Camera/GameCamera.h"
 // C++
 #include <unordered_map>
 #include <string>
@@ -20,31 +20,38 @@ public:/// ===基本的な関数=== ///
 	/// 全てのカメラの更新
 	/// </summary>
 	void UpdateAllCameras();
-	
+
 public:/// ===関数=== ///
 
 	/// <summary>
-	/// 追加
+	/// カメラを追加
 	/// </summary>
-	void Add(const std::string& name, std::shared_ptr<Camera> camera);
+	void AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera);
 
 	/// <summary>
-	/// 削除
+	/// カメラを削除
 	/// </summary>
-	void Remove(const std::string& name);
+	void RemoveCamera(const std::string& name);
+
+	/// <summary>
+	/// カメラが存在するかチェック
+	/// </summary>
+	bool HasCamera(const std::string& name) const;
 
 public:/// ===Setter・Getter=== ///
 
+	// 指定されたカメラのGetter
+	std::shared_ptr<GameCamera> GetCamera(const std::string& name) const;
+
 	// アクティブカメラのGetter
-	std::shared_ptr<Camera> GetActiveCamera()const;
+	std::shared_ptr<GameCamera> GetActiveCamera() const;
 	// アクティブカメラのSetter
 	void SetActiveCamera(const std::string& name);
 
 private:
 	// カメラを管理するマップ
-	std::unordered_map<std::string, std::shared_ptr<Camera>> cameras_;
+	std::unordered_map<std::string, std::shared_ptr<GameCamera>> cameras_;
 
 	// 現在アクティブなカメラ
-	std::shared_ptr<Camera> activeCamera_;
+	std::shared_ptr<GameCamera> activeCamera_;
 };
-

@@ -3,8 +3,9 @@
 #include "Math/MatrixMath.h"
 // Service
 #include "Engine/System/Service/Render.h"
-// camera
-#include "application/Game/Camera/Camera.h"
+#include "Engine/System/Service/CameraService.h"
+// Camera
+#include "application/Game/Camera/GameCamera.h"
 
 ///-------------------------------------------/// 
 /// コンストラクタ・デストラクタ
@@ -75,6 +76,9 @@ void ModelCommon::Create(ID3D12Device* device, LightType type) {
 /// 更新
 ///-------------------------------------------///
 void ModelCommon::Update() {
+	/// ===カメラの設定=== ///
+	camera_ = CameraService::GetActiveCamera().get();
+
 	// MaterialDataの書き込み
 	MateialDataWrite();
 	// Transform情報の書き込み

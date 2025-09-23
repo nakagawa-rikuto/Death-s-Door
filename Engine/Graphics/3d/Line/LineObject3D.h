@@ -11,7 +11,7 @@
 #include <vector>
 
 /// ===前方宣言=== ///
-class Camera;
+class GameCamera;
 
 ///=====================================================/// 
 /// LineObject3D
@@ -55,7 +55,7 @@ private:
 	EulerTransform cameraTransform_;
 
 	/// ===Camera=== ///
-	Camera* camera_ = nullptr;
+	GameCamera* camera_ = nullptr;
 
 	/// ===LineInfo=== ///
 	uint32_t lineIndex_ = 0;

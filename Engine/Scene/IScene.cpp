@@ -37,13 +37,13 @@ void IScene::SetDeltaTime(const float deltaTime) { deltaTime_ = deltaTime; }
 void IScene::Initialize() {
 
 	/// ===デフォルトカメラの生成=== ///
-	defaultCamera_ = std::make_shared<Camera>();
-	defaultCamera_->Initialize();
+	defaultCamera_ = std::make_shared<GameCamera>();
+	defaultCamera_->Init(CameraType::Normal);
 	defaultCamera_->SetTranslate({ 0.0f, 0.0f, -10.0f });
 	defaultCamera_->SetRotate({ 0.0f, 0.0f, 0.0f });
 
 	// デフォルトカメラの設定
-	CameraService::Add("Default", defaultCamera_);
+	CameraService::AddCamera("Default", defaultCamera_);
 	CameraService::SetActiveCamera("Default");
 
 	// DeltaTimeの設定

@@ -43,14 +43,14 @@ void GameScene::Initialize() {
 	IScene::Initialize();
 
 	/// ===Camera=== ///
-	camera_ = std::make_shared<Camera>();
-	camera_->Initialize();
+	camera_ = std::make_shared<GameCamera>();
+	camera_->Init(CameraType::Follow);
 	camera_->SetRotate(cameraInfo_.rotate);
 	camera_->SetFollowCamera(FollowCameraType::TopDown);
 	camera_->SetOffset({ 0.0f, 70.0f, -60.0f });
 	camera_->SetFollowSpeed(0.1f);
 	// Managerに追加,アクティブに
-	CameraService::Add("Game", camera_);
+	CameraService::AddCamera("Game", camera_);
 	CameraService::SetActiveCamera("Game");
 
 	/// ===Player=== ///
@@ -92,10 +92,11 @@ void GameScene::Update() {
 	ImGui::End();
 
 	// Camera
-	camera_->UpdateImGui();
+	camera_->ImGuiUpdate();
+	camera_->DebugUpdate();
 
 	// Player
-	player_->UpdateImGui();
+	player_->Information();
 
 	// Enemy
 	enemyManager_->UpdateImGui();
