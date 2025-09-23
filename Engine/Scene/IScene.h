@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "application/Game/Camera/Camera.h"
+#include "application/Game/Camera/GameCamera.h"
 #include "Engine/DataInfo/LevelData.h"
 #include "Engine/DataInfo/BlendModeData.h"
 
@@ -39,7 +39,7 @@ protected:
 	// シーンマネージャ
 	SceneManager* sceneManager_ = nullptr;
 	// Camera
-	std::shared_ptr<Camera> defaultCamera_;
+	std::shared_ptr<GameCamera> defaultCamera_;
 
 	// 共有モデル群
 	std::vector<std::unique_ptr<Model>> models_;

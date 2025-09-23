@@ -1,7 +1,7 @@
 #pragma once
 /// ===Include=== ///
 // Collider
-#include "Engine/Collider/OBBCollider.h"
+#include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // State
 #include "application/Game/Entity/Enemy/State/Base/EnemyState.h"
 // c++
@@ -19,7 +19,7 @@ enum class StateType {
 ///=====================================================/// 
 /// Enemy
 ///=====================================================///
-class BaseEnemy : public OBBCollider {
+class BaseEnemy : public GameCharacter<OBBCollider> {
 public:
 	BaseEnemy() = default;
 	~BaseEnemy();
@@ -31,7 +31,7 @@ public:
 	// 描画
 	virtual void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
 	// ImGui
-	virtual void UpdateImGui();
+	virtual void Information()override;
 	// 攻撃処理
 	virtual void Attack() = 0;
 	// 変更↓値をコピー
@@ -41,21 +41,12 @@ public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
 
 public: /// ===Getter=== ///
-	// Transform
-	Vector3 GetTranslate()const;
-	Quaternion GetRotate()const;
 	// Timer
 	float GetAttackTimer()const;
 	// Flag
 	bool GetAttackFlag()const;
 
 public: /// ===Setter=== ///
-
-	// Transform
-	void SetTranslate(const Vector3& translate);
-	void SetRotate(const Quaternion& rotate);
-	void SetVelocity(const Vector3& vel);
-	void SetColor(const Vector4& color);
 	// Timer
 	void SetTimer(StateType type, float time);
 	// Player
@@ -73,21 +64,11 @@ public: /// ===State用関数=== ///
 
 protected: /// ===変数の宣言=== ///
 
-	Camera* camera_ = nullptr; // カメラ
+	GameCamera* camera_ = nullptr; // カメラ
 	Player* player_ = nullptr; // Player
 
 	/// ===State=== ///
 	std::unique_ptr<EnemyState> currentState_;
-
-	/// ===基本情報=== ///
-	struct BaseInfo {
-		Vector3 translate = { 0.0f, 1.0f, 0.0f };
-		Quaternion rotate = { 0.0f, 0.0f, 0.0f, 1.0f };
-		Vector3 scale = { 1.0f, 1.0f, 1.0f };
-		Vector4 color = { 1.0f, 0.0f, 1.0f, 1.0f };
-		Vector3 velocity = { 0.0f, 0.0f, 0.0f };
-	};
-	BaseInfo baseInfo_;
 
 	/// ===移動情報=== ///
 	struct MoveInfo {
@@ -118,9 +99,6 @@ protected: /// ===変数の宣言=== ///
 		bool isAttack;	// 攻撃フラグ
 	};
 	AttackInfo attackInfo_;
-
-	// 時間の経過速度
-	const float deltaTime_ = 1.0f / 60.0f;
 
 	// ランダムシード
 	std::mt19937 randomEngine_;

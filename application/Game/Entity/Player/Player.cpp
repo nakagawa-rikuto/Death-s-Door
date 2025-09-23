@@ -1,6 +1,6 @@
 #include "Player.h"
 // Camera
-#include "application/Game/Camera/Camera.h"
+#include "application/Game/Camera/GameCamera.h"
 // State
 #include "State/RootState.h"
 // Service
@@ -26,14 +26,6 @@ Player::~Player() {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-// 座標
-Vector3 Player::GetTranslate() const { return baseInfo_.translate; }
-// 回転
-Quaternion Player::GetRotate() const { return baseInfo_.rotate; }
-// 移動量
-Vector3 Player::GetVelocity() const { return baseInfo_.velocity; }
-// DeltaTime
-float Player::GetDeltaTime() const { return deltaTime_; }
 // フラグ
 bool Player::GetStateFlag(actionType type) const {
 	if (type == actionType::kAvoidance) {
@@ -67,16 +59,6 @@ float Player::GetTimer(actionType type) {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-// 座標
-void Player::SetTranslate(const Vector3& translate) { baseInfo_.translate = translate;}
-// 回転
-void Player::SetRotate(const Quaternion& rotate) { baseInfo_.rotate = rotate; }
-// 移動量
-void Player::SetVelocity(const Vector3& velocity) {baseInfo_.velocity = velocity;}
-// 移動量に加算
-void Player::SetVelocityX(const float& x) { baseInfo_.velocity.x += x; }
-void Player::SetVeloctiyY(const float& y) { baseInfo_.velocity.y += y; }
-void Player::SetVeloctiyZ(const float& z) { baseInfo_.velocity.z += z; }
 // フラグ
 void Player::SetStateFlag(actionType type, bool falg) {
 	switch (type) {
@@ -134,19 +116,16 @@ void Player::Initialize() {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
 
-	// Sphereの設定
-	OBBCollider::Initialize();
-	name_ = ColliderName::Player;
-	obb_.halfSize = { 1.5f, 1.5f, 1.5f }; 
-
 	// 初期設定
 	ChangState(std::make_unique<RootState>());
 
+	// Sphereの設定
+	GameCharacter::Initialize();
+	name_ = ColliderName::Player;
+	obb_.halfSize = { 1.5f, 1.5f, 1.5f }; 
+
 	// コライダーに追加
 	ColliderService::AddCollider(this);
-
-	// 更新
-	object3d_->Update();
 }
 
 
@@ -166,22 +145,12 @@ void Player::Update() {
 		// 各Stateの更新
 		currentState_->Update(this, camera_);
 	}
-	
-
-	/// ===移動量の反映=== ///
-	baseInfo_.translate += baseInfo_.velocity;
 
 	/// ===camera=== ///
-	camera_->SetTarget(&baseInfo_.translate, &baseInfo_.rotate);
-
-	/// ===Object3dの更新=== ///
-	object3d_->SetTranslate(baseInfo_.translate);
-	object3d_->SetRotate(baseInfo_.rotate);
-	object3d_->SetScale(baseInfo_.scale);
-	object3d_->SetColor(baseInfo_.color);
+	camera_->SetTarget(&transform_.translate, &transform_.rotate);
 
 	/// ===SphereColliderの更新=== ///
-	OBBCollider::Update();
+	GameCharacter::Update();
 }
 
 
@@ -190,20 +159,20 @@ void Player::Update() {
 ///-------------------------------------------///
 void Player::Draw(BlendMode mode) {
 	/// ===SphereColliderの描画=== ///
-	OBBCollider::Draw(mode);
+	GameCharacter::Draw(mode);
 }
 
 
 ///-------------------------------------------/// 
 /// ImGui
 ///-------------------------------------------///
-void Player::UpdateImGui() {
+void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
-	ImGui::DragFloat3("Translate", &baseInfo_.translate.x, 0.1f);
-	ImGui::DragFloat4("Rotate", &baseInfo_.rotate.x, 0.1f);
+	ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
+	ImGui::DragFloat4("Rotate", &transform_.rotate.x, 0.1f);
+	ImGui::ColorEdit4("Color", &color_.x);
 	ImGui::DragFloat3("Velocity", &baseInfo_.velocity.x, 0.1f);
-	ImGui::ColorEdit4("Color", &baseInfo_.color.x);
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -234,18 +203,18 @@ void Player::OnCollision(Collider* collider) {
 ///-------------------------------------------///
 void Player::advanceTimer() {
 	// 無敵タイマーを進める
-	invicibleInfo_.timer += deltaTime_;
+	invicibleInfo_.timer += baseInfo_.deltaTIme;
 
 	// 突進用のタイマーを進める
 	if (chargeInfo_.timer > 0.0f) {
-		chargeInfo_.timer -= deltaTime_;
+		chargeInfo_.timer -= baseInfo_.deltaTIme;
 	} else {
 		chargeInfo_.isPreparation = true;
 	}
 
 	// 回避用タイマーを進める
 	if (avoidanceInfo_.timer > 0.0f) {
-		avoidanceInfo_.timer -= deltaTime_;
+		avoidanceInfo_.timer -= baseInfo_.deltaTIme;
 	} else {
 		avoidanceInfo_.isPreparation = true;
 	}

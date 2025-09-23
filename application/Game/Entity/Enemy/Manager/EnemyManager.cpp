@@ -95,7 +95,7 @@ void EnemyManager::UpdateImGui() {
 		BaseEnemy* closeRep = GetRepresentative(EnemyType::CloseRange);
 		if (closeRep) {
 			ImGui::Text("CloseRange Enemy Settings:");
-			closeRep->UpdateImGui(); // 代表1体のImGuiを表示
+			closeRep->Information(); // 代表1体のImGuiを表示
 
 			if (ImGui::Button("Apply to All CloseRange")) {
 				ApplySettingsToType(EnemyType::CloseRange, closeRep);
@@ -114,7 +114,7 @@ void EnemyManager::UpdateImGui() {
 		BaseEnemy* longRep = GetRepresentative(EnemyType::LongRange);
 		if (longRep) {
 			ImGui::Text("LongRange Enemy Settings:");
-			longRep->UpdateImGui(); // 代表1体のImGuiを表示
+			longRep->Information(); // 代表1体のImGuiを表示
 
 			if (ImGui::Button("Apply to All LongRange")) {
 				ApplySettingsToType(EnemyType::LongRange, longRep);

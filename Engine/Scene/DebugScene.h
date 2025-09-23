@@ -78,8 +78,8 @@ private:/// ===メンバ変数=== ///
 	// スプライト
 	std::unique_ptr<Sprite> sprite_;
 	//Camera
-	std::shared_ptr<Camera> camera_;
-	std::shared_ptr<Camera> camera2_;
+	std::shared_ptr<GameCamera> camera_;
+	std::shared_ptr<GameCamera> camera2_;
 	// モデル
 	std::unique_ptr<Object3d> model2_;
 	// モデルライト

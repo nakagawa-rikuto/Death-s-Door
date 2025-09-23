@@ -18,7 +18,7 @@ public:
 
     /// ===Override=== ///
     // 初期化
-    void Initialze(const Vector3& translate, Camera* camera) override;
+    void Initialze(const Vector3& translate) override;
     // 更新
     void Update() override;
     // 描画

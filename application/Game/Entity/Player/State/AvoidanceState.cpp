@@ -1,7 +1,6 @@
 #include "AvoidanceState.h"
 // Player, Camera
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Camera/Camera.h"
 // State
 #include "RootState.h"
 
@@ -13,7 +12,7 @@ AvoidanceState::AvoidanceState(const Vector3& direction) {info_.direction = dire
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void AvoidanceState::Enter(Player * player, Camera * camera) {
+void AvoidanceState::Enter(Player * player, GameCamera* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -28,7 +27,7 @@ void AvoidanceState::Enter(Player * player, Camera * camera) {
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void AvoidanceState::Update(Player * player, Camera * camera) {
+void AvoidanceState::Update(Player * player, GameCamera* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
@@ -41,8 +40,10 @@ void AvoidanceState::Update(Player * player, Camera * camera) {
 	info_.speed = 0.4f * info_.acceleration;
 
 	// Velocityに反映
-	player_->SetVelocityX(info_.direction.x * info_.speed);
-	player_->SetVeloctiyZ(info_.direction.z * info_.speed);
+	Vector3 velocity = player_->GetVelocity();
+	velocity.x += info_.direction.x * info_.speed;
+	velocity.z += info_.direction.z * info_.speed;
+	player_->SetVelocity(velocity);
 
 	/// ===タイマーが時間を超えたら=== ///
 	if (player_->GetTimer(actionType::kAvoidance) <= 0.0f) {

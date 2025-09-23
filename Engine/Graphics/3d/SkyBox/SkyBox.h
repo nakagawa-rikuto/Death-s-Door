@@ -10,7 +10,7 @@
 #include <memory>
 
 /// ===前方宣言=== ///
-class Camera;
+class GameCamera;
 
 ///=====================================================/// 
 /// SkyBox
@@ -74,7 +74,7 @@ private:
 	EulerTransform uvTransform_;
 
 	/// ===カメラ=== ///
-	Camera* camera_ = nullptr;
+	GameCamera* camera_ = nullptr;
 
 	/// ===プリミティブ情報=== ///
 	QuaternionTransform worldTransform_;

@@ -1,12 +1,8 @@
 #include "CloseRangeEnemy.h"
-// Camera
-#include "application/Game/Camera/Camera.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // Service
-#include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/ParticleService.h"
-#include "Engine/System/Service/CameraService.h"
 #include "Engine/System/Service/ColliderService.h"
 // c++
 #include <cstdlib>
@@ -25,15 +21,10 @@ CloseRangeEnemy::~CloseRangeEnemy() {
 }
 
 ///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void CloseRangeEnemy::SetTranslate(const Vector3& pos) {baseInfo_.translate = pos;}
-
-///-------------------------------------------/// 
 /// GameScene用初期化
 ///-------------------------------------------///
 void CloseRangeEnemy::InitGameScene(const Vector3& translate) {
-	baseInfo_.translate = translate;
+	transform_.translate = translate;
 	Initialize();
 }
 
@@ -52,7 +43,7 @@ void CloseRangeEnemy::Initialize() {
 	moveInfo_.range = 10.0f;
 	moveInfo_.speed = 0.05f;
 	moveInfo_.direction = { 0.0f, 0.0f, 0.0f };
-	moveInfo_.rangeCenter = baseInfo_.translate;
+	moveInfo_.rangeCenter = transform_.translate;
 	moveInfo_.isWating = false;
 
 	/// ===AttackInfoの設定=== ///
@@ -73,14 +64,10 @@ void CloseRangeEnemy::Initialize() {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
 	// Object3dの初期設定
-	object3d_->SetTranslate(baseInfo_.translate);
-	object3d_->SetRotate(baseInfo_.rotate);
-	object3d_->SetScale(baseInfo_.scale);
-	object3d_->SetColor(baseInfo_.color);
 
 	/// ===SphereCollidr=== ///
 	// Sphereの設定
-	OBBCollider::Initialize();
+	GameCharacter::Initialize();
 	name_ = ColliderName::Enemy;
 	obb_.halfSize = { 2.0f, 2.0f, 2.0f };
 	// コライダーに追加
@@ -109,10 +96,10 @@ void CloseRangeEnemy::Draw(BlendMode mode) {
 ///-------------------------------------------/// 
 /// 更新（ImGui）
 ///-------------------------------------------///
-void CloseRangeEnemy::UpdateImGui() {
+void CloseRangeEnemy::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("CloseRangeEnemy");
-	BaseEnemy::UpdateImGui();
+	BaseEnemy::Information();
 	ImGui::Text("ChargeInfo");
 	ImGui::DragFloat("moveSpeed", &chargeInfo_.moveSpeed, 0.1f);
 	ImGui::DragFloat("StopTime", &chargeInfo_.stopTime, 0.1f);
@@ -137,10 +124,10 @@ void CloseRangeEnemy::Attack() {
 
 	if (!attackInfo_.isAttack) { /// ===IsAttackがfalse=== ///
 		// プレイヤー位置を取得
-		attackInfo_.playerPos = player_->GetTranslate();
+		attackInfo_.playerPos = player_->GetTransform().translate;
 
 		// プレイヤー位置への方向ベクトル
-		Vector3 dir = attackInfo_.playerPos - baseInfo_.translate;
+		Vector3 dir = attackInfo_.playerPos - transform_.translate;
 		attackInfo_.direction = Normalize(dir); // 方向を保存
 
 		// directionの方向に回転
@@ -158,7 +145,7 @@ void CloseRangeEnemy::Attack() {
 	} else { /// ===IsAttackがtrue=== ///
 
 		// プレイヤーとの差を計算
-		Vector3 toTarget = attackInfo_.playerPos - baseInfo_.translate;
+		Vector3 toTarget = attackInfo_.playerPos - transform_.translate;
 
 		// 攻撃終了判定
 		if (Length(toTarget) < 0.5f) { // 到達判定s
@@ -168,7 +155,7 @@ void CloseRangeEnemy::Attack() {
 			// 移動範囲の中心を設定
 			moveInfo_.rangeCenter = attackInfo_.playerPos;
 
-			baseInfo_.color = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
+			color_ = { 1.0f, 0.0f, 1.0f, 1.0f }; // 元の色に戻す（任意）
 		}
 	}
 }

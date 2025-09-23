@@ -54,18 +54,18 @@ void DebugScene::Initialize() {
 	/// ===カメラの初期化=== ///
 #pragma region Cameraの初期化
 	// カメラ1
-	camera_ = std::make_shared<Camera>();
-	camera_->Initialize();
+	camera_ = std::make_shared<GameCamera>();
+	camera_->Init(CameraType::Normal);
 	camera_->SetTranslate({ 0.0f, 0.0f, -4.0f });
 	camera_->SetRotate({ 0.0f, 0.0f, 0.0f });
 	// カメラ2
-	camera2_ = std::make_shared<Camera>();
-	camera2_->Initialize();
+	camera2_ = std::make_shared<GameCamera>();
+	camera2_->Init(CameraType::Normal);
 	camera2_->SetTranslate({ 0.0f, 0.0f, -30.0f });
 	camera2_->SetRotate({ 0.0f, 0.0f, 0.0f });
 	// カメラマネージャにカメラを追加
-	CameraService::Add("Debug", camera_);
-	CameraService::Add("Debug2", camera2_);
+	CameraService::AddCamera("Debug", camera_);
+	CameraService::AddCamera("Debug2", camera2_);
 #pragma endregion
 
 	/// ===ParticleManager=== ///

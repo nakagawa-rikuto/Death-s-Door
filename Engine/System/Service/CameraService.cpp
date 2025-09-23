@@ -5,15 +5,19 @@
 #include "ServiceLocator.h"
 
 // 追加
-void CameraService::Add(const std::string& name, std::shared_ptr<Camera> camera) {
-		ServiceLocator::GetCameraManager()->Add(name, camera);
+void CameraService::AddCamera(const std::string& name, std::shared_ptr<GameCamera> camera) {
+	ServiceLocator::GetCameraManager()->AddCamera(name, camera);
 }
 // 削除
 void CameraService::Remove(const std::string& name) {
-	ServiceLocator::GetCameraManager()->Remove(name);
+	ServiceLocator::GetCameraManager()->RemoveCamera(name);
+}
+// カメラのチェック
+void CameraService::HasCamera(const std::string& name) {
+	ServiceLocator::GetCameraManager()->HasCamera(name);
 }
 // アクティブカメラのGetter
-std::shared_ptr<Camera> CameraService::GetActiveCamera() {
+std::shared_ptr<GameCamera> CameraService::GetActiveCamera() {
 	return ServiceLocator::GetCameraManager()->GetActiveCamera();
 }
 // アクティブカメラのSetter

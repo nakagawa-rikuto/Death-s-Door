@@ -1,7 +1,7 @@
 #pragma once
 /// ===Include=== ///
-// Collider
-#include "Engine/Collider/OBBCollider.h"
+// GameCharacter
+#include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // State
 #include "State/Base/PlayerState.h"
 
@@ -18,7 +18,7 @@ enum class actionType {
 ///=====================================================/// 
 /// Player
 ///=====================================================///
-class Player : public OBBCollider {
+class Player : public GameCharacter<OBBCollider> {
 public:
 
 	Player() = default;
@@ -31,17 +31,12 @@ public:
 	// 描画
 	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
 	// ImGui
-	void UpdateImGui();
+	void Information() override;
 
 public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
 
 public: /// ===Getter=== ///
-
-	Vector3 GetTranslate()const;
-	Quaternion GetRotate()const;
-	Vector3 GetVelocity() const;
-	float GetDeltaTime() const;
 
 	// フラグ
 	bool GetStateFlag(actionType type) const;
@@ -51,13 +46,6 @@ public: /// ===Getter=== ///
 	float GetTimer(actionType type);
 
 public: /// ===Setter=== ///
-
-	void SetTranslate(const Vector3& translate);
-	void SetRotate(const Quaternion& rotate);
-	void SetVelocity(const Vector3& velocity);
-	void SetVelocityX(const float& x);
-	void SetVeloctiyY(const float& y);
-	void SetVeloctiyZ(const float& z);
 
 	// フラグ
 	void SetStateFlag(actionType type, bool flag);
@@ -77,20 +65,10 @@ public: /// ===State用関数=== ///
 
 private: /// ===変数の宣言=== ///
 
-	Camera* camera_ = nullptr; // カメラ
+	GameCamera* camera_ = nullptr; // カメラ
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
-
-	/// ===基本情報=== ///
-	struct BaseInfo {
-		Vector3 translate = { 0.0f, 1.0f, 0.0f };
-		Quaternion rotate = { 0.0f, 0.0f, 0.0f, 1.0f };
-		Vector3 scale = { 1.0f, 1.0f, 1.0f };
-		Vector4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
-		Vector3 velocity = { 0.0f, 0.0f, 0.0f };
-	};
-	BaseInfo baseInfo_;
 
 	/// ===無敵時間の情報=== ///
 	struct InvicibleInfo {
@@ -131,8 +109,6 @@ private: /// ===変数の宣言=== ///
 	};
 	MoveInfo moveInfo_;
 
-	// 時間の経過速度
-	const float deltaTime_ = 1.0f / 60.0f;
 private:
 
 	// 時間を進める

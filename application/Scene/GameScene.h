@@ -36,7 +36,7 @@ private:/// ===メンバ変数=== ///
 	// Ground
 	std::unique_ptr<Ground> ground_;
 	// Camera
-	std::shared_ptr<Camera> camera_;
+	std::shared_ptr<GameCamera> camera_;
 	// Line
 	std::unique_ptr<Line> line_;
 

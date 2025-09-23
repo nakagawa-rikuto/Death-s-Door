@@ -13,9 +13,9 @@ RingParticle::~RingParticle() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void RingParticle::Initialze(const Vector3& translate, Camera* camera) {
+void RingParticle::Initialze(const Vector3& translate) {
 	/// ===初期化=== ///
-	ParticleGroup::InstancingInit("Particle", translate, 300, camera, shapeType::kCircle);
+	ParticleGroup::InstancingInit("Particle", translate, 300, shapeType::kCircle);
 	/// ===フラグと設定の初期化=== ///
 	hasExploded_ = false;
 }

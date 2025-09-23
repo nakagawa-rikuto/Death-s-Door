@@ -19,16 +19,12 @@ public:
 	// 描画
 	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
 	// ImGui
-	void UpdateImGui()override;
+	void Information()override;
 	// 攻撃処理
 	void Attack()override;
 
 public: /// ===衝突判定=== ///
 	void OnCollision(Collider* collider) override;
-
-public: /// ===Setter=== ///
-	// Translate
-	void SetTranslate(const Vector3& pos);
 
 private: /// ===変数=== ///
 
