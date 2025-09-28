@@ -21,6 +21,9 @@ GameCharacter<TCollider>::~GameCharacter() {
 ///-------------------------------------------///
 template<typename TCollider>
 void GameCharacter<TCollider>::Initialize() {
+	/// ===GameCharacterCollision=== ///
+	collision_ = std::make_unique<GameCharacterCollision>();
+
 	/// ===BaseInfoの初期化設定=== ///
 	baseInfo_.velocity = { 0.0f, 0.0f, 0.0f };
 	baseInfo_.deltaTIme = 1.0f / 60.0f;
@@ -63,4 +66,19 @@ void GameCharacter<TCollider>::Information() {
 	ImGui::DragFloat("DeltaTime", &baseInfo_.deltaTIme, 0.01f, 0.0f, 1.0f);
 	ImGui::Checkbox("IsDead", &baseInfo_.isDead);
 #endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// 衝突
+///-------------------------------------------///
+template<typename TCollider>
+void GameCharacter<TCollider>::OnCollision(Collider* collider) {
+
+	// === 防御的ガード ===
+	if (!collider) return;
+
+	// 衝突相手が GameCharacter のときだけ処理が通る
+	if (auto otherCharacter = dynamic_cast<GameCharacter<TCollider>*>(collider)) {
+		collision_->ProcessCollision(this, otherCharacter, 1.0f);
+	}
 }

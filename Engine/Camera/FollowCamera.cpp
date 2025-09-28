@@ -203,13 +203,12 @@ void FollowCamera::FollowTopDown() {
 			norm.y * radius
 		};
 
-		desiredPosition = *targetPos_ + offsetCircle;
+		Vector3 translate = offset_ + *targetPos_;
+		translate.y = 1.0f;
+
+		desiredPosition = translate + offsetCircle;
 	}
 
 	// カメラの位置を補間で滑らかに移動
 	transform_.translate = Math::Lerp(transform_.translate, desiredPosition, followSpeed_);
-
-	// 対象を見下ろすように回転（常に真下を向く）
-	Vector3 forward = *targetPos_ - transform_.translate;
-	//transform_.rotate = Math::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
 }
