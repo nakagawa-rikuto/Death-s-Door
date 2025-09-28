@@ -110,6 +110,11 @@ Vector3 Vector3::operator/(const float& v) const { return Vector3(x / v, y / v, 
 // const Vector3・Vector3（/）
 Vector3 Vector3::operator/(const Vector3& v) const { return Vector3(x / v.x, y / v.y, z / v.z); }
 
+///-------------------------------------------/// 
+/// 符号反転
+///-------------------------------------------///	
+// Vector3 | const
+Vector3 Vector3::operator-() const {return Vector3{ -x, -y, -z };}
 
 ///=====================================================///
 /// 内積の計算

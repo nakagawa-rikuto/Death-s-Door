@@ -48,6 +48,10 @@ struct Vector3 final {
 	// const | const
 	Vector3 operator/(const float& v)const;
 	Vector3 operator/(const Vector3& v)const;
+
+	/// ===符号反転=== ///
+	// Vector3 | const
+	Vector3 operator-() const;
 };
 
 /// ===内積の計算=== ///

@@ -2,6 +2,7 @@
 /// ===Include=== ///
 #include "Engine/Collider/OBBCollider.h"
 #include "Engine/Collider/SphereCollider.h"
+#include "GameCharacterCollision.h"
 
 ///-------------------------------------------/// 
 /// GameCharacterBase
@@ -23,7 +24,7 @@ public:
     virtual void Information() override;
 
 public: /// ===衝突判定=== ///
-    virtual void OnCollision(Collider* collider) override = 0;
+    virtual void OnCollision(Collider* collider) override;
 
 public: /// ===Setter・Getter=== ///
     // Velocity
@@ -35,6 +36,9 @@ public: /// ===Setter・Getter=== ///
     bool GetIsDead() const { return baseInfo_.isDead; };
     void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
 protected:
+
+	// GameCharacterCollision
+    std::unique_ptr<GameCharacterCollision> collision_;
 
     /// ===基本情報=== ///
     struct BaseInfo {

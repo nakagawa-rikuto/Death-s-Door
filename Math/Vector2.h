@@ -30,6 +30,10 @@ struct Vector2 final {
 	Vector2& operator/=(const Vector2& v);
 	Vector2 operator/(const float& v);
 	Vector2& operator/=(const float& v);
+
+	/// ===符号反転=== ///
+	// Vector3 | const
+	Vector2 operator-() const;
 };
 
 /// ===内積の計算=== ///

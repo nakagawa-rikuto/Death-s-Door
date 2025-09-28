@@ -149,6 +149,10 @@ void BaseEnemy::CopyTuningTo(BaseEnemy* enemy) const {
 /// 当たり判定
 ///-------------------------------------------///
 void BaseEnemy::OnCollision(Collider* collider) {
+
+	/// ===GameCharacterの衝突=== ///
+	GameCharacter::OnCollision(collider);
+
 	// Playerとの当たり判定
 	if (collider->GetColliderName() == ColliderName::Player) {
 		// Plaeyrの突進に対しての衝突判定

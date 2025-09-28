@@ -182,6 +182,10 @@ void Player::Information() {
 /// 衝突
 ///-------------------------------------------///
 void Player::OnCollision(Collider* collider) {
+
+	/// ===GameCharacterの衝突=== ///
+	GameCharacter::OnCollision(collider);
+
 	// Colliderによって処理を変更
 	if (collider->GetColliderName() == ColliderName::Enemy) {
 
