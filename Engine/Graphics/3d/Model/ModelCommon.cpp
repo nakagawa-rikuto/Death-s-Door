@@ -12,10 +12,22 @@
 ///-------------------------------------------///
 ModelCommon::ModelCommon() = default;
 ModelCommon::~ModelCommon() {
+	// 親子関係の解除
+	ClearParent();
+
+	// 解放
 	vertex_.reset();
 	index_.reset();
 	common_.reset();
 }
+
+///-------------------------------------------/// 
+/// 親子関係
+///-------------------------------------------///
+// 親の設定
+void ModelCommon::SetParent(ModelCommon* parent) { parent_ = parent; }
+// 親の解除
+void ModelCommon::ClearParent() { SetParent(nullptr); }
 
 ///-------------------------------------------/// 
 /// Setter
@@ -125,6 +137,13 @@ void ModelCommon::TransformDataWrite() {
 
 	Matrix4x4 worldMatrix = Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate);
 	Matrix4x4 worldViewProjectionMatrix;
+
+	/// ===親の確認=== ///
+	if (parent_) {
+		// 親のワールド行列
+		Matrix4x4 parentWorldMatrix = Math::MakeAffineQuaternionMatrix(parent_->worldTransform_.scale, parent_->worldTransform_.rotate, parent_->worldTransform_.translate);
+		worldMatrix = Multiply(worldMatrix, parentWorldMatrix);
+	}
 
 	/// ===Matrixの作成=== ///
 	const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();

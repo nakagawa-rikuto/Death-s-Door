@@ -5,13 +5,10 @@
 #endif // USE_IMGUI
 
 ///-------------------------------------------/// 
-/// Getter
+/// 親子関係
 ///-------------------------------------------///
-// Type
-ColliderType Collider::GetColliderType() { return type_; }
-// Name
-ColliderName Collider::GetColliderName() { return name_; }
-
+void Collider::SetParent(ModelCommon* parent) {object3d_->SetParent(parent);}
+void Collider::ClearParent() {object3d_->ClearParent();}
 
 ///-------------------------------------------/// 
 /// Setter
@@ -30,6 +27,10 @@ void Collider::SetIsCollisison(bool flag) { isCollision_ = flag; }
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
+// Type
+ColliderType Collider::GetColliderType() { return type_; }
+// Name
+ColliderName Collider::GetColliderName() { return name_; }
 // Transform
 QuaternionTransform Collider::GetTransform() const { return transform_; }
 // Color

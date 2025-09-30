@@ -33,6 +33,12 @@ public:
 	// 描画処理
 	void Bind(ID3D12GraphicsCommandList* commandList);
 
+public: /// ===親子関係=== ///
+	// 親の設定
+	void SetParent(ModelCommon* parent);
+	// 親の解除
+	void ClearParent();
+
 public:/// ===Setter=== ///
 	// Light
 	void SetLightType(LightType type);
@@ -52,6 +58,9 @@ protected: /// ===継承先で使用する変数=== ///
 	EulerTransform uvTransform_;
 	QuaternionTransform worldTransform_;
 	Vector4 color_;
+
+	/// ===親子関係=== ///
+	ModelCommon* parent_ = nullptr;
 
 	/// ===Light=== ///
 	LightInfo light_;
