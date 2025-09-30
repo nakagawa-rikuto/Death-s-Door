@@ -54,11 +54,9 @@ public: /// ===衝突=== ///
     // 衝突時の応答処理
     virtual void OnCollision(Collider* collider) = 0;
 
-public: /// ===Getter=== ///
-    // Type
-    ColliderType GetColliderType();
-    // CollsisionName
-    ColliderName GetColliderName();
+public: /// ===親子関係=== ///
+    void SetParent(ModelCommon* parent);
+	void ClearParent();
 
 public: /// ===Setter=== ///
     // Transform
@@ -74,6 +72,10 @@ public: /// ===Setter=== ///
     void SetIsCollisison(bool flag);
 
 public: /// ===Getter=== ///
+    // Type
+    ColliderType GetColliderType();
+    // CollsisionName
+    ColliderName GetColliderName();
     // Transform
     QuaternionTransform GetTransform() const;
     // Color

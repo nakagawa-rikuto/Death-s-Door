@@ -52,6 +52,24 @@ void Object3d::Draw(BlendMode mode) {
 }
 
 ///-------------------------------------------/// 
+/// 親子関係
+///-------------------------------------------///
+void Object3d::SetParent(ModelCommon* parent) {
+	if (type_ == ObjectType::Model) {
+		model_->SetParent(parent);
+	} else {
+		animationModel_->SetParent(parent);
+	}
+}
+void Object3d::ClearParent() {
+	if (type_ == ObjectType::Model) {
+		model_->ClearParent();
+	} else {
+		animationModel_->ClearParent();
+	}
+}
+
+///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
 // Translate

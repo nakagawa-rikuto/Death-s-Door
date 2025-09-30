@@ -24,6 +24,12 @@ public:
 	// 描画
 	void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
 
+public: /// ===親子関係=== ///
+	// 親の設定
+	void SetParent(ModelCommon* parent);
+	// 親の解除
+	void ClearParent();
+
 public: /// ===Getter=== ///
 	// モデル座標
 	const Vector3& GetTranslate() const;
