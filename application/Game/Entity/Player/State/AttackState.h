@@ -20,16 +20,38 @@ public:
 
 private:
 
+	/// ===攻撃タイプ=== ///
+	enum class AttackType {
+		kCombo1,	// コンボ1段目
+		kCombo2,	// コンボ2段目
+	};
+
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
-		// 攻撃目標のリスト(Enemy : マーク用)
-		// 攻撃目標のリスト(Enemy : 攻撃用)
-		float reachTime = 0.1f;               // 攻撃の最終座標までの到達時間
-		float ratio = 0.0f;                   // 攻撃の移動割合
-		const float freezeTime = 0.3f;		  // 攻撃完了から爆破までの時間
-		float freezeTimer = 0.0f;					  // 
-		Vector3 startPos = { 0.0f, 0.0f, 0.0f };					  // 攻撃の最初の座標
-		Vector3 endPos = { 0.0f, 0.0f, 0.0f };						  // 攻撃の最終の座標
+		AttackType currentAttack = AttackType::kCombo1; // 現在の攻撃タイプ
+
+		float activTime = 0.0f;			// 攻撃のアクティブ時間
+		float comboWindowTime = 0.5f;	// コンボ受付時間
+		float comboTimer = 0.0f;		// コンボ受付タイマー
+
+		bool isAttacking = false;		// 攻撃中フラグ
+		bool canCombo = false;			// コンボ可能フラグ
+		bool nextComboRequest = false;	// 次のコンボ入力フラグ
+
+		// 各攻撃の接続時間
+		float combo1Duration = 0.4f;	// コンボ1段目の持続時間
+		float combo2Duration = 00.6f;	// コンボ2段目の持続時間
+
+		// クールタイム
+		float coolTime = 0.3f;			// 攻撃後のクールタイム
 	};
 	AttackInfo attackInfo_;
+
+private:
+	// 攻撃の初期化
+	void InitializeAttack(AttackType type);
+	// コンボ入力のチェック
+	void CheckComboInput();
+	// 次の攻撃へ遷移
+	void TransitionToNextCombo();
 };

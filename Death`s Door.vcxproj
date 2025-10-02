@@ -247,6 +247,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\State\RootState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Weapon\PlayerWeapon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -400,6 +401,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\State\RootState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h" />
+    <ClInclude Include="application\Game\Entity\Player\Weapon\PlayerWeapon.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

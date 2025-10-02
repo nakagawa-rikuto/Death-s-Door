@@ -60,10 +60,10 @@ void GameScene::Initialize() {
 	/// ===Enemy=== ///
 	enemyManager_ = std::make_unique<EnemyManager>();
 	//enemyManager_->Spawn(EnemyType::CloseRange, { -10.0f, 1.0f, 10.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, { 10.0f, 1.0f, 10.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, { 10.0f, 1.0f, -10.0f });
-	enemyManager_->Spawn(EnemyType::CloseRange, {- 10.0f, 1.0f, -10.0f });
-	//enemyManager_->Spawn(EnemyType::LongRange, { 10.0f, 1.0f, 10.0f });
+	//enemyManager_->Spawn(EnemyType::CloseRange, { 10.0f, 1.0f, 10.0f });
+	enemyManager_->Spawn(EnemyType::CloseRange, { 15.0f, 1.0f, 15.0f });
+	//enemyManager_->Spawn(EnemyType::CloseRange, {- 10.0f, 1.0f, -10.0f });
+	enemyManager_->Spawn(EnemyType::LongRange, { -15.0f, 1.0f, 15.0f });
 	// EnemyのSpaw後に呼ぶ
 	enemyManager_->SetPlayer(player_.get()); // Playerを設定
 	/// ===Ground=== ///
