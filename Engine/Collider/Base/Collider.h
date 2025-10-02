@@ -22,6 +22,7 @@ enum class ColliderName {
     Player,    // プレイヤー
     Enemy,     // 敵
     PlayerBullet, // プレイヤーの弾
+	PlayerWeapon, // プレイヤーの武器
     EnemyBullet,  // 敵の弾
     Wall,      // 壁
     Floor,     // 床
@@ -57,6 +58,7 @@ public: /// ===衝突=== ///
 public: /// ===親子関係=== ///
     void SetParent(ModelCommon* parent);
 	void ClearParent();
+	ModelCommon* GetModelCommon();
 
 public: /// ===Setter=== ///
     // Transform

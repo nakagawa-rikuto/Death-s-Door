@@ -39,6 +39,8 @@ public: /// ===Getter=== ///
 	const Vector3& GetScale() const;
 	// モデルカラー
 	const Vector4& GetColor() const;
+	// Object
+	ModelCommon* GetModelCommon();
 
 public: /// ===Setter=== ///
 	// モデルTransform

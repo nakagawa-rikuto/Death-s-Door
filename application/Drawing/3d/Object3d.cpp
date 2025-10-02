@@ -104,6 +104,15 @@ const Vector4& Object3d::GetColor() const {
 		return animationModel_->GetColor();
 	}
 }
+// ModelCommon
+ModelCommon* Object3d::GetModelCommon() {
+	if (type_ == ObjectType::Model) {
+		return model_.get();
+	} else {
+		return animationModel_.get();
+	}
+}
+
 
 ///-------------------------------------------/// 
 /// Setter

@@ -9,6 +9,7 @@
 ///-------------------------------------------///
 void Collider::SetParent(ModelCommon* parent) {object3d_->SetParent(parent);}
 void Collider::ClearParent() {object3d_->ClearParent();}
+ModelCommon* Collider::GetModelCommon() { return object3d_->GetModelCommon(); }
 
 ///-------------------------------------------/// 
 /// Setter

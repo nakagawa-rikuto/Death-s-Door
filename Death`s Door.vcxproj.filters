@@ -164,6 +164,7 @@
     <ClCompile Include="Engine\Camera\FollowCamera.cpp" />
     <ClCompile Include="application\Game\Camera\GameCamera.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\GameCharacterCollision.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Weapon\PlayerWeapon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\System\Service\AudioService.h" />
@@ -317,6 +318,7 @@
     <ClInclude Include="Engine\Camera\FollowCamera.h" />
     <ClInclude Include="application\Game\Camera\GameCamera.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacterCollision.h" />
+    <ClInclude Include="application\Game\Entity\Player\Weapon\PlayerWeapon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Particle\Particle.hlsli" />
