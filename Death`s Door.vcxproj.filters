@@ -193,27 +193,6 @@
     <ClCompile Include="Engine\DataInfo\FunctionData.cpp">
       <Filter>Engine\DataInfo</Filter>
     </ClCompile>
-    <ClCompile Include="externals\imgui\imgui.cpp">
-      <Filter>externals\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_demo.cpp">
-      <Filter>externals\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_draw.cpp">
-      <Filter>externals\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
-      <Filter>externals\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp">
-      <Filter>externals\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_tables.cpp">
-      <Filter>externals\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="externals\imgui\imgui_widgets.cpp">
-      <Filter>externals\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Debug\DebugAnimationModel.cpp">
       <Filter>Engine\Debug</Filter>
     </ClCompile>
@@ -624,30 +603,6 @@
     <ClInclude Include="Engine\DataInfo\FunctionData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
-    <ClInclude Include="externals\imgui\imconfig.h">
-      <Filter>externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui.h">
-      <Filter>externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
-      <Filter>externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui_impl_win32.h">
-      <Filter>externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imgui_internal.h">
-      <Filter>externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imstb_rectpack.h">
-      <Filter>externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imstb_textedit.h">
-      <Filter>externals\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="externals\imgui\imstb_truetype.h">
-      <Filter>externals\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\DataInfo\InputData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
@@ -970,9 +925,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="externals\imgui\LICENSE.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="application">
       <UniqueIdentifier>{2424093c-5030-4b5e-871b-dbf64bfa7e8a}</UniqueIdentifier>
     </Filter>
@@ -1005,9 +957,6 @@
     </Filter>
     <Filter Include="Engine\Collider">
       <UniqueIdentifier>{7e4962f9-4ee2-4650-ad51-9883edc2ea79}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals">
-      <UniqueIdentifier>{928f6c59-ead0-4a22-aad8-35ce810ecd75}</UniqueIdentifier>
     </Filter>
     <Filter Include="Math">
       <UniqueIdentifier>{9ab1711d-d388-44ec-96ba-ce6ce915334c}</UniqueIdentifier>
@@ -1077,33 +1026,6 @@
     </Filter>
     <Filter Include="Engine\Collider\Base">
       <UniqueIdentifier>{3ed911fe-cfe3-4e4e-86d1-0efe2f7fa4a3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\assimp">
-      <UniqueIdentifier>{6ca449dc-5d93-40ea-95c8-1426b1ed8263}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\DirectTex">
-      <UniqueIdentifier>{ea10aa80-c1c7-482f-9667-78f4b8a11a5d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\imgui">
-      <UniqueIdentifier>{8aa117d8-1fb4-47fb-bb45-6d773d82effe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\JSON">
-      <UniqueIdentifier>{d495eae3-e7cf-4139-b674-5a9ecca8f6a3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\assimp\include">
-      <UniqueIdentifier>{641d60c9-b089-43df-bbd2-f57d141eb880}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\assimp\lib">
-      <UniqueIdentifier>{5c2e697d-ddcb-4eb2-8d20-a999317dbe99}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\assimp\include\assimp">
-      <UniqueIdentifier>{b09a4c6c-4e55-4522-8a67-93ad1024750c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\assimp\include\assimp\Compiler">
-      <UniqueIdentifier>{c5e65268-fff7-45f6-ba1f-9be3b2b54831}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="externals\assimp\include\assimp\port">
-      <UniqueIdentifier>{7ca82dad-e0ac-4054-8615-e1a3a0140e1d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Graphics\2D">
       <UniqueIdentifier>{c17124e2-5aaa-4f1a-b822-a13e0f106e1a}</UniqueIdentifier>
