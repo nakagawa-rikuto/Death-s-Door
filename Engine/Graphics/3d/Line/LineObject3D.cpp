@@ -74,6 +74,11 @@ void LineObject3D::Update() {
 /// 描画
 ///-------------------------------------------///
 void LineObject3D::Draw() {
+	/// ===線が描画されてなかったら早期リターン=== ///
+	if (lineIndex_ == 0) {
+		return;
+	}
+
 	/// ===コマンドリストのポインタの取得=== ///
 	ID3D12GraphicsCommandList* commandList = GraphicsResourceGetter::GetDXCommandList();
 
