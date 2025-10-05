@@ -466,6 +466,7 @@
     <ClCompile Include="Engine\System\Service\Loader.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
+    <ClCompile Include="application\Title\TitleUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -900,6 +901,7 @@
     <ClInclude Include="Engine\System\Service\Loader.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
+    <ClInclude Include="application\Title\TitleUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

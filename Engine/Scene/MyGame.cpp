@@ -52,7 +52,7 @@ void MyGame::Initialize(const wchar_t* title) {
 	// シーンマネージャの初期化
 	sceneManager_ = std::make_unique<SceneManager>();
 	sceneManager_->SetSceneFactory(sceneFactory_.get());
-	sceneManager_->ChangeScene(SceneType::Game);
+	sceneManager_->ChangeScene(SceneType::Title);
 }
  
 ///-------------------------------------------/// 
@@ -113,6 +113,13 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("noise0", "OffScreen/noise0.png");
 	Loader::LoadTexture("noise1", "OffScreen/noise1.png");
 	Loader::LoadTexture("skyBox", "rostock_laage_airport_4k.dds");
+
+	// Game(Title)
+	Loader::LoadTexture("Title", "TitleUI/Title.png");
+	Loader::LoadTexture("Start", "TitleUI/Start.png");
+	Loader::LoadTexture("Option", "TitleUI/Option.png");
+	Loader::LoadTexture("Exit", "TitleUI/Exit.png");
+	Loader::LoadTexture("OverLay", "TitleUI/OverLay.png");
 }
 // モデル
 void MyGame::LoadModel() {
