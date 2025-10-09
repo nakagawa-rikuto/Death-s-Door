@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{BE
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "externals\imgui\imgui.vcxproj", "{0AA149AB-5699-40CE-9E94-7007000CEB29}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Death`s Door", "Death`s Door.vcxproj", "{42C0A791-720B-4F4C-A7BD-159B0F349CC8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Deaths Door", "DeathsDoor.vcxproj", "{A75EB43D-A0A1-4770-9630-303DC69102D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,12 +35,12 @@ Global
 		{0AA149AB-5699-40CE-9E94-7007000CEB29}.Profile|x64.Build.0 = Debug|x64
 		{0AA149AB-5699-40CE-9E94-7007000CEB29}.Release|x64.ActiveCfg = Release|x64
 		{0AA149AB-5699-40CE-9E94-7007000CEB29}.Release|x64.Build.0 = Release|x64
-		{42C0A791-720B-4F4C-A7BD-159B0F349CC8}.Debug|x64.ActiveCfg = Debug|x64
-		{42C0A791-720B-4F4C-A7BD-159B0F349CC8}.Debug|x64.Build.0 = Debug|x64
-		{42C0A791-720B-4F4C-A7BD-159B0F349CC8}.Profile|x64.ActiveCfg = Release|x64
-		{42C0A791-720B-4F4C-A7BD-159B0F349CC8}.Profile|x64.Build.0 = Release|x64
-		{42C0A791-720B-4F4C-A7BD-159B0F349CC8}.Release|x64.ActiveCfg = Release|x64
-		{42C0A791-720B-4F4C-A7BD-159B0F349CC8}.Release|x64.Build.0 = Release|x64
+		{A75EB43D-A0A1-4770-9630-303DC69102D1}.Debug|x64.ActiveCfg = Debug|x64
+		{A75EB43D-A0A1-4770-9630-303DC69102D1}.Debug|x64.Build.0 = Debug|x64
+		{A75EB43D-A0A1-4770-9630-303DC69102D1}.Profile|x64.ActiveCfg = Release|x64
+		{A75EB43D-A0A1-4770-9630-303DC69102D1}.Profile|x64.Build.0 = Release|x64
+		{A75EB43D-A0A1-4770-9630-303DC69102D1}.Release|x64.ActiveCfg = Release|x64
+		{A75EB43D-A0A1-4770-9630-303DC69102D1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
