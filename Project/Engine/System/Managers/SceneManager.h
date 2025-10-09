@@ -44,7 +44,7 @@ private:
 	AbstractSceneFactory* sceneFactory_ = nullptr;
 
 	// 現在のシーン
-	SceneType currentSceneType_ = SceneType::Debug; // 初期のシーン
+	SceneType currentSceneType_ = SceneType::Title; // 初期のシーン
 	std::unique_ptr<IScene> currentScene_; // 現在のシーン
 
 	// 選択されたレベル番号を保持する
