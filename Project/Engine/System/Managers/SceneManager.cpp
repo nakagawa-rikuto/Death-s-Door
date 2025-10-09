@@ -2,7 +2,6 @@
 // c++
 #include <cassert>
 // 各シーン
-#include "Engine/Scene/DebugScene.h"
 #include "application/Scene/TitleScene.h"
 #include "application/Scene/SelectScene.h"
 #include "application/Scene/GameScene.h"
@@ -104,10 +103,6 @@ void SceneManager::SceneObservation() {
 		///ゲームオーバー
 		if (ImGui::Selectable("GameOver Scene", currentSceneType_ == SceneType::GameOver)) {
 			ChangeScene(SceneType::GameOver);
-		}
-		///デバッグシーン
-		if (ImGui::Selectable("Debug Scene", currentSceneType_ == SceneType::Debug)) {
-			ChangeScene(SceneType::Debug);
 		}
 		ImGui::EndCombo();
 	}

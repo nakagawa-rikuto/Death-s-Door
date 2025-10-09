@@ -8,5 +8,4 @@ enum class SceneType {
 	Game,
 	Clear,
 	GameOver,
-	Debug
 };

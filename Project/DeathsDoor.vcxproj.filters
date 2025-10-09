@@ -193,12 +193,6 @@
     <ClCompile Include="Engine\DataInfo\FunctionData.cpp">
       <Filter>Engine\DataInfo</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Debug\DebugAnimationModel.cpp">
-      <Filter>Engine\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Debug\DebugModel.cpp">
-      <Filter>Engine\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\2d\IndexBuffer2D.cpp">
       <Filter>Engine\Graphics\2D</Filter>
     </ClCompile>
@@ -329,9 +323,6 @@
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Scene\AbstractSceneFactory.cpp">
-      <Filter>Engine\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Scene\DebugScene.cpp">
       <Filter>Engine\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Scene\Framework.cpp">
@@ -625,12 +616,6 @@
     <ClInclude Include="Engine\DataInfo\SceneType.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Debug\DebugAnimationModel.h">
-      <Filter>Engine\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Debug\DebugModel.h">
-      <Filter>Engine\Debug</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Graphics\2d\IndexBuffer2D.h">
       <Filter>Engine\Graphics\2D</Filter>
     </ClInclude>
@@ -764,9 +749,6 @@
       <Filter>Engine\Graphics\Pipeline</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Scene\AbstractSceneFactory.h">
-      <Filter>Engine\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Scene\DebugScene.h">
       <Filter>Engine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Scene\Framework.h">
