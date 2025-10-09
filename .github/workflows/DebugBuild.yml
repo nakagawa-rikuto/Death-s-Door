@@ -5,7 +5,7 @@ on:
       - master
 env:
   # リポジトリのルートディレクトリを基点としたソリューションファイルパス
-  SOLUTION_FILE_PATH: project/Death`s Door.sln
+  SOLUTION_FILE_PATH: project/DeathsDoor.sln
   # Visual Studio の構成(Debug / Release)
   CONFIGURATION: Debug
 jobs:
