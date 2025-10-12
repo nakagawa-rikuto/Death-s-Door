@@ -2,6 +2,8 @@
 /// ===Include=== ///
 // GameCharacter
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
+// Weapon
+#include "Weapon/PlayerWeapon.h"
 // State
 #include "State/Base/PlayerState.h"
 
@@ -38,10 +40,13 @@ public: /// ===衝突判定=== ///
 
 public: /// ===Getter=== ///
 
+	// Weapon
+	PlayerWeapon* GetWeapon() const;
+
 	// フラグ
 	bool GetStateFlag(actionType type) const;
 	bool GetpreparationFlag(actionType type) const;
-	
+
 	// タイマー
 	float GetTimer(actionType type);
 
@@ -50,7 +55,7 @@ public: /// ===Setter=== ///
 	// フラグ
 	void SetStateFlag(actionType type, bool flag);
 	void SetpreparationFlag(actionType type, bool flag);
-	
+
 	// タイマーの設定
 	void SetTimer(actionType type, const float& timer);
 	void SetInvicibleTime(const float& time);
@@ -66,6 +71,7 @@ public: /// ===State用関数=== ///
 private: /// ===変数の宣言=== ///
 
 	GameCamera* camera_ = nullptr; // カメラ
+	std::unique_ptr<PlayerWeapon> weapon_; // 武器
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;

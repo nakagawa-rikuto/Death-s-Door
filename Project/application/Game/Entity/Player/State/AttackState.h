@@ -1,3 +1,4 @@
+#pragma once
 /// ===Include=== ///
 #include "Base/PlayerState.h"
 // Math
@@ -22,8 +23,8 @@ private:
 
 	/// ===攻撃タイプ=== ///
 	enum class AttackType {
-		kCombo1,	// コンボ1段目
-		kCombo2,	// コンボ2段目
+		kCombo1,	// コンボ1段目（左から右へ）
+		kCombo2,	// コンボ2段目（右から左へ）
 	};
 
 	/// ===攻撃情報=== ///
@@ -40,7 +41,7 @@ private:
 
 		// 各攻撃の接続時間
 		float combo1Duration = 0.4f;	// コンボ1段目の持続時間
-		float combo2Duration = 00.6f;	// コンボ2段目の持続時間
+		float combo2Duration = 0.6f;	// コンボ2段目の持続時間
 
 		// クールタイム
 		float coolTime = 0.3f;			// 攻撃後のクールタイム
@@ -52,6 +53,8 @@ private:
 	void InitializeAttack(AttackType type);
 	// コンボ入力のチェック
 	void CheckComboInput();
+	// チャージ攻撃入力のチェック
+	void CheckChargeAttackInput();
 	// 次の攻撃へ遷移
 	void TransitionToNextCombo();
 };

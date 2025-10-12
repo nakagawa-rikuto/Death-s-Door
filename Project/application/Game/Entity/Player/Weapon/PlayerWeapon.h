@@ -47,12 +47,23 @@ private:
 
 	/// ===攻撃情報=== ///
 	struct AttackInfo {
-		bool isAttack = false;
+		bool isAttack = false;       // 攻撃中フラグ
+		float timer = 0.0f;          // 攻撃経過時間
+		float duration = 0.0f;       // 攻撃の持続時間
+		Vector3 startOffset = { 0.0f, 0.0f, 0.0f }; // 攻撃開始位置のオフセット
+		Vector3 endOffset = { 0.0f, 0.0f, 0.0f };   // 攻撃終了位置のオフセット
 	};
+	AttackInfo attackInfo_;
 
-private: 
+	/// ===武器の種類=== ///
+	enum class WeaponType {
+		kSword,    // 剣
+		kHammer,   // ハンマー
+		kSpear     // 槍
+	};
+	WeaponType weaponType_ = WeaponType::kSword;
 
+private:
 	// 攻撃の回転を計算
 	void CalculateAttackRotation(const Vector3& startPoint, const Vector3& endPoint, float time);
 };
-

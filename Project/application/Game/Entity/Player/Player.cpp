@@ -21,11 +21,15 @@
 ///-------------------------------------------///
 Player::~Player() {
 	object3d_.reset();
+	weapon_.reset();
 }
+
 
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
+// Weapon
+PlayerWeapon* Player::GetWeapon() const { return weapon_.get(); }
 // フラグ
 bool Player::GetStateFlag(actionType type) const {
 	if (type == actionType::kAvoidance) {
@@ -100,8 +104,8 @@ void Player::SetTimer(actionType type, const float& timer) {
 		break;
 	}
 }
-void Player::SetInvicibleTime(const float& time) { 
-	invicibleInfo_.timer = invicibleInfo_.time + time; 
+void Player::SetInvicibleTime(const float& time) {
+	invicibleInfo_.timer = invicibleInfo_.time + time;
 }
 
 
@@ -116,13 +120,17 @@ void Player::Initialize() {
 	object3d_ = std::make_unique<Object3d>();
 	object3d_->Init(ObjectType::Model, "player");
 
+	// Weaponの初期化
+	weapon_ = std::make_unique<PlayerWeapon>();
+	weapon_->InitPlayer(this);
+
 	// 初期設定
 	ChangState(std::make_unique<RootState>());
 
 	// Sphereの設定
 	GameCharacter::Initialize();
 	name_ = ColliderName::Player;
-	obb_.halfSize = { 1.5f, 1.5f, 1.5f }; 
+	obb_.halfSize = { 1.5f, 1.5f, 1.5f };
 
 	// コライダーに追加
 	ColliderService::AddCollider(this);
