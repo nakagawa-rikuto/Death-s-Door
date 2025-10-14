@@ -84,7 +84,7 @@ void SceneTransition::Update() {
 		isPlaying_ = false;
 		isFinished_ = true;
 		currentState_ = FadeState::Finished;
-		data_.progress = 1.0f;
+		data_.progress = 0.0f;
 	}
 
 	// 設定
