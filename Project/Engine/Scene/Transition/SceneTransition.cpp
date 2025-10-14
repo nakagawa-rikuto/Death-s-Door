@@ -12,7 +12,7 @@ void SceneTransition::StartFadeIn(float duration) {
 	data_.progress = 0.0f;
 	data_.impactX = 0.5f;
 	data_.impactY = 0.5f;
-	data_.crackDensity = 25.0f;  // ひび割れ
+	data_.crackDensity = 15.0f;  // ひび割れ
 	data_.dispersion = 3.0f;     // 飛散度
 	data_.rotation = 1.0f;       // 回転
 	data_.fadeOut = 0.0f;        // フェードアウトを有効に
@@ -45,15 +45,15 @@ void SceneTransition::Update() {
 	// イージング適用（最初は速く、後でゆっくり）
 	float easedTime = EaseOutCubic(normalizedTime);
 
-	if (normalizedTime < 1.0f) {
+	if (data_.progress < 0.4f) {
 		// 各フェーズでの動きを調整
 		if (normalizedTime < 0.5f) {
 			// Phase 1: ひび割れが広がる（0.0 ~ 0.15秒）
-			data_.crackDensity = 20.0f;
+			data_.crackDensity = 15.0f;
 			data_.progress = easedTime * 0.3f;
 		} else {
 			// Phase 3: 破片が飛散して消える（0.5 ~ 1.0秒）
-			data_.crackDensity = 25.0f;
+			data_.crackDensity = 10.0f;
 			data_.dispersion = 5.0f;
 			float phaseTime = (normalizedTime - 0.5f) / 0.5f;
 			data_.progress = 0.25f + EaseOutCubic(phaseTime) * 0.3f;
