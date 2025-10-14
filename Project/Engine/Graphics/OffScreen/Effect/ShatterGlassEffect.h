@@ -14,6 +14,7 @@ struct ShatterGlassData {
 	float dispersion;    // 破片の飛散度
 	float rotation;      // 破片の回転量
 	float fadeOut;       // フェードアウト効果
+	float randomSeed;	 // ランダムナシード値
 	float padding;       // パディング
 };
 
@@ -37,6 +38,9 @@ public:
 public:
 	// データ
 	void SetData(ShatterGlassData data);
+
+	// 新しいランダムパターンを生成
+	void GenerateNewPattern();
 
 private:
 	// Buffer

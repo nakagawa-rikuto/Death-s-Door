@@ -1,6 +1,7 @@
 #include "ShatterGlassEffect.h"
 // Service
 #include "Engine/System/Service/Render.h"
+#include <cstdlib>
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -26,6 +27,7 @@ void ShatterGlassEffect::Initialize(ID3D12Device* device, std::shared_ptr<Render
 	data_->dispersion = 1.0f;
 	data_->rotation = 1.0f;
 	data_->fadeOut = 0.0f;
+	data_->randomSeed = 0.0f;
 }
 
 ///-------------------------------------------/// 
@@ -93,4 +95,12 @@ void ShatterGlassEffect::SetData(ShatterGlassData data) {
 	data_->dispersion = data.dispersion;
 	data_->rotation = data.rotation;
 	data_->fadeOut = data.fadeOut;
+}
+
+///-------------------------------------------/// 
+/// 新しいランダムパターンを生成
+///-------------------------------------------///
+void ShatterGlassEffect::GenerateNewPattern() {
+	// 0.0 ~ 1000.0 の範囲でランダムなシード値を生成
+	data_->randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 }

@@ -9,13 +9,16 @@
 ///-------------------------------------------///
 void SceneTransition::StartFadeIn(float duration) {
 	// デフォルトパラメータの設定
-	data_.progress = 0.0f;
+	data_.progress = 0.1f;
 	data_.impactX = 0.5f;
 	data_.impactY = 0.5f;
-	data_.crackDensity = 15.0f;  // ひび割れ
-	data_.dispersion = 3.0f;     // 飛散度
-	data_.rotation = 1.0f;       // 回転
+	data_.crackDensity = 20.0f;  // ひび割れ
+	data_.dispersion = 1.2f;     // 飛散度
+	data_.rotation = 1.5f;       // 回転
 	data_.fadeOut = 0.0f;        // フェードアウトを有効に
+
+	// 新しいランダムパターンを生成
+	data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
 
 	isPlaying_ = true;
 	isFinished_ = false;
@@ -27,7 +30,25 @@ void SceneTransition::StartFadeIn(float duration) {
 ///-------------------------------------------/// 
 /// 
 ///-------------------------------------------///
-void SceneTransition::StartFadeOut(float duration) {}
+void SceneTransition::StartFadeOut(float duration) {
+	// デフォルトパラメータの設定
+	data_.progress = 0.0f;
+	data_.impactX = 0.5f;
+	data_.impactY = 0.5f;
+	data_.crackDensity = 15.0f;
+	data_.dispersion = 1.2f;
+	data_.rotation = 1.5f;
+	data_.fadeOut = 0.5f;  // フェードアウトを有効に
+
+	// 新しいランダムパターンを生成
+	data_.randomSeed = static_cast<float>(rand() % 10000) / 10.0f;
+
+	isPlaying_ = true;
+	isFinished_ = false;
+	currentTime_ = 0.0f;
+	duration_ = duration;
+	currentState_ = FadeState::FadeOut;
+}
 
 ///-------------------------------------------/// 
 /// 更新
@@ -53,8 +74,8 @@ void SceneTransition::Update() {
 			data_.progress = easedTime * 0.3f;
 		} else {
 			// Phase 3: 破片が飛散して消える（0.5 ~ 1.0秒）
-			data_.crackDensity = 10.0f;
-			data_.dispersion = 5.0f;
+			data_.crackDensity = 15.0f;
+			data_.dispersion = 4.0f;
 			float phaseTime = (normalizedTime - 0.5f) / 0.5f;
 			data_.progress = 0.25f + EaseOutCubic(phaseTime) * 0.3f;
 		}

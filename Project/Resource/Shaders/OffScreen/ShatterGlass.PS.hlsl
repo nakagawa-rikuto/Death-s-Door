@@ -12,7 +12,7 @@ cbuffer ShatterParams : register(b0)
     float dispersion; // 破片の飛散度
     float rotation; // 破片の回転量
     float fadeOut; // フェードアウト効果
-    float padding;
+    float randomSeed; // ランダムシード値
 };
 
 // ハッシュ関数（ノイズ生成用）
@@ -20,7 +20,7 @@ float hash(float2 p)
 {
     float3 p3 = frac(float3(p.xyx) * 0.1031);
     p3 += dot(p3, p3.yzx + 33.33);
-    return frac((p3.x + p3.y) * p3.z);
+    return frac((p3.x + p3.y) * p3.z + randomSeed * 0.01);
 }
 
 // 2Dノイズ関数
@@ -39,35 +39,48 @@ float noise(float2 p)
     return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
 }
 
-// Voronoiノイズ（ひび割れパターン生成）
+// 改善されたVoronoiノイズ（より不規則なヒビ割れパターン）
 float2 voronoi(float2 p)
 {
     float2 n = floor(p);
     float2 f = frac(p);
     
     float minDist = 8.0;
+    float secondMinDist = 8.0;
     float2 minPoint = float2(0.0, 0.0);
     
-    for (int j = -1; j <= 1; j++)
+    // より広い範囲を探索してより不規則なパターンを生成
+    for (int j = -2; j <= 2; j++)
     {
-        for (int i = -1; i <= 1; i++)
+        for (int i = -2; i <= 2; i++)
         {
             float2 neighbor = float2(float(i), float(j));
-            float2 pos = neighbor + float2(hash(n + neighbor), hash(n + neighbor + float2(10.5, 20.3)));
+            // より複雑なランダム位置生成
+            float2 pos = neighbor + float2(
+                hash(n + neighbor),
+                hash(n + neighbor + float2(10.5, 20.3))
+            );
             
             float2 diff = pos - f;
-            
             float dist = length(diff);
             
             if (dist < minDist)
             {
+                secondMinDist = minDist;
                 minDist = dist;
                 minPoint = n + neighbor + pos;
+            }
+            else if (dist < secondMinDist)
+            {
+                secondMinDist = dist;
             }
         }
     }
     
-    return float2(minDist, hash(minPoint));
+    // セル境界の距離（ヒビを表現）
+    float edgeDist = secondMinDist - minDist;
+    
+    return float2(edgeDist, hash(minPoint));
 }
 
 // 2D回転行列
@@ -84,6 +97,13 @@ float2 rotate(float2 p, float angle)
 float4 main(VertexShaderOutPut input) : SV_TARGET
 {
     float2 uv = input.texcoord;
+    
+    // progressが0の時は元のテクスチャをそのまま返す
+    if (progress <= 0.0)
+    {
+        return gTexture.Sample(gSampler, uv);
+    }
+    
     float2 impactPoint = float2(impactX, impactY);
     
     // 衝撃点からの距離と方向
@@ -95,6 +115,13 @@ float4 main(VertexShaderOutPut input) : SV_TARGET
     float2 voronoiResult = voronoi(uv * crackDensity);
     float cellDist = voronoiResult.x;
     float cellId = voronoiResult.y;
+    
+    // 放射状のヒビ割れパターンを追加
+    float angleFromImpact = atan2(toCenter.y, toCenter.x);
+    float radialCrack = abs(sin(angleFromImpact * 8.0 + hash(float2(cellId, 3.0)) * 6.28)) * 0.5;
+    
+    // ヒビ割れパターンを組み合わせる
+    cellDist = min(cellDist, radialCrack * dist * 2.0);
     
     // 衝撃点からの距離に応じて進行度を調整（波紋のように広がる）
     float distanceDelay = dist * 0.4; // 距離による遅延
@@ -124,17 +151,17 @@ float4 main(VertexShaderOutPut input) : SV_TARGET
     // 最終的なUV座標
     float2 finalUV = rotatedUV + displacement;
     
-    // ひび割れのエッジ検出（進行度に応じて変化）
-    float crackThreshold = lerp(0.02, 0.01, progress);
-    float crackEdge = smoothstep(crackThreshold, crackThreshold + 0.02, cellDist);
+    // ひび割れのエッジ検出（より鋭いヒビを生成）
+    float crackThreshold = lerp(0.015, 0.005, progress);
+    float crackEdge = smoothstep(crackThreshold, crackThreshold + 0.01, cellDist);
     
     // テクスチャサンプリング
     float4 color = gTexture.Sample(gSampler, finalUV);
     
-    // ひび割れの暗い線を追加（初期段階で目立つように）
-    float crackLine = 1.0 - smoothstep(0.0, 0.03, cellDist);
-    float crackVisibility = saturate(1.0 - shardProgress * 1.5);
-    color.rgb = lerp(color.rgb, color.rgb * 0.2, crackLine * crackVisibility);
+    // ひび割れの暗い線を追加（より鋭く、細く）
+    float crackLine = 1.0 - smoothstep(0.0, 0.02, cellDist);
+    float crackVisibility = saturate(1.0 - shardProgress * 1.5) * smoothstep(0.05, 0.15, progress);
+    color.rgb = lerp(color.rgb, color.rgb * 0.1, crackLine * crackVisibility * 1.5);
     
     // 破片のエッジを暗くして立体感を出す
     float edgeDarkness = lerp(1.0, 0.6, (1.0 - crackEdge) * shardProgress);
@@ -142,6 +169,7 @@ float4 main(VertexShaderOutPut input) : SV_TARGET
     
     // ハイライト効果（ガラスの反射）
     float highlight = pow(1.0 - cellDist, 3.0) * 0.3 * (1.0 - shardProgress * 0.5);
+    highlight *= smoothstep(0.1, 0.2, progress); // 進行度が低い時は表示しない
     color.rgb += highlight;
     
     // UV範囲外は透明に

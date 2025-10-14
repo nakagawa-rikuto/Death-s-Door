@@ -290,7 +290,7 @@ void TitleScene::ConfirmSelection() {
 	switch (currentSelection_) {
 	case MenuSelection::Start:
 		OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
-		transiton_->StartFadeIn(2.0f);
+		transiton_->StartFadeOut(2.0f);
 		break;
 	case MenuSelection::Option:
 		// オプション画面を開く
