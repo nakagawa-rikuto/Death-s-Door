@@ -70,6 +70,7 @@
     <FxCompile Include="Resource\Shaders\OffScreen\Fullscreen.VS.hlsl">
       <Filter>Resource\Shaders\OffScreen</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\OffScreen\ShatterGlass.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -458,6 +459,8 @@
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
     <ClCompile Include="application\Title\TitleUI.cpp" />
+    <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\SceneTransition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -604,7 +607,7 @@
     <ClInclude Include="Engine\DataInfo\LevelData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\DataInfo\OffScreenTypeData.h">
+    <ClInclude Include="Engine\DataInfo\OffScreenData.h">
       <Filter>Engine\DataInfo</Filter>
     </ClInclude>
     <ClInclude Include="Engine\DataInfo\ParticleData.h">
@@ -884,6 +887,8 @@
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
     <ClInclude Include="application\Title\TitleUI.h" />
+    <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
+    <ClInclude Include="Engine\Scene\Transition\SceneTransition.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

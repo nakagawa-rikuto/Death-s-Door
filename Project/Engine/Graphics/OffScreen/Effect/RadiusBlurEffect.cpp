@@ -61,8 +61,8 @@ void RadiusBlurEffect::ImGuiInfo() {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-void RadiusBlurEffect::SetRadiusBlurData(const Vector2& center, int numSamples, float blurWidth) {
-	data_->center = center;
-	data_->numSamples = numSamples;
-	data_->blurWidth = blurWidth;
+void RadiusBlurEffect::SetData(RadiusBlurData data) {
+	data_->center = data.center;
+	data_->numSamples = data.numSamples;
+	data_->blurWidth = data.blurWidth;
 }

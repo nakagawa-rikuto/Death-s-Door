@@ -39,6 +39,7 @@ namespace {
 	{ PipelineType::BoxFilter5x5, { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BoxFilter5x5.PS.hlsl" } },
 	{ PipelineType::RadiusBlur,	  { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl" } },
 	{ PipelineType::OutLine,	  { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl" } },
+	{ PipelineType::ShatterGlass, { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl" } },
 	};
 }
 

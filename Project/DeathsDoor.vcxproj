@@ -239,6 +239,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Weapon\PlayerWeapon.cpp" />
     <ClCompile Include="application\Title\TitleUI.cpp" />
+    <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\SceneTransition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -257,7 +259,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\System\Service\ColliderService.h" />
     <ClInclude Include="Engine\Collider\AABBCollider.h" />
     <ClInclude Include="Engine\DataInfo\LightData.h" />
-    <ClInclude Include="Engine\DataInfo\OffScreenTypeData.h" />
+    <ClInclude Include="Engine\DataInfo\OffScreenData.h" />
     <ClInclude Include="Engine\DataInfo\LineObjectData.h" />
     <ClInclude Include="Engine\Graphics\Particle\Derivative\CylinderParticle.h" />
     <ClInclude Include="Engine\Graphics\3d\Model\AnimationModel.h" />
@@ -383,6 +385,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h" />
     <ClInclude Include="application\Game\Entity\Player\Weapon\PlayerWeapon.h" />
     <ClInclude Include="application\Title\TitleUI.h" />
+    <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
+    <ClInclude Include="Engine\Scene\Transition\SceneTransition.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -460,6 +464,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\OffScreen\RadialBlur.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\OffScreen\ShatterGlass.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
