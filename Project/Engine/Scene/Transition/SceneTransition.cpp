@@ -56,7 +56,7 @@ void SceneTransition::Update() {
 			data_.crackDensity = 25.0f;
 			data_.dispersion = 5.0f;
 			float phaseTime = (normalizedTime - 0.5f) / 0.5f;
-			data_.progress = 0.35f + EaseOutCubic(phaseTime) * 0.3f;
+			data_.progress = 0.25f + EaseOutCubic(phaseTime) * 0.3f;
 		}
 	} else {
 		// エフェクト終了判定

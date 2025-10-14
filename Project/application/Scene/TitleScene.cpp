@@ -134,12 +134,6 @@ void TitleScene::Update() {
 	ImGui::Text("Transition Timer: %.2f", transitionTimer_);
 	ImGui::End();
 #endif // USE_IMGUI
-
-	/// ===OffScreen=== ///
-	if (InputService::TriggerKey(DIK_A)) {
-		OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
-		transiton_->StartFadeIn(2.0f);
-	}
 	
 	transiton_->Update();
 
@@ -188,6 +182,13 @@ void TitleScene::Update() {
 		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
 			ConfirmSelection();
 		}
+
+		/// ===シーンの切り替え=== ///
+		if (transiton_->GetState() == FadeState::Finished) {
+			// ゲームシーンへ遷移
+			sceneManager_->ChangeScene(SceneType::Game);
+		}
+
 	}
 
 	/// ===ISceneの更新=== ///
@@ -280,8 +281,8 @@ void TitleScene::UpdateMenuSelection() {
 void TitleScene::ConfirmSelection() {
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		// ゲームシーンへ遷移
-		sceneManager_->ChangeScene(SceneType::Game);
+		OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+		transiton_->StartFadeIn(2.0f);
 		break;
 	case MenuSelection::Option:
 		// オプション画面を開く
