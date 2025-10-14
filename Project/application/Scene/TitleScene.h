@@ -44,6 +44,7 @@ private:/// ===メンバ変数=== ///
 
 	/// ===スプライト=== ///
 	std::unique_ptr<Sprite> bgSprite_;         // 背景
+	std::unique_ptr<Sprite> bgKiriSprite_;         // 背景
 	std::unique_ptr<Sprite> titleSprite_;      // タイトル
 	std::unique_ptr<Sprite> startSprite_;      // 開始
 	std::unique_ptr<Sprite> optionSprite_;     // オプション

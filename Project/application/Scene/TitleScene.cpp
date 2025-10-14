@@ -33,9 +33,15 @@ void TitleScene::Initialize() {
 	/// ===スプライトの初期化=== ///
 	// 背景スプライト
 	bgSprite_ = std::make_unique<Sprite>();
-	bgSprite_->Initialize("uvChecker");
+	bgSprite_->Initialize("TitleBG");
 	bgSprite_->SetPosition({ 0.0f, 0.0f });
 	bgSprite_->SetSize({ windowWidth, windowHeight });
+
+	// 背景Kiriスプライト
+	bgKiriSprite_ = std::make_unique<Sprite>();
+	bgKiriSprite_->Initialize("TitleBGKiri");
+	bgKiriSprite_->SetPosition({ 0.0f, 0.0f });
+	bgKiriSprite_->SetSize({ windowWidth, windowHeight });
 
 	// タイトルスプライト
 	titleSprite_ = std::make_unique<Sprite>();
@@ -139,6 +145,7 @@ void TitleScene::Update() {
 
 	/// ===スプライトの更新=== ///
 	bgSprite_->Update();
+	bgKiriSprite_->Update();
 	titleSprite_->Update();
 	startSprite_->Update();
 	optionSprite_->Update();
@@ -202,6 +209,7 @@ void TitleScene::Draw() {
 #pragma region 背景スプライト描画
 	// 背景スプライト
 	bgSprite_->Draw(GroundType::Back);
+	//bgKiriSprite_->Draw(GroundType::Back);
 	// タイトルスプライト
 	titleSprite_->Draw(GroundType::Back);
 #pragma endregion
