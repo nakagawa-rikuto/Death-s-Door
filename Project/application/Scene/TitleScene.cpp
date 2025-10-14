@@ -185,7 +185,7 @@ void TitleScene::Update() {
 		}
 
 		/// ===決定処理=== ///
-		if (InputService::TriggerButton(0, ControllerButtonType::A)) {
+		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
 			ConfirmSelection();
 		}
 	}
@@ -242,7 +242,7 @@ void TitleScene::Draw() {
 ///-------------------------------------------///
 void TitleScene::UpdateMenuSelection() {
 	// 十字キー上
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadUP)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadUP) || InputService::TriggerKey(DIK_UP)) {
 		switch (currentSelection_) {
 		case MenuSelection::Start:
 			currentSelection_ = MenuSelection::Exit; // 一番上から一番下へ
@@ -258,7 +258,7 @@ void TitleScene::UpdateMenuSelection() {
 	}
 
 	// 十字キー下
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadDOWN)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadDOWN) || InputService::TriggerKey(DIK_DOWN)) {
 		switch (currentSelection_) {
 		case MenuSelection::Start:
 			currentSelection_ = MenuSelection::Option;
@@ -319,7 +319,7 @@ void TitleScene::UpdateSelectOverlayPosition() {
 ///-------------------------------------------///
 void TitleScene::UpdateOptionMenu() {
 	// Bボタンでオプション画面を閉じる
-	if (InputService::TriggerButton(0, ControllerButtonType::B)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::B) || InputService::TriggerKey(DIK_SPACE)) {
 		isOptionOpen_ = false;
 	}
 
@@ -331,7 +331,7 @@ void TitleScene::UpdateOptionMenu() {
 ///-------------------------------------------///
 void TitleScene::UpdateModelSelection() {
 	// 十字キー右：次のモデルへ
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadRIGHT)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadRIGHT) || InputService::TriggerKey(DIK_RIGHT)) {
 		nextModelIndex_ = (currentModelIndex_ + 1) % kModelCount;
 		transitionDirection_ = true; // 右方向
 		isTransitioning_ = true;
@@ -342,7 +342,7 @@ void TitleScene::UpdateModelSelection() {
 	}
 
 	// 十字キー左：前のモデルへ
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadLEFT)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadLEFT) || InputService::TriggerKey(DIK_LEFT)) {
 		nextModelIndex_ = (currentModelIndex_ - 1 + kModelCount) % kModelCount;
 		transitionDirection_ = false; // 左方向
 		isTransitioning_ = true;

@@ -49,9 +49,12 @@ void SceneTransition::Update() {
 		// 各フェーズでの動きを調整
 		if (normalizedTime < 0.5f) {
 			// Phase 1: ひび割れが広がる（0.0 ~ 0.15秒）
+			data_.crackDensity = 20.0f;
 			data_.progress = easedTime * 0.3f;
 		} else {
 			// Phase 3: 破片が飛散して消える（0.5 ~ 1.0秒）
+			data_.crackDensity = 25.0f;
+			data_.dispersion = 5.0f;
 			float phaseTime = (normalizedTime - 0.5f) / 0.5f;
 			data_.progress = 0.35f + EaseOutCubic(phaseTime) * 0.3f;
 		}

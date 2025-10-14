@@ -3,8 +3,8 @@
 
 enum class FadeState {
     None,
-    FadeIn,   // 真っ暗→通常
-    FadeOut,  // 通常→真っ暗
+    FadeIn,   
+    FadeOut,  
     Finished
 };
 
