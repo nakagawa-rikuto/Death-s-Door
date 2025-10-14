@@ -120,6 +120,7 @@ namespace {
 			{ PipelineType::BoxFilter5x5, { nullptr,                  0 } },
 			{ PipelineType::RadiusBlur,   { nullptr,                  0 } },
 			{ PipelineType::OutLine,      { nullptr,                  0 } },
+			{ PipelineType::ShatterGlass, { nullptr,                  0 } },
 		};
 	}();
 }

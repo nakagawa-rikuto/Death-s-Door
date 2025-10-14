@@ -18,6 +18,7 @@ OffScreenRenderer::~OffScreenRenderer() {
 	radiusBlur_.reset();
 	outLine_.reset();
 	dissolve_.reset();
+	shatterGlass_.reset();
 	renderTexture_.reset();
 }
 
@@ -66,6 +67,10 @@ void OffScreenRenderer::Initialize(
 	// OutLineエフェクト
 	outLine_ = std::make_shared<OutLineEffect>();
 	outLine_->Initialize(device, renderTexture_);
+
+	// ShatterGlassエフェクト
+	shatterGlass_ = std::make_shared<ShatterGlassEffect>();
+	shatterGlass_->Initialize(device, renderTexture_);
 }
 
 ///-------------------------------------------/// 
@@ -96,6 +101,9 @@ void OffScreenRenderer::PreDraw(ID3D12GraphicsCommandList* commandList, D3D12_CP
 		break;
 	case OffScreenType::Dissolve:
 		dissolve_->PreDraw(commandList, dsvHandle);
+		break;
+	case OffScreenType::ShatterGlass:
+		shatterGlass_->PreDraw(commandList, dsvHandle);
 		break;
 	}
 }
@@ -129,6 +137,9 @@ void OffScreenRenderer::Draw(ID3D12GraphicsCommandList* commandList) {
 	case OffScreenType::Dissolve:
 		dissolve_->Draw(commandList);
 		break;
+	case OffScreenType::ShatterGlass:
+		shatterGlass_->Draw(commandList);
+		break;
 	}
 }
 
@@ -151,6 +162,7 @@ void OffScreenRenderer::DrawImGui() {
 		"RadiusBlur",
 		"OutLine",
 		"Dissolve",
+		"ShatterGlass",
 	};
 
 	int current = static_cast<int>(type_);
@@ -187,6 +199,9 @@ void OffScreenRenderer::DrawImGui() {
 	case OffScreenType::Dissolve:
 		dissolve_->ImGuiInfo();
 		break;
+	case OffScreenType::ShatterGlass:
+		shatterGlass_->ImGuiInfo();
+		break;
 	}
 
 	ImGui::End();
@@ -206,6 +221,20 @@ uint32_t OffScreenRenderer::GetRTVHandleIndex() const { return renderTexture_->G
 uint32_t OffScreenRenderer::GetSRVHandleIndex() const { return renderTexture_->GetSRVHandleIndex(); }
 // Reosurce
 ID3D12Resource* OffScreenRenderer::GetBuffer() const { return renderTexture_->GetBuffer(); }
+
+/// ===Effect=== ///
+CopyImageEffect* OffScreenRenderer::GetCopyImage() { return copyImage_.get(); }
+GrayscaleEffect* OffScreenRenderer::GetGrayscale() { return grayscale_.get(); }
+VignetteEffect* OffScreenRenderer::GetVignette() { return vignette_.get();}
+OutLineEffect* OffScreenRenderer::GetOutLine() { return outLine_.get(); }
+BoxFilter3x3Effect* OffScreenRenderer::GetBoxFilter3x3() { return boxFilter3x3_.get(); }
+BoxFilter5x5Effect* OffScreenRenderer::GetBoxFilter5x5() { return boxFilter5x5_.get(); }
+RadiusBlurEffect* OffScreenRenderer::GetRadiusBlur() { return radiusBlur_.get(); }
+DissolveEffect* OffScreenRenderer::GetDissolve() { return dissolve_.get(); }
+ShatterGlassEffect* OffScreenRenderer::GetShatterGlass() { return shatterGlass_.get(); }
+
+/// ===Type=== ///
+OffScreenType OffScreenRenderer::GetType() { return type_; }
 
 ///-------------------------------------------/// 
 /// Setter

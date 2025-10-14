@@ -20,6 +20,7 @@ namespace {
 	{ PipelineType::BoxFilter5x5,		D3D12_CULL_MODE_NONE },
 	{ PipelineType::RadiusBlur,			D3D12_CULL_MODE_NONE },
 	{ PipelineType::OutLine,			D3D12_CULL_MODE_NONE },
+	{ PipelineType::ShatterGlass,		D3D12_CULL_MODE_NONE },
 	};
 }
 

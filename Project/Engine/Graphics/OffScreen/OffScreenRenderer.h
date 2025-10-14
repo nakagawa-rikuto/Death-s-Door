@@ -13,9 +13,10 @@
 #include "Effect/BoxFilter5x5Effect.h"
 #include "Effect/RadiusBlurEffect.h"
 #include "Effect/DissolveEffect.h"
+#include "Effect/ShatterGlassEffect.h"
 
 // Data
-#include "Engine/DataInfo/OffScreenTypeData.h"
+#include "Engine/DataInfo/OffScreenData.h"
 
 ///=====================================================/// 
 /// OffScreenRenderer
@@ -53,6 +54,20 @@ public: /// ===Getter=== ///
 	// Resourceの取得
 	ID3D12Resource* GetBuffer() const;
 
+public: /// ===Getter=== ///
+
+	CopyImageEffect* GetCopyImage();
+	GrayscaleEffect* GetGrayscale();
+	VignetteEffect* GetVignette();
+	OutLineEffect* GetOutLine();
+	BoxFilter3x3Effect* GetBoxFilter3x3();
+	BoxFilter5x5Effect* GetBoxFilter5x5();
+	RadiusBlurEffect* GetRadiusBlur();
+	DissolveEffect* GetDissolve();
+	ShatterGlassEffect* GetShatterGlass();
+
+	OffScreenType GetType();
+
 public: /// ===Setter=== ///
 	// Typeの設定
 	void SetType(OffScreenType type);
@@ -69,6 +84,7 @@ private:
 	std::shared_ptr<BoxFilter5x5Effect> boxFilter5x5_;
 	std::shared_ptr<RadiusBlurEffect> radiusBlur_;
 	std::shared_ptr<DissolveEffect> dissolve_;
+	std::shared_ptr<ShatterGlassEffect> shatterGlass_;
 
 	// Piplineのタイプ
 	OffScreenType type_ = OffScreenType::CopyImage;

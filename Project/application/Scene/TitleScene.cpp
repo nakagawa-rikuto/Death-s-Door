@@ -4,6 +4,7 @@
 // Service
 #include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Engine/System/Service/OffScreenService.h"
 // Math
 #include "Math/sMath.h"
 
@@ -25,6 +26,9 @@ void TitleScene::Initialize() {
 	// ウィンドウサイズの取得
 	float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
 	float windowHeight = static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
+
+	/// ===Transition=== ///
+	transiton_ = std::make_unique<SceneTransition>();
 
 	/// ===スプライトの初期化=== ///
 	// 背景スプライト
@@ -131,6 +135,14 @@ void TitleScene::Update() {
 	ImGui::End();
 #endif // USE_IMGUI
 
+	/// ===OffScreen=== ///
+	if (InputService::TriggerKey(DIK_A)) {
+		OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+		transiton_->StartFadeIn(2.0f);
+	}
+	
+	transiton_->Update();
+
 	/// ===スプライトの更新=== ///
 	bgSprite_->Update();
 	titleSprite_->Update();
@@ -188,7 +200,7 @@ void TitleScene::Update() {
 void TitleScene::Draw() {
 #pragma region 背景スプライト描画
 	// 背景スプライト
-	//bgSprite_->Draw(GroundType::Back);
+	bgSprite_->Draw(GroundType::Back);
 	// タイトルスプライト
 	titleSprite_->Draw(GroundType::Back);
 #pragma endregion

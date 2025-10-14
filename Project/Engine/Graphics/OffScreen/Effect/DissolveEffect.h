@@ -9,6 +9,15 @@
 // Math
 #include "Math/Vector3.h"
 
+/// ===Dissolveエフェクトのデータ構造=== ///
+struct DissolveData {
+	float threshold; // discardの閾値
+	float edgeStart; // smoothstep開始
+	float edgeEnd; // smoothstep終了
+	Vector3 edgeColor; // エッジ色
+	float padding; // floatの倍数にするためのパディング
+};
+
 ///=====================================================/// 
 /// CopyImageEffect
 ///=====================================================///
@@ -28,7 +37,7 @@ public:
 
 public: /// ===Setter=== ///
 
-	void SetDissolveData(float threshold, float edgeStart, float edgeEnd, const Vector3& edgeColor);
+	void SetData(DissolveData data);
 	void SetTexture(std::string& texuteKeyName);
 
 private:
@@ -39,13 +48,6 @@ private:
 	// Buffer
 	std::unique_ptr<BufferBase> buffer_;
 
-	// / Dissolveエフェクトのデータ構造
-	struct DissolveData {
-		float threshold; // discardの閾値
-		float edgeStart; // smoothstep開始
-		float edgeEnd; // smoothstep終了
-		Vector3 edgeColor; // エッジ色
-		float padding; // floatの倍数にするためのパディング
-	};
+	// Data
 	DissolveData* data_ = nullptr;
 };
