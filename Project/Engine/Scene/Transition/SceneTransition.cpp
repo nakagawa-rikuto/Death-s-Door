@@ -66,7 +66,7 @@ void SceneTransition::Update() {
 	// イージング適用（最初は速く、後でゆっくり）
 	float easedTime = EaseOutCubic(normalizedTime);
 
-	if (data_.progress < 0.4f) {
+	if (data_.progress < 0.5f) {
 		// 各フェーズでの動きを調整
 		if (normalizedTime < 0.5f) {
 			// Phase 1: ひび割れが広がる（0.0 ~ 0.15秒）
@@ -84,7 +84,7 @@ void SceneTransition::Update() {
 		isPlaying_ = false;
 		isFinished_ = true;
 		currentState_ = FadeState::Finished;
-		data_.progress = 0.0f;
+		data_.progress = 1.0f;
 	}
 
 	// 設定
