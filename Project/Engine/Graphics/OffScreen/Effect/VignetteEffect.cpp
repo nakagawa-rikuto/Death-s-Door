@@ -61,7 +61,7 @@ void VignetteEffect::ImGuiInfo() {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-void VignetteEffect::SetVignetteData(float scale, float pawer) {
-	data_->scale = scale;
-	data_->pawer = pawer;
+void VignetteEffect::SetData(VignetteData data) {
+	data_->scale = data.scale;
+	data_->pawer = data.pawer;
 }

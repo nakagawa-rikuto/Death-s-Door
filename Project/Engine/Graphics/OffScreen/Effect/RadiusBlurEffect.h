@@ -6,6 +6,14 @@
 // Math
 #include "Math/Vector2.h"
 
+/// ===Dissolveエフェクトのデータ構造=== ///
+struct RadiusBlurData {
+	Vector2 center;  // ブラーの中心座標
+	int numSamples;  // サンプリング数
+	float blurWidth; // ブラーの幅
+	float padding;   // floatの倍数にするためのパディング
+};
+
 ///=====================================================/// 
 /// RadiusBlurEffect
 ///=====================================================///
@@ -24,19 +32,13 @@ public:
 
 public: /// ===Setter=== ///
 
-	void SetRadiusBlurData(const Vector2& center, int numSamples, float blurWidth);
+	void SetData(RadiusBlurData data);
 
 private:
 
 	// Buffer
 	std::unique_ptr<BufferBase> buffer_;
 
-	// / Dissolveエフェクトのデータ構造
-	struct RadiusBlurData {
-		Vector2 center;  // ブラーの中心座標
-		int numSamples;  // サンプリング数
-		float blurWidth; // ブラーの幅
-		float padding;   // floatの倍数にするためのパディング
-	};
+	// Data
 	RadiusBlurData* data_ = nullptr;
 };

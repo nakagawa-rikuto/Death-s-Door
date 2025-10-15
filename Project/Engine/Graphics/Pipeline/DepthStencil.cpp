@@ -42,6 +42,7 @@ namespace {
 		{ PipelineType::BoxFilter5x5, CreateDepthDesc(false) },
 		{ PipelineType::RadiusBlur,   CreateDepthDesc(false) },
 		{ PipelineType::OutLine,	  CreateDepthDesc(false) },
+		{ PipelineType::ShatterGlass, CreateDepthDesc(false) },
 	};
 }
 

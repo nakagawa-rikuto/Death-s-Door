@@ -4,6 +4,7 @@
 // Service
 #include "Engine/System/Service/InputService.h"
 #include "Engine/System/Service/GraphicsResourceGetter.h"
+#include "Engine/System/Service/OffScreenService.h"
 // Math
 #include "Math/sMath.h"
 
@@ -26,12 +27,21 @@ void TitleScene::Initialize() {
 	float windowWidth = static_cast<float>(GraphicsResourceGetter::GetWindowWidth());
 	float windowHeight = static_cast<float>(GraphicsResourceGetter::GetWindowHeight());
 
+	/// ===Transition=== ///
+	transiton_ = std::make_unique<SceneTransition>();
+
 	/// ===スプライトの初期化=== ///
 	// 背景スプライト
 	bgSprite_ = std::make_unique<Sprite>();
-	bgSprite_->Initialize("uvChecker");
+	bgSprite_->Initialize("TitleBG");
 	bgSprite_->SetPosition({ 0.0f, 0.0f });
 	bgSprite_->SetSize({ windowWidth, windowHeight });
+
+	// 背景Kiriスプライト
+	bgKiriSprite_ = std::make_unique<Sprite>();
+	bgKiriSprite_->Initialize("TitleBGKiri");
+	bgKiriSprite_->SetPosition({ 0.0f, 0.0f });
+	bgKiriSprite_->SetSize({ windowWidth, windowHeight });
 
 	// タイトルスプライト
 	titleSprite_ = std::make_unique<Sprite>();
@@ -130,9 +140,12 @@ void TitleScene::Update() {
 	ImGui::Text("Transition Timer: %.2f", transitionTimer_);
 	ImGui::End();
 #endif // USE_IMGUI
+	
+	transiton_->Update();
 
 	/// ===スプライトの更新=== ///
 	bgSprite_->Update();
+	bgKiriSprite_->Update();
 	titleSprite_->Update();
 	startSprite_->Update();
 	optionSprite_->Update();
@@ -173,9 +186,16 @@ void TitleScene::Update() {
 		}
 
 		/// ===決定処理=== ///
-		if (InputService::TriggerButton(0, ControllerButtonType::A)) {
+		if (InputService::TriggerButton(0, ControllerButtonType::A) || InputService::TriggerKey(DIK_SPACE)) {
 			ConfirmSelection();
 		}
+
+		/// ===シーンの切り替え=== ///
+		if (transiton_->GetState() == FadeState::Finished) {
+			// ゲームシーンへ遷移
+			sceneManager_->ChangeScene(SceneType::Game);
+		}
+
 	}
 
 	/// ===ISceneの更新=== ///
@@ -188,7 +208,8 @@ void TitleScene::Update() {
 void TitleScene::Draw() {
 #pragma region 背景スプライト描画
 	// 背景スプライト
-	//bgSprite_->Draw(GroundType::Back);
+	bgSprite_->Draw(GroundType::Back);
+	//bgKiriSprite_->Draw(GroundType::Back);
 	// タイトルスプライト
 	titleSprite_->Draw(GroundType::Back);
 #pragma endregion
@@ -230,7 +251,7 @@ void TitleScene::Draw() {
 ///-------------------------------------------///
 void TitleScene::UpdateMenuSelection() {
 	// 十字キー上
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadUP)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadUP) || InputService::TriggerKey(DIK_UP)) {
 		switch (currentSelection_) {
 		case MenuSelection::Start:
 			currentSelection_ = MenuSelection::Exit; // 一番上から一番下へ
@@ -246,7 +267,7 @@ void TitleScene::UpdateMenuSelection() {
 	}
 
 	// 十字キー下
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadDOWN)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadDOWN) || InputService::TriggerKey(DIK_DOWN)) {
 		switch (currentSelection_) {
 		case MenuSelection::Start:
 			currentSelection_ = MenuSelection::Option;
@@ -268,8 +289,8 @@ void TitleScene::UpdateMenuSelection() {
 void TitleScene::ConfirmSelection() {
 	switch (currentSelection_) {
 	case MenuSelection::Start:
-		// ゲームシーンへ遷移
-		sceneManager_->ChangeScene(SceneType::Game);
+		OffScreenService::SetOffScreenType(OffScreenType::ShatterGlass);
+		transiton_->StartFadeOut(2.0f);
 		break;
 	case MenuSelection::Option:
 		// オプション画面を開く
@@ -307,7 +328,7 @@ void TitleScene::UpdateSelectOverlayPosition() {
 ///-------------------------------------------///
 void TitleScene::UpdateOptionMenu() {
 	// Bボタンでオプション画面を閉じる
-	if (InputService::TriggerButton(0, ControllerButtonType::B)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::B) || InputService::TriggerKey(DIK_SPACE)) {
 		isOptionOpen_ = false;
 	}
 
@@ -319,7 +340,7 @@ void TitleScene::UpdateOptionMenu() {
 ///-------------------------------------------///
 void TitleScene::UpdateModelSelection() {
 	// 十字キー右：次のモデルへ
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadRIGHT)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadRIGHT) || InputService::TriggerKey(DIK_RIGHT)) {
 		nextModelIndex_ = (currentModelIndex_ + 1) % kModelCount;
 		transitionDirection_ = true; // 右方向
 		isTransitioning_ = true;
@@ -330,7 +351,7 @@ void TitleScene::UpdateModelSelection() {
 	}
 
 	// 十字キー左：前のモデルへ
-	if (InputService::TriggerButton(0, ControllerButtonType::DPadLEFT)) {
+	if (InputService::TriggerButton(0, ControllerButtonType::DPadLEFT) || InputService::TriggerKey(DIK_LEFT)) {
 		nextModelIndex_ = (currentModelIndex_ - 1 + kModelCount) % kModelCount;
 		transitionDirection_ = false; // 左方向
 		isTransitioning_ = true;

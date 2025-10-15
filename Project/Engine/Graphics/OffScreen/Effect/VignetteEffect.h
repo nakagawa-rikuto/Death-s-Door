@@ -5,6 +5,13 @@
 // BufferBase
 #include "Engine/Graphics/Base/BufferBase.h"
 
+/// ===Dissolveエフェクトのデータ構造=== ///
+struct VignetteData {
+	float scale; // discardの閾値
+	float pawer; // smoothstep開始
+	Vector2 padding; // floatの倍数にするためのパディング
+};
+
 ///=====================================================/// 
 /// VignetteEffect
 ///=====================================================///
@@ -23,18 +30,13 @@ public:
 
 public: /// ===Setter=== ///
 
-	void SetVignetteData(float scale, float pawer);
+	void SetData(VignetteData data);
 
 private:
 
 	// Buffer
 	std::unique_ptr<BufferBase> buffer_;
 
-	// / Dissolveエフェクトのデータ構造
-	struct VignetteData {
-		float scale; // discardの閾値
-		float pawer; // smoothstep開始
-		Vector2 padding; // floatの倍数にするためのパディング
-	};
+	// Data
 	VignetteData* data_ = nullptr;
 };

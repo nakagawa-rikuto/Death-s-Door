@@ -575,6 +575,70 @@ namespace {
 		return rootSignature;
 	}
 
+	/// ===OffScreen(ShatterGlass)=== ///
+	ComPtr<ID3D12RootSignature> TypeOffScreenShatterGlass(ID3D12Device* device) {
+		// DescriptorRangeの生成
+		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
+		descriptorRange[0].BaseShaderRegister = 0; // 0から始める (t0)
+		descriptorRange[0].NumDescriptors = 1; // 数は1つ
+		descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
+		descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
+
+		// RootParameterの生成
+		D3D12_ROOT_PARAMETER rootParameters[2]{}; // 2つに増やす
+
+		// [0] SRV (テクスチャ)
+		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
+		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
+		rootParameters[0].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
+		rootParameters[0].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数
+
+		// [1] CBV (定数バッファ) - 追加
+		rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを直接指定
+		rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
+		rootParameters[1].Descriptor.ShaderRegister = 0; // b0
+		rootParameters[1].Descriptor.RegisterSpace = 0; // space0
+
+		// Samplerの設定
+		D3D12_STATIC_SAMPLER_DESC staticSamplers[1]{};
+		staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+		staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+		staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+		staticSamplers[0].ShaderRegister = 0; // s0
+		staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+		// RootSignatureの生成
+		D3D12_ROOT_SIGNATURE_DESC desc{};
+		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+		desc.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
+		desc.NumParameters = _countof(rootParameters); // 配列の長さ (2に変更)
+		desc.pStaticSamplers = staticSamplers;
+		desc.NumStaticSamplers = _countof(staticSamplers);
+
+		// --- シリアライズ & 作成 ---
+		ComPtr<ID3DBlob> signatureBlob;
+		ComPtr<ID3DBlob> errorBlob;
+		HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+		if (FAILED(hr)) {
+			if (errorBlob) {
+				OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+			}
+			assert(false);
+			return nullptr;
+		}
+
+		ComPtr<ID3D12RootSignature> rootSignature;
+		hr = device->CreateRootSignature(
+			0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+			IID_PPV_ARGS(&rootSignature));
+		assert(SUCCEEDED(hr));
+
+		return rootSignature;
+	}
+
 	/// ===SkyBox=== ///
 	ComPtr<ID3D12RootSignature> TypeSkyBox(ID3D12Device* device) {
 		// DescriptroRangeの生成				
@@ -660,6 +724,7 @@ namespace {
 		{ PipelineType::BoxFilter5x5,		TypeOffScreen },
 		{ PipelineType::RadiusBlur,			TypeOffScreenOneBuffer },
 		{ PipelineType::OutLine,			TypeOffScreen },
+		{ PipelineType::ShatterGlass,       TypeOffScreenShatterGlass },
 	};
 }
 

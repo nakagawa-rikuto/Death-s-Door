@@ -82,11 +82,11 @@ void DissolveEffect::ImGuiInfo() {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-void DissolveEffect::SetDissolveData(float threshold, float edgeStart, float edgeEnd, const Vector3& edgeColor) {
-	data_->threshold = threshold;
-	data_->edgeStart = edgeStart;
-	data_->edgeEnd = edgeEnd;
-	data_->edgeColor = edgeColor;
+void DissolveEffect::SetData(DissolveData data) {
+	data_->threshold = data.threshold;
+	data_->edgeStart = data.edgeStart;
+	data_->edgeEnd = data.edgeEnd;
+	data_->edgeColor = data.edgeColor;
 }
 void DissolveEffect::SetTexture(std::string& textureKeyName) {
 	textureKeyName_ = textureKeyName;

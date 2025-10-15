@@ -9,4 +9,5 @@ enum class OffScreenType {
 	RadiusBlur,
 	OutLine,
 	Dissolve,
+	ShatterGlass,
 };

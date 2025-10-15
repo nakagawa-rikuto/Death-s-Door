@@ -115,6 +115,8 @@ void MyGame::LoadTexture() {
 	Loader::LoadTexture("skyBox", "rostock_laage_airport_4k.dds");
 
 	// Game(Title)
+	Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
+	Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
 	Loader::LoadTexture("Title", "TitleUI/Title.png");
 	Loader::LoadTexture("Start", "TitleUI/Start.png");
 	Loader::LoadTexture("Option", "TitleUI/Option.png");
