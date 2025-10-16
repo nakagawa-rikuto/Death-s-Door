@@ -70,7 +70,9 @@
     <FxCompile Include="Resource\Shaders\OffScreen\Fullscreen.VS.hlsl">
       <Filter>Resource\Shaders\OffScreen</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\OffScreen\ShatterGlass.PS.hlsl" />
+    <FxCompile Include="Resource\Shaders\OffScreen\ShatterGlass.PS.hlsl">
+      <Filter>Resource\Shaders\OffScreen</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -459,8 +461,12 @@
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
     <ClCompile Include="application\Title\TitleUI.cpp" />
-    <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
-    <ClCompile Include="Engine\Scene\Transition\SceneTransition.cpp" />
+    <ClCompile Include="Engine\Scene\Transition\SceneTransition.cpp">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
+      <Filter>Engine\Graphics\OffScreen\Effect</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Camera\GameCamera.h">
@@ -887,8 +893,12 @@
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
     <ClInclude Include="application\Title\TitleUI.h" />
-    <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
-    <ClInclude Include="Engine\Scene\Transition\SceneTransition.h" />
+    <ClInclude Include="Engine\Scene\Transition\SceneTransition.h">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
+      <Filter>Engine\Graphics\OffScreen\Effect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -1084,6 +1094,9 @@
     </Filter>
     <Filter Include="Resource\Shaders\Particle">
       <UniqueIdentifier>{e208032c-4174-4e19-86e0-f615c28dde0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Scene\Transition">
+      <UniqueIdentifier>{b8f4e3a6-2da5-413a-9528-f6cef748c013}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
