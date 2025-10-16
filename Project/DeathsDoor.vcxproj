@@ -182,23 +182,23 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Core\WinApp.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\DepthStencil.cpp" />
     <ClCompile Include="application\Scene\GameScene.cpp" />
-    <ClCompile Include="Engine\Graphics\2d\IndexBuffer2D.cpp" />
+    <ClCompile Include="Engine\Graphics\2d\Base\IndexBuffer2D.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Base\IndexBuffer3D.cpp" />
     <ClCompile Include="Engine\Graphics\Base\BufferBase.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="application\Drawing\2d\Sprite.cpp" />
     <ClCompile Include="Engine\System\Managers\TextureManager.cpp" />
     <ClCompile Include="Engine\Core\StringUtility.cpp" />
-    <ClCompile Include="Engine\Graphics\2d\Transform2D.cpp" />
-    <ClCompile Include="Engine\Graphics\2d\Material2D.cpp" />
-    <ClCompile Include="Engine\Graphics\2d\VertexBuffer2D.cpp" />
+    <ClCompile Include="Engine\Graphics\2d\Base\Transform2D.cpp" />
+    <ClCompile Include="Engine\Graphics\2d\Base\Material2D.cpp" />
+    <ClCompile Include="Engine\Graphics\2d\Base\VertexBuffer2D.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Base\VertexBuffer3D.cpp" />
     <ClCompile Include="Engine\System\Managers\SRVManager.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Model\Model.cpp" />
     <ClCompile Include="Engine\System\Managers\ModelManager.cpp" />
     <ClCompile Include="Engine\System\Managers\PiplineManager.cpp" />
     <ClCompile Include="Engine\Graphics\3d\Model\ModelCommon.cpp" />
-    <ClCompile Include="Engine\Graphics\2d\SpriteCommon.cpp" />
+    <ClCompile Include="Engine\Graphics\2d\Sprite\SpriteCommon.cpp" />
     <ClCompile Include="Engine\Scene\MyGame.cpp" />
     <ClCompile Include="Engine\System\Managers\SceneManager.cpp" />
     <ClCompile Include="application\Scene\SelectScene.cpp" />
@@ -238,9 +238,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Weapon\PlayerWeapon.cpp" />
-    <ClCompile Include="application\Title\TitleUI.cpp" />
+    <ClCompile Include="application\Game\UI\Title\TitleUI.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
     <ClCompile Include="Engine\Scene\Transition\SceneTransition.cpp" />
+    <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\State\Base\EnemyState.h" />
@@ -332,11 +333,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Drawing\2d\Sprite.h" />
     <ClInclude Include="Engine\System\Managers\TextureManager.h" />
     <ClInclude Include="Engine\Core\StringUtility.h" />
-    <ClInclude Include="Engine\Graphics\2d\Transform2D.h" />
-    <ClInclude Include="Engine\Graphics\2d\Material2D.h" />
-    <ClInclude Include="Engine\Graphics\2d\IndexBuffer2D.h" />
+    <ClInclude Include="Engine\Graphics\2d\Base\Transform2D.h" />
+    <ClInclude Include="Engine\Graphics\2d\Base\Material2D.h" />
+    <ClInclude Include="Engine\Graphics\2d\Base\IndexBuffer2D.h" />
     <ClInclude Include="Engine\Graphics\3d\Base\IndexBuffer3D.h" />
-    <ClInclude Include="Engine\Graphics\2d\VertexBuffer2D.h" />
+    <ClInclude Include="Engine\Graphics\2d\Base\VertexBuffer2D.h" />
     <ClInclude Include="Engine\Graphics\3d\Base\VertexBuffer3D.h" />
     <ClInclude Include="Engine\System\Managers\SRVManager.h" />
     <ClInclude Include="Engine\Graphics\3d\Model\Model.h" />
@@ -344,7 +345,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Base\BufferBase.h" />
     <ClInclude Include="Engine\System\Managers\PiplineManager.h" />
     <ClInclude Include="Engine\Graphics\3d\Model\ModelCommon.h" />
-    <ClInclude Include="Engine\Graphics\2d\SpriteCommon.h" />
+    <ClInclude Include="Engine\Graphics\2d\Sprite\SpriteCommon.h" />
     <ClInclude Include="Engine\Scene\MyGame.h" />
     <ClInclude Include="Engine\System\Managers\SceneManager.h" />
     <ClInclude Include="application\Scene\SelectScene.h" />
@@ -384,9 +385,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h" />
     <ClInclude Include="application\Game\Entity\Player\Weapon\PlayerWeapon.h" />
-    <ClInclude Include="application\Title\TitleUI.h" />
+    <ClInclude Include="application\Game\UI\Title\TitleUI.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
     <ClInclude Include="Engine\Scene\Transition\SceneTransition.h" />
+    <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

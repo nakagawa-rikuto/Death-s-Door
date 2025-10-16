@@ -87,7 +87,7 @@ private:/// ===プライベート関数=== ///
 	void UpdateModelSelection();
 	// モデルトランジションの更新
 	void UpdateModelTransition();
-	// イージング関数（Ease In Out Cubic）
+	// イージング関数
 	float EaseInOutCubic(float t);
 
 };

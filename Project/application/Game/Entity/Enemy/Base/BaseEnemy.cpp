@@ -56,11 +56,11 @@ void BaseEnemy::SetPlayer(Player* player) { player_ = player; }
 void BaseEnemy::Initialize() {
 
 	// ランダムエンジンの初期化
-	std::seed_seq seq{
+	std::seed_seq seed{
 		static_cast<uint32_t>(std::time(nullptr)),
 		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
 	};
-	randomEngine_.seed(seq);
+	randomEngine_.seed(seed);
 
 	// カメラの取得
 	camera_ = CameraService::GetActiveCamera().get();

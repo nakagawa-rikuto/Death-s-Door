@@ -48,6 +48,7 @@ private:/// ===メンバ変数=== ///
 
 private: /// ===メンバ関数=== ///
 	// 配置関数
+	//NOTE:引数はJsonファイル
 	void SpawnObjects(const std::string& json_name);
 };
 

@@ -174,13 +174,6 @@ void Line::DrawGrid(const Vector3 & center, const Vector3 & size, uint32_t divis
 		Vector3 e = s + Vector3(size.x, 0.0f, 0.0f);
 		DrawLine(s, e, color);
 	}
-
-	//各座標軸の中心線のみ色変更
-	/*DrawLine(center, center + Vector3(size.x, 0.0f, 0.0f), color);
-
-	DrawLine(center, center + Vector3(0.0f, 0.0f, size.z), color);
-
-	DrawLine(center, center + Vector3(0.0f, size.y, 0.0f), color);*/
 }
 
 ///-------------------------------------------/// 

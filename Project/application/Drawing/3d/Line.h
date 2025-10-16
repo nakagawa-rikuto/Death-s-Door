@@ -20,8 +20,10 @@ public:
 	// Sphere
 	void DrawSphere(const Sphere& sphere, const Vector4& color);
 	// Grid
+	//NOTE:divisionは分割数
 	void DrawGrid(const Vector3& center, const Vector3& size, uint32_t division, const Vector4& color);
 	// GridBox
+	//NOTE:AABBを使用している
 	void DrawGirdBox(const AABB& aabb, uint32_t division, const Vector3& center, const Vector4& color);
 
 	// 1方向に対して分割グリッド線を描画するユーティリティ関数

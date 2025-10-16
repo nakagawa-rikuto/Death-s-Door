@@ -196,21 +196,6 @@
     <ClCompile Include="Engine\DataInfo\FunctionData.cpp">
       <Filter>Engine\DataInfo</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\2d\IndexBuffer2D.cpp">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\2d\Material2D.cpp">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\2d\SpriteCommon.cpp">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\2d\Transform2D.cpp">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\2d\VertexBuffer2D.cpp">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\3d\Base\IndexBuffer3D.cpp">
       <Filter>Engine\Graphics\3D\Base</Filter>
     </ClCompile>
@@ -460,12 +445,32 @@
     <ClCompile Include="Engine\System\Service\Loader.cpp">
       <Filter>Engine\System\Service</Filter>
     </ClCompile>
-    <ClCompile Include="application\Title\TitleUI.cpp" />
     <ClCompile Include="Engine\Scene\Transition\SceneTransition.cpp">
       <Filter>Engine\Scene\Transition</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\Title\TitleUI.cpp">
+      <Filter>application\UI\Title</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\2d\Sprite\SpriteCommon.cpp">
+      <Filter>Engine\Graphics\2D\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\2d\Base\IndexBuffer2D.cpp">
+      <Filter>Engine\Graphics\2D\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\2d\Base\Material2D.cpp">
+      <Filter>Engine\Graphics\2D\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\2d\Base\Transform2D.cpp">
+      <Filter>Engine\Graphics\2D\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\2d\Base\VertexBuffer2D.cpp">
+      <Filter>Engine\Graphics\2D\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp">
+      <Filter>Engine\Graphics\2D\Base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -624,21 +629,6 @@
     </ClInclude>
     <ClInclude Include="Engine\DataInfo\SceneType.h">
       <Filter>Engine\DataInfo</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\2d\IndexBuffer2D.h">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\2d\Material2D.h">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\2d\SpriteCommon.h">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\2d\Transform2D.h">
-      <Filter>Engine\Graphics\2D</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\2d\VertexBuffer2D.h">
-      <Filter>Engine\Graphics\2D</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\3d\Base\IndexBuffer3D.h">
       <Filter>Engine\Graphics\3D\Base</Filter>
@@ -892,12 +882,32 @@
     <ClInclude Include="Engine\System\Service\Loader.h">
       <Filter>Engine\System\Service</Filter>
     </ClInclude>
-    <ClInclude Include="application\Title\TitleUI.h" />
     <ClInclude Include="Engine\Scene\Transition\SceneTransition.h">
       <Filter>Engine\Scene\Transition</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h">
       <Filter>Engine\Graphics\OffScreen\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\Title\TitleUI.h">
+      <Filter>application\UI\Title</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\2d\Sprite\SpriteCommon.h">
+      <Filter>Engine\Graphics\2D\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\2d\Base\VertexBuffer2D.h">
+      <Filter>Engine\Graphics\2D\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\2d\Base\IndexBuffer2D.h">
+      <Filter>Engine\Graphics\2D\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\2d\Base\Material2D.h">
+      <Filter>Engine\Graphics\2D\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\2d\Base\Transform2D.h">
+      <Filter>Engine\Graphics\2D\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h">
+      <Filter>Engine\Graphics\2D\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1011,9 +1021,6 @@
     <Filter Include="Engine\DataInfo">
       <UniqueIdentifier>{5334b93e-9ac6-4c27-8018-f878c73cc22e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Debug">
-      <UniqueIdentifier>{1b18e458-6588-4eb9-806e-717278055ff4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Engine\Graphics">
       <UniqueIdentifier>{e7e15fb2-c760-4e63-a30b-06bdefc8375a}</UniqueIdentifier>
     </Filter>
@@ -1097,6 +1104,18 @@
     </Filter>
     <Filter Include="Engine\Scene\Transition">
       <UniqueIdentifier>{b8f4e3a6-2da5-413a-9528-f6cef748c013}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\UI">
+      <UniqueIdentifier>{40deb47d-99c0-4514-b379-f9406b1914b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\UI\Title">
+      <UniqueIdentifier>{3a1fbc3e-6980-4309-b497-63300e33f2de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\2D\Base">
+      <UniqueIdentifier>{9e5b3652-441f-4ca3-a932-4206d1d0aaeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\2D\Sprite">
+      <UniqueIdentifier>{2562fb89-85bb-4bad-9689-08236e5b4917}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

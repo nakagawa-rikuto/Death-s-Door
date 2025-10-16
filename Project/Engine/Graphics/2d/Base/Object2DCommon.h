@@ -1,20 +1,20 @@
 #pragma once
 /// ===include=== ///
 // Engine
-#include "Engine/Graphics/2d/Material2D.h"
-#include "Engine/Graphics/2d/Transform2D.h"
+#include "Material2D.h"
+#include "Transform2D.h"
 //c++
 #include <memory>
 
 ///=====================================================/// 
-/// スプライト共通部
+/// Object2D共通部
 ///=====================================================///
-class SpriteCommon {
+class Object2DCommon {
 public:
 
-	SpriteCommon();
-	~SpriteCommon();
-	
+	Object2DCommon();
+	~Object2DCommon();
+
 	// 初期化
 	void MaterialInitialize(ID3D12Device* device, uint32_t Size);
 	void WVPMatrixInitialize(ID3D12Device* device);
@@ -37,4 +37,5 @@ private:/// ===Variables(変数)=== ///
 	MaterialData2D* materialData_ = nullptr;
 	TransformationMatrix2D* wvpMatrixData_ = nullptr;
 };
+
 

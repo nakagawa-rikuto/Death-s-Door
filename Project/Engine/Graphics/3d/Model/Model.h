@@ -2,8 +2,6 @@
 /// ===include=== ///
 // Common
 #include "Engine/Graphics/3d/Model/ModelCommon.h"
-// Data
-#include "Engine/DataInfo/PipelineStateObjectType.h"
 
 ///=====================================================/// 
 /// モデル
