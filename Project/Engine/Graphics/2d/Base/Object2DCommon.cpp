@@ -1,12 +1,12 @@
-#include "SpriteCommon.h"
+#include "Object2DCommon.h"
 // Math
 #include "Math/MatrixMath.h"
 
 ///-------------------------------------------/// 
 /// コンストラクタ、デストラクタ
 ///-------------------------------------------///
-SpriteCommon::SpriteCommon() = default;
-SpriteCommon::~SpriteCommon() {
+Object2DCommon::Object2DCommon() = default;
+Object2DCommon::~Object2DCommon() {
 	material_.reset();
 	wvp_.reset();
 }
@@ -14,7 +14,7 @@ SpriteCommon::~SpriteCommon() {
 ///-------------------------------------------/// 
 /// MaterialBufferの初期化
 ///-------------------------------------------///
-void SpriteCommon::MaterialInitialize(ID3D12Device* device, uint32_t size) {
+void Object2DCommon::MaterialInitialize(ID3D12Device* device, uint32_t size) {
 	// 生成
 	material_ = std::make_unique<Material2D>();
 	// buffer
@@ -27,7 +27,7 @@ void SpriteCommon::MaterialInitialize(ID3D12Device* device, uint32_t size) {
 ///-------------------------------------------/// 
 /// WVPBufferの初期化
 ///-------------------------------------------///
-void SpriteCommon::WVPMatrixInitialize(ID3D12Device* device) {
+void Object2DCommon::WVPMatrixInitialize(ID3D12Device* device) {
 	// 生成
 	wvp_ = std::make_unique<Transform2D>();
 	// buffer
@@ -39,7 +39,7 @@ void SpriteCommon::WVPMatrixInitialize(ID3D12Device* device) {
 ///-------------------------------------------/// 
 /// CommandListの設定
 ///-------------------------------------------///
-void SpriteCommon::Bind(ID3D12GraphicsCommandList* commandList) {
+void Object2DCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 
 	// Materialの設定
 	commandList->SetGraphicsRootConstantBufferView(0, material_->GetBuffer()->GetGPUVirtualAddress());
@@ -50,10 +50,10 @@ void SpriteCommon::Bind(ID3D12GraphicsCommandList* commandList) {
 ///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
-void SpriteCommon::SetMateiralData(const Vector4& color, const Matrix4x4& uvTransform) {
+void Object2DCommon::SetMateiralData(const Vector4& color, const Matrix4x4& uvTransform) {
 	materialData_->color = color;
 	materialData_->uvTransform = uvTransform;
 }
-void SpriteCommon::SetWVPData(const Matrix4x4 & WVP) {
+void Object2DCommon::SetWVPData(const Matrix4x4& WVP) {
 	wvpMatrixData_->WVP = WVP;
 }
