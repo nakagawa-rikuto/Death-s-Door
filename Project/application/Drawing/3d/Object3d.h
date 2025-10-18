@@ -17,29 +17,43 @@ public:
 	Object3d() = default;
 	~Object3d();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="type">初期化するオブジェクトの種類を指定します。</param>
+	/// <param name="modelName">使用するモデルの名前（識別またはロードに使われる文字列）。</param>
+	/// <param name="light">照明の種類を指定します。省略時は LightType::None（照明なし）が使用されます。</param>
 	void Init(ObjectType type, const std::string& modelName, LightType light = LightType::None);
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update();
-	// 描画
+	
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモード。省略した場合は BlendMode::KBlendModeNormal が使用される。</param>
 	void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
 
 public: /// ===親子関係=== ///
-	// 親の設定
+	/// <summary>
+	/// ModelCommon 型の親オブジェクトを設定
+	/// </summary>
+	/// <param name="parent">設定する親オブジェクトへのポインタ。</param>
 	void SetParent(ModelCommon* parent);
-	// 親の解除
+
+	/// <summary>
+	/// 親オブジェクトへの参照をクリア
+	/// </summary>
 	void ClearParent();
 
 public: /// ===Getter=== ///
-	// モデル座標
-	const Vector3& GetTranslate() const;
-	// モデル回転
-	const Quaternion& GetRotate() const;
-	// モデル拡縮
-	const Vector3& GetScale() const;
-	// モデルカラー
+	// Transform（位置、回転、拡縮）を取得
+	const QuaternionTransform& GetTransform() const;
+	// Color（色）を取得
 	const Vector4& GetColor() const;
-	// Object
+	// ModelCommonオブジェクトへのポインターを取得
 	ModelCommon* GetModelCommon();
 
 public: /// ===Setter=== ///

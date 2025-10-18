@@ -20,12 +20,8 @@ public: /// ===基本的な関数=== ///
 	void Draw(BlendMode mode) override;
 
 public: /// ===Getter=== ///
-	// モデル座標
-	const Vector3& GetTranslate() const;
-	// モデル回転
-	const Quaternion& GetRotate() const;
-	// モデル拡縮
-	const Vector3& GetScale() const;
+	// モデルTransform
+	const QuaternionTransform& GetTransform() const;
 	// モデルカラー
 	const Vector4& GetColor() const;
 

@@ -20,9 +20,7 @@ Model::~Model() = default;
 /// Getter
 ///-------------------------------------------///
 /// ===モデル=== ///
-const Vector3& Model::GetTranslate() const { return worldTransform_.translate; }
-const Quaternion& Model::GetRotate() const { return worldTransform_.rotate; }
-const Vector3& Model::GetScale() const { return worldTransform_.scale; }
+const QuaternionTransform& Model::GetTransform() const { return worldTransform_; }
 const Vector4& Model::GetColor() const { return color_; }
 
 ///-------------------------------------------/// 

@@ -31,6 +31,7 @@ protected:
 
 private:
 	// OBBのAxisをQuaternionから設定
+    //NOTE: obb = OBBの情報, rotate = 回転
     void SetOBBAxisFromQuaternion(OBB& obb, Quaternion rotate);
 };
 

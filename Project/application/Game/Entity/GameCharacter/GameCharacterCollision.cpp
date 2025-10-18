@@ -115,6 +115,11 @@ void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>*
 		obbCharacter = dynamic_cast<GameCharacter<OBBCollider>*>(characterB);
 	}
 
+	/// ===Nullチェック=== ///
+	if (!obbCharacter || !sphereCharacter) {
+		return;
+	}
+
 	// 位置情報の取得
 	Vector3 obbPos = obbCharacter->GetTransform().translate;
 	Vector3 spherePos = sphereCharacter->GetTransform().translate;

@@ -11,11 +11,19 @@ public:/// ===メンバ関数=== ///
 	ClearScene() = default;
 	~ClearScene();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	void Initialize() override;
-	// 更新
+	
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update() override;
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
 	void Draw() override;
 
 private:/// ===メンバ変数=== ///

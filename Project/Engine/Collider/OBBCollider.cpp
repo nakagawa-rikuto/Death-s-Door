@@ -11,8 +11,8 @@
 void OBBCollider::Initialize() {
 	type_ = ColliderType::OBB;
 
-	obb_.center = object3d_->GetTranslate();
-	SetOBBAxisFromQuaternion(obb_, object3d_->GetRotate());
+	obb_.center = object3d_->GetTransform().translate;
+	SetOBBAxisFromQuaternion(obb_, object3d_->GetTransform().rotate);
 
 	// Colliderの初期化
 	Collider::Initialize();
@@ -30,9 +30,9 @@ void OBBCollider::Update() {
 	object3d_->SetColor(color_);
 
 	//センターの位置を更新
-	obb_.center = object3d_->GetTranslate();
+	obb_.center = object3d_->GetTransform().translate;
 	// 回転によってOBBの軸を更新
-	SetOBBAxisFromQuaternion(obb_, object3d_->GetRotate());
+	SetOBBAxisFromQuaternion(obb_, object3d_->GetTransform().rotate);
 
 	// Colliderの更新処理
 	Collider::Update();

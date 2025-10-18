@@ -58,6 +58,7 @@ public: /// ===Setter=== ///
 public: /// ===State用関数=== ///
 
 	// 減速処理
+	//NOTE: develeration = 減速率
 	void ApplyDeceleration(const float& develeration);
 
 	// Stateの変更

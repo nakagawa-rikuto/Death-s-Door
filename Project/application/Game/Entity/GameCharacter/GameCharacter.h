@@ -14,27 +14,49 @@ public:
     GameCharacter() = default;
     virtual ~GameCharacter();
 
-    // 初期化
+    /// <summary>
+    /// 初期化処理
+    /// </summary>
     virtual void Initialize() override;
-    // 更新
+
+    /// <summary>
+    /// 更新処理
+    /// </summary>
     virtual void Update() override;
-    // 描画
+
+    /// <summary>
+    /// 描画処理
+    /// </summary>
+    /// <param name="mode">描画に使用するブレンドモード。</param>
     virtual void Draw(BlendMode mode) override;
-    // ImGui
+
+    /// <summary>
+    /// ImGui情報の表示
+    /// </summary>
     virtual void Information() override;
 
 public: /// ===衝突判定=== ///
+    /// <summary>
+    /// 衝突時の処理
+    /// </summary>
+    /// <param name="collider">衝突した相手を表す Collider へのポインター。</param>
     virtual void OnCollision(Collider* collider) override;
 
-public: /// ===Setter・Getter=== ///
+public: /// ===Getter=== ///
     // Velocity
     Vector3 GetVelocity() const { return baseInfo_.velocity; }
-    void SetVelocity(const Vector3 vel) { baseInfo_.velocity = vel; };
-    // deltaTime
-    float GetDeltaTime() const { return baseInfo_.deltaTIme; };
     // isDead
     bool GetIsDead() const { return baseInfo_.isDead; };
+    // deltaTime
+    float GetDeltaTime() const { return baseInfo_.deltaTIme; };
+   
+
+public: /// ===Setter=== ///
+    // Velocity
+    void SetVelocity(const Vector3 vel) { baseInfo_.velocity = vel; };
+    // isDead
     void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
+
 protected:
 
 	// GameCharacterCollision

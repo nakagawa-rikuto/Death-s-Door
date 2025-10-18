@@ -11,11 +11,9 @@ public:
 	VertexBuffer3D();
 	~VertexBuffer3D();
 
-	/// <summary>
-	/// Resourceの生成
-	/// </summary>
-	/// <param name="device"></param>
-	/// <param name="sizeInBytes"></param>
+	// Resourceの生成
+	// <param name="device">リソースを作成するための ID3D12Device オブジェクトへのポインター。</param>
+	// <param name="sizeInBytes">作成するリソースのサイズ (バイト単位)。</param>
 	void Create(ID3D12Device* device, size_t sizeInBytes);
 
 	/// <summary>
