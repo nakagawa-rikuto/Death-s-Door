@@ -20,6 +20,7 @@ public:
 	// デバッグ用の更新
 	void DebugUpdate();
 	// カメラシェイク開始
+	//NOTE: intensity = 強度, duration = 継続時間, frequency = 周波数
 	void StartShake(float intensity, float duration, float frequency = 10.0f);
 	// カメラシェイク停止
 	void StopShake();

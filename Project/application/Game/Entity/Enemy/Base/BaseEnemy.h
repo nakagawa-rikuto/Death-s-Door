@@ -24,33 +24,51 @@ public:
 	BaseEnemy() = default;
 	~BaseEnemy();
 
-	// 初期化
+	/// <summary>
+	/// ゲームシーンで呼び出す初期化処理の純粋仮想関数
+	/// </summary>
+	/// <param name="translate">シーンの位置を指定する平行移動ベクトル。const参照で渡される。</param>
+	virtual void InitGameScene(const Vector3& translate) = 0;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	virtual void Initialize()override;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	virtual void Update()override;
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモード。既定値は BlendMode::KBlendModeNormal。</param>
 	virtual void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
-	// ImGui
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
 	virtual void Information()override;
-	// 攻撃処理
+
+	/// <summary>
+	/// 攻撃処理の純粋仮想関数
+	/// </summary>
 	virtual void Attack() = 0;
-	// 変更↓値をコピー
+
+	/// <summary>
+	/// このオブジェクトのチューニング設定を指定した情報を他のBaseEnemyオブジェクトにコピー
+	/// </summary>
+	/// <param name="enemy">コピー先の BaseEnemy オブジェクトへのポインター。</param>
 	void CopyTuningTo(BaseEnemy* enemy) const;
 
 public: /// ===衝突判定=== ///
+
+	/// <summary>
+   /// 衝突時の処理
+   /// </summary>
+   /// <param name="collider">衝突した相手を表す Collider へのポインター。</param>
 	void OnCollision(Collider* collider) override;
-
-public: /// ===Getter=== ///
-	// Timer
-	float GetAttackTimer()const;
-	// Flag
-	bool GetAttackFlag()const;
-
-public: /// ===Setter=== ///
-	// Timer
-	void SetTimer(StateType type, float time);
-	// Player
-	void SetPlayer(Player* player);
 
 public: /// ===State用関数=== ///
 	// 移動処理の開始処理
@@ -60,7 +78,20 @@ public: /// ===State用関数=== ///
 	// 攻撃可能かチェック
 	bool CheckAttackable();
 	// Stateの変更
-	void ChangeState(std::unique_ptr<EnemyState> newState);
+	//NOTE:newState = 次のステート
+	void ChangeState(std::unique_ptr<EnemyState> nextState);
+
+public: /// ===Getter=== ///
+	// Timer
+	float GetAttackTimer()const { return attackInfo_.timer; };
+	// Flag
+	bool GetAttackFlag()const { return attackInfo_.isAttack;};
+
+public: /// ===Setter=== ///
+	// Player
+	void SetPlayer(Player* player) { player_ = player; };
+	// Timer
+	void SetTimer(StateType type, float time);
 
 protected: /// ===変数の宣言=== ///
 
@@ -104,17 +135,31 @@ protected: /// ===変数の宣言=== ///
 	std::mt19937 randomEngine_;
 
 protected: /// ===関数の宣言=== ///
-	// 回転更新関数
+
+	/// <summary>
+	/// 回転の更新処理
+	/// </summary>
+	/// <param name="direction">回転目標の方向</param>
+	/// <param name="lerpT">回転完了までの時間</param>
 	void UpdateRotationTowards(const Vector3& direction, float lerpT);
 
-	// 派生用の拡張ポイント
+	/// <summary>
+	/// 派生側で型固有のチューニング値をコピーするための関数
+	/// </summary>
+	/// <param name="enemy">親のBaseEnemy</param>
 	virtual void CopyTypeTuningFromThisTo(BaseEnemy* enemy) const {};
 
 private:
-	// 方向の設定と待機時間の設定
+
+	/// <summary>
+	/// 方向の設定と待機時間の設定
+	/// </summary>
+	/// <param name="vector">設定する方向のベクトル</param>
 	void PreparNextMove(const Vector3& vector);
 
-	// 時間を進める
+	/// <summary>
+	/// タイマーを進める処理
+	/// </summary>
 	void advanceTimer();
 	
 };

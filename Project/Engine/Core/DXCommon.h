@@ -31,8 +31,10 @@ public:
 	void Initialize(
 		WinApp* winApp, int32_t backBufferWidth, int32_t backBufferHeight);
 	// 描画前処理(RenderTexture)
+	// <param name="resource">描画前に準備するレンダーテクスチャを表す ID3D12Resource へのポインタ。</param>
 	void PreDrawRenderTexture(ID3D12Resource* resource);
 	// 描画前処理(swapChain)
+	// <param name="rtv">レンダーターゲットビューを管理する RTVManager オブジェクトへのポインタ。</param>
 	void PreDrawImGui(RTVManager* rtv);
 	// コマンドを積む
 	void BeginCommand();
@@ -41,8 +43,11 @@ public:
 	// 描画後処理
 	void PostDraw();
 
-	/// ===Heapの生成=== ///
 	// ディスクリプタヒープの生成
+	// <param name="heapType">作成するディスクリプタ ヒープの種類を指定します (D3D12_DESCRIPTOR_HEAP_TYPE 列挙型)。</param>
+	// <param name="numDescriptors">ディスクリプタ ヒープ内に作成するディスクリプタの数を指定します。</param>
+	// <param name="shaderVisible">ヒープがシェーダーから可視かどうかを指定します。true の場合、シェーダー可視ヒープが作成されます。</param>
+	// <returns>作成された ID3D12DescriptorHeap オブジェクトへの ComPtr スマートポインター。</returns>
 	ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 
 	/// ===DescriptorSizeの取得=== ///
@@ -74,9 +79,17 @@ public:/// ===Getter=== ///
 	// バックバッファの数を取得
 	size_t GetBackBufferCount()const;
 	// CPUのディスクリプターハンドルの取得
+	// <param name="descriptorHeap">ディスクリプタヒープへの参照。ID3D12DescriptorHeap の ComPtr。</param>
+	// <param name="descriptorSize">ディスクリプタ 1 つ分のサイズ (バイト単位)。</param>
+	// <param name="index">取得するディスクリプタのインデックス。</param>
+	// <returns>指定したインデックスに対応する D3D12_CPU_DESCRIPTOR_HANDLE を返します。</returns>
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(
 		const ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	// GPUのディスクリプターハンドルの取得
+	// <param name="descriptorHeap">ディスクリプタヒープへの参照。ID3D12DescriptorHeap の ComPtr。</param>
+	// <param name="descriptorSize">ディスクリプタ 1 つ分のサイズ (バイト単位)。</param>
+	// <param name="index">取得するディスクリプタのインデックス。</param>
+	// <returns>指定したインデックスに対応する D3D12_GPU_DESCRIPTOR_HANDLE を返します。</returns>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(
 		const ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 
@@ -145,8 +158,12 @@ private:/// ===関数=== ///
 	// DXCの初期化
 	void InitializeCompiler();
 	// ビューポート
+	// <param name="kClientWindth">クライアント領域の幅（ピクセル単位）。</param>
+	// <param name="kClientHeight">クライアント領域の高さ（ピクセル単位）。</param>
 	void CreateViewport(const int32_t kClientWindth, const int32_t kClientHeight);
 	// シザー矩形
+	// <param name="kClientWindth">クライアント領域の幅（ピクセル単位）。</param>
+	// <param name="kClientHeight">クライアント領域の高さ（ピクセル単位）。</param>
 	void CreateScissor(const int32_t kClientWindth, const int32_t kClientHeight);
 	// FPS固定の初期化
 	void InitializeFixFPS();

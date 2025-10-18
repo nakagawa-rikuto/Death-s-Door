@@ -18,7 +18,8 @@ public:
 	// 描画
 	void Draw(BlendMode mode = BlendMode::KBlendModeNormal)override;
 	// 生成
-	void Create(const Vector3& pos, const Vector3& vel);
+	//NOTE:pos = 配置場所, direction = 方向
+	void Create(const Vector3& pos, const Vector3& direction);
 	// 情報
 	void Information() override {};
 

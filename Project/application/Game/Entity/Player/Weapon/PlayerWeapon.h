@@ -25,6 +25,7 @@ public:
 	void Information() override;
 
 	// 攻撃処理
+	//NOTE:Start, EndPoint = 攻撃の開始、終了地点, time = 時間
 	void Attack(const Vector3& startPoint, const Vector3& endPoint, float time);
 
 public: /// ===衝突=== ///
@@ -53,6 +54,7 @@ private:
 private: 
 
 	// 攻撃の回転を計算
+	//NOTE: Start, EndPoint = 回転の最初と最後の地点、 time = 時間
 	void CalculateAttackRotation(const Vector3& startPoint, const Vector3& endPoint, float time);
 };
 

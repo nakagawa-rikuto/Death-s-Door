@@ -27,11 +27,19 @@ public:/// ===メンバ関数=== ///
 	TitleScene() = default;
 	~TitleScene();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	void Initialize() override;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update() override;
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
 	void Draw() override;
 
 private:/// ===メンバ変数=== ///
@@ -74,20 +82,41 @@ private:/// ===メンバ変数=== ///
 
 private:/// ===プライベート関数=== ///
 
-	// メニュー選択の更新
+	/// <summary>
+	/// メニューの選択状態の更新処理
+	/// </summary>
 	void UpdateMenuSelection();
-	// メニュー決定処理
+
+	/// <summary>
+	/// メニューの選択決定処理
+	/// </summary>
 	void ConfirmSelection();
-	// メニュー項目の色更新
+
+	/// <summary>
+	/// 選択オーバーレイの位置を更新処理
+	/// </summary>
 	void UpdateSelectOverlayPosition();
-	// オプション画面の更新
+
+	/// <summary>
+	/// オプション画面の更新処理
+	/// </summary>
 	void UpdateOptionMenu();
 
-	// モデル選択の更新
+	/// <summary>
+	/// モデル選択の更新処理
+	/// </summary>
 	void UpdateModelSelection();
-	// モデルトランジションの更新
+
+	/// <summary>
+	/// モデルトランジションの更新処理
+	/// </summary>
 	void UpdateModelTransition();
-	// イージング関数
+
+	/// <summary>
+	/// イージング
+	/// </summary>
+	/// <param name="t"></param>
+	/// <returns></returns>
 	float EaseInOutCubic(float t);
 
 };

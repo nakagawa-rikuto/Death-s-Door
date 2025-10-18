@@ -27,14 +27,6 @@ BaseEnemy::~BaseEnemy() {
 }
 
 ///-------------------------------------------/// 
-/// Getter
-///-------------------------------------------///
-// AttackTimer
-float BaseEnemy::GetAttackTimer() const { return attackInfo_.timer; }
-// AttackFlag
-bool BaseEnemy::GetAttackFlag() const { return attackInfo_.isAttack; }
-
-///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 // タイマー
@@ -48,7 +40,6 @@ void BaseEnemy::SetTimer(StateType type, float time) {
 		break;
 	}
 }
-void BaseEnemy::SetPlayer(Player* player) { player_ = player; }
 
 ///-------------------------------------------/// 
 /// 初期化

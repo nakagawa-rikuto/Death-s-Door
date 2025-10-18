@@ -16,4 +16,6 @@ namespace Math {
 	Vector3 SLerp(const Vector3& start, const Vector3& end, float t);
 	// Quaternion
 	Quaternion SLerp(const Quaternion& start, const Quaternion& end, float t);
+
+	/// ===イージング=== ///
 }

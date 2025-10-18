@@ -18,17 +18,38 @@ public:
 	GameCamera() = default;
 	~GameCamera();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="type">初期化に使用するカメラの種類を指定します。</param>
 	void Init(CameraType type);
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update();
-	// カメラ情報
+
+	/// <summary>
+	/// ImGui
+	/// </summary>
 	virtual void ImGuiUpdate();
-	// デバッグ用の更新
+
+	/// <summary>
+	/// デバッグ用の更新処理
+	/// </summary>
 	void DebugUpdate();
-	// カメラシェイク開始
+
+	/// <summary>
+	/// シェイク処理
+	/// </summary>
+	/// <param name="intensity">シェイクの強度を指定します。</param>
+	/// <param name="duration">シェイク効果の持続時間（秒）を指定します。</param>
+	/// <param name="frequency">シェイクの周波数（Hz）を指定します。省略時は 10.0f です。</param>
 	void StartShake(float intensity, float duration, float frequency = 10.0f);
-	// カメラシェイク停止
+	
+	/// <summary>
+	/// シェイク動作を停止
+	/// </summary>
 	void StopShake();
 
 public: /// ===Getter=== ///

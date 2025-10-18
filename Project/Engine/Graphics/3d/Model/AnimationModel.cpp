@@ -29,9 +29,7 @@ AnimationModel::~AnimationModel() {
 /// Getter
 ///-------------------------------------------///
 /// ===モデル=== ///
-const Vector3& AnimationModel::GetTranslate() const { return worldTransform_.translate; }
-const Quaternion& AnimationModel::GetRotate() const { return worldTransform_.rotate; }
-const Vector3& AnimationModel::GetScale() const { return worldTransform_.scale; }
+const QuaternionTransform& AnimationModel::GetTransform() const { return worldTransform_; }
 const Vector4& AnimationModel::GetColor() const { return color_; }
 
 ///-------------------------------------------/// 

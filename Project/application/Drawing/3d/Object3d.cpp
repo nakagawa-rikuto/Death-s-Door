@@ -72,28 +72,12 @@ void Object3d::ClearParent() {
 ///-------------------------------------------/// 
 /// Getter
 ///-------------------------------------------///
-// Translate
-const Vector3& Object3d::GetTranslate() const {
+// Transform
+const QuaternionTransform& Object3d::GetTransform() const {
 	if (type_ == ObjectType::Model) {
-		return model_->GetTranslate();
+		return model_->GetTransform();
 	} else {
-		return animationModel_->GetTranslate();
-	}
-}
-// Rotate
-const Quaternion& Object3d::GetRotate() const {
-	if (type_ == ObjectType::Model) {
-		return model_->GetRotate();
-	} else {
-		return animationModel_->GetRotate();
-	}
-}
-// Scale
-const Vector3& Object3d::GetScale() const {
-	if (type_ == ObjectType::Model) {
-		return model_->GetScale();
-	} else {
-		return animationModel_->GetScale();
+		return animationModel_->GetTransform();
 	}
 }
 // Color

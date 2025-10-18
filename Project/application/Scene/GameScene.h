@@ -16,11 +16,19 @@ public:/// ===メンバ関数=== ///
 	GameScene() = default;
 	~GameScene();
 
-	// 初期化
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
 	void Initialize() override;
-	// 更新
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void Update() override;
-	// 描画
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
 	void Draw() override;
 
 private:/// ===メンバ変数=== ///
@@ -47,8 +55,10 @@ private:/// ===メンバ変数=== ///
 	CameraInfo cameraInfo_;
 
 private: /// ===メンバ関数=== ///
-	// 配置関数
-	//NOTE:引数はJsonファイル
+	/// <summary>
+	/// 配置処理
+	/// </summary>
+	/// <param name="json_name">使用するJsonファイル名</param>
 	void SpawnObjects(const std::string& json_name);
 };
 

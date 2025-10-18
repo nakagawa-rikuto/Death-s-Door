@@ -13,7 +13,7 @@ public:
 	~LongRangeEnemy();
 
 	// 初期化（GameScene用）
-	void InitGameScene(const Vector3& translate);
+	void InitGameScene(const Vector3& translate)override;
 	// 初期化
 	void Initialize()override;
 	// 更新
