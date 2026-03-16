@@ -27,23 +27,9 @@ void ClearScene::Update() {
 	ImGui::Begin("ClearScene");
 	ImGui::End();
 #endif // USE_IMGUI
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void ClearScene::Draw() {
-#pragma region 背景スプライト描画
-#pragma endregion
-
-#pragma region モデル描画
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
-#pragma endregion
-
-#pragma region 前景スプライト描画
-#pragma endregion
-}
+void ClearScene::Draw() {}

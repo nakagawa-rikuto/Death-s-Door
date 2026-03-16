@@ -73,11 +73,10 @@ void GameScene::Initialize() {
 
 	/// ===EnemyManagerの生成=== ///
 	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->SetPlayer(player_.get());
 
 	/// ===SponEntity=== ///
 	SpawnEntity("Level/EntityData2.json");
-	// EnemyにPlayerを設定
-	enemyManager_->SetPlayer(player_.get());
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -129,9 +128,6 @@ void GameScene::Update() {
 		// 各Stateの更新
 		currentState_->Update();
 	}
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
 }
 
 ///-------------------------------------------/// 
@@ -152,9 +148,6 @@ void GameScene::Draw() {
 		// 各Stateの更新
 		currentState_->Draw();
 	}
-
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
 }
 
 ///-------------------------------------------/// 
@@ -183,8 +176,6 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 
 	// オブジェクト分回す
 	for (const auto& obj : levelData->objects) {
-		// OBBの半分の大きさを計算
-		Vector3 obbHalfSize = obj.colliderInfo2 / 2.0f;
 
 		/// ===クラス名で分岐=== ///
 		switch (obj.classType) {
@@ -192,22 +183,7 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			// 初期化と座標設定
 			player_->InitGame(obj.translation, camera_.get());
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-
 			break;
-		case LevelData::ClassTypeLevel::Enemy:
-			if (obj.fileName == "Close") {
-				// Enemyの座標設定
-				enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
-				break;
-			} else if (obj.fileName == "Long") {
-				// Enemyの座標設定
-				enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
-				break;
-			} else if (obj.fileName == "Boss") {
-				// BossEnemyの座標設定
-				enemyManager_->Spawn(EnemyType::Boss, obj.translation, Math::QuaternionFromVector(obj.rotation));
-				break;
-			}
 		}
 	}
 }
@@ -242,4 +218,5 @@ void GameScene::LoadParticle() {
 	Service::Particle::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
 	Service::Particle::LoadParticleDefinition("CloseEnemyAttack.json");
 	Service::Particle::LoadParticleDefinition("LongEnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("MobEnemySpaw.json");
 }

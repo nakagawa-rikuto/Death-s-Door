@@ -18,6 +18,10 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 	// ゲームシーンのポインタを保存
 	gameScene_ = gameScene;
 
+	/// ===Phase=== ///
+	mobPhase_ = std::make_unique<MobPhase>();
+	mobPhase_->Initialize(gameScene_->GetEnemyManager());
+
 	/// ===GameSceneUI=== ///
 	ui_ = std::make_unique<GameSceneUI>();
 	ui_->Initialize();
@@ -36,7 +40,7 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 ///-------------------------------------------///
 void GameSceneInGameState::Update() {
 
-	// オプションアクティブ
+	/// ===OptionUI=== ///
 	if (Service::Input::TriggerButton(0, ControllerButtonType::Start) || Service::Input::TriggerKey(DIK_ESCAPE)) {
 		if (isOptionActive_) {
 			Service::DeltaTime::SetDeltaTime(1.0f / 60.0f);
@@ -46,12 +50,12 @@ void GameSceneInGameState::Update() {
 			isOptionActive_ = true;
 		}
 	}
-
 	// OptionUIの更新
 	optionUI_->GameUpdate(isOptionActive_);
 
-	// 更新
+	/// ===Gameの更新処理=== ///
 	if (!isOptionActive_) {
+		mobPhase_->Update();
 		// EnemyManagerの更新
 		gameScene_->GetEnemyManager()->Update();
 		// Playerの更新
@@ -60,11 +64,12 @@ void GameSceneInGameState::Update() {
 		ui_->Update();
 	}
 
+	/// ===Stateの移動=== ///
 	// Playerが死亡しているか確認
 	if (gameScene_->GetPlayer()->GetIsDead()) {
 		// ゲームオーバーアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
-	} else if (gameScene_->GetEnemyManager()->GetTotalEnemyCount() <= 0) {
+	} else if (mobPhase_->IsCleared()) {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameClearState>());
 	} else if (optionUI_->GetReturnToTitle()) {

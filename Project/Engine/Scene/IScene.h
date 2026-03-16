@@ -22,8 +22,8 @@ namespace MiiEngine {
 		virtual ~IScene();
 
 		virtual void Initialize();
-		virtual void Update();
-		virtual void Draw();
+		virtual void Update() = 0;
+		virtual void Draw() = 0;
 
 	public:/// ===Setter=== ///
 		// SceneManager

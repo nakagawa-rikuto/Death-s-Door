@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "PlayerUI.h"
+#include "application/Game/UI/Game/PlayerUI.h"
 
 /// ===前方宣言=== ///
 class Player;

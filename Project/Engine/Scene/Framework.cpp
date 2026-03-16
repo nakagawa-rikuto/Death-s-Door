@@ -78,6 +78,8 @@ namespace MiiEngine {
 		/// ===システムの更新処理=== ///
 		// CameraManager
 		cameraManager_->UpdateAllCameras();
+		// Line
+		Engine_->GetLineObject3D()->Update();
 		// ParticleManager
 		particleManager_->Update();
 		// SpriteManager
@@ -122,6 +124,8 @@ namespace MiiEngine {
 		Engine_->BeginFrame();
 		// SpriteManager
 		spriteManager_->BackDraw();
+		// Lineの描画
+		Engine_->GetLineObject3D()->Draw();
 	}
 
 	///-------------------------------------------/// 

@@ -70,9 +70,6 @@ namespace MiiEngine {
 
 		//RenderCameraControl();
 #endif // USE_IMGUI
-
-	/// ===ISceneの更新=== ///
-		IScene::Update();
 	}
 
 	///-------------------------------------------/// 
@@ -86,9 +83,6 @@ namespace MiiEngine {
 		if (particleEditor_) {
 			particleEditor_->DrawPreview();
 		}
-
-		/// ===ISceneの描画=== ///
-		IScene::Draw();
 	}
 
 	///-------------------------------------------/// 

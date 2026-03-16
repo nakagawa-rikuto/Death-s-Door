@@ -14,9 +14,6 @@
 ///-------------------------------------------///
 void EnemyManager::SetPlayer(Player* player) {
 	player_ = player;
-	for (auto& e : enemies_) {
-		if (e) e->SetPlayer(player_);
-	}
 }
 
 ///-------------------------------------------/// 
@@ -56,6 +53,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 
 
 	BaseEnemy* raw = enemy.get(); // 呼び出し側が直後に触れるように生ポインタを保持
+	enemy->SetPlayer(player_); // Player をセット
 	enemies_.push_back(std::move(enemy));
 	return raw;
 }

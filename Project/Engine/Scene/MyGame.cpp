@@ -203,5 +203,7 @@ namespace MiiEngine {
 		/// ===Game=== ///
 		Loader::LoadLevelJson("Level/StageData2.json");
 		Loader::LoadLevelJson("Level/EntityData2.json");
+		Loader::LoadLevelJson("Level/Wave1.json");
+		Loader::LoadLevelJson("Level/Wave2.json");
 	}
 } 

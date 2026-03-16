@@ -111,9 +111,6 @@ void TitleScene::Update() {
 		UpdateFadeOut();
 		break;
 	}
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
 }
 
 ///-------------------------------------------/// 
@@ -126,9 +123,6 @@ void TitleScene::Draw() {
 	for (size_t i = 0; i < lines_.size() && i < rotations.size(); ++i) {
 		lines_[i]->DrawTorus({ 0.0f, 0.0f, 50.0f }, rotations[i], animation_->GetSize(), animation_->GetColor());
 	}
-
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
 }
 
 ///-------------------------------------------/// 
