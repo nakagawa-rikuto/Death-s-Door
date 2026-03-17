@@ -300,6 +300,9 @@
 └── └── └── ├── Object/
 └── └── └── └── ├── Bridge/
 └── └── └── └── ├── Ground/
+└── └── └── └── ├── MobStage/
+└── └── └── └── └── ├── Ground/
+└── └── └── └── └── └── Wall/
 └── └── └── └── ├── Object/
 └── └── └── └── └── ├── Stone/
 └── └── └── └── └── └── Wall/
@@ -475,10 +478,12 @@
 └── └── └── └── └── StageObject/
 └── └── └── └──     ├── StageObject.cpp
 └── └── └── └──     └── StageObject.h
+└── └── └── ├── Phase/
+└── └── └── └── └── Mob/
+└── └── └── └──     ├── MobPhase.cpp
+└── └── └── └──     └── MobPhase.h
 └── └── └── └── UI/
 └── └── └──     ├── Game/
-└── └── └──     └── ├── GameSceneUI.cpp
-└── └── └──     └── ├── GameSceneUI.h
 └── └── └──     └── ├── PlayerUI.cpp
 └── └── └──     └── └── PlayerUI.h
 └── └── └──     ├── Option/
@@ -495,22 +500,25 @@
 └── └──     ├── Game/
 └── └──     └── ├── GameScene.cpp
 └── └──     └── ├── GameScene.h
-└── └──     └── └── State/
-└── └──     └──     ├── Base/
-└── └──     └──     └── ├── GameSceneFadeState.cpp
-└── └──     └──     └── └── GameSceneFadeState.h
-└── └──     └──     ├── GameSceneExitState.cpp
-└── └──     └──     ├── GameSceneExitState.h
-└── └──     └──     ├── GameSceneGameClearState.cpp
-└── └──     └──     ├── GameSceneGameClearState.h
-└── └──     └──     ├── GameSceneGameOverAnimationState.cpp
-└── └──     └──     ├── GameSceneGameOverAnimationState.h
-└── └──     └──     ├── GameSceneInGameState.cpp
-└── └──     └──     ├── GameSceneInGameState.h
-└── └──     └──     ├── GameSceneInitializeState.cpp
-└── └──     └──     ├── GameSceneInitializeState.h
-└── └──     └──     ├── GameSceneStartAnimationState.cpp
-└── └──     └──     └── GameSceneStartAnimationState.h
+└── └──     └── ├── State/
+└── └──     └── └── ├── Base/
+└── └──     └── └── └── ├── GameSceneFadeState.cpp
+└── └──     └── └── └── └── GameSceneFadeState.h
+└── └──     └── └── ├── GameSceneExitState.cpp
+└── └──     └── └── ├── GameSceneExitState.h
+└── └──     └── └── ├── GameSceneGameClearState.cpp
+└── └──     └── └── ├── GameSceneGameClearState.h
+└── └──     └── └── ├── GameSceneGameOverAnimationState.cpp
+└── └──     └── └── ├── GameSceneGameOverAnimationState.h
+└── └──     └── └── ├── GameSceneInGameState.cpp
+└── └──     └── └── ├── GameSceneInGameState.h
+└── └──     └── └── ├── GameSceneInitializeState.cpp
+└── └──     └── └── ├── GameSceneInitializeState.h
+└── └──     └── └── ├── GameSceneStartAnimationState.cpp
+└── └──     └── └── └── GameSceneStartAnimationState.h
+└── └──     └── └── UI/
+└── └──     └──     ├── GameSceneUI.cpp
+└── └──     └──     └── GameSceneUI.h
 └── └──     ├── GameOver/
 └── └──     └── ├── GameOverScene.cpp
 └── └──     └── └── GameOverScene.h
@@ -9810,6 +9818,12 @@ namespace MiiEngine {
 		///-------------------------------------------/// 
 		/// UAVテクスチャリソースの生成
 		///-------------------------------------------///
+		// u0?u7の8個の連続したデスクリプタを確保する
+		uint32_t baseUAVIndex = srvManager_->AllocateContiguous(8);
+		for (int i = 0; i < 8; ++i) {
+			uavIndices_[i] = baseUAVIndex + i;
+		}
+		
 		// u0: H0Texture
 		CreateTextureUAV(device, h0Resource_, h0UAV_, 0, N, N);
 		// u1: HktTexture
@@ -9830,6 +9844,16 @@ namespace MiiEngine {
 		///-------------------------------------------/// 
 		/// SRVインデックスの管理
 		///-------------------------------------------///
+		// CSのt0?t2として使用するため、3個の連続したデスクリプタを確保する
+		uint32_t baseSRVIndex = srvManager_->AllocateContiguous(3);
+		srvHeightIndex_ = baseSRVIndex;
+		srvDxIndex_ = baseSRVIndex + 1;
+		srvDzIndex_ = baseSRVIndex + 2;
+
+		uint32_t baseSRVDisplace = srvManager_->AllocateContiguous(2);
+		srvDisplaceIndex_ = baseSRVDisplace;      // t0
+		srvNormalFoamIndex_ = baseSRVDisplace + 1;  // t1（必ず連続）
+
 		// srvHeightIndex（t0）
 		CreateTextureSRV(srvHeightIndex_, pingResource_);
 		// srvDxIndex（t1）
@@ -10015,6 +10039,7 @@ namespace MiiEngine {
 		// =============================================
 		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"ComputeNormalFoam");
 		commandList->SetComputeRootConstantBufferView(0, CBV0);
+		commandList->SetComputeRootDescriptorTable(2, UAVTable);
 		commandList->Dispatch(threadGroupX, threadGroupY, 1);
 		UAVBarrier(commandList, normalFoamResource_->GetBuffer());
 
@@ -10102,7 +10127,7 @@ namespace MiiEngine {
 		heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
 
 		// Texture2Dリソースを直接作成
-		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+		ComPtr<ID3D12Resource> resource;
 		hr = device->CreateCommittedResource(
 			&heapProps,
 			D3D12_HEAP_FLAG_NONE,
@@ -10115,10 +10140,9 @@ namespace MiiEngine {
 
 		// BufferBaseにリソースを渡す
 		outResource = std::make_unique<BufferBase>();
-		outResource->SetBuffer(resource.Get());
+		outResource->SetBuffer(resource.Detach());
 
 		// UAVの作成
-		uavIndices_[uavSlot] = srvManager_->Allocate();
 		outUAV.CreateAsTexture2D(
 			device,
 			outResource->GetBuffer(),
@@ -10130,9 +10154,8 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// SRVリソースの生成
 	///-------------------------------------------///
-	void FFTOceanCompute::CreateTextureSRV(uint32_t& index, std::unique_ptr<BufferBase>& outResource) {
+	void FFTOceanCompute::CreateTextureSRV(uint32_t index, std::unique_ptr<BufferBase>& outResource) {
 		// SRVの生成処理を実装
-		index = srvManager_->Allocate();
 		srvManager_->CreateSRVForTexture2D(
 			index, 
 			outResource->GetBuffer(),
@@ -10335,7 +10358,7 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="index">SRVインデックス。</param>
 		void CreateTextureSRV(
-			uint32_t& index, 
+			uint32_t index, 
 			std::unique_ptr<BufferBase>& outResource);
 
 		/// <summary>
@@ -18751,9 +18774,6 @@ namespace MiiEngine {
 
 		//RenderCameraControl();
 #endif // USE_IMGUI
-
-	/// ===ISceneの更新=== ///
-		IScene::Update();
 	}
 
 	///-------------------------------------------/// 
@@ -18767,9 +18787,6 @@ namespace MiiEngine {
 		if (particleEditor_) {
 			particleEditor_->DrawPreview();
 		}
-
-		/// ===ISceneの描画=== ///
-		IScene::Draw();
 	}
 
 	///-------------------------------------------/// 
@@ -19186,6 +19203,8 @@ namespace MiiEngine {
 		/// ===システムの更新処理=== ///
 		// CameraManager
 		cameraManager_->UpdateAllCameras();
+		// Line
+		Engine_->GetLineObject3D()->Update();
 		// ParticleManager
 		particleManager_->Update();
 		// SpriteManager
@@ -19230,6 +19249,8 @@ namespace MiiEngine {
 		Engine_->BeginFrame();
 		// SpriteManager
 		spriteManager_->BackDraw();
+		// Lineの描画
+		Engine_->GetLineObject3D()->Draw();
 	}
 
 	///-------------------------------------------/// 
@@ -19346,7 +19367,6 @@ File Path: Project/Engine/Scene/IScene.cpp
 ============================================================
 #include "IScene.h"
 // Service
-#include "Service/Locator.h"
 #include "Service/Camera.h"
 // Line
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
@@ -19377,24 +19397,6 @@ namespace MiiEngine {
 		// デフォルトカメラの設定
 		Service::Camera::AddCamera("Default", defaultCamera_.get());
 		Service::Camera::SetActiveCamera("Default");
-	}
-
-	///-------------------------------------------/// 
-	/// 更新
-	///-------------------------------------------///
-	void IScene::Update() {
-
-		// Line更新
-		Service::Locator::GetLineObject3D()->Update();
-	}
-
-	///-------------------------------------------/// 
-	/// 描画
-	///-------------------------------------------///
-	void IScene::Draw() {
-
-		// Lineの描画
-		Service::Locator::GetLineObject3D()->Draw();
 	}
 }
 
@@ -19428,8 +19430,8 @@ namespace MiiEngine {
 		virtual ~IScene();
 
 		virtual void Initialize();
-		virtual void Update();
-		virtual void Draw();
+		virtual void Update() = 0;
+		virtual void Draw() = 0;
 
 	public:/// ===Setter=== ///
 		// SceneManager
@@ -19654,6 +19656,8 @@ namespace MiiEngine {
 		/// ===Game=== ///
 		Loader::LoadLevelJson("Level/StageData2.json");
 		Loader::LoadLevelJson("Level/EntityData2.json");
+		Loader::LoadLevelJson("Level/Wave1.json");
+		Loader::LoadLevelJson("Level/Wave2.json");
 	}
 } 
 
@@ -26492,6 +26496,17 @@ namespace MiiEngine {
 	}
 
 	///-------------------------------------------/// 
+	/// 連続した領域の確保関数
+	///-------------------------------------------///
+	uint32_t SRVManager::AllocateContiguous(uint32_t count) {
+		// フリールストを跨ぐと連続性が保証されないため、常にuseIndex_から切り出す
+		assert(useIndex_ + count < kMaxSRVCount_);
+		int startIndex = useIndex_;
+		useIndex_ += count;
+		return startIndex + 1;
+	}
+
+	///-------------------------------------------/// 
 	/// 解放関数
 	///-------------------------------------------///
 	void SRVManager::Free(uint32_t srvIndex) {
@@ -26603,6 +26618,13 @@ namespace MiiEngine {
 		/// </summary>
 		/// <returns>割り当てられたリソースの識別子を表す 32 ビット符号なし整数 (uint32_t)。</returns>
 		uint32_t Allocate();
+
+		/// <summary>
+		/// 指定した数の連続したリソースを割り当て、先頭のインデックスを返す
+		/// </summary>
+		/// <param name="count">連続して割り当てる数</param>
+		/// <returns>割り当てられた連続領域の先頭のインデックス</returns>
+		uint32_t AllocateContiguous(uint32_t count);
 
 		/// <summary>
 		/// SRVインデックスを解放して再利用可能にする
@@ -27621,6 +27643,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
+    <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -27651,7 +27674,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
-    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
+    <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp" />
     <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp" />
     <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp" />
     <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp" />
@@ -27811,6 +27834,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
+    <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -27847,7 +27871,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
     <ClInclude Include="application\Game\Object\GameStage.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
-    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
+    <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h" />
     <ClInclude Include="application\Game\Object\GameObject\GameObject.h" />
     <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h" />
     <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h" />
@@ -28706,7 +28730,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
       <Filter>application\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp">
+    <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp">
       <Filter>application\Game\UI\Game</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp">
@@ -28865,6 +28889,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
+    <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -29299,7 +29324,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h">
       <Filter>application\Scene\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h">
+    <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h">
       <Filter>application\Game\UI\Game</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h">
@@ -29465,6 +29490,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
+    <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -37862,13 +37888,18 @@ File Path: Project/application/Game/Entity/Enemy/Base/EnemyManager.cpp
 #endif // USE_IMGUI
 
 ///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+EnemyManager::~EnemyManager() {
+	player_ = nullptr;
+	enemies_.clear();
+}
+
+///-------------------------------------------/// 
 /// Setter
 ///-------------------------------------------///
 void EnemyManager::SetPlayer(Player* player) {
 	player_ = player;
-	for (auto& e : enemies_) {
-		if (e) e->SetPlayer(player_);
-	}
 }
 
 ///-------------------------------------------/// 
@@ -37908,6 +37939,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 
 
 	BaseEnemy* raw = enemy.get(); // 呼び出し側が直後に触れるように生ポインタを保持
+	enemy->SetPlayer(player_); // Player をセット
 	enemies_.push_back(std::move(enemy));
 	return raw;
 }
@@ -38095,7 +38127,7 @@ enum class EnemyType {
 class EnemyManager {
 public:
     EnemyManager() = default;
-    ~EnemyManager() = default;
+    ~EnemyManager();
 
     /// <summary>
     /// プレイヤーを設定
@@ -38781,6 +38813,11 @@ File Path: Project/application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h
 #include "application/Game/Entity/Enemy/MobEnemy/Component/EnemyHitReactionComponent.h"
 // C++
 #include <random>
+
+/// ===前方宣言=== ///
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
 /// MobEnemy
@@ -39862,7 +39899,7 @@ void LongRangeEnemy::Attack() {
 
 	// 弾の生成
 	auto bullet = std::make_unique<LongRangeEnemyBullet>();
-	bullet->Create(transform_.translate, attackInfo_.direction);
+	bullet->Create(transform_.translate, attackInfo_.direction, player_);
 	bulletInfo_.bullets_.push_back(std::move(bullet));
 
 	// フラグをfalse
@@ -39950,15 +39987,24 @@ private: /// ===変数=== ///
 File Path: Project/application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEnemyBullet.cpp
 ============================================================
 #include "LongRangeEnemyBullet.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
 // Service
 #include "Service/Particle.h"
 #include "Service/Collision.h"
+#include "Service/DeltaTime.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 LongRangeEnemyBullet::~LongRangeEnemyBullet() {
 	Service::Collision::RemoveCollider(this);
+	object3d_.reset();
+	// パーティクル停止
+	if (bulletParticle_) {
+		bulletParticle_->Stop();
+		bulletParticle_ = nullptr;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -39974,7 +40020,8 @@ void LongRangeEnemyBullet::Initialize() {
 	// Sphereの設定
 	SphereCollider::Initialize();
 	name_ = MiiEngine::ColliderName::EnemyBullet;
-	SphereCollider::SetRadius(0.5f);
+	float radius = 0.5f; // 半径
+	SphereCollider::SetRadius(radius);
 
 	// コライダーに追加
 	Service::Collision::AddCollider(this);
@@ -40009,22 +40056,20 @@ void LongRangeEnemyBullet::Update() {
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void LongRangeEnemyBullet::Draw(MiiEngine::BlendMode mode) {
-	if (isAlive_) {
-		mode;
-		//SphereCollider::Draw(mode);
-	}
-}
+void LongRangeEnemyBullet::Draw(MiiEngine::BlendMode mode) {mode;}
 
 ///-------------------------------------------/// 
 /// 生成
 ///-------------------------------------------///
-void LongRangeEnemyBullet::Create(const Vector3& pos, const Vector3& vel) {
+void LongRangeEnemyBullet::Create(const Vector3& pos, const Vector3& vel, Player* player) {
 	// 初期化処理
 	Initialize();
 	// 位置と方向の設定
 	transform_.translate = pos;
 	info_.direction = vel;
+
+	// プレイヤーの設定
+	player_ = player;
 
 	// 生存フラグをtrue
 	isAlive_ = true;
@@ -40045,13 +40090,33 @@ void LongRangeEnemyBullet::Create(const Vector3& pos, const Vector3& vel) {
 /// 衝突判定
 ///-------------------------------------------///
 void LongRangeEnemyBullet::OnCollision(Collider* collider) {
-	collider;
+	
+	if (collider->GetColliderName() == MiiEngine::ColliderName::Object ||
+		collider->GetColliderName() == MiiEngine::ColliderName::Player) {
+		// 生存フラグをfalse
+		isAlive_ = false;
+	}
 }
 
 ///-------------------------------------------/// 
 /// 移動処理
 ///-------------------------------------------///
 void LongRangeEnemyBullet::Move() {
+	
+	// 向きの更新
+	if (player_) {
+		// Playerの位置を取得
+		Vector3 targetPos = player_->GetTransform().translate;
+
+		// Targetへのベクトルを計算
+		Vector3 toPlayer = targetPos - transform_.translate;
+
+		// 徐々にターゲットの方向へ向くように補間
+		float trackingSpeed = 0.05f;
+		info_.direction = Normalize(info_.direction * (1.0f - trackingSpeed) + Normalize(toPlayer) * trackingSpeed);
+	}
+
+	// 速度の更新
 	info_.velocity = info_.direction * speed_;
 }
 
@@ -40060,7 +40125,7 @@ void LongRangeEnemyBullet::Move() {
 ///-------------------------------------------///
 void LongRangeEnemyBullet::PromoteTimer() {
 	// ライフタイマーの減少
-	lifeTimer_ -= 1.0f / 60.0f;
+	lifeTimer_ -= Service::DeltaTime::GetDeltaTime();
 	if (lifeTimer_ <= 0.0f) {
 		// 生存時間が0.0fになったら削除。
 		isAlive_ = false;
@@ -40078,6 +40143,7 @@ File Path: Project/application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEne
 namespace MiiEngine {
 	class ParticleGroup;
 }
+class Player;
 
 ///=====================================================/// 
 /// 遠距離攻撃Enemyの弾
@@ -40109,7 +40175,8 @@ public:
 	/// </summary>
 	/// <param name="pos">作成するオブジェクトの位置を表す 3 次元ベクトル（const 参照）。</param>
 	/// <param name="direction">オブジェクトの向きまたは進行方向を表す 3 次元ベクトル（const 参照）。</param>
-	void Create(const Vector3& pos, const Vector3& direction);
+	/// <param name="player">プレイヤーオブジェクトへのポインタ。生成された弾がプレイヤーに対してどのように振る舞うかを制御するために使用されます。</param>
+	void Create(const Vector3& pos, const Vector3& direction, Player* player);
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -40139,12 +40206,15 @@ private: /// ===変数=== ///
 	// ParticleGroup
 	MiiEngine::ParticleGroup* bulletParticle_ = nullptr;
 
+	// Player
+	Player* player_ = nullptr;
+
 	// 速度
-	float speed_ = 1.5f;
+	float speed_ = 0.2f;
 	// 生存タイマー
 	float lifeTimer_ = 0.0f;
 	// 生存時間
-	float lifeTime_ = 3.0f;
+	float lifeTime_ = 10.0f;
 	// 生存フラグ
 	bool isAlive_ = true;
 
@@ -44670,93 +44740,177 @@ public: /// ===OnCollision=== ///
 
 
 ============================================================
-File Path: Project/application/Game/UI/Game/GameSceneUI.cpp
+File Path: Project/application/Game/Phase/Mob/MobPhase.cpp
 ============================================================
-#include "GameSceneUI.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
+#include "MobPhase.h"
+// EnemyManager
+#include "application/Game/Entity/Enemy/Base/EnemyManager.h"
 // Service
 #include "Service/GraphicsResourceGetter.h"
+#include "Service/Particle.h"
+#include "Service/DeltaTime.h"
+// C++
+#include <random>
+// Math
+#include "Math/sMath.h"
 
 ///-------------------------------------------/// 
-/// Setter
+/// 初期化
 ///-------------------------------------------///
-void GameSceneUI::SetPlayer(Player* player) {
-	// PlayerUI
-	playerUI_->SetPlayer(player);
-}
-
-///-------------------------------------------/// 
-/// 初期化処理
-///-------------------------------------------///
-void GameSceneUI::Initialize() {
-	// PlayerUIの生成と初期化
-	playerUI_ = std::make_unique<PlayerUI>();
-	playerUI_->Initialize();
-
-	/// ===ウィンドウサイズの取得=== ///
-	Vector2 windowSize = {
-		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
-	};
-
-	/// ===OptionSprite=== ///
-	optionMenuSprite_ = std::make_unique<Object2d>();
-	optionMenuSprite_->Initialize("menuButton");
-	optionMenuSprite_->SetPosition({ windowSize.x - 100.0f, 100.0f});
-	optionMenuSprite_->SetSize({ 100.0f, 100.0f });
-	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+void MobPhase::Initialize(EnemyManager* enemyManager) {
+	// Particleの停止と解放
+	for (auto particle : spawnParticles_) {
+		particle->Stop();
+		particle = nullptr;
+	}
+	spawnParticles_.clear();
+	enemyManager_ = enemyManager;
+	currentPhase_ = PhaseState::Wave1;
+	isWaveStarted_ = false;
 }
 
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void GameSceneUI::Update() {
-	// PlayerUIの更新
-	playerUI_->Update();
+void MobPhase::Update() {
+	// 層リターン
+	if (!enemyManager_ || currentPhase_ == PhaseState::Cleared) return;
+
+	// ウェーブが開始していなければ敵を出現させる
+	if (!isWaveStarted_) {
+		std::string levelData; // レベルデータを取得する処理を追加
+		switch (currentPhase_) {
+		case PhaseState::Wave1: levelData = "Level/Wave2.json"; break;
+		case PhaseState::Wave2: levelData = "Level/Wave2.json"; break;
+		case PhaseState::Wave3: levelData = "Level/Wave2.json"; break;
+		default: break;
+		}
+
+		SpawnWave(levelData);
+		isWaveStarted_ = true;
+	}
+
+	// 敵が全て倒されたら次のフェーズへ移行
+	if (isWaveStarted_ && enemyManager_->GetTotalEnemyCount() == 0) {
+
+		enemySpawnTimer_ -= Service::DeltaTime::GetDeltaTime();
+		if (enemySpawnTimer_ <= 0.0f) {
+			// 現在のフェーズを次のフェーズに更新
+			if (currentPhase_ != PhaseState::Cleared) {
+				currentPhase_ = static_cast<PhaseState>(static_cast<int>(currentPhase_) + 1);
+			}
+			// ウェーブ開始フラグをリセット
+			isWaveStarted_ = false;
+			// 敵出現タイマーをリセット
+			enemySpawnTimer_ = enemySpawnInterval_;
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// ウェーブの出現処理
+///-------------------------------------------///
+void MobPhase::SpawnWave(const std::string& json_name) {
+	if (!enemyManager_) return;
+
+	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
+
+	// Entity分だけ回す
+	for (const auto& obj : levelData->objects) {
+		if (obj.fileName == "Close") {
+			// Enemyの生成
+			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.translation));
+			// Particleの生成
+			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
+			spawnParticles_.push_back(spawnParticle_);
+		} else if (obj.fileName == "Long") {
+			// Enemyの生成
+			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.translation));
+			// Particleの生成
+			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
+			spawnParticles_.push_back(spawnParticle_);
+		}	
+	}
 }
 
 ============================================================
-File Path: Project/application/Game/UI/Game/GameSceneUI.h
+File Path: Project/application/Game/Phase/Mob/MobPhase.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "PlayerUI.h"
+// AABB
+#include "Engine/DataInfo/ColliderData.h"
+// C++
+#include <vector>
+#include <string>
 
 /// ===前方宣言=== ///
-class Player;
+class  EnemyManager;
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
-/// GameSceneUI
+/// モブのフェーズ
+/// モブフェーズの内容。(全部で３ウェーブ)
 ///=====================================================///
-class GameSceneUI {
+class MobPhase {
 public:
 
-	GameSceneUI() = default;
-	~GameSceneUI() = default;
+	MobPhase() = default;
+	~MobPhase() = default;
 
 	/// <summary>
-	/// 初期化処理
+	/// AABBを使用して初期化します。
 	/// </summary>
-	void Initialize();
+	/// <param name="aabb">初期化に使用する軸平行境界ボックス。</param>
+	void Initialize(EnemyManager* enemyManager);
 
 	/// <summary>
-	/// 更新処理
+	/// 更新を実行します。
 	/// </summary>
 	void Update();
 
-public: /// ===Setter=== ///
-	// Playerのセット
-	void SetPlayer(Player* player);
+public: /// ===Getter=== ///
+	/// <summary>
+	/// クリア済みかどうかを返します。
+	/// </summary>
+	/// <returns>クリア済みの場合はtrue</returns>
+	bool IsCleared() const { return currentPhase_ == PhaseState::Cleared; }
 
 private:
 
-	/// ===Class=== ///
-	// PlayerUI
-	std::unique_ptr<PlayerUI> playerUI_;
+	/// ===EnemyManager=== ///
+	EnemyManager* enemyManager_ = nullptr;
 
-	/// ===Object2d=== ///
-	std::unique_ptr<Object2d> optionMenuSprite_;
+	/// ===ParticleGroup=== ///
+	std::vector<MiiEngine::ParticleGroup*> spawnParticles_;
+
+	/// ===PhaseState=== ///
+	enum class PhaseState {
+		Wave1,	// 1ウェーブ目
+		Wave2,	// 2ウェーブ目
+		Wave3,	// 3ウェーブ目
+		Cleared // クリア
+	};
+	PhaseState currentPhase_ = PhaseState::Wave1;
+
+	// 現在のウェーブが開始しているかどうか
+	bool isWaveStarted_ = false;
+
+	/// ===敵出現タイマー=== ///
+	// 敵の出現までの時間
+	float enemySpawnTimer_ = 0.0f;
+	// 敵の出現間隔
+	float enemySpawnInterval_ = 5.0f;
+
+private:
+
+	/// <summary>
+	/// 指定された数の敵を出現させます。
+	/// </summary>
+	/// <param name="json_name">出現させる敵のレベルデータ</param>
+	void SpawnWave(const std::string& json_name);
 };
 
 
@@ -45378,26 +45532,12 @@ void ClearScene::Update() {
 	ImGui::Begin("ClearScene");
 	ImGui::End();
 #endif // USE_IMGUI
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void ClearScene::Draw() {
-#pragma region 背景スプライト描画
-#pragma endregion
-
-#pragma region モデル描画
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
-#pragma endregion
-
-#pragma region 前景スプライト描画
-#pragma endregion
-}
+void ClearScene::Draw() {}
 
 
 ============================================================
@@ -45539,9 +45679,6 @@ void AttackEditorScene::Update() {
         RenderStatsWindow();
     }
 #endif // USE_IMGUI
-
-    /// ===ISceneの更新=== ///
-    IScene::Update();
 }
 
 ///-------------------------------------------/// 
@@ -45559,9 +45696,6 @@ void AttackEditorScene::Draw() {
     }
 
     previewPlayer_->Draw();
-
-    /// ===ISceneの描画=== ///
-    IScene::Draw();
 }
 
 ///-------------------------------------------/// 
@@ -45745,6 +45879,8 @@ GameScene::~GameScene() {
 	// Camera
 	Service::Camera::Remove("Game");
 	camera_.reset();
+	// Particle
+	Service::Particle::RemoveAllParticles();
 	// State
 	currentState_.reset();
 	// Camera
@@ -45781,11 +45917,10 @@ void GameScene::Initialize() {
 
 	/// ===EnemyManagerの生成=== ///
 	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->SetPlayer(player_.get());
 
 	/// ===SponEntity=== ///
 	SpawnEntity("Level/EntityData2.json");
-	// EnemyにPlayerを設定
-	enemyManager_->SetPlayer(player_.get());
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -45837,9 +45972,6 @@ void GameScene::Update() {
 		// 各Stateの更新
 		currentState_->Update();
 	}
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
 }
 
 ///-------------------------------------------/// 
@@ -45860,9 +45992,6 @@ void GameScene::Draw() {
 		// 各Stateの更新
 		currentState_->Draw();
 	}
-
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
 }
 
 ///-------------------------------------------/// 
@@ -45891,8 +46020,6 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 
 	// オブジェクト分回す
 	for (const auto& obj : levelData->objects) {
-		// OBBの半分の大きさを計算
-		Vector3 obbHalfSize = obj.colliderInfo2 / 2.0f;
 
 		/// ===クラス名で分岐=== ///
 		switch (obj.classType) {
@@ -45900,22 +46027,7 @@ void GameScene::SpawnEntity(const std::string& json_name) {
 			// 初期化と座標設定
 			player_->InitGame(obj.translation, camera_.get());
 			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-
 			break;
-		case LevelData::ClassTypeLevel::Enemy:
-			if (obj.fileName == "Close") {
-				// Enemyの座標設定
-				enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
-				break;
-			} else if (obj.fileName == "Long") {
-				// Enemyの座標設定
-				enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.rotation));
-				break;
-			} else if (obj.fileName == "Boss") {
-				// BossEnemyの座標設定
-				enemyManager_->Spawn(EnemyType::Boss, obj.translation, Math::QuaternionFromVector(obj.rotation));
-				break;
-			}
 		}
 	}
 }
@@ -45950,6 +46062,7 @@ void GameScene::LoadParticle() {
 	Service::Particle::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
 	Service::Particle::LoadParticleDefinition("CloseEnemyAttack.json");
 	Service::Particle::LoadParticleDefinition("LongEnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("MobEnemySpawn.json");
 }
 
 
@@ -46429,11 +46542,24 @@ File Path: Project/application/Scene/Game/State/GameSceneInGameState.cpp
 #include "Service/DeltaTime.h"
 
 ///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameSceneInGameState::~GameSceneInGameState() {
+	mobPhase_.reset();
+	optionUI_.reset();
+	ui_.reset();
+}
+
+///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
 void GameSceneInGameState::Enter(GameScene* gameScene) {
 	// ゲームシーンのポインタを保存
 	gameScene_ = gameScene;
+
+	/// ===Phase=== ///
+	mobPhase_ = std::make_unique<MobPhase>();
+	mobPhase_->Initialize(gameScene_->GetEnemyManager());
 
 	/// ===GameSceneUI=== ///
 	ui_ = std::make_unique<GameSceneUI>();
@@ -46453,7 +46579,7 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 ///-------------------------------------------///
 void GameSceneInGameState::Update() {
 
-	// オプションアクティブ
+	/// ===OptionUI=== ///
 	if (Service::Input::TriggerButton(0, ControllerButtonType::Start) || Service::Input::TriggerKey(DIK_ESCAPE)) {
 		if (isOptionActive_) {
 			Service::DeltaTime::SetDeltaTime(1.0f / 60.0f);
@@ -46463,12 +46589,12 @@ void GameSceneInGameState::Update() {
 			isOptionActive_ = true;
 		}
 	}
-
 	// OptionUIの更新
 	optionUI_->GameUpdate(isOptionActive_);
 
-	// 更新
+	/// ===Gameの更新処理=== ///
 	if (!isOptionActive_) {
+		mobPhase_->Update();
 		// EnemyManagerの更新
 		gameScene_->GetEnemyManager()->Update();
 		// Playerの更新
@@ -46477,11 +46603,12 @@ void GameSceneInGameState::Update() {
 		ui_->Update();
 	}
 
+	/// ===Stateの移動=== ///
 	// Playerが死亡しているか確認
 	if (gameScene_->GetPlayer()->GetIsDead()) {
 		// ゲームオーバーアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
-	} else if (gameScene_->GetEnemyManager()->GetTotalEnemyCount() <= 0) {
+	} else if (mobPhase_->IsCleared()) {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameClearState>());
 	} else if (optionUI_->GetReturnToTitle()) {
@@ -46513,8 +46640,10 @@ File Path: Project/application/Scene/Game/State/GameSceneInGameState.h
 /// ===Include=== ///
 // Base
 #include "Base/GameSceneFadeState.h"
+// Phase
+#include "application/Game/Phase/Mob/MobPhase.h"
 // GameUI
-#include "application/Game/UI/Game/GameSceneUI.h"
+#include "application/Scene/Game/UI/GameSceneUI.h"
 #include "application/Game/UI/Option/OptionUI.h"
 // C++
 #include <memory>
@@ -46525,7 +46654,7 @@ File Path: Project/application/Scene/Game/State/GameSceneInGameState.h
 class GameSceneInGameState : public GameSceneFadeState {
 public:
 
-	~GameSceneInGameState() override = default;
+	~GameSceneInGameState() override;
 
 	/// <summary>
 	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
@@ -46549,10 +46678,16 @@ public:
 	void Finalize() override;
 
 private:
-	// UI
+	
+	/// ===MobPhase=== ///
+	std::unique_ptr<MobPhase> mobPhase_;
+
+	/// ===GameSceneUI=== ///
 	std::unique_ptr<GameSceneUI> ui_;
-	// OptionUI
+
+	/// ===OptionUI=== ///
 	std::unique_ptr<OptionUI> optionUI_;
+	// オプションがアクティブかどうか
 	bool isOptionActive_ = false;
 };
 
@@ -46759,6 +46894,98 @@ private:
 };
 
 ============================================================
+File Path: Project/application/Scene/Game/UI/GameSceneUI.cpp
+============================================================
+#include "GameSceneUI.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// Service
+#include "Service/GraphicsResourceGetter.h"
+
+///-------------------------------------------/// 
+/// Setter
+///-------------------------------------------///
+void GameSceneUI::SetPlayer(Player* player) {
+	// PlayerUI
+	playerUI_->SetPlayer(player);
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void GameSceneUI::Initialize() {
+	// PlayerUIの生成と初期化
+	playerUI_ = std::make_unique<PlayerUI>();
+	playerUI_->Initialize();
+
+	/// ===ウィンドウサイズの取得=== ///
+	Vector2 windowSize = {
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
+		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
+	};
+
+	/// ===OptionSprite=== ///
+	optionMenuSprite_ = std::make_unique<Object2d>();
+	optionMenuSprite_->Initialize("menuButton");
+	optionMenuSprite_->SetPosition({ windowSize.x - 100.0f, 100.0f});
+	optionMenuSprite_->SetSize({ 100.0f, 100.0f });
+	optionMenuSprite_->SetAnchorPoint({ 0.5f, 0.5f });
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void GameSceneUI::Update() {
+	// PlayerUIの更新
+	playerUI_->Update();
+}
+
+============================================================
+File Path: Project/application/Scene/Game/UI/GameSceneUI.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "application/Game/UI/Game/PlayerUI.h"
+
+/// ===前方宣言=== ///
+class Player;
+
+///=====================================================/// 
+/// GameSceneUI
+///=====================================================///
+class GameSceneUI {
+public:
+
+	GameSceneUI() = default;
+	~GameSceneUI() = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+public: /// ===Setter=== ///
+	// Playerのセット
+	void SetPlayer(Player* player);
+
+private:
+
+	/// ===Class=== ///
+	// PlayerUI
+	std::unique_ptr<PlayerUI> playerUI_;
+
+	/// ===Object2d=== ///
+	std::unique_ptr<Object2d> optionMenuSprite_;
+};
+
+
+
+============================================================
 File Path: Project/application/Scene/GameOver/GameOverScene.cpp
 ============================================================
 #include "GameOverScene.h"
@@ -46790,26 +47017,12 @@ void GameOverScene::Update() {
 	ImGui::Begin("GameOverScene");
 	ImGui::End();
 #endif // USE_IMGUI
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void GameOverScene::Draw() {
-#pragma region 背景スプライト描画
-#pragma endregion
-
-#pragma region モデル描画
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
-#pragma endregion
-
-#pragma region 前景スプライト描画
-#pragma endregion
-}
+void GameOverScene::Draw() {}
 
 
 ============================================================
@@ -46884,26 +47097,12 @@ void SelectScene::Update() {
 	ImGui::Begin("SelectScene");
 	ImGui::End();
 #endif // USE_IMGUI
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void SelectScene::Draw() {
-#pragma region 背景スプライト描画
-#pragma endregion
-
-#pragma region モデル描画
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
-#pragma endregion
-
-#pragma region 前景スプライト描画
-#pragma endregion
-}
+void SelectScene::Draw() {}
 
 
 ============================================================
@@ -47272,9 +47471,6 @@ void TitleScene::Update() {
 		UpdateFadeOut();
 		break;
 	}
-
-	/// ===ISceneの更新=== ///
-	IScene::Update();
 }
 
 ///-------------------------------------------/// 
@@ -47287,9 +47483,6 @@ void TitleScene::Draw() {
 	for (size_t i = 0; i < lines_.size() && i < rotations.size(); ++i) {
 		lines_[i]->DrawTorus({ 0.0f, 0.0f, 50.0f }, rotations[i], animation_->GetSize(), animation_->GetColor());
 	}
-
-	/// ===ISceneの描画=== ///
-	IScene::Draw();
 }
 
 ///-------------------------------------------/// 
