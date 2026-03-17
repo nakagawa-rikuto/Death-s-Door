@@ -484,7 +484,7 @@
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
       <Filter>application\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp">
+    <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp">
       <Filter>application\Game\UI\Game</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp">
@@ -643,6 +643,7 @@
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
+    <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1077,7 +1078,7 @@
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h">
       <Filter>application\Scene\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h">
+    <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h">
       <Filter>application\Game\UI\Game</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h">
@@ -1243,6 +1244,7 @@
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
+    <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

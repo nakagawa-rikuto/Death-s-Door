@@ -2,8 +2,10 @@
 /// ===Include=== ///
 // Base
 #include "Base/GameSceneFadeState.h"
+// Phase
+#include "application/Game/Phase/Mob/MobPhase.h"
 // GameUI
-#include "application/Game/UI/Game/GameSceneUI.h"
+#include "application/Scene/Game/UI/GameSceneUI.h"
 #include "application/Game/UI/Option/OptionUI.h"
 // C++
 #include <memory>
@@ -14,7 +16,7 @@
 class GameSceneInGameState : public GameSceneFadeState {
 public:
 
-	~GameSceneInGameState() override = default;
+	~GameSceneInGameState() override;
 
 	/// <summary>
 	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
@@ -38,9 +40,15 @@ public:
 	void Finalize() override;
 
 private:
-	// UI
+	
+	/// ===MobPhase=== ///
+	std::unique_ptr<MobPhase> mobPhase_;
+
+	/// ===GameSceneUI=== ///
 	std::unique_ptr<GameSceneUI> ui_;
-	// OptionUI
+
+	/// ===OptionUI=== ///
 	std::unique_ptr<OptionUI> optionUI_;
+	// オプションがアクティブかどうか
 	bool isOptionActive_ = false;
 };

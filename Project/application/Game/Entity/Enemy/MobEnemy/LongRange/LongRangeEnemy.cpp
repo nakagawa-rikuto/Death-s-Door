@@ -121,7 +121,7 @@ void LongRangeEnemy::Attack() {
 
 	// 弾の生成
 	auto bullet = std::make_unique<LongRangeEnemyBullet>();
-	bullet->Create(transform_.translate, attackInfo_.direction);
+	bullet->Create(transform_.translate, attackInfo_.direction, player_);
 	bulletInfo_.bullets_.push_back(std::move(bullet));
 
 	// フラグをfalse

@@ -20,7 +20,7 @@ enum class EnemyType {
 class EnemyManager {
 public:
     EnemyManager() = default;
-    ~EnemyManager() = default;
+    ~EnemyManager();
 
     /// <summary>
     /// プレイヤーを設定

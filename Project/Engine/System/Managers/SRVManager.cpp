@@ -94,6 +94,17 @@ namespace MiiEngine {
 	}
 
 	///-------------------------------------------/// 
+	/// 連続した領域の確保関数
+	///-------------------------------------------///
+	uint32_t SRVManager::AllocateContiguous(uint32_t count) {
+		// フリールストを跨ぐと連続性が保証されないため、常にuseIndex_から切り出す
+		assert(useIndex_ + count < kMaxSRVCount_);
+		int startIndex = useIndex_;
+		useIndex_ += count;
+		return startIndex + 1;
+	}
+
+	///-------------------------------------------/// 
 	/// 解放関数
 	///-------------------------------------------///
 	void SRVManager::Free(uint32_t srvIndex) {

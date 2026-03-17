@@ -94,9 +94,6 @@ void AttackEditorScene::Update() {
         RenderStatsWindow();
     }
 #endif // USE_IMGUI
-
-    /// ===ISceneの更新=== ///
-    IScene::Update();
 }
 
 ///-------------------------------------------/// 
@@ -114,9 +111,6 @@ void AttackEditorScene::Draw() {
     }
 
     previewPlayer_->Draw();
-
-    /// ===ISceneの描画=== ///
-    IScene::Draw();
 }
 
 ///-------------------------------------------/// 

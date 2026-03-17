@@ -48,6 +48,12 @@ namespace MiiEngine {
 		///-------------------------------------------/// 
 		/// UAVテクスチャリソースの生成
 		///-------------------------------------------///
+		// u0?u7の8個の連続したデスクリプタを確保する
+		uint32_t baseUAVIndex = srvManager_->AllocateContiguous(8);
+		for (int i = 0; i < 8; ++i) {
+			uavIndices_[i] = baseUAVIndex + i;
+		}
+		
 		// u0: H0Texture
 		CreateTextureUAV(device, h0Resource_, h0UAV_, 0, N, N);
 		// u1: HktTexture
@@ -68,6 +74,16 @@ namespace MiiEngine {
 		///-------------------------------------------/// 
 		/// SRVインデックスの管理
 		///-------------------------------------------///
+		// CSのt0?t2として使用するため、3個の連続したデスクリプタを確保する
+		uint32_t baseSRVIndex = srvManager_->AllocateContiguous(3);
+		srvHeightIndex_ = baseSRVIndex;
+		srvDxIndex_ = baseSRVIndex + 1;
+		srvDzIndex_ = baseSRVIndex + 2;
+
+		uint32_t baseSRVDisplace = srvManager_->AllocateContiguous(2);
+		srvDisplaceIndex_ = baseSRVDisplace;      // t0
+		srvNormalFoamIndex_ = baseSRVDisplace + 1;  // t1（必ず連続）
+
 		// srvHeightIndex（t0）
 		CreateTextureSRV(srvHeightIndex_, pingResource_);
 		// srvDxIndex（t1）
@@ -253,6 +269,7 @@ namespace MiiEngine {
 		// =============================================
 		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"ComputeNormalFoam");
 		commandList->SetComputeRootConstantBufferView(0, CBV0);
+		commandList->SetComputeRootDescriptorTable(2, UAVTable);
 		commandList->Dispatch(threadGroupX, threadGroupY, 1);
 		UAVBarrier(commandList, normalFoamResource_->GetBuffer());
 
@@ -340,7 +357,7 @@ namespace MiiEngine {
 		heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
 
 		// Texture2Dリソースを直接作成
-		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+		ComPtr<ID3D12Resource> resource;
 		hr = device->CreateCommittedResource(
 			&heapProps,
 			D3D12_HEAP_FLAG_NONE,
@@ -353,10 +370,9 @@ namespace MiiEngine {
 
 		// BufferBaseにリソースを渡す
 		outResource = std::make_unique<BufferBase>();
-		outResource->SetBuffer(resource.Get());
+		outResource->SetBuffer(resource.Detach());
 
 		// UAVの作成
-		uavIndices_[uavSlot] = srvManager_->Allocate();
 		outUAV.CreateAsTexture2D(
 			device,
 			outResource->GetBuffer(),
@@ -368,9 +384,8 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// SRVリソースの生成
 	///-------------------------------------------///
-	void FFTOceanCompute::CreateTextureSRV(uint32_t& index, std::unique_ptr<BufferBase>& outResource) {
+	void FFTOceanCompute::CreateTextureSRV(uint32_t index, std::unique_ptr<BufferBase>& outResource) {
 		// SRVの生成処理を実装
-		index = srvManager_->Allocate();
 		srvManager_->CreateSRVForTexture2D(
 			index, 
 			outResource->GetBuffer(),

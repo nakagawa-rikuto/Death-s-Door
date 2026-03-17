@@ -136,6 +136,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
+    <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -166,7 +167,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Animation\GameOverAnimation.cpp" />
     <ClCompile Include="application\Game\Object\GameStage.cpp" />
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp" />
-    <ClCompile Include="application\Game\UI\Game\GameSceneUI.cpp" />
+    <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp" />
     <ClCompile Include="application\Game\Object\GameObject\GameObject.cpp" />
     <ClCompile Include="application\Scene\Game\State\Base\GameSceneFadeState.cpp" />
     <ClCompile Include="application\Scene\Game\State\GameSceneInitializeState.cpp" />
@@ -326,6 +327,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
+    <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -362,7 +364,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Animation\GameOverAnimation.h" />
     <ClInclude Include="application\Game\Object\GameStage.h" />
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h" />
-    <ClInclude Include="application\Game\UI\Game\GameSceneUI.h" />
+    <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h" />
     <ClInclude Include="application\Game\Object\GameObject\GameObject.h" />
     <ClInclude Include="application\Scene\Game\State\Base\GameSceneFadeState.h" />
     <ClInclude Include="application\Scene\Game\State\GameSceneInitializeState.h" />
