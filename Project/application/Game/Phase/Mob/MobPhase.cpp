@@ -30,7 +30,7 @@ void MobPhase::Update() {
 	if (!isWaveStarted_) {
 		std::string levelData; // レベルデータを取得する処理を追加
 		switch (currentPhase_) {
-		case PhaseState::Wave1: levelData = "Level/Wave1.json"; break;
+		case PhaseState::Wave1: levelData = "Level/Wave2.json"; break;
 		case PhaseState::Wave2: levelData = "Level/Wave2.json"; break;
 		case PhaseState::Wave3: levelData = "Level/Wave2.json"; break;
 		default: break;
@@ -71,13 +71,13 @@ void MobPhase::SpawnWave(const std::string& json_name) {
 			// Enemyの生成
 			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.translation));
 			// Particleの生成
-			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpaw", obj.translation);
+			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
 			spawnParticles_.push_back(spawnParticle_);
 		} else if (obj.fileName == "Long") {
 			// Enemyの生成
 			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.translation));
 			// Particleの生成
-			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpaw", obj.translation);
+			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
 			spawnParticles_.push_back(spawnParticle_);
 		}	
 	}

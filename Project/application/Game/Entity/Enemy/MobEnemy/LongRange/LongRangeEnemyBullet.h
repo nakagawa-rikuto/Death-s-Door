@@ -6,6 +6,7 @@
 namespace MiiEngine {
 	class ParticleGroup;
 }
+class Player;
 
 ///=====================================================/// 
 /// 遠距離攻撃Enemyの弾
@@ -37,7 +38,8 @@ public:
 	/// </summary>
 	/// <param name="pos">作成するオブジェクトの位置を表す 3 次元ベクトル（const 参照）。</param>
 	/// <param name="direction">オブジェクトの向きまたは進行方向を表す 3 次元ベクトル（const 参照）。</param>
-	void Create(const Vector3& pos, const Vector3& direction);
+	/// <param name="player">プレイヤーオブジェクトへのポインタ。生成された弾がプレイヤーに対してどのように振る舞うかを制御するために使用されます。</param>
+	void Create(const Vector3& pos, const Vector3& direction, Player* player);
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -67,12 +69,15 @@ private: /// ===変数=== ///
 	// ParticleGroup
 	MiiEngine::ParticleGroup* bulletParticle_ = nullptr;
 
+	// Player
+	Player* player_ = nullptr;
+
 	// 速度
-	float speed_ = 1.5f;
+	float speed_ = 0.2f;
 	// 生存タイマー
 	float lifeTimer_ = 0.0f;
 	// 生存時間
-	float lifeTime_ = 3.0f;
+	float lifeTime_ = 10.0f;
 	// 生存フラグ
 	bool isAlive_ = true;
 

@@ -218,5 +218,5 @@ void GameScene::LoadParticle() {
 	Service::Particle::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
 	Service::Particle::LoadParticleDefinition("CloseEnemyAttack.json");
 	Service::Particle::LoadParticleDefinition("LongEnemyAttack.json");
-	Service::Particle::LoadParticleDefinition("MobEnemySpaw.json");
+	Service::Particle::LoadParticleDefinition("MobEnemySpawn.json");
 }
