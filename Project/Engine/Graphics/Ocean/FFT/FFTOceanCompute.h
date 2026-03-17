@@ -156,7 +156,7 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="index">SRVインデックス。</param>
 		void CreateTextureSRV(
-			uint32_t& index, 
+			uint32_t index, 
 			std::unique_ptr<BufferBase>& outResource);
 
 		/// <summary>

@@ -37,6 +37,8 @@ GameScene::~GameScene() {
 	// Camera
 	Service::Camera::Remove("Game");
 	camera_.reset();
+	// Particle
+	Service::Particle::RemoveAllParticles();
 	// State
 	currentState_.reset();
 	// Camera

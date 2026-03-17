@@ -16,7 +16,7 @@
 class GameSceneInGameState : public GameSceneFadeState {
 public:
 
-	~GameSceneInGameState() override = default;
+	~GameSceneInGameState() override;
 
 	/// <summary>
 	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。

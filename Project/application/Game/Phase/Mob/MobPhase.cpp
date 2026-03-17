@@ -14,6 +14,12 @@
 /// 初期化
 ///-------------------------------------------///
 void MobPhase::Initialize(EnemyManager* enemyManager) {
+	// Particleの停止と解放
+	for (auto particle : spawnParticles_) {
+		particle->Stop();
+		particle = nullptr;
+	}
+	spawnParticles_.clear();
 	enemyManager_ = enemyManager;
 	currentPhase_ = PhaseState::Wave1;
 	isWaveStarted_ = false;

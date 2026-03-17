@@ -12,6 +12,15 @@
 #include "Service/DeltaTime.h"
 
 ///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameSceneInGameState::~GameSceneInGameState() {
+	mobPhase_.reset();
+	optionUI_.reset();
+	ui_.reset();
+}
+
+///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
 void GameSceneInGameState::Enter(GameScene* gameScene) {

@@ -48,6 +48,13 @@ namespace MiiEngine {
 		uint32_t Allocate();
 
 		/// <summary>
+		/// 指定した数の連続したリソースを割り当て、先頭のインデックスを返す
+		/// </summary>
+		/// <param name="count">連続して割り当てる数</param>
+		/// <returns>割り当てられた連続領域の先頭のインデックス</returns>
+		uint32_t AllocateContiguous(uint32_t count);
+
+		/// <summary>
 		/// SRVインデックスを解放して再利用可能にする
 		/// </summary>
 		/// <param name="srvIndex">解放するSRVインデックス</param>
