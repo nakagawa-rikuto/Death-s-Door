@@ -20,7 +20,7 @@ class MobPhase {
 public:
 
 	MobPhase() = default;
-	~MobPhase() = default;
+	~MobPhase();
 
 	/// <summary>
 	/// AABBを使用して初期化します。

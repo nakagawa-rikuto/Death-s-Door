@@ -11,15 +11,22 @@
 #include "Math/sMath.h"
 
 ///-------------------------------------------/// 
-/// 初期化
+/// デストラクタ
 ///-------------------------------------------///
-void MobPhase::Initialize(EnemyManager* enemyManager) {
-	// Particleの停止と解放
+MobPhase::~MobPhase() {
 	for (auto particle : spawnParticles_) {
 		particle->Stop();
 		particle = nullptr;
 	}
 	spawnParticles_.clear();
+	enemyManager_ = nullptr;
+}
+
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void MobPhase::Initialize(EnemyManager* enemyManager) {
+
 	enemyManager_ = enemyManager;
 	currentPhase_ = PhaseState::Wave1;
 	isWaveStarted_ = false;
@@ -85,6 +92,6 @@ void MobPhase::SpawnWave(const std::string& json_name) {
 			// Particleの生成
 			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
 			spawnParticles_.push_back(spawnParticle_);
-		}	
+		}
 	}
 }
