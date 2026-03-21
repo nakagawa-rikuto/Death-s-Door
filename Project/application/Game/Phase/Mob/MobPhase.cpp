@@ -14,11 +14,6 @@
 /// デストラクタ
 ///-------------------------------------------///
 MobPhase::~MobPhase() {
-	for (auto particle : spawnParticles_) {
-		particle->Stop();
-		particle = nullptr;
-	}
-	spawnParticles_.clear();
 	enemyManager_ = nullptr;
 }
 
@@ -26,7 +21,6 @@ MobPhase::~MobPhase() {
 /// 初期化
 ///-------------------------------------------///
 void MobPhase::Initialize(EnemyManager* enemyManager) {
-
 	enemyManager_ = enemyManager;
 	currentPhase_ = PhaseState::Wave1;
 	isWaveStarted_ = false;
@@ -43,7 +37,7 @@ void MobPhase::Update() {
 	if (!isWaveStarted_) {
 		std::string levelData; // レベルデータを取得する処理を追加
 		switch (currentPhase_) {
-		case PhaseState::Wave1: levelData = "Level/Wave2.json"; break;
+		case PhaseState::Wave1: levelData = "Level/Wave1.json"; break;
 		case PhaseState::Wave2: levelData = "Level/Wave2.json"; break;
 		case PhaseState::Wave3: levelData = "Level/Wave2.json"; break;
 		default: break;
@@ -83,15 +77,9 @@ void MobPhase::SpawnWave(const std::string& json_name) {
 		if (obj.fileName == "Close") {
 			// Enemyの生成
 			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.translation));
-			// Particleの生成
-			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
-			spawnParticles_.push_back(spawnParticle_);
 		} else if (obj.fileName == "Long") {
 			// Enemyの生成
 			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.translation));
-			// Particleの生成
-			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
-			spawnParticles_.push_back(spawnParticle_);
 		}
 	}
 }

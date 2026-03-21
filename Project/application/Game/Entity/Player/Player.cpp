@@ -21,6 +21,10 @@ Player::~Player() {
 	weapon_.reset();
 	rightHand_.reset();
 	leftHand_.reset();
+	moveComponent_.reset();
+	avoidanceComponent_.reset();
+	attackComponent_.reset();
+	currentState_.reset();
 	object3d_.reset();
 }
 

@@ -127,6 +127,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
@@ -303,6 +305,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />

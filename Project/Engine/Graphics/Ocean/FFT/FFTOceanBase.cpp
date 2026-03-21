@@ -13,7 +13,10 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// デストラクタ
 	///-------------------------------------------///
-	FFTOceanBase::~FFTOceanBase() {}
+	FFTOceanBase::~FFTOceanBase() {
+		transformBuffer_.reset();
+		oceanBuffer_.reset();
+	}
 
 	///-------------------------------------------/// 
 	/// 初期化

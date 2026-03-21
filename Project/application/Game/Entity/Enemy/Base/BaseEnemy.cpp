@@ -23,6 +23,13 @@ void BaseEnemy::SetInvincibleTime() {
 	invincibleInfo_.timer = invincibleInfo_.time;
 	invincibleInfo_.isInvincible = true;
 }
+void BaseEnemy::SetColliderActive(bool isActive) {
+	if (isActive) {
+		Service::Collision::AddCollider(this);
+	} else {
+		Service::Collision::RemoveCollider(this);
+	}
+}
 
 ///-------------------------------------------/// 
 /// 初期化

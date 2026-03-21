@@ -2,13 +2,17 @@
 /// ===Include=== ///
 #include "Base/EnemyState.h"
 
-///=====================================================/// 
-/// MoveState
-///=====================================================///
-class EnemyMoveState : public EnemyState {
-public:
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
-	~EnemyMoveState() override = default;
+///=====================================================/// 
+/// TeleportState
+///=====================================================///
+class EnemyTeleportState : public EnemyState {
+public:
+	EnemyTeleportState(const float minRange, const float maxRange);
+	~EnemyTeleportState() override = default;
 
 	/// <summary>
 	/// ステートに入った時に呼ばれる処理
@@ -25,5 +29,12 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
+
+private:
+
+	float minRange_ = 0.0f; // テレポートの最小距離
+	float maxRange_ = 0.0f; // テレポートの最大距離
+
+	MiiEngine::ParticleGroup* teleportParticle_ = nullptr; // テレポートエフェクトのパーティクル
 };
 

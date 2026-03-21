@@ -644,6 +644,8 @@
     <ClCompile Include="Service\Sprite.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
     <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1245,6 +1247,8 @@
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

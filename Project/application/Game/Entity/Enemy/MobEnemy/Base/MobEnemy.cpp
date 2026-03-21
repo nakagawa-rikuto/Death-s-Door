@@ -18,11 +18,17 @@
 /// デストラクタ
 ///-------------------------------------------///
 MobEnemy::~MobEnemy() {
+	// Particleの解放
+	if (spawnParticle_ != nullptr) {
+		spawnParticle_->Stop();
+		spawnParticle_ = nullptr;
+	}
 	// 状態を解放
 	currentState_->Finalize();
 	currentState_.reset();
 	// Componentの解放
 	moveComponent_.reset();
+	teleportComponent_.reset();
 	hitReactionComponent_.reset();
 }
 
@@ -35,6 +41,9 @@ void MobEnemy::InitGameScene(const Vector3& translate) {
 
 	/// ===パラメータ設定=== ///
 	SettingParamita();
+
+	/// ===Particleの発生=== ///
+	spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", transform_.translate);
 
 	/// ===Stateの設定=== ///
 	ChangeState(std::make_unique<EnemyMoveState>());
@@ -59,7 +68,7 @@ void MobEnemy::Update() {
 	advanceTimer();
 
 	/// ===Stateの更新=== ///
-	if (currentState_) {
+	if (currentState_ && !baseInfo_.isDead) {
 		// 各Stateの更新
 		currentState_->Update();
 	}
@@ -194,16 +203,26 @@ bool MobEnemy::CheckAttackable() {
 void MobEnemy::SettingParamita() {
 	/// ===Componentの生成=== ///
 	moveComponent_ = std::make_unique<EnemyMoveComponent>();
+	teleportComponent_ = std::make_unique<EnemyTeleportComponent>();
 	hitReactionComponent_ = std::make_unique<EnemyHitReactionComponent>();
 	// MoveComponentの初期化
 	EnemyMoveComponent::MoveConfig moveConfig{
 			.speed = 0.05f,
-			.range = 20.0f,
-			.interval = 5.0f,
-			.waitTime = 1.5f,
-			. rotationSpeed = 0.1f
+			.rotationSpeed = 0.1f,
+			.chaseRange = 16.0f,
+			.evadeRange = 2.0f,
+			.moveTime = 2.0f,
+			.evadeTime = 4.0f
 	};
-	moveComponent_->Initialize(transform_.translate, moveConfig);
+	moveComponent_->Initialize(moveConfig);
+	// TeleportComponentの初期化
+	EnemyTeleportComponent::TeleportConfig teleportConfig{
+		.rotationSpeed = 5.0f,
+		.spinOutDuration = 0.5f,
+		.warpDuration = 0.3f,
+		.spinInDuration = 0.5f
+	};
+	teleportComponent_->Initialize(teleportConfig);
 	// HitReactionComponentの初期化
 	EnemyHitReactionComponent::KnockBackConfig hitReactionConfig{
 		.knockBackForce = 1.5f,
