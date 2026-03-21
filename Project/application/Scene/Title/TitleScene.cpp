@@ -5,7 +5,6 @@
 #include "Service/Camera.h"
 #include "Service/PostEffect.h"
 #include "Service/Particle.h"
-#include "Service/Sprite.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -19,8 +18,6 @@
 /// デストラクタ
 ///-------------------------------------------///
 TitleScene::~TitleScene() {
-	// ISceneのデストラクタ
-	IScene::~IScene();
 	// TitleUIのリセット
 	titleUI_.reset();
 	lines_.clear();

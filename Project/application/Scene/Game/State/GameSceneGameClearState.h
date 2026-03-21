@@ -13,7 +13,7 @@
 class GameSceneGameClearState : public GameSceneFadeState {
 public:
 
-	~GameSceneGameClearState() override = default;
+	~GameSceneGameClearState() override;
 
 	/// <summary>
 	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。

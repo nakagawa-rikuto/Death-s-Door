@@ -7,6 +7,13 @@
 #include "GameSceneInGameState.h"
 
 ///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameSceneStartAnimationState::~GameSceneStartAnimationState() {
+	startAnimation_.reset();
+}
+
+///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
 void GameSceneStartAnimationState::Enter(GameScene* gameScene) {

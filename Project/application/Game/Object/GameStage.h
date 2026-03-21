@@ -15,7 +15,7 @@ class GameStage {
 public:
 
 	GameStage() = default;
-	~GameStage() = default;
+	~GameStage();
 
 	/// <summary>
 	/// レベルデータを使用して初期化を行います。

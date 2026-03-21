@@ -18,6 +18,19 @@
 /// デストラクタ
 ///-------------------------------------------///
 MobEnemy::~MobEnemy() {
+	// Particleの解放
+	if (hitParticle_ != nullptr) {
+		hitParticle_->Stop();
+		hitParticle_ = nullptr;
+	}
+	if (spawnParticle_ != nullptr) {
+		spawnParticle_->Stop();
+		spawnParticle_ = nullptr;
+	}
+	if (deathParticle_ != nullptr) {
+		deathParticle_->Stop();
+		deathParticle_ = nullptr;
+	}
 	// 状態を解放
 	currentState_->Finalize();
 	currentState_.reset();
@@ -36,6 +49,9 @@ void MobEnemy::InitGameScene(const Vector3& translate) {
 
 	/// ===パラメータ設定=== ///
 	SettingParamita();
+
+	/// ===Particleの発生=== ///
+	spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", transform_.translate);
 
 	/// ===Stateの設定=== ///
 	ChangeState(std::make_unique<EnemyMoveState>());
@@ -250,10 +266,6 @@ void MobEnemy::advanceTimer() {
 		if (disappearTimer_ <= 0) {
 			deathParticle_ = Service::Particle::Emit("nakagawa", transform_.translate);
 			isTentativeDeath_ = true;
-			if (hitParticle_ != nullptr) {
-				hitParticle_->Stop();
-				hitParticle_ = nullptr;
-			}
 		}
 	} else {
 		// 攻撃用のタイマーを進める

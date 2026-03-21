@@ -135,6 +135,7 @@ private:
 	std::unique_ptr<EnemyHitReactionComponent> hitReactionComponent_;
 
 	/// ===Particle=== ///
+	MiiEngine::ParticleGroup* spawnParticle_ = nullptr;
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
 	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 

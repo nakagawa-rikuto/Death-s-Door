@@ -7,6 +7,13 @@
 #include "GameSceneExitState.h"
 
 ///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameSceneGameOverAnimationState::~GameSceneGameOverAnimationState() {
+	gameOverAnimation_.reset();
+}
+
+///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
 void GameSceneGameOverAnimationState::Enter(GameScene* gameScene) {

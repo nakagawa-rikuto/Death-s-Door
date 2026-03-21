@@ -45,9 +45,6 @@ private:
 	/// ===EnemyManager=== ///
 	EnemyManager* enemyManager_ = nullptr;
 
-	/// ===ParticleGroup=== ///
-	std::vector<MiiEngine::ParticleGroup*> spawnParticles_;
-
 	/// ===PhaseState=== ///
 	enum class PhaseState {
 		Wave1,	// 1ウェーブ目

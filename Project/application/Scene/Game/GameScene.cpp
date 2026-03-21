@@ -28,8 +28,6 @@ GameScene::GameScene() {
 /// デストラクタ
 ///-------------------------------------------///
 GameScene::~GameScene() {
-	// ISceneのデストラクタ
-	IScene::~IScene();
 	// BGMの停止
 	//AudioService::StopSound("title");
 	// Colliderのリセット
@@ -37,16 +35,17 @@ GameScene::~GameScene() {
 	// Camera
 	Service::Camera::Remove("Game");
 	camera_.reset();
+	// State
+	if (currentState_) {
+		currentState_->Finalize();
+		currentState_.reset();
+	}
 	// Particle
 	Service::Particle::RemoveAllParticles();
-	// State
-	currentState_.reset();
-	// Camera
-	camera_.reset();
-	// Player
-	player_.reset();
 	// Enemy
 	enemyManager_.reset();
+	// Player
+	player_.reset();
 	// Ground
 	stage_.reset();
 }

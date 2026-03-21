@@ -14,11 +14,6 @@
 /// デストラクタ
 ///-------------------------------------------///
 MobPhase::~MobPhase() {
-	for (auto particle : spawnParticles_) {
-		particle->Stop();
-		particle = nullptr;
-	}
-	spawnParticles_.clear();
 	enemyManager_ = nullptr;
 }
 
@@ -82,15 +77,9 @@ void MobPhase::SpawnWave(const std::string& json_name) {
 		if (obj.fileName == "Close") {
 			// Enemyの生成
 			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.translation));
-			// Particleの生成
-			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
-			spawnParticles_.push_back(spawnParticle_);
 		} else if (obj.fileName == "Long") {
 			// Enemyの生成
 			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.translation));
-			// Particleの生成
-			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
-			spawnParticles_.push_back(spawnParticle_);
 		}
 	}
 }

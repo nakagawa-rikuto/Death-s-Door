@@ -10,7 +10,18 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// デストラクタ
 	///-------------------------------------------///
-	FFTOceanCompute::~FFTOceanCompute() {}
+	FFTOceanCompute::~FFTOceanCompute() {
+		oceanParamsBuffer_.reset();
+		butterflyParamsBuffer_.reset();
+		h0Resource_.reset();
+		hktResource_.reset();
+		dxResource_.reset();
+		dzResource_.reset();
+		pingResource_.reset();
+		pongResource_.reset();
+		displaceResource_.reset();
+		normalFoamResource_.reset();
+	}
 
 	///-------------------------------------------/// 
 	/// 初期化
@@ -370,7 +381,7 @@ namespace MiiEngine {
 
 		// BufferBaseにリソースを渡す
 		outResource = std::make_unique<BufferBase>();
-		outResource->SetBuffer(resource.Detach());
+		outResource->SetBuffer(resource.Get()); // Detachして所有権を渡す。
 
 		// UAVの作成
 		outUAV.CreateAsTexture2D(

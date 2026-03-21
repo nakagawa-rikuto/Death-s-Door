@@ -13,7 +13,7 @@
 class GameSceneGameOverAnimationState : public GameSceneFadeState {
 public:
 
-	~GameSceneGameOverAnimationState() override = default;
+	~GameSceneGameOverAnimationState() override;
 
 	/// <summary>
 	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
