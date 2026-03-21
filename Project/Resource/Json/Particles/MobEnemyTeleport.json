@@ -1,0 +1,142 @@
+{
+    "advanced": {
+        "clearOnStop": true,
+        "colorGradient": {
+            "colorBlendCurve": 1.0,
+            "oscillateColor": false,
+            "primaryColor": [
+                0.20000000298023224,
+                0.800000011920929,
+                1.0,
+                1.0
+            ],
+            "secondaryColor": [
+                1.0,
+                0.8999999761581421,
+                0.30000001192092896,
+                1.0
+            ],
+            "useGradient": false
+        },
+        "emissionPattern": {
+            "particlesPerEmit": 5,
+            "pattern": "Sphere",
+            "patternAngle": 0.0,
+            "patternRadius": 0.25
+        },
+        "isTrajectoryParticle": false,
+        "motion": {
+            "billboardRotationSpeed": 0.0,
+            "enableBillboardRotation": false,
+            "enableSwirling": true,
+            "expansionRate": 0.800000011920929,
+            "followEmitter": false,
+            "followStrength": 1.0,
+            "rotationInfluence": 1.2000000476837158,
+            "swirlingSpeed": 2.0,
+            "useRotationInfluence": false,
+            "velocityDamping": 0.949999988079071
+        },
+        "scaleAnimation": {
+            "endScale": 0.10000000149011612,
+            "maxScale": 1.5,
+            "startScale": 0.30000001192092896,
+            "type": "Bounce"
+        },
+        "trailSpacing": 0.00800000037997961
+    },
+    "appearance": {
+        "endColor": [
+            0.35934412479400635,
+            0.9789029359817505,
+            0.7357849478721619,
+            0.0
+        ],
+        "endScale": [
+            0.5,
+            0.5,
+            0.5
+        ],
+        "startColor": [
+            0.15691931545734406,
+            0.9535865187644958,
+            0.4997886121273041,
+            1.0
+        ],
+        "startScaleMax": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "startScaleMin": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "texturePath": "circle2",
+        "useColorGradient": true,
+        "useScaleAnimation": true
+    },
+    "emission": {
+        "burstCount": 50,
+        "emissionRate": 10.0,
+        "frequency": 0.5,
+        "isBurst": true,
+        "lifetimeMax": 0.5,
+        "lifetimeMin": 0.5
+    },
+    "maxInstance": 50,
+    "modelName": "plane",
+    "name": "MobEnemyTeleport",
+    "physics": {
+        "acceleration": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "explosionRange": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "gravity": 1.2000000476837158,
+        "upwardForce": 0.0,
+        "useRandomVelocity": true,
+        "velocityMax": [
+            10.0,
+            8.0,
+            10.0
+        ],
+        "velocityMin": [
+            -10.0,
+            1.0,
+            -10.0
+        ]
+    },
+    "rotation": {
+        "enableRotation": false,
+        "initialRotationMax": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "initialRotationMin": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "randomInitialRotation": false,
+        "randomRotation": false,
+        "rotationSpeedMax": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "rotationSpeedMin": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    },
+    "shape": "None"
+}

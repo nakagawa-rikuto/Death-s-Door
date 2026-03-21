@@ -2,6 +2,10 @@
 /// ===Include=== ///
 #include "Base/EnemyState.h"
 
+namespace MiiEngine {
+	class ParticleGroup;
+}
+
 ///=====================================================/// 
 /// TeleportState
 ///=====================================================///
@@ -30,5 +34,7 @@ private:
 
 	float minRange_ = 0.0f; // テレポートの最小距離
 	float maxRange_ = 0.0f; // テレポートの最大距離
+
+	MiiEngine::ParticleGroup* teleportParticle_ = nullptr; // テレポートエフェクトのパーティクル
 };
 

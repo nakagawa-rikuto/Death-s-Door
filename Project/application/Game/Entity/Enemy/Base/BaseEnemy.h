@@ -83,6 +83,8 @@ public: /// ===Setter=== ///
 	void SetIsTentativeDeath(bool flag) { isTentativeDeath_ = flag; };
 	// 無敵時間の設定
 	void SetInvincibleTime();
+	// Colliderの有効/無効の切り替え
+	void SetColliderActive(bool isActive);
 
 protected: /// ===変数の宣言=== ///
 

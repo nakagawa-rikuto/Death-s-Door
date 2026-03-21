@@ -43,7 +43,7 @@ void EnemyMoveState::Update() {
 		float maxRange = 0.0f;
         if (enemy_->GetMovementComponent().GetState().isInEvadeRange) {
 			// 回避範囲に入ったらテレポート
-			minRange = enemy_->GetMovementComponent().GetConfig().evadeRange * 2.0f;
+			minRange = enemy_->GetMovementComponent().GetConfig().evadeRange * 4.0f;
 			maxRange = enemy_->GetMovementComponent().GetConfig().chaseRange;
         } else if (enemy_->GetMovementComponent().GetState().isInChaseRange) {
             // 追いかける範囲に入ったらテレポート

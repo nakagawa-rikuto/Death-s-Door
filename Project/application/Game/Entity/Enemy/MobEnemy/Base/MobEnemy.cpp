@@ -19,17 +19,9 @@
 ///-------------------------------------------///
 MobEnemy::~MobEnemy() {
 	// Particleの解放
-	if (hitParticle_ != nullptr) {
-		hitParticle_->Stop();
-		hitParticle_ = nullptr;
-	}
 	if (spawnParticle_ != nullptr) {
 		spawnParticle_->Stop();
 		spawnParticle_ = nullptr;
-	}
-	if (deathParticle_ != nullptr) {
-		deathParticle_->Stop();
-		deathParticle_ = nullptr;
 	}
 	// 状態を解放
 	currentState_->Finalize();
@@ -76,7 +68,7 @@ void MobEnemy::Update() {
 	advanceTimer();
 
 	/// ===Stateの更新=== ///
-	if (currentState_) {
+	if (currentState_ && !baseInfo_.isDead) {
 		// 各Stateの更新
 		currentState_->Update();
 	}
@@ -217,18 +209,18 @@ void MobEnemy::SettingParamita() {
 	EnemyMoveComponent::MoveConfig moveConfig{
 			.speed = 0.05f,
 			.rotationSpeed = 0.1f,
-			.chaseRange = 20.0f,
-			.evadeRange = 3.0f,
+			.chaseRange = 16.0f,
+			.evadeRange = 2.0f,
 			.moveTime = 2.0f,
-			.evadeTime = 3.0f
+			.evadeTime = 4.0f
 	};
 	moveComponent_->Initialize(moveConfig);
 	// TeleportComponentの初期化
 	EnemyTeleportComponent::TeleportConfig teleportConfig{
 		.rotationSpeed = 5.0f,
-		.spinOutDuration = 0.4f,
+		.spinOutDuration = 0.5f,
 		.warpDuration = 0.3f,
-		.spinInDuration = 0.4f
+		.spinInDuration = 0.5f
 	};
 	teleportComponent_->Initialize(teleportConfig);
 	// HitReactionComponentの初期化
@@ -266,6 +258,10 @@ void MobEnemy::advanceTimer() {
 		if (disappearTimer_ <= 0) {
 			deathParticle_ = Service::Particle::Emit("nakagawa", transform_.translate);
 			isTentativeDeath_ = true;
+			if (hitParticle_ != nullptr) {
+				hitParticle_->Stop();
+				hitParticle_ = nullptr;
+			}
 		}
 	} else {
 		// 攻撃用のタイマーを進める

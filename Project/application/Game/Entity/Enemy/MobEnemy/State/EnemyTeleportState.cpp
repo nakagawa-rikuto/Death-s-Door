@@ -2,7 +2,9 @@
 // MobEnemy
 #include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
 // Player
-#include "application/Game/Entity/Player/Player.h"\
+#include "application/Game/Entity/Player/Player.h"
+// Service
+#include <Service/Particle.h>
 // State
 #include "EnemyMoveState.h"
 #include "EnemyPrePareAttackState.h"
@@ -28,6 +30,9 @@ void EnemyTeleportState::Enter(MobEnemy* enemy) {
 		enemy_->GetTransform().rotate,
 		enemy_->GetPlayer()->GetTransform().translate, 
 		minRange_, maxRange_);
+
+	// Enemyの当たり判定を一時的に無効化
+	enemy_->SetColliderActive(false);
 }
 
 ///-------------------------------------------/// 
@@ -69,10 +74,13 @@ void EnemyTeleportState::Update() {
 	// パーティクルのスポーン
 	if (result.shouldSpawnParticleAtCurrent || result.shouldSpawnParticleAtNext) {
 		// パーティクルをスポーン
+		teleportParticle_ = Service::Particle::Emit("MobEnemyTeleport", enemy_->GetTransform().translate);
 	}
 
 	/// ===Stateの変更=== ///
 	if (result.isComplete) {
+		// Colliderを再度有効化
+		enemy_->SetColliderActive(true);
 		if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {
 			// Attackに
 			enemy_->ChangeState(std::make_unique<EnemyPrePareAttackState>());

@@ -114,16 +114,6 @@ Vector3 EnemyTeleportComponent::SetNextPosition(float minRange, float maxRange, 
 ///-------------------------------------------///
 void EnemyTeleportComponent::UpdateTeleport(const UpdateContext& context, UpdateResult& result) {
 
-	/// ===現在位置を演出時間内に均等に移動させる=== ///
-	/*const float remaining = state_.totalTime - std::min(state_.elapsed, state_.totalTime);
-	if (remaining > 0.0f) {
-		Vector3 toNext = state_.nextPosition - context.currentPosition;
-		toNext.y = 0.0f;  // Y は外部（重力など）に委ねる
-		result.velocity = toNext / remaining;
-	} else {
-		result.velocity = { 0.0f, 0.0f, 0.0f };
-	}*/
-
 	/// ===フェーズごとの演出=== ///
 	switch (state_.phase) {
 	case Phase::SpinOut: {// SpinOut：消える前の一周回転
