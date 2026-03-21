@@ -412,7 +412,9 @@
 └── └── └── └── └──     └── ├── EnemyHitReactionComponent.cpp
 └── └── └── └── └──     └── ├── EnemyHitReactionComponent.h
 └── └── └── └── └──     └── ├── EnemyMoveComponent.cpp
-└── └── └── └── └──     └── └── EnemyMoveComponent.h
+└── └── └── └── └──     └── ├── EnemyMoveComponent.h
+└── └── └── └── └──     └── ├── EnemyTeleportComponent.cpp
+└── └── └── └── └──     └── └── EnemyTeleportComponent.h
 └── └── └── └── └──     ├── LongRange/
 └── └── └── └── └──     └── ├── LongRangeEnemy.cpp
 └── └── └── └── └──     └── ├── LongRangeEnemy.h
@@ -429,7 +431,9 @@
 └── └── └── └── └──         ├── EnemyMoveState.cpp
 └── └── └── └── └──         ├── EnemyMoveState.h
 └── └── └── └── └──         ├── EnemyPrePareAttackState.cpp
-└── └── └── └── └──         └── EnemyPrePareAttackState.h
+└── └── └── └── └──         ├── EnemyPrePareAttackState.h
+└── └── └── └── └──         ├── EnemyTeleportState.cpp
+└── └── └── └── └──         └── EnemyTeleportState.h
 └── └── └── └── ├── GameCharacter/
 └── └── └── └── └── ├── Collision/
 └── └── └── └── └── └── ├── GameCharacterCollision.cpp
@@ -9522,7 +9526,10 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// デストラクタ
 	///-------------------------------------------///
-	FFTOceanBase::~FFTOceanBase() {}
+	FFTOceanBase::~FFTOceanBase() {
+		transformBuffer_.reset();
+		oceanBuffer_.reset();
+	}
 
 	///-------------------------------------------/// 
 	/// 初期化
@@ -9780,7 +9787,18 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// デストラクタ
 	///-------------------------------------------///
-	FFTOceanCompute::~FFTOceanCompute() {}
+	FFTOceanCompute::~FFTOceanCompute() {
+		oceanParamsBuffer_.reset();
+		butterflyParamsBuffer_.reset();
+		h0Resource_.reset();
+		hktResource_.reset();
+		dxResource_.reset();
+		dzResource_.reset();
+		pingResource_.reset();
+		pongResource_.reset();
+		displaceResource_.reset();
+		normalFoamResource_.reset();
+	}
 
 	///-------------------------------------------/// 
 	/// 初期化
@@ -10140,7 +10158,7 @@ namespace MiiEngine {
 
 		// BufferBaseにリソースを渡す
 		outResource = std::make_unique<BufferBase>();
-		outResource->SetBuffer(resource.Detach());
+		outResource->SetBuffer(resource.Get()); // Detachして所有権を渡す。
 
 		// UAVの作成
 		outUAV.CreateAsTexture2D(
@@ -27634,6 +27652,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
@@ -27810,6 +27830,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
@@ -28890,6 +28912,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Service\Sprite.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
     <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -29491,6 +29515,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -37684,6 +37710,13 @@ void BaseEnemy::SetInvincibleTime() {
 	invincibleInfo_.timer = invincibleInfo_.time;
 	invincibleInfo_.isInvincible = true;
 }
+void BaseEnemy::SetColliderActive(bool isActive) {
+	if (isActive) {
+		Service::Collision::AddCollider(this);
+	} else {
+		Service::Collision::RemoveCollider(this);
+	}
+}
 
 ///-------------------------------------------/// 
 /// 初期化
@@ -37850,6 +37883,8 @@ public: /// ===Setter=== ///
 	void SetIsTentativeDeath(bool flag) { isTentativeDeath_ = flag; };
 	// 無敵時間の設定
 	void SetInvincibleTime();
+	// Colliderの有効/無効の切り替え
+	void SetColliderActive(bool isActive);
 
 protected: /// ===変数の宣言=== ///
 
@@ -38556,11 +38591,17 @@ File Path: Project/application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.cpp
 /// デストラクタ
 ///-------------------------------------------///
 MobEnemy::~MobEnemy() {
+	// Particleの解放
+	if (spawnParticle_ != nullptr) {
+		spawnParticle_->Stop();
+		spawnParticle_ = nullptr;
+	}
 	// 状態を解放
 	currentState_->Finalize();
 	currentState_.reset();
 	// Componentの解放
 	moveComponent_.reset();
+	teleportComponent_.reset();
 	hitReactionComponent_.reset();
 }
 
@@ -38573,6 +38614,9 @@ void MobEnemy::InitGameScene(const Vector3& translate) {
 
 	/// ===パラメータ設定=== ///
 	SettingParamita();
+
+	/// ===Particleの発生=== ///
+	spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", transform_.translate);
 
 	/// ===Stateの設定=== ///
 	ChangeState(std::make_unique<EnemyMoveState>());
@@ -38597,7 +38641,7 @@ void MobEnemy::Update() {
 	advanceTimer();
 
 	/// ===Stateの更新=== ///
-	if (currentState_) {
+	if (currentState_ && !baseInfo_.isDead) {
 		// 各Stateの更新
 		currentState_->Update();
 	}
@@ -38732,16 +38776,26 @@ bool MobEnemy::CheckAttackable() {
 void MobEnemy::SettingParamita() {
 	/// ===Componentの生成=== ///
 	moveComponent_ = std::make_unique<EnemyMoveComponent>();
+	teleportComponent_ = std::make_unique<EnemyTeleportComponent>();
 	hitReactionComponent_ = std::make_unique<EnemyHitReactionComponent>();
 	// MoveComponentの初期化
 	EnemyMoveComponent::MoveConfig moveConfig{
 			.speed = 0.05f,
-			.range = 20.0f,
-			.interval = 5.0f,
-			.waitTime = 1.5f,
-			. rotationSpeed = 0.1f
+			.rotationSpeed = 0.1f,
+			.chaseRange = 16.0f,
+			.evadeRange = 2.0f,
+			.moveTime = 2.0f,
+			.evadeTime = 4.0f
 	};
-	moveComponent_->Initialize(transform_.translate, moveConfig);
+	moveComponent_->Initialize(moveConfig);
+	// TeleportComponentの初期化
+	EnemyTeleportComponent::TeleportConfig teleportConfig{
+		.rotationSpeed = 5.0f,
+		.spinOutDuration = 0.5f,
+		.warpDuration = 0.3f,
+		.spinInDuration = 0.5f
+	};
+	teleportComponent_->Initialize(teleportConfig);
 	// HitReactionComponentの初期化
 	EnemyHitReactionComponent::KnockBackConfig hitReactionConfig{
 		.knockBackForce = 1.5f,
@@ -38805,12 +38859,13 @@ File Path: Project/application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h
 #pragma once
 /// ===include=== ///
 // BaseEnemy
-#include "application/Game/Entity\Enemy/Base/BaseEnemy.h"
+#include <application/Game/Entity/Enemy/Base/BaseEnemy.h>
 // State
-#include "application/Game/Entity/Enemy/MobEnemy/State/Base/EnemyState.h"
+#include <application/Game/Entity/Enemy/MobEnemy/State/Base/EnemyState.h>
 // Component
-#include "application/Game/Entity/Enemy/MobEnemy/Component/EnemyMoveComponent.h"
-#include "application/Game/Entity/Enemy/MobEnemy/Component/EnemyHitReactionComponent.h"
+#include <application/Game/Entity/Enemy/MobEnemy/Component/EnemyMoveComponent.h>
+#include <application/Game/Entity/Enemy/MobEnemy/Component/EnemyTeleportComponent.h>
+#include <application/Game/Entity/Enemy/MobEnemy/Component/EnemyHitReactionComponent.h>
 // C++
 #include <random>
 
@@ -38907,6 +38962,7 @@ public: /// ===Getter=== ///
 
 	// Component
 	EnemyMoveComponent& GetMovementComponent() const { return *moveComponent_; };
+	EnemyTeleportComponent& GetTeleportComponent() const { return *teleportComponent_; };
 	EnemyHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; };
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
@@ -38933,9 +38989,11 @@ private:
 
 	/// ===コンポーネント=== ///
 	std::unique_ptr<EnemyMoveComponent> moveComponent_;
+	std::unique_ptr<EnemyTeleportComponent> teleportComponent_;
 	std::unique_ptr<EnemyHitReactionComponent> hitReactionComponent_;
 
 	/// ===Particle=== ///
+	MiiEngine::ParticleGroup* spawnParticle_ = nullptr;
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
 	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 
@@ -39513,10 +39571,11 @@ File Path: Project/application/Game/Entity/Enemy/MobEnemy/Component/EnemyMoveCom
 /// 設定の適用
 ///-------------------------------------------///
 void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
-	if (newconfig.speed < 0.0f || newconfig.range <= 0.0f) {
-		// デバッグビルドでのみエラー
+	if (newconfig.speed < 0.0f || newconfig.chaseRange <= 0.0f || newconfig.evadeRange <= 0.0f) {
 		assert(false && "Invalid MoveConfig");
 	}
+
+	// configの設定
 	config_ = newconfig;
 }
 #endif // USE_IMGUI
@@ -39524,8 +39583,7 @@ void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
 ///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
-void EnemyMoveComponent::Initialize(const Vector3& center, const MoveConfig& config) {
-	// ランダムエンジンの初期化
+void EnemyMoveComponent::Initialize(const MoveConfig& config) {
 	std::seed_seq seed{
 		static_cast<uint32_t>(std::time(nullptr)),
 		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
@@ -39534,12 +39592,10 @@ void EnemyMoveComponent::Initialize(const Vector3& center, const MoveConfig& con
 
 	// 設定の初期化
 	config_ = config;
+	state_ = MoveState{};
 
-	// 状態の初期化
-	state_.timer = 1.0f;
-	state_.rangeCenter = center;
-	state_.direction = { 0.0f, 0.0f, 0.0f };
-	state_.isWaiting = false;
+	// 最初の移動をセットアップ
+	SetupRandomMove();
 }
 
 ///-------------------------------------------/// 
@@ -39549,74 +39605,61 @@ EnemyMoveComponent::UpdateResult EnemyMoveComponent::Update(const UpdateContext&
 
 	UpdateResult result{};
 
-	/// ===タイマー=== ///
-	if (state_.timer > 0.0f) {
-		state_.timer -= context.deltaTime;
+	/// ===タイマーの更新=== ///
+	TimerUpdate(context.deltaTime);
+
+	/// ===プレイヤーとの距離を計算=== ///
+	Vector3 toPlayer = context.playerPosition - context.currentPosition;
+	const float distToPlayer = Length(toPlayer);
+
+	/// ===回避の判定=== ///
+	// 圏内に入ったら evadeTimer をカウントし、0 になったらテレポートを要求する
+	if (distToPlayer <= config_.evadeRange) {
+		if (!state_.isInEvadeRange) {
+			// 圏内に入った瞬間にタイマーをセット
+			state_.isInEvadeRange = true;
+			state_.evadeTimer = config_.evadeTime;
+		}
+
+		if (state_.evadeTimer <= 0.0f) {
+			// 時間が経過したらテレポート
+			state_.evadeTimer = 0.0f;
+			result.teleportTrigger = true;
+			result.velocity = { 0.0f, 0.0f, 0.0f };
+			return result;
+		}
+	} else {
+		state_.isInEvadeRange = false;
+		state_.evadeTimer = 0.0f;
 	}
 
-	/// ===計算=== ///
-	// 移動範囲の中心との方向ベクトルを計算
-	Vector3 toCenter = state_.rangeCenter - context.currentPosition;
-	// 中心からの距離を取得
-	float distanceFromCenter = Length(toCenter);
+	/// ===追跡の判定=== ///
+	// evadeRange より外側かつ chaseRange 以内に入った瞬間にテレポートを要求する
+	if (distToPlayer <= config_.chaseRange && distToPlayer > config_.evadeRange) {
+		if (!state_.isInChaseRange) {
+			state_.isInChaseRange = true;
+			result.teleportTrigger = true;
+			result.velocity = { 0.0f, 0.0f, 0.0f };
+			return result;
+		}
+	} else if (distToPlayer > config_.chaseRange) {
+		// 圏外に出たらリセット（再突入で再びテレポート可能にする）
+		state_.isInChaseRange = false;
+	}
 
-	// 移動ベクトルを設定
+	/// ===通常移動（ランダム方向に moveTime 秒間移動してループ）=== ///
+	if (state_.moveTimer <= 0.0f) {
+		SetupRandomMove();
+	} else {
+		state_.direction = { 0.0f, 0.0f, 0.0f };
+	}
+
+	// 移動ベクトルを計算
 	result.velocity = state_.direction * config_.speed;
 
-	/// ===移動処理=== ///
-	if (state_.isWaiting) { // 待機中だったら
-		// 移動しない
-		result.velocity = { 0.0f, 0.0f, 0.0f };
-
-		// 方向を回転
-		if (!context.isRotationComplete) {
-			result.targetDirection = state_.direction;
-			result.needsRotation = true;
-		}
-		
-		// 回転し終わったら
-		if (context.isRotationComplete && state_.timer <= 0.0f) {
-			// ランダムな時間を設定
-			std::uniform_real_distribution<float> timeDist(1.0f, config_.interval);
-			state_.timer = timeDist(randomEngine_);
-
-			// 移動ベクトルを設定
-			result.velocity = state_.direction * config_.speed;
-			// 待機フラグを解除
-			state_.isWaiting = false;
-			// 回転完了フラグをリセット
-			result.shouldResetRotationFlag = true;
-			result.needsRotation = false;
-		}
-
-	} else if (distanceFromCenter > config_.range) { // 範囲外に出た場合
-		// 方向の設定と待機処理の準備
-		PreparNextMove(toCenter);
-		result.velocity = { 0.0f, 0.0f, 0.0f };
-
-	} else if (state_.timer <= 0.0f && !state_.isWaiting) {
-		// ランダムな角度と距離を生成
-		std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
-		std::uniform_real_distribution<float> distanceDist(0.0f, config_.range);
-		// ランダムな値の設定
-		float angle = angleDist(randomEngine_);
-		float distance = distanceDist(randomEngine_);
-
-		// 方向ベクトルを円から算出
-		Vector3 offset = {
-			std::cos(angle) * distance,
-			0.0f,
-			std::sin(angle) * distance
-		};
-
-		// 移動先の座標を計算
-		Vector3 target = state_.rangeCenter + offset;
-		target.y = context.currentPosition.y;
-
-		// 方向の設定と待機処理の準備
-		PreparNextMove(target - context.currentPosition);
-		result.velocity = { 0.0f, 0.0f, 0.0f };
-	}
+	// 常にPlayerを向いて移動する
+	result.rotateDirection = Normalize(toPlayer);
+	result.rotateDirection.y = 0.0f;
 
 	return result;
 }
@@ -39627,51 +39670,67 @@ EnemyMoveComponent::UpdateResult EnemyMoveComponent::Update(const UpdateContext&
 void EnemyMoveComponent::Information() {
 #ifdef USE_IMGUI
 	if (ImGui::TreeNode("移動情報")) {
+		// 速度・回転
 		ImGui::DragFloat("移動速度", &config_.speed, 0.01f, 0.0f, 10.0f);
-		ImGui::DragFloat("移動範囲", &config_.range, 0.1f, 0.1f, 100.0f);
-		ImGui::DragFloat("移動間隔", &config_.interval, 0.1f, 0.1f, 10.0f);
-		ImGui::DragFloat("待機時間", &config_.waitTime, 0.01f, 0.0f, 5.0f);
 		ImGui::DragFloat("回転速度", &config_.rotationSpeed, 0.01f, 0.01f, 1.0f);
-
+		// 範囲
+		ImGui::DragFloat("追跡範囲", &config_.chaseRange, 0.1f, 0.1f, 100.0f);
+		ImGui::DragFloat("回避圏内距離", &config_.evadeRange, 0.1f, 0.1f, 100.0f);
+		// 時間
+		ImGui::DragFloat("1回の移動時間", &config_.moveTime, 0.05f, 0.1f, 10.0f);
+		ImGui::DragFloat("回避猶予時間", &config_.evadeTime, 0.05f, 0.1f, 10.0f);
+		// 状態
 		ImGui::Separator();
 		ImGui::Text("状態");
-		ImGui::Text("タイマー:  %.2f", state_.timer);
-		ImGui::Text("待機中: %s", state_.isWaiting ? "Yes" : "No");
-
+		ImGui::Text("moveTimer  : %.2f", state_.moveTimer);
+		ImGui::Text("evadeTimer : %.2f", state_.evadeTimer);
+		ImGui::Text("isInEvadeRange  : %s", state_.isInEvadeRange ? "Yes" : "No");
+		ImGui::Text("isInChaseRange  : %s", state_.isInChaseRange ? "Yes" : "No");
 		ImGui::TreePop();
 	}
 #endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
-/// 移動開始処理
+/// 移動のセットアップ
 ///-------------------------------------------///
-void EnemyMoveComponent::StartMove(const Vector3& center) {
-	state_.timer = config_.waitTime;
-	state_.rangeCenter = center;
+void EnemyMoveComponent::SetupRandomMove() {
+	// ランダムな角度で行動範囲の円上に移動先を決める
+	std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
+	float angle = angleDist(randomEngine_);
+
+	// 方向ベクトルを設定（Y 成分は 0 で水平移動のみ）
+	state_.direction = Normalize(Vector3{
+		std::cos(angle),
+		0.0f,
+		std::sin(angle)
+		});
+
+	// moveTime 秒間この方向に動く
+	state_.moveTimer = config_.moveTime;
 }
 
 ///-------------------------------------------/// 
-/// 方向の設定と待機時間の設定
+/// タイマーの更新処理
 ///-------------------------------------------///
-void EnemyMoveComponent::PreparNextMove(const Vector3& vector) {
-	Vector3 dir = Normalize(vector);
-	dir.y = 0.0f; // Y成分を0にしてXZ平面での方向ベクトルを作成
-	state_.direction = Normalize(dir); // 方向を保存
-
-	// 待機時間を設定
-	state_.timer = config_.waitTime; // 待機時間を設定
-	// 待機フラグを立てる
-	state_.isWaiting = true;
+void EnemyMoveComponent::TimerUpdate(const float deltaTime) {
+	// タイマーが0より大きい場合は減らす
+	if (state_.moveTimer > 0.0f) {
+		state_.moveTimer -= deltaTime;
+	}
+	// 回避猶予タイマー（圏内にいる間だけカウント）
+	if (state_.isInEvadeRange && state_.evadeTimer > 0.0f) {
+		state_.evadeTimer -= deltaTime;
+	}
 }
-
 
 ============================================================
 File Path: Project/application/Game/Entity/Enemy/MobEnemy/Component/EnemyMoveComponent.h
 ============================================================
 #pragma once
 /// ===Include=== ///
-#include "Math/Vector3.h"
+#include <Math/Vector3.h>
+#include <Math/Quaternion.h>
 #include <random>
 
 ///=====================================================/// 
@@ -39681,34 +39740,40 @@ class EnemyMoveComponent {
 private:
 	/// ===状態の構造体=== ///
 	struct MoveState {
-		float timer = 0.0f;			// タイマー
-		Vector3 rangeCenter{};		// 移動範囲の中心
-		Vector3 direction{};		// 移動方向
-		bool isWaiting = false;		// 待機フラグ	
+		float moveTimer = 0.0f;		// 1回の移動残り時間（moveTime からカウントダウン）
+		float evadeTimer = 0.0f;	// 回避圏内の猶予タイマー（evadeTime からカウントダウン）
+
+		Vector3 direction{};         // 現在の移動方向（正規化済み）
+
+		bool isInEvadeRange = false; // プレイヤーがevadeRange内にいるかどうか
+		bool isInChaseRange = false; // プレイヤーがchaseRange内にいるかどうか
 	};
 public:
 	/// ===設定パラメータの構造体=== ///
 	struct MoveConfig {
-		float speed = 0.05f;		// 移動速度
-		float range = 20.0f;	    // 移動範囲
-		float interval = 5.0f;	    // 移動間隔
-		float waitTime = 1.5f;	    // 待機時間
-		float rotationSpeed = 0.1f; // 回転速度
+		// 速度
+		float speed = 0.05f;			// 速度
+		float rotationSpeed = 0.1f;		// 回転速度
+		// 範囲
+		float chaseRange = 20.0f;		// 追いかける範囲
+		float evadeRange = 3.0f;		// 距離を取る範囲
+		// 時間
+		float moveTime = 0.0f;			// 移動時間
+		float evadeTime = 0.0f;			// 回避時間
 	};
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
 		Vector3 currentPosition{};		 // 現在の位置
+		Vector3 playerPosition{};		 // プレイヤーの位置
 		float deltaTime = 0.0f;			 // デルタタイム
-		bool isRotationComplete = false; // 回転完了フラグ
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Vector3 velocity{};					   // 移動ベクトル
-		Vector3 targetDirection{};			   // 目標方向
-		bool needsRotation = false;			   // 回転が必要かどうか
-		bool shouldResetRotationFlag = false;  // 回転完了フラグをリセットする必要があるか
+		Vector3 velocity{};				// 移動ベクトル
+		Vector3 rotateDirection{};		// 目標方向
+		bool teleportTrigger = false;	// テレポートトリガー
 	};
 
 public:
@@ -39723,24 +39788,19 @@ public:
 	/// <summary>
 	/// 指定した敵オブジェクトを初期化し、中心位置を設定します。
 	/// </summary>
-	/// <param name="center">初期化に使用する中心位置を示す Vector3 の const 参照。</param>
-	void Initialize(const Vector3& center, const MoveConfig& config = MoveConfig{});
+	void Initialize(const MoveConfig& config = MoveConfig{});
 
 	/// <summary>
 	/// 更新処理
 	/// </summary>
+	/// <param name="context">更新処理に必要なコンテキスト情報。</param>
+	/// <returns>更新処理の実行結果。</returns>
 	UpdateResult Update(const UpdateContext& context);
 
 	/// <summary>
 	/// ImGui情報の表示
 	/// </summary>
 	void Information();
-
-	/// <summary>
-	/// 指定した中心点を基準に移動を開始します。
-	/// </summary>
-	/// <param name="center">移動の基準となる中心位置を表す Vector3 型の座標（const 参照）。</param>
-	void StartMove(const Vector3& center);
 
 public: /// ===Getter=== ///
 	// MoveConfig
@@ -39759,18 +39819,402 @@ private:
 	MoveConfig config_;
 	MoveState state_;
 
-	// ランダムシード
+	/// ===状態=== ///
+	enum class MoveStateType {
+		Idle,   // 待機
+		Chase,  // 追跡
+		Evade,  // 回避
+	};
+
+	/// ===ランダムシード=== ///
 	std::mt19937 randomEngine_;
 
 private:
 
 	/// <summary>
-	/// 方向の設定と待機時間の設定
+	/// 移動をセットアップします。
 	/// </summary>
-	/// <param name="vector">設定する方向のベクトル</param>
-	void PreparNextMove(const Vector3& vector);
+	void SetupRandomMove();
+
+	/// <summary>
+	/// タイマーの更新処理
+	/// </summary>
+	/// 
+	void TimerUpdate(const float deltaTime);
 };
 
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/MobEnemy/Component/EnemyTeleportComponent.cpp
+============================================================
+#include "EnemyTeleportComponent.h"
+// C++
+#include <cassert>
+// Math
+#include <Math/sMath.h>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void EnemyTeleportComponent::Initialize(const TeleportConfig& config) {
+	// ランダムエンジンの初期化
+	std::seed_seq seed{
+		static_cast<uint32_t>(std::time(nullptr)),
+		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
+	};
+	randomEngine_.seed(seed);
+
+	// 設定の初期化
+	config_ = config;
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+EnemyTeleportComponent::UpdateResult EnemyTeleportComponent::Update(const UpdateContext & context) {
+
+	UpdateResult result{};
+
+	/// ===フェーズタイマーと総経過時間を進める=== ///
+	state_.phaseTimer += context.deltaTime;
+
+	// テレポート中
+	UpdateTeleport(context, result);
+
+	// 返す
+	return result;
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void EnemyTeleportComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("テレポート情報")) {
+		ImGui::DragFloat("SpinOut時間", &config_.spinOutDuration, 0.01f, 0.05f, 2.0f);
+		ImGui::DragFloat("Warp時間", &config_.warpDuration, 0.01f, 0.01f, 1.0f);
+		ImGui::DragFloat("SpinIn時間", &config_.spinInDuration, 0.01f, 0.05f, 2.0f);
+		ImGui::Separator();
+		const char* phaseNames[] = { "None", "SpinOut", "FadeOut", "FadeIn", "SpinIn" };
+		ImGui::Text("Phase   : %s", phaseNames[static_cast<int>(state_.phase)]);
+		ImGui::Text("Alpha   : %.2f", state_.alpha);
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// テレポートの開始
+///-------------------------------------------///
+void EnemyTeleportComponent::Start(
+	const Vector3& currentPosition,
+	const Quaternion& currentRotation,
+	const Vector3& playerPosition,
+	float minRange, 
+	float maxRange) {
+
+	// 状態のリセット
+	state_.phase = Phase::SpinOut;
+	state_.phaseTimer = 0.0f;
+	state_.alpha = 1.0f;
+	state_.startRotation = currentRotation;
+	state_.rotation = state_.startRotation;
+
+	// ワープ先を決定
+	Vector3 offset = SetNextPosition(minRange, maxRange, currentPosition);
+	state_.nextPosition = offset + playerPosition;  // 現在位置からのオフセットとして計算
+	state_.nextPosition.y = currentPosition.y;		// Y座標は変えない
+}
+
+///-------------------------------------------/// 
+/// ワープ先の座標を設定
+///-------------------------------------------///
+Vector3 EnemyTeleportComponent::SetNextPosition(float minRange, float maxRange, const Vector3& currentPosition) {
+	
+	/// ===計算=== ///
+	// minRange と maxRange の大小関係を保証する
+	if (minRange > maxRange) {
+		std::swap(minRange, maxRange);
+	}
+
+	// ランダムな角度と距離を生成
+	std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
+	std::uniform_real_distribution<float> distanceDist(minRange, maxRange);
+
+	// ランダムな値の設定
+	float angle = angleDist(randomEngine_);
+	float distance = distanceDist(randomEngine_);
+
+	// 移動先の設定
+	return Vector3{
+		std::cos(angle) * distance,
+		currentPosition.y,
+		std::sin(angle) * distance
+	};
+}
+
+///-------------------------------------------/// 
+/// テレポート演出の更新処理\
+///-------------------------------------------///
+void EnemyTeleportComponent::UpdateTeleport(const UpdateContext& context, UpdateResult& result) {
+
+	/// ===フェーズごとの演出=== ///
+	switch (state_.phase) {
+	case Phase::SpinOut: {// SpinOut：消える前の一周回転
+		const float duration = config_.spinOutDuration;
+		float t = (duration > 0.0f) ? (state_.phaseTimer / duration) : 1.0f;
+		t = std::min(t, 1.0f);
+
+		// 透明度を線形に下げる（1 → 0）
+		state_.alpha = 1.0f - t;
+		result.colorAlpha = state_.alpha;
+
+		// t² の EaseIn で 1周（2π）回転（startRotation を基点に乗算）
+		const float spinAngle = (t * t) * 2.0f * Math::Pi();
+		state_.rotation = Multiply(state_.startRotation, MakeRotationY(spinAngle));
+		result.rotation = state_.rotation;
+
+		// 移動なし
+		result.velocity = { 0.0f, 0.0f, 0.0f };
+
+		// 現在地にパーティクルを出し続ける
+		result.shouldSpawnParticleAtCurrent = true;
+
+		if (t >= 1.0f) {
+			// 完全に透明になったら Warp フェーズへ
+			result.shouldSpawnParticleAtCurrent = false;
+			state_.startRotation = context.currentRotation;
+			state_.phase = Phase::Warp;
+			state_.phaseTimer = 0.0f;
+		}
+		break;
+	}
+	case Phase::Warp: { // Warp：完全透明のまま座標をワープ
+		const float duration = config_.warpDuration;
+
+		// 完全に透明のまま
+		state_.alpha = 0.0f;
+		result.colorAlpha = 0.0f;
+		result.rotation = context.currentRotation;
+
+		// warpStartPosition → nextPosition を warpDuration 秒で均等に移動
+		const float remaining = duration - std::min(state_.phaseTimer, duration);
+		if (remaining > 0.0f) {
+			Vector3 toNext = state_.nextPosition - context.currentPosition;
+			toNext.y = 0.0f;  
+			result.velocity = toNext * remaining;
+		} else {
+			result.velocity = { 0.0f, 0.0f, 0.0f };
+			// NextPosition に到達したら SpinIn へ
+			state_.startRotation = context.currentRotation;
+			state_.phase = Phase::SpinIn;
+			state_.phaseTimer = 0.0f;
+
+			// 到達タイミングで出現先パーティクルを1度出す
+			result.shouldSpawnParticleAtNext = true;
+		}
+		break;
+	}
+	case Phase::SpinIn: {// SpinIn：出現後の一周回転（EaseOut＝減速）
+		const float duration = config_.spinInDuration;
+		float t = (duration > 0.0f) ? (state_.phaseTimer / duration) : 1.0f;
+		t = std::min(t, 1.0f);
+
+		// 透明度を線形に上げる（0 → 1）
+		state_.alpha = t;
+		result.colorAlpha = state_.alpha;
+
+		// √t の EaseOut で 1周（2π）回転（startRotation を基点に乗算）
+		const float spinAngle = std::sqrt(t) * 2.0f * Math::Pi();
+		state_.rotation = Multiply(state_.startRotation, MakeRotationY(spinAngle));
+		result.rotation = state_.rotation;
+
+		// 移動なし
+		result.velocity = { 0.0f, 0.0f, 0.0f };
+
+		// 出現先にパーティクルを出し続ける
+		result.shouldSpawnParticleAtNext = true;
+
+		if (t >= 1.0f) {
+			// 演出完了
+			result.shouldSpawnParticleAtNext = false;
+			result.shouldResetRotationFlag = true;
+			result.isComplete = true;
+			state_.phase = Phase::None;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+///-------------------------------------------/// 
+/// Y軸回転のクォータニオンを作成
+///-------------------------------------------///
+Quaternion EnemyTeleportComponent::MakeRotationY(float angleRad) {
+	const float half = angleRad * 0.5f;
+	return Quaternion{
+		0.0f,
+		std::sin(half),
+		0.0f,
+		std::cos(half)
+	};
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/MobEnemy/Component/EnemyTeleportComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include <Math/Vector3.h>
+#include <Math/Quaternion.h>
+#include <random>
+
+///=====================================================/// 
+/// EnemyTeleportComponent
+///=====================================================///
+class EnemyTeleportComponent {
+private:
+	/// ===テレポートフェーズ=== ///
+	enum class Phase {
+		None,     // 演出なし
+		SpinOut,  // その場でEaseIn回転しながら透明化（移動なし）
+		Warp,     // 完全透明のまま NextPosition へ座標をワープ（1フレーム）
+		SpinIn,   // NextPosition でEaseOut回転しながら不透明化（移動なし）
+	};
+
+	/// ===状態の構造体=== ///
+	struct TeleportState {
+		Phase phase = Phase::SpinOut;
+		float phaseTimer = 0.0f;		// フェーズ内の経過時間
+		float alpha = 1.0f;				// 透明度（1=不透明, 0=透明）
+		Quaternion startRotation{};     // 各フェーズ開始時の回転（スピンの基点）
+		Quaternion rotation{};          // スピン込みの現在の回転
+		Vector3 warpStartPosition{};	// ワープ開始時の座標（SpinOut の回転の中心）
+		Vector3 nextPosition{};			// ワープ先座標
+	};
+
+public:
+	/// ===設定パラメータの構造体=== ///
+	struct TeleportConfig {
+		float rotationSpeed = 5.0f;		// 向き補間速度
+		float spinOutDuration = 0.6f;   // SpinOut の時間（回転しながら透明化）
+		float warpDuration = 0.1f;      // Warp の時間（完全透明のままワープする時間）
+		float spinInDuration = 0.6f;	// SpinIn  の時間（回転しながら不透明化）
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Vector3 currentPosition{};		// 現在の座標
+		Quaternion currentRotation{};	// 現在の回転
+		Vector3 playerPosition{};		// プレイヤーの座標
+		float deltaTime = 0.0f;			// デルタタイム
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity{};              // 移動ベクトル（フレーム移動量）
+		Vector3 targetDirection{};       // 目標方向（State 側で回転処理に使用）
+		Quaternion rotation{};			 // テレポート用の追加回転（SpinOut/SpinInで使用）
+		float colorAlpha = 1.0f;		 // 透明度（描画側で適用）
+
+		bool needsRotation = false;			   // 回転処理が必要かどうか
+		bool shouldResetRotationFlag = false;  // 回転完了フラグをリセットする必要があるか
+
+		bool shouldSpawnParticleAtCurrent = false;  // 現在地にパーティクルを出すか
+		bool shouldSpawnParticleAtNext = false;     // nextPosition にパーティクルを出すか
+
+		bool isComplete = false;  // 演出完了フラグ
+	};
+
+public:
+
+	EnemyTeleportComponent() = default;
+	~EnemyTeleportComponent() = default;
+
+	EnemyTeleportComponent(const EnemyTeleportComponent&) = delete;
+	EnemyTeleportComponent& operator=(const EnemyTeleportComponent&) = delete;
+
+	/// <summary>
+	/// テレポート設定を使用して初期化を行います。
+	/// </summary>
+	/// <param name="config">使用するテレポート設定。デフォルト値が提供されています。</param>
+	void Initialize(const TeleportConfig& config = TeleportConfig{});
+
+	/// <summary>
+	/// 更新処理を実行します。
+	/// </summary>
+	/// <param name="context">更新処理に使用するコンテキスト。</param>
+	/// <returns>更新処理の結果。</returns>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// ImGui デバッグ表示。
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// テレポートを開始します
+	/// </summary>
+	/// <param name="currentPosition"></param>
+	/// <param name="currentRotation"></param>
+	/// <param name="playerPosition"></param>
+	/// <param name="minRange"></param>
+	/// <param name="maxRange"></param>
+	void Start(
+		const Vector3& currentPosition, 
+		const Quaternion& currentRotation,
+		const Vector3& playerPosition, 
+		float minRange, float maxRange);
+
+
+public: /// ===Getter=== ///
+	const TeleportConfig& GetConfig() const { return config_; }
+	Phase GetPhase()  const { return state_.phase; }
+	float GetAlpha()  const { return state_.alpha; }
+
+#ifdef USE_IMGUI
+public: /// ===Setter=== ///
+	void ApplyConfig(const TeleportConfig& config) { config_ = config; }
+#endif
+
+private:
+	/// ===情報=== ///
+	TeleportConfig config_;
+	TeleportState  state_;
+
+	/// ===ランダムエンジン=== ///
+	std::mt19937 randomEngine_;
+
+private:
+	/// <summary>
+	/// 次の位置を設定します。
+	/// </summary>
+	/// <param name="minRange">最小範囲。</param>
+	/// <param name="maxRange">最大範囲。</param>
+	/// <param name="currentPosition">現在の位置。</param>
+	/// <returns>次の位置を表すVector3。</returns>
+	Vector3 SetNextPosition(float minRange, float maxRange, const Vector3& currentPosition);
+
+	/// <summary>
+	/// テレポートを更新します。
+	/// </summary>
+	/// <param name="context">更新コンテキスト。</param>
+	void UpdateTeleport(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// Y 軸周りに angleRad だけ回転する Quaternion を生成します。
+	/// </summary>
+	static Quaternion MakeRotationY(float angleRad);
+};
 
 
 ============================================================
@@ -40456,8 +40900,11 @@ File Path: Project/application/Game/Entity/Enemy/MobEnemy/State/EnemyMoveState.c
 #include "EnemyMoveState.h"
 // MobEnemy
 #include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
 // State
 #include "EnemyPrePareAttackState.h"
+#include "EnemyTeleportState.h"
 
 
 ///-------------------------------------------/// 
@@ -40465,10 +40912,7 @@ File Path: Project/application/Game/Entity/Enemy/MobEnemy/State/EnemyMoveState.c
 ///-------------------------------------------///
 void EnemyMoveState::Enter(MobEnemy* enemy) {
 	enemy_ = enemy;
-	// 移動範囲の中心を設定
 	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-    // 移動開始処理
-    enemy_->GetMovementComponent().StartMove(enemy_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -40478,32 +40922,40 @@ void EnemyMoveState::Update() {
     // コンテキストの準備
     EnemyMoveComponent::UpdateContext context{
         .currentPosition = enemy_->GetTransform().translate,
+		.playerPosition = enemy_->GetPlayer()->GetTransform().translate,
         .deltaTime = enemy_->GetDeltaTime(),
-        .isRotationComplete = enemy_->GetIsRotationComplete()
     };
     // 移動コンポーネントの更新
-    auto result = enemy_->GetMovementComponent().Update(context);
+    EnemyMoveComponent::UpdateResult result = enemy_->GetMovementComponent().Update(context);
 
     // 結果の適用
     result.velocity.y = enemy_->GetVelocity().y;
     enemy_->SetVelocity(result.velocity);
 
 	// 回転の更新
-    if (result.needsRotation) {
-        float rotationSpeed = enemy_->GetMovementComponent().GetConfig().rotationSpeed;
-        enemy_->UpdateRotationTowards(result.targetDirection, rotationSpeed);
-    }
-
-	// 回転完了フラグのリセット
-    if (result.shouldResetRotationFlag) {
-        enemy_->SetIsRotationComplete(false);
-    }
+    float rotationSpeed = enemy_->GetMovementComponent().GetConfig().rotationSpeed;
+    enemy_->UpdateRotationTowards(result.rotateDirection, rotationSpeed);
 
 	/// ===Stateの変更=== ///
-	if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {
-		// Attackに
-		enemy_->ChangeState(std::make_unique<EnemyPrePareAttackState>());
-	}
+    if (result.teleportTrigger) {
+        float minRange = 0.0f;
+		float maxRange = 0.0f;
+        if (enemy_->GetMovementComponent().GetState().isInEvadeRange) {
+			// 回避範囲に入ったらテレポート
+			minRange = enemy_->GetMovementComponent().GetConfig().evadeRange * 4.0f;
+			maxRange = enemy_->GetMovementComponent().GetConfig().chaseRange;
+        } else if (enemy_->GetMovementComponent().GetState().isInChaseRange) {
+            // 追いかける範囲に入ったらテレポート
+			minRange = enemy_->GetMovementComponent().GetConfig().evadeRange * 2.0f;
+			maxRange = enemy_->GetMovementComponent().GetConfig().chaseRange;
+        }
+        // テレポートステートに
+        enemy_->ChangeState(std::make_unique<EnemyTeleportState>(minRange, maxRange));
+
+    } else if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {
+        // Attackに
+        enemy_->ChangeState(std::make_unique<EnemyPrePareAttackState>());
+    }
 }
 
 ///-------------------------------------------/// 
@@ -40519,8 +40971,6 @@ File Path: Project/application/Game/Entity/Enemy/MobEnemy/State/EnemyMoveState.h
 #pragma once
 /// ===Include=== ///
 #include "Base/EnemyState.h"
-// Math
-#include "Math/Vector3.h"
 
 ///=====================================================/// 
 /// MoveState
@@ -40699,6 +41149,155 @@ private:
 	
 	// 回転速度
 	float rotationSpeed_ = 0.2f;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/MobEnemy/State/EnemyTeleportState.cpp
+============================================================
+#include "EnemyTeleportState.h"
+// MobEnemy
+#include "application/Game/Entity/Enemy/MobEnemy/Base/MobEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// Service
+#include <Service/Particle.h>
+// State
+#include "EnemyMoveState.h"
+#include "EnemyPrePareAttackState.h"
+
+///-------------------------------------------/// 
+/// コンストラクタ
+///-------------------------------------------///
+EnemyTeleportState::EnemyTeleportState(const float minRange, const float maxRange) {
+	minRange_ = minRange;
+	maxRange_ = maxRange;
+}
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void EnemyTeleportState::Enter(MobEnemy* enemy) {
+	enemy_ = enemy;
+	enemy_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+
+	// テレポート開始処理
+	enemy_->GetTeleportComponent().Start(
+		enemy_->GetTransform().translate,
+		enemy_->GetTransform().rotate,
+		enemy_->GetPlayer()->GetTransform().translate, 
+		minRange_, maxRange_);
+
+	// Enemyの当たり判定を一時的に無効化
+	enemy_->SetColliderActive(false);
+}
+
+///-------------------------------------------/// 
+/// 更新時に呼び出す
+///-------------------------------------------///
+void EnemyTeleportState::Update() {
+	// コンテキストの準備
+	EnemyTeleportComponent::UpdateContext context{
+		.currentPosition = enemy_->GetTransform().translate,
+		.currentRotation = enemy_->GetTransform().rotate,
+		.playerPosition = enemy_->GetPlayer()->GetTransform().translate,
+		.deltaTime = enemy_->GetDeltaTime(),
+	};
+	// テレポートコンポーネントの更新
+	EnemyTeleportComponent::UpdateResult result = enemy_->GetTeleportComponent().Update(context);
+
+	/// ===結果の適用=== ///
+	// 移動ベクトルの適用
+	enemy_->SetVelocity(result.velocity);
+
+	// 回転の反映
+	enemy_->SetRotate(result.rotation);
+
+	// 透明度の反映
+	Vector4 currentColor = enemy_->GetColor();
+	enemy_->SetColor({ currentColor.x, currentColor.y, currentColor.z, result.colorAlpha });
+
+	// 向き補間（nextPosition 方向を向く）
+	if (result.needsRotation) {
+		float rotationSpeed = enemy_->GetTeleportComponent().GetConfig().rotationSpeed;
+		enemy_->UpdateRotationTowards(result.targetDirection, rotationSpeed);
+	}
+
+	// 回転完了フラグのリセット
+	if (result.shouldResetRotationFlag) {
+		enemy_->SetIsRotationComplete(false);
+	}
+
+	// パーティクルのスポーン
+	if (result.shouldSpawnParticleAtCurrent || result.shouldSpawnParticleAtNext) {
+		// パーティクルをスポーン
+		teleportParticle_ = Service::Particle::Emit("MobEnemyTeleport", enemy_->GetTransform().translate);
+	}
+
+	/// ===Stateの変更=== ///
+	if (result.isComplete) {
+		// Colliderを再度有効化
+		enemy_->SetColliderActive(true);
+		if (enemy_->CheckAttackable() && enemy_->GetAttackInfo().timer <= 0.0f && !enemy_->GetAttackInfo().isAttack) {
+			// Attackに
+			enemy_->ChangeState(std::make_unique<EnemyPrePareAttackState>());
+		} else {
+			// Moveに
+			enemy_->ChangeState(std::make_unique<EnemyMoveState>());
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼びだす
+///-------------------------------------------///
+void EnemyTeleportState::Finalize() {
+	EnemyState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/MobEnemy/State/EnemyTeleportState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/EnemyState.h"
+
+namespace MiiEngine {
+	class ParticleGroup;
+}
+
+///=====================================================/// 
+/// TeleportState
+///=====================================================///
+class EnemyTeleportState : public EnemyState {
+public:
+	EnemyTeleportState(const float minRange, const float maxRange);
+	~EnemyTeleportState() override = default;
+
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="enemy">処理対象の MobEnemy オブジェクトへのポインタ。ステートへ入る対象となる敵を指す</param>
+	void Enter(MobEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+
+	float minRange_ = 0.0f; // テレポートの最小距離
+	float maxRange_ = 0.0f; // テレポートの最大距離
+
+	MiiEngine::ParticleGroup* teleportParticle_ = nullptr; // テレポートエフェクトのパーティクル
 };
 
 
@@ -42595,6 +43194,10 @@ Player::~Player() {
 	weapon_.reset();
 	rightHand_.reset();
 	leftHand_.reset();
+	moveComponent_.reset();
+	avoidanceComponent_.reset();
+	attackComponent_.reset();
+	currentState_.reset();
 	object3d_.reset();
 }
 
@@ -44433,6 +45036,14 @@ File Path: Project/application/Game/Object/GameStage.cpp
 #include <imgui.h>
 #endif // USE_IMGUI
 
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameStage::~GameStage() {
+	objects_.clear();
+	Oceans_.clear();
+	grounds_.clear();
+}
 
 ///-------------------------------------------/// 
 /// 初期化　
@@ -44591,7 +45202,7 @@ class GameStage {
 public:
 
 	GameStage() = default;
-	~GameStage() = default;
+	~GameStage();
 
 	/// <summary>
 	/// レベルデータを使用して初期化を行います。
@@ -44758,11 +45369,6 @@ File Path: Project/application/Game/Phase/Mob/MobPhase.cpp
 /// デストラクタ
 ///-------------------------------------------///
 MobPhase::~MobPhase() {
-	for (auto particle : spawnParticles_) {
-		particle->Stop();
-		particle = nullptr;
-	}
-	spawnParticles_.clear();
 	enemyManager_ = nullptr;
 }
 
@@ -44770,7 +45376,6 @@ MobPhase::~MobPhase() {
 /// 初期化
 ///-------------------------------------------///
 void MobPhase::Initialize(EnemyManager* enemyManager) {
-
 	enemyManager_ = enemyManager;
 	currentPhase_ = PhaseState::Wave1;
 	isWaveStarted_ = false;
@@ -44787,7 +45392,7 @@ void MobPhase::Update() {
 	if (!isWaveStarted_) {
 		std::string levelData; // レベルデータを取得する処理を追加
 		switch (currentPhase_) {
-		case PhaseState::Wave1: levelData = "Level/Wave2.json"; break;
+		case PhaseState::Wave1: levelData = "Level/Wave1.json"; break;
 		case PhaseState::Wave2: levelData = "Level/Wave2.json"; break;
 		case PhaseState::Wave3: levelData = "Level/Wave2.json"; break;
 		default: break;
@@ -44827,15 +45432,9 @@ void MobPhase::SpawnWave(const std::string& json_name) {
 		if (obj.fileName == "Close") {
 			// Enemyの生成
 			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.translation));
-			// Particleの生成
-			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
-			spawnParticles_.push_back(spawnParticle_);
 		} else if (obj.fileName == "Long") {
 			// Enemyの生成
 			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.translation));
-			// Particleの生成
-			auto spawnParticle_ = Service::Particle::Emit("MobEnemySpawn", obj.translation);
-			spawnParticles_.push_back(spawnParticle_);
 		}
 	}
 }
@@ -44889,9 +45488,6 @@ private:
 
 	/// ===EnemyManager=== ///
 	EnemyManager* enemyManager_ = nullptr;
-
-	/// ===ParticleGroup=== ///
-	std::vector<MiiEngine::ParticleGroup*> spawnParticles_;
 
 	/// ===PhaseState=== ///
 	enum class PhaseState {
@@ -45877,8 +46473,6 @@ GameScene::GameScene() {
 /// デストラクタ
 ///-------------------------------------------///
 GameScene::~GameScene() {
-	// ISceneのデストラクタ
-	IScene::~IScene();
 	// BGMの停止
 	//AudioService::StopSound("title");
 	// Colliderのリセット
@@ -45886,16 +46480,17 @@ GameScene::~GameScene() {
 	// Camera
 	Service::Camera::Remove("Game");
 	camera_.reset();
+	// State
+	if (currentState_) {
+		currentState_->Finalize();
+		currentState_.reset();
+	}
 	// Particle
 	Service::Particle::RemoveAllParticles();
-	// State
-	currentState_.reset();
-	// Camera
-	camera_.reset();
-	// Player
-	player_.reset();
 	// Enemy
 	enemyManager_.reset();
+	// Player
+	player_.reset();
 	// Ground
 	stage_.reset();
 }
@@ -46070,6 +46665,7 @@ void GameScene::LoadParticle() {
 	Service::Particle::LoadParticleDefinition("CloseEnemyAttack.json");
 	Service::Particle::LoadParticleDefinition("LongEnemyAttack.json");
 	Service::Particle::LoadParticleDefinition("MobEnemySpawn.json");
+	Service::Particle::LoadParticleDefinition("MobEnemyTeleport.json");
 }
 
 
@@ -46331,6 +46927,13 @@ File Path: Project/application/Scene/Game/State/GameSceneGameClearState.cpp
 #include "GameSceneExitState.h"
 
 ///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameSceneGameClearState::~GameSceneGameClearState() {
+	gameClearAnimation_.reset();
+}
+
+///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
 void GameSceneGameClearState::Enter(GameScene* gameScene) {
@@ -46394,7 +46997,7 @@ File Path: Project/application/Scene/Game/State/GameSceneGameClearState.h
 class GameSceneGameClearState : public GameSceneFadeState {
 public:
 
-	~GameSceneGameClearState() override = default;
+	~GameSceneGameClearState() override;
 
 	/// <summary>
 	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
@@ -46435,6 +47038,13 @@ File Path: Project/application/Scene/Game/State/GameSceneGameOverAnimationState.
 #include "Service/Camera.h"
 // State
 #include "GameSceneExitState.h"
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameSceneGameOverAnimationState::~GameSceneGameOverAnimationState() {
+	gameOverAnimation_.reset();
+}
 
 ///-------------------------------------------/// 
 /// 初期化処理
@@ -46503,7 +47113,7 @@ File Path: Project/application/Scene/Game/State/GameSceneGameOverAnimationState.
 class GameSceneGameOverAnimationState : public GameSceneFadeState {
 public:
 
-	~GameSceneGameOverAnimationState() override = default;
+	~GameSceneGameOverAnimationState() override;
 
 	/// <summary>
 	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
@@ -46805,6 +47415,13 @@ File Path: Project/application/Scene/Game/State/GameSceneStartAnimationState.cpp
 #include "GameSceneInGameState.h"
 
 ///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+GameSceneStartAnimationState::~GameSceneStartAnimationState() {
+	startAnimation_.reset();
+}
+
+///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
 void GameSceneStartAnimationState::Enter(GameScene* gameScene) {
@@ -46871,7 +47488,7 @@ File Path: Project/application/Scene/Game/State/GameSceneStartAnimationState.h
 class GameSceneStartAnimationState : public GameSceneFadeState {
 public:
 
-	~GameSceneStartAnimationState() override = default;
+	~GameSceneStartAnimationState() override;
 
 	/// <summary>
 	/// ゲームシーンに入る際に呼び出されるオーバーライドメソッドです。
@@ -47372,7 +47989,6 @@ File Path: Project/application/Scene/Title/TitleScene.cpp
 #include "Service/Camera.h"
 #include "Service/PostEffect.h"
 #include "Service/Particle.h"
-#include "Service/Sprite.h"
 // Math
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
@@ -47386,8 +48002,6 @@ File Path: Project/application/Scene/Title/TitleScene.cpp
 /// デストラクタ
 ///-------------------------------------------///
 TitleScene::~TitleScene() {
-	// ISceneのデストラクタ
-	IScene::~IScene();
 	// TitleUIのリセット
 	titleUI_.reset();
 	lines_.clear();
