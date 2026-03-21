@@ -1,12 +1,13 @@
 #pragma once
 /// ===include=== ///
 // BaseEnemy
-#include "application/Game/Entity\Enemy/Base/BaseEnemy.h"
+#include <application/Game/Entity/Enemy/Base/BaseEnemy.h>
 // State
-#include "application/Game/Entity/Enemy/MobEnemy/State/Base/EnemyState.h"
+#include <application/Game/Entity/Enemy/MobEnemy/State/Base/EnemyState.h>
 // Component
-#include "application/Game/Entity/Enemy/MobEnemy/Component/EnemyMoveComponent.h"
-#include "application/Game/Entity/Enemy/MobEnemy/Component/EnemyHitReactionComponent.h"
+#include <application/Game/Entity/Enemy/MobEnemy/Component/EnemyMoveComponent.h>
+#include <application/Game/Entity/Enemy/MobEnemy/Component/EnemyTeleportComponent.h>
+#include <application/Game/Entity/Enemy/MobEnemy/Component/EnemyHitReactionComponent.h>
 // C++
 #include <random>
 
@@ -103,6 +104,7 @@ public: /// ===Getter=== ///
 
 	// Component
 	EnemyMoveComponent& GetMovementComponent() const { return *moveComponent_; };
+	EnemyTeleportComponent& GetTeleportComponent() const { return *teleportComponent_; };
 	EnemyHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; };
 	// AttackInfo
 	AttackInfo GetAttackInfo()const { return attackInfo_; };
@@ -129,6 +131,7 @@ private:
 
 	/// ===コンポーネント=== ///
 	std::unique_ptr<EnemyMoveComponent> moveComponent_;
+	std::unique_ptr<EnemyTeleportComponent> teleportComponent_;
 	std::unique_ptr<EnemyHitReactionComponent> hitReactionComponent_;
 
 	/// ===Particle=== ///

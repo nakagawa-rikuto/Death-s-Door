@@ -26,6 +26,7 @@ MobPhase::~MobPhase() {
 /// 初期化
 ///-------------------------------------------///
 void MobPhase::Initialize(EnemyManager* enemyManager) {
+
 	enemyManager_ = enemyManager;
 	currentPhase_ = PhaseState::Wave1;
 	isWaveStarted_ = false;

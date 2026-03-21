@@ -13,10 +13,11 @@
 /// 設定の適用
 ///-------------------------------------------///
 void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
-	if (newconfig.speed < 0.0f || newconfig.range <= 0.0f) {
-		// デバッグビルドでのみエラー
+	if (newconfig.speed < 0.0f || newconfig.chaseRange <= 0.0f || newconfig.evadeRange <= 0.0f) {
 		assert(false && "Invalid MoveConfig");
 	}
+
+	// configの設定
 	config_ = newconfig;
 }
 #endif // USE_IMGUI
@@ -24,8 +25,7 @@ void EnemyMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
 ///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
-void EnemyMoveComponent::Initialize(const Vector3& center, const MoveConfig& config) {
-	// ランダムエンジンの初期化
+void EnemyMoveComponent::Initialize(const MoveConfig& config) {
 	std::seed_seq seed{
 		static_cast<uint32_t>(std::time(nullptr)),
 		static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)),
@@ -34,12 +34,10 @@ void EnemyMoveComponent::Initialize(const Vector3& center, const MoveConfig& con
 
 	// 設定の初期化
 	config_ = config;
+	state_ = MoveState{};
 
-	// 状態の初期化
-	state_.timer = 1.0f;
-	state_.rangeCenter = center;
-	state_.direction = { 0.0f, 0.0f, 0.0f };
-	state_.isWaiting = false;
+	// 最初の移動をセットアップ
+	SetupRandomMove();
 }
 
 ///-------------------------------------------/// 
@@ -49,74 +47,61 @@ EnemyMoveComponent::UpdateResult EnemyMoveComponent::Update(const UpdateContext&
 
 	UpdateResult result{};
 
-	/// ===タイマー=== ///
-	if (state_.timer > 0.0f) {
-		state_.timer -= context.deltaTime;
+	/// ===タイマーの更新=== ///
+	TimerUpdate(context.deltaTime);
+
+	/// ===プレイヤーとの距離を計算=== ///
+	Vector3 toPlayer = context.playerPosition - context.currentPosition;
+	const float distToPlayer = Length(toPlayer);
+
+	/// ===回避の判定=== ///
+	// 圏内に入ったら evadeTimer をカウントし、0 になったらテレポートを要求する
+	if (distToPlayer <= config_.evadeRange) {
+		if (!state_.isInEvadeRange) {
+			// 圏内に入った瞬間にタイマーをセット
+			state_.isInEvadeRange = true;
+			state_.evadeTimer = config_.evadeTime;
+		}
+
+		if (state_.evadeTimer <= 0.0f) {
+			// 時間が経過したらテレポート
+			state_.evadeTimer = 0.0f;
+			result.teleportTrigger = true;
+			result.velocity = { 0.0f, 0.0f, 0.0f };
+			return result;
+		}
+	} else {
+		state_.isInEvadeRange = false;
+		state_.evadeTimer = 0.0f;
 	}
 
-	/// ===計算=== ///
-	// 移動範囲の中心との方向ベクトルを計算
-	Vector3 toCenter = state_.rangeCenter - context.currentPosition;
-	// 中心からの距離を取得
-	float distanceFromCenter = Length(toCenter);
+	/// ===追跡の判定=== ///
+	// evadeRange より外側かつ chaseRange 以内に入った瞬間にテレポートを要求する
+	if (distToPlayer <= config_.chaseRange && distToPlayer > config_.evadeRange) {
+		if (!state_.isInChaseRange) {
+			state_.isInChaseRange = true;
+			result.teleportTrigger = true;
+			result.velocity = { 0.0f, 0.0f, 0.0f };
+			return result;
+		}
+	} else if (distToPlayer > config_.chaseRange) {
+		// 圏外に出たらリセット（再突入で再びテレポート可能にする）
+		state_.isInChaseRange = false;
+	}
 
-	// 移動ベクトルを設定
+	/// ===通常移動（ランダム方向に moveTime 秒間移動してループ）=== ///
+	if (state_.moveTimer <= 0.0f) {
+		SetupRandomMove();
+	} else {
+		state_.direction = { 0.0f, 0.0f, 0.0f };
+	}
+
+	// 移動ベクトルを計算
 	result.velocity = state_.direction * config_.speed;
 
-	/// ===移動処理=== ///
-	if (state_.isWaiting) { // 待機中だったら
-		// 移動しない
-		result.velocity = { 0.0f, 0.0f, 0.0f };
-
-		// 方向を回転
-		if (!context.isRotationComplete) {
-			result.targetDirection = state_.direction;
-			result.needsRotation = true;
-		}
-		
-		// 回転し終わったら
-		if (context.isRotationComplete && state_.timer <= 0.0f) {
-			// ランダムな時間を設定
-			std::uniform_real_distribution<float> timeDist(1.0f, config_.interval);
-			state_.timer = timeDist(randomEngine_);
-
-			// 移動ベクトルを設定
-			result.velocity = state_.direction * config_.speed;
-			// 待機フラグを解除
-			state_.isWaiting = false;
-			// 回転完了フラグをリセット
-			result.shouldResetRotationFlag = true;
-			result.needsRotation = false;
-		}
-
-	} else if (distanceFromCenter > config_.range) { // 範囲外に出た場合
-		// 方向の設定と待機処理の準備
-		PreparNextMove(toCenter);
-		result.velocity = { 0.0f, 0.0f, 0.0f };
-
-	} else if (state_.timer <= 0.0f && !state_.isWaiting) {
-		// ランダムな角度と距離を生成
-		std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
-		std::uniform_real_distribution<float> distanceDist(0.0f, config_.range);
-		// ランダムな値の設定
-		float angle = angleDist(randomEngine_);
-		float distance = distanceDist(randomEngine_);
-
-		// 方向ベクトルを円から算出
-		Vector3 offset = {
-			std::cos(angle) * distance,
-			0.0f,
-			std::sin(angle) * distance
-		};
-
-		// 移動先の座標を計算
-		Vector3 target = state_.rangeCenter + offset;
-		target.y = context.currentPosition.y;
-
-		// 方向の設定と待機処理の準備
-		PreparNextMove(target - context.currentPosition);
-		result.velocity = { 0.0f, 0.0f, 0.0f };
-	}
+	// 常にPlayerを向いて移動する
+	result.rotateDirection = Normalize(toPlayer);
+	result.rotateDirection.y = 0.0f;
 
 	return result;
 }
@@ -127,40 +112,56 @@ EnemyMoveComponent::UpdateResult EnemyMoveComponent::Update(const UpdateContext&
 void EnemyMoveComponent::Information() {
 #ifdef USE_IMGUI
 	if (ImGui::TreeNode("移動情報")) {
+		// 速度・回転
 		ImGui::DragFloat("移動速度", &config_.speed, 0.01f, 0.0f, 10.0f);
-		ImGui::DragFloat("移動範囲", &config_.range, 0.1f, 0.1f, 100.0f);
-		ImGui::DragFloat("移動間隔", &config_.interval, 0.1f, 0.1f, 10.0f);
-		ImGui::DragFloat("待機時間", &config_.waitTime, 0.01f, 0.0f, 5.0f);
 		ImGui::DragFloat("回転速度", &config_.rotationSpeed, 0.01f, 0.01f, 1.0f);
-
+		// 範囲
+		ImGui::DragFloat("追跡範囲", &config_.chaseRange, 0.1f, 0.1f, 100.0f);
+		ImGui::DragFloat("回避圏内距離", &config_.evadeRange, 0.1f, 0.1f, 100.0f);
+		// 時間
+		ImGui::DragFloat("1回の移動時間", &config_.moveTime, 0.05f, 0.1f, 10.0f);
+		ImGui::DragFloat("回避猶予時間", &config_.evadeTime, 0.05f, 0.1f, 10.0f);
+		// 状態
 		ImGui::Separator();
 		ImGui::Text("状態");
-		ImGui::Text("タイマー:  %.2f", state_.timer);
-		ImGui::Text("待機中: %s", state_.isWaiting ? "Yes" : "No");
-
+		ImGui::Text("moveTimer  : %.2f", state_.moveTimer);
+		ImGui::Text("evadeTimer : %.2f", state_.evadeTimer);
+		ImGui::Text("isInEvadeRange  : %s", state_.isInEvadeRange ? "Yes" : "No");
+		ImGui::Text("isInChaseRange  : %s", state_.isInChaseRange ? "Yes" : "No");
 		ImGui::TreePop();
 	}
 #endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
-/// 移動開始処理
+/// 移動のセットアップ
 ///-------------------------------------------///
-void EnemyMoveComponent::StartMove(const Vector3& center) {
-	state_.timer = config_.waitTime;
-	state_.rangeCenter = center;
+void EnemyMoveComponent::SetupRandomMove() {
+	// ランダムな角度で行動範囲の円上に移動先を決める
+	std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * Math::Pi());
+	float angle = angleDist(randomEngine_);
+
+	// 方向ベクトルを設定（Y 成分は 0 で水平移動のみ）
+	state_.direction = Normalize(Vector3{
+		std::cos(angle),
+		0.0f,
+		std::sin(angle)
+		});
+
+	// moveTime 秒間この方向に動く
+	state_.moveTimer = config_.moveTime;
 }
 
 ///-------------------------------------------/// 
-/// 方向の設定と待機時間の設定
+/// タイマーの更新処理
 ///-------------------------------------------///
-void EnemyMoveComponent::PreparNextMove(const Vector3& vector) {
-	Vector3 dir = Normalize(vector);
-	dir.y = 0.0f; // Y成分を0にしてXZ平面での方向ベクトルを作成
-	state_.direction = Normalize(dir); // 方向を保存
-
-	// 待機時間を設定
-	state_.timer = config_.waitTime; // 待機時間を設定
-	// 待機フラグを立てる
-	state_.isWaiting = true;
+void EnemyMoveComponent::TimerUpdate(const float deltaTime) {
+	// タイマーが0より大きい場合は減らす
+	if (state_.moveTimer > 0.0f) {
+		state_.moveTimer -= deltaTime;
+	}
+	// 回避猶予タイマー（圏内にいる間だけカウント）
+	if (state_.isInEvadeRange && state_.evadeTimer > 0.0f) {
+		state_.evadeTimer -= deltaTime;
+	}
 }

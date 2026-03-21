@@ -1,6 +1,7 @@
 #pragma once
 /// ===Include=== ///
-#include "Math/Vector3.h"
+#include <Math/Vector3.h>
+#include <Math/Quaternion.h>
 #include <random>
 
 ///=====================================================/// 
@@ -10,34 +11,40 @@ class EnemyMoveComponent {
 private:
 	/// ===状態の構造体=== ///
 	struct MoveState {
-		float timer = 0.0f;			// タイマー
-		Vector3 rangeCenter{};		// 移動範囲の中心
-		Vector3 direction{};		// 移動方向
-		bool isWaiting = false;		// 待機フラグ	
+		float moveTimer = 0.0f;		// 1回の移動残り時間（moveTime からカウントダウン）
+		float evadeTimer = 0.0f;	// 回避圏内の猶予タイマー（evadeTime からカウントダウン）
+
+		Vector3 direction{};         // 現在の移動方向（正規化済み）
+
+		bool isInEvadeRange = false; // プレイヤーがevadeRange内にいるかどうか
+		bool isInChaseRange = false; // プレイヤーがchaseRange内にいるかどうか
 	};
 public:
 	/// ===設定パラメータの構造体=== ///
 	struct MoveConfig {
-		float speed = 0.05f;		// 移動速度
-		float range = 20.0f;	    // 移動範囲
-		float interval = 5.0f;	    // 移動間隔
-		float waitTime = 1.5f;	    // 待機時間
-		float rotationSpeed = 0.1f; // 回転速度
+		// 速度
+		float speed = 0.05f;			// 速度
+		float rotationSpeed = 0.1f;		// 回転速度
+		// 範囲
+		float chaseRange = 20.0f;		// 追いかける範囲
+		float evadeRange = 3.0f;		// 距離を取る範囲
+		// 時間
+		float moveTime = 0.0f;			// 移動時間
+		float evadeTime = 0.0f;			// 回避時間
 	};
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
 		Vector3 currentPosition{};		 // 現在の位置
+		Vector3 playerPosition{};		 // プレイヤーの位置
 		float deltaTime = 0.0f;			 // デルタタイム
-		bool isRotationComplete = false; // 回転完了フラグ
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Vector3 velocity{};					   // 移動ベクトル
-		Vector3 targetDirection{};			   // 目標方向
-		bool needsRotation = false;			   // 回転が必要かどうか
-		bool shouldResetRotationFlag = false;  // 回転完了フラグをリセットする必要があるか
+		Vector3 velocity{};				// 移動ベクトル
+		Vector3 rotateDirection{};		// 目標方向
+		bool teleportTrigger = false;	// テレポートトリガー
 	};
 
 public:
@@ -52,24 +59,19 @@ public:
 	/// <summary>
 	/// 指定した敵オブジェクトを初期化し、中心位置を設定します。
 	/// </summary>
-	/// <param name="center">初期化に使用する中心位置を示す Vector3 の const 参照。</param>
-	void Initialize(const Vector3& center, const MoveConfig& config = MoveConfig{});
+	void Initialize(const MoveConfig& config = MoveConfig{});
 
 	/// <summary>
 	/// 更新処理
 	/// </summary>
+	/// <param name="context">更新処理に必要なコンテキスト情報。</param>
+	/// <returns>更新処理の実行結果。</returns>
 	UpdateResult Update(const UpdateContext& context);
 
 	/// <summary>
 	/// ImGui情報の表示
 	/// </summary>
 	void Information();
-
-	/// <summary>
-	/// 指定した中心点を基準に移動を開始します。
-	/// </summary>
-	/// <param name="center">移動の基準となる中心位置を表す Vector3 型の座標（const 参照）。</param>
-	void StartMove(const Vector3& center);
 
 public: /// ===Getter=== ///
 	// MoveConfig
@@ -88,15 +90,27 @@ private:
 	MoveConfig config_;
 	MoveState state_;
 
-	// ランダムシード
+	/// ===状態=== ///
+	enum class MoveStateType {
+		Idle,   // 待機
+		Chase,  // 追跡
+		Evade,  // 回避
+	};
+
+	/// ===ランダムシード=== ///
 	std::mt19937 randomEngine_;
 
 private:
 
 	/// <summary>
-	/// 方向の設定と待機時間の設定
+	/// 移動をセットアップします。
 	/// </summary>
-	/// <param name="vector">設定する方向のベクトル</param>
-	void PreparNextMove(const Vector3& vector);
+	void SetupRandomMove();
+
+	/// <summary>
+	/// タイマーの更新処理
+	/// </summary>
+	/// 
+	void TimerUpdate(const float deltaTime);
 };
 

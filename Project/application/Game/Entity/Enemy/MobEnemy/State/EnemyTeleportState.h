@@ -3,12 +3,12 @@
 #include "Base/EnemyState.h"
 
 ///=====================================================/// 
-/// MoveState
+/// TeleportState
 ///=====================================================///
-class EnemyMoveState : public EnemyState {
+class EnemyTeleportState : public EnemyState {
 public:
-
-	~EnemyMoveState() override = default;
+	EnemyTeleportState(const float minRange, const float maxRange);
+	~EnemyTeleportState() override = default;
 
 	/// <summary>
 	/// ステートに入った時に呼ばれる処理
@@ -25,5 +25,10 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
+
+private:
+
+	float minRange_ = 0.0f; // テレポートの最小距離
+	float maxRange_ = 0.0f; // テレポートの最大距離
 };
 
