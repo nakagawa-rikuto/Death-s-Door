@@ -278,6 +278,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp" />
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleTimeline.cpp" />
     <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp" />
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp" />
@@ -485,6 +486,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h" />
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleTimeline.h" />
     <ClInclude Include="Engine\System\Editor\ParticleEditor.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h" />
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h" />

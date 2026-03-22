@@ -4,6 +4,8 @@
 #include "Engine/Graphics/Particle/ParticleGroup.h"
 #include "Engine/Graphics/Particle/ParticleDefinition.h"
 #include "Engine/Graphics/Particle/ParticleParameter.h"
+// Timeline
+#include "Engine/Graphics/Particle/ParticleTimeline.h"
 // c++
 #include <map>
 #include <memory>
@@ -69,6 +71,33 @@ namespace MiiEngine {
 		/// </summary>
 		void RemoveAllParticles();
 
+	public: /// ===タイムライン=== ///
+
+		/// <summary>
+		/// タイムライン定義をJSONファイルから読み込む
+		/// </summary>
+		/// <param name="jsonPath">JSONファイルのパス</param>
+		void LoadParticleTimeline(const std::string& jsonPath);
+
+		/// <summary>
+		/// タイムライン定義を直接追加
+		/// </summary>
+		/// <param name="name">タイムライン名</param>
+		/// <param name="timeline">タイムライン定義</param>
+		void AddParticleTimeline(const std::string& name, const ParticleTimeline& timeline);
+
+		/// <summary>
+		/// タイムラインを再生（時間に応じて各パーティクルを発生させる）
+		/// </summary>
+		/// <param name="timelineName">タイムライン名</param>
+		/// <param name="basePosition">基準位置</param>
+		void EmitTimeline(const std::string& timelineName, const Vector3& basePosition);
+
+		/// <summary>
+		/// タイムライン定義が登録されているか確認
+		/// </summary>
+		bool HasTimeline(const std::string& name) const;
+
 	public: /// ===設定=== ///
 
 		/// <summary>
@@ -123,8 +152,22 @@ namespace MiiEngine {
 		size_t GetActiveGroupCount(const std::string& name) const;
 
 	private:
+		/// ===アクティブタイムライン管理用内部構造=== ///
+		struct ActiveTimeline {
+			ParticleTimeline timeline;        // タイムライン定義
+			Vector3 basePosition;             // 基準位置
+			float currentTime = 0.0f;         // 現在の経過時間
+			std::vector<bool> emitted;        // 各エントリが発生済みかどうか
+		};
+
 		// 定義ベース
 		std::map<std::string, ParticleDefinition> definitions_;
+
+		// タイムライン定義
+		std::map<std::string, ParticleTimeline> timelines_;
+
+		// アクティブなタイムラインインスタンス
+		std::vector<ActiveTimeline> activeTimelines_;
 
 		// アクティブなパーティクル
 		std::vector<std::unique_ptr<ParticleGroup>> activeParticles_;

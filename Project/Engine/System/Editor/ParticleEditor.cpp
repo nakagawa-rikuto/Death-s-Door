@@ -2,6 +2,7 @@
 // Particle
 #include "Engine/Graphics/Particle/ParticleFactory.h"
 #include "Engine/Graphics/Particle/ParticleGroup.h"
+#include "Engine/Graphics/Particle/ParticleTimeline.h"
 // Service
 #include "Service/DeltaTime.h"
 
@@ -12,6 +13,7 @@
 // c++
 #include <fstream>
 #include <filesystem>
+#include <cmath>
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -20,6 +22,7 @@ namespace MiiEngine {
 	ParticleEditor::ParticleEditor() {
 		// デフォルトのファイルパスを設定
 		strcpy_s(filePathBuffer_, kDefaultSavePath);
+		strcpy_s(timelineFilePathBuffer_, kDefaultSavePath);
 	}
 
 	ParticleEditor::~ParticleEditor() {
@@ -110,6 +113,12 @@ namespace MiiEngine {
 			// 高度設定タブ
 			if (ImGui::BeginTabItem("動作設定")) {
 				RenderAdvancedSettings();
+				ImGui::EndTabItem();
+			}
+
+			// タイムラインタブ
+			if (ImGui::BeginTabItem("タイムライン")) {
+				RenderTimelineSettings();
 				ImGui::EndTabItem();
 			}
 
@@ -229,6 +238,72 @@ namespace MiiEngine {
 		if (isPlaying_) {
 			StopPreview();
 		}
+#endif // USE_IMGUI
+	}
+
+	///-------------------------------------------/// 
+	/// タイムライン：JSONへ保存
+	///-------------------------------------------///
+	void ParticleEditor::SaveTimelineToJson() {
+#ifdef USE_IMGUI
+		try {
+			nlohmann::json j = ParticleTimelineSerializer::ToJson(currentTimeline_);
+
+			std::string filepath = timelineFilePathBuffer_;
+			if (filepath.find(kFileExtension) == std::string::npos) {
+				filepath += kFileExtension;
+			}
+
+			std::ofstream file(filepath);
+			file << j.dump(4);
+			file.close();
+
+			currentTimelineFilePath_ = filepath;
+			UpdateAvailablePresets();
+
+		} catch (const std::exception& e) {
+			e;
+		}
+#endif // USE_IMGUI
+	}
+
+	///-------------------------------------------/// 
+	/// タイムライン：JSONから読み込み
+	///-------------------------------------------///
+	void ParticleEditor::LoadTimelineFromJson() {
+#ifdef USE_IMGUI
+		try {
+			std::string filepath = timelineFilePathBuffer_;
+			if (filepath.find(kFileExtension) == std::string::npos) {
+				filepath += kFileExtension;
+			}
+
+			std::ifstream file(filepath);
+			if (!file.is_open()) return;
+
+			nlohmann::json j;
+			file >> j;
+			file.close();
+
+			currentTimeline_ = ParticleTimelineSerializer::FromJson(j);
+			currentTimelineFilePath_ = filepath;
+			selectedTimelineEntryIndex_ = -1;
+
+		} catch (const std::exception& e) {
+			e;
+		}
+#endif // USE_IMGUI
+	}
+
+	///-------------------------------------------/// 
+	/// タイムライン：新規作成
+	///-------------------------------------------///
+	void ParticleEditor::CreateNewTimeline() {
+#ifdef USE_IMGUI
+		currentTimeline_ = ParticleTimeline();
+		currentTimelineFilePath_.clear();
+		strcpy_s(timelineFilePathBuffer_, kDefaultSavePath);
+		selectedTimelineEntryIndex_ = -1;
 #endif // USE_IMGUI
 	}
 
@@ -577,7 +652,14 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ParticleEditor::RenderRotationSettings() {
 #ifdef USE_IMGUI
+		// ラジアンから度への変換定数
+		constexpr float kRadToDeg = 57.2958f;
 		ImGui::SeparatorText("回転設定");
+
+		/// ===ギズモモード切替=== ///
+		ImGui::Checkbox("回転ギズモを使用", &useRotationGizmo_);
+		ImGui::TextDisabled("オンにするとBlenderのような円形ギズモで直感的に回転を設定できます");
+		ImGui::Spacing();
 
 		/// ===回転の設定=== ///
 		if (ImGui::Checkbox("回転を有効化", &currentDefinition_.rotation.enableRotation)) {
@@ -599,13 +681,62 @@ namespace MiiEngine {
 			}
 
 			bool initialRotationChanged = false;
-			if (currentDefinition_.rotation.randomInitialRotation) {
-				ImGui::Text("初期回転範囲（ラジアン）");
-				initialRotationChanged |= ImGui::DragFloat3("最小初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
-				initialRotationChanged |= ImGui::DragFloat3("最大初期回転", &currentDefinition_.rotation.initialRotationMax.x, 0.01f, -6.28f, 6.28f);
+			if (useRotationGizmo_) {
+				// ===ギズモUI（初期回転）=== //
+				ImGui::Text("初期回転 X (赤)　　Y (緑)　　Z (青)");
+				ImGui::Spacing();
+
+				// X軸ギズモ（赤）
+				initialRotationChanged |= RenderRotationGizmoAxis("##GizmoInitX",
+					&currentDefinition_.rotation.initialRotationMin.x, 40.0f,
+					IM_COL32(220, 80, 80, 200), IM_COL32(255, 120, 120, 255));
+				ImGui::SameLine();
+
+				// Y軸ギズモ（緑）
+				initialRotationChanged |= RenderRotationGizmoAxis("##GizmoInitY",
+					&currentDefinition_.rotation.initialRotationMin.y, 40.0f,
+					IM_COL32(80, 200, 80, 200), IM_COL32(120, 255, 120, 255));
+				ImGui::SameLine();
+
+				// Z軸ギズモ（青）
+				initialRotationChanged |= RenderRotationGizmoAxis("##GizmoInitZ",
+					&currentDefinition_.rotation.initialRotationMin.z, 40.0f,
+					IM_COL32(80, 120, 220, 200), IM_COL32(120, 160, 255, 255));
+
+				ImGui::Spacing();
+				ImGui::Text("X: %.2f rad (%.1f°)  Y: %.2f rad (%.1f°)  Z: %.2f rad (%.1f°)",
+					currentDefinition_.rotation.initialRotationMin.x,
+					currentDefinition_.rotation.initialRotationMin.x * kRadToDeg,
+					currentDefinition_.rotation.initialRotationMin.y,
+					currentDefinition_.rotation.initialRotationMin.y * kRadToDeg,
+					currentDefinition_.rotation.initialRotationMin.z,
+					currentDefinition_.rotation.initialRotationMin.z * kRadToDeg);
+
+				if (currentDefinition_.rotation.randomInitialRotation) {
+					ImGui::Spacing();
+					ImGui::Text("最大初期回転 X (赤)　　Y (緑)　　Z (青)");
+					initialRotationChanged |= RenderRotationGizmoAxis("##GizmoInitMaxX",
+						&currentDefinition_.rotation.initialRotationMax.x, 40.0f,
+						IM_COL32(220, 80, 80, 200), IM_COL32(255, 120, 120, 255));
+					ImGui::SameLine();
+					initialRotationChanged |= RenderRotationGizmoAxis("##GizmoInitMaxY",
+						&currentDefinition_.rotation.initialRotationMax.y, 40.0f,
+						IM_COL32(80, 200, 80, 200), IM_COL32(120, 255, 120, 255));
+					ImGui::SameLine();
+					initialRotationChanged |= RenderRotationGizmoAxis("##GizmoInitMaxZ",
+						&currentDefinition_.rotation.initialRotationMax.z, 40.0f,
+						IM_COL32(80, 120, 220, 200), IM_COL32(120, 160, 255, 255));
+				}
 			} else {
-				ImGui::Text("固定初期回転（ラジアン）");
-				initialRotationChanged |= ImGui::DragFloat3("初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
+				// ===数値入力UI（初期回転）=== //
+				if (currentDefinition_.rotation.randomInitialRotation) {
+					ImGui::Text("初期回転範囲（ラジアン）");
+					initialRotationChanged |= ImGui::DragFloat3("最小初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
+					initialRotationChanged |= ImGui::DragFloat3("最大初期回転", &currentDefinition_.rotation.initialRotationMax.x, 0.01f, -6.28f, 6.28f);
+				} else {
+					ImGui::Text("固定初期回転（ラジアン）");
+					initialRotationChanged |= ImGui::DragFloat3("初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
+				}
 			}
 
 			if (initialRotationChanged && previewParticle_) {
@@ -629,13 +760,54 @@ namespace MiiEngine {
 
 			bool rotationChanged = false;
 
-			if (currentDefinition_.rotation.randomRotation) {
-				ImGui::Text("回転速度範囲（ラジアン/秒)");
-				rotationChanged |= ImGui::DragFloat3("最小回転速度", &currentDefinition_.rotation.rotationSpeedMin.x, 0.1f, -10.0f, 10.0f);
-				rotationChanged |= ImGui::DragFloat3("最大回転速度", &currentDefinition_.rotation.rotationSpeedMax.x, 0.1f, -10.0f, 10.0f);
+			if (useRotationGizmo_) {
+				// ===ギズモUI（回転速度）=== //
+				ImGui::Text("回転速度 X (赤)　　Y (緑)　　Z (青)");
+				ImGui::Spacing();
+
+				rotationChanged |= RenderRotationGizmoAxis("##GizmoSpeedX",
+					&currentDefinition_.rotation.rotationSpeedMin.x, 40.0f,
+					IM_COL32(220, 80, 80, 200), IM_COL32(255, 120, 120, 255));
+				ImGui::SameLine();
+				rotationChanged |= RenderRotationGizmoAxis("##GizmoSpeedY",
+					&currentDefinition_.rotation.rotationSpeedMin.y, 40.0f,
+					IM_COL32(80, 200, 80, 200), IM_COL32(120, 255, 120, 255));
+				ImGui::SameLine();
+				rotationChanged |= RenderRotationGizmoAxis("##GizmoSpeedZ",
+					&currentDefinition_.rotation.rotationSpeedMin.z, 40.0f,
+					IM_COL32(80, 120, 220, 200), IM_COL32(120, 160, 255, 255));
+
+				ImGui::Spacing();
+				ImGui::Text("X: %.2f rad/s  Y: %.2f rad/s  Z: %.2f rad/s",
+					currentDefinition_.rotation.rotationSpeedMin.x,
+					currentDefinition_.rotation.rotationSpeedMin.y,
+					currentDefinition_.rotation.rotationSpeedMin.z);
+
+				if (currentDefinition_.rotation.randomRotation) {
+					ImGui::Spacing();
+					ImGui::Text("最大回転速度 X (赤)　　Y (緑)　　Z (青)");
+					rotationChanged |= RenderRotationGizmoAxis("##GizmoSpeedMaxX",
+						&currentDefinition_.rotation.rotationSpeedMax.x, 40.0f,
+						IM_COL32(220, 80, 80, 200), IM_COL32(255, 120, 120, 255));
+					ImGui::SameLine();
+					rotationChanged |= RenderRotationGizmoAxis("##GizmoSpeedMaxY",
+						&currentDefinition_.rotation.rotationSpeedMax.y, 40.0f,
+						IM_COL32(80, 200, 80, 200), IM_COL32(120, 255, 120, 255));
+					ImGui::SameLine();
+					rotationChanged |= RenderRotationGizmoAxis("##GizmoSpeedMaxZ",
+						&currentDefinition_.rotation.rotationSpeedMax.z, 40.0f,
+						IM_COL32(80, 120, 220, 200), IM_COL32(120, 160, 255, 255));
+				}
 			} else {
-				ImGui::Text("固定回転速度（ラジアン/秒)");
-				rotationChanged |= ImGui::DragFloat3("回転速度", &currentDefinition_.rotation.rotationSpeedMin.x, 0.1f, -10.0f, 10.0f);
+				// ===数値入力UI（回転速度）=== //
+				if (currentDefinition_.rotation.randomRotation) {
+					ImGui::Text("回転速度範囲（ラジアン/秒)");
+					rotationChanged |= ImGui::DragFloat3("最小回転速度", &currentDefinition_.rotation.rotationSpeedMin.x, 0.1f, -10.0f, 10.0f);
+					rotationChanged |= ImGui::DragFloat3("最大回転速度", &currentDefinition_.rotation.rotationSpeedMax.x, 0.1f, -10.0f, 10.0f);
+				} else {
+					ImGui::Text("固定回転速度（ラジアン/秒)");
+					rotationChanged |= ImGui::DragFloat3("回転速度", &currentDefinition_.rotation.rotationSpeedMin.x, 0.1f, -10.0f, 10.0f);
+				}
 			}
 
 			if (rotationChanged && previewParticle_) {
@@ -1229,5 +1401,303 @@ namespace MiiEngine {
 			CreatePreviewParticle();
 			PlayPreview();
 		}
+	}
+
+	///-------------------------------------------/// 
+	/// 回転ギズモ（1軸分）
+	///-------------------------------------------///
+	bool ParticleEditor::RenderRotationGizmoAxis(const char* id, float* angleRad,
+		float radius, unsigned int circleColor, unsigned int handleColor) {
+#ifdef USE_IMGUI
+		bool changed = false;
+
+		// ギズモ全体のサイズ（直径＋余白）
+		float size = radius * 2.0f + 16.0f;
+		ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+		ImVec2 center = { canvasPos.x + size * 0.5f, canvasPos.y + size * 0.5f };
+
+		// 操作用の透明ボタン
+		ImGui::InvisibleButton(id, ImVec2(size, size));
+		bool isActive = ImGui::IsItemActive();
+		bool isHovered = ImGui::IsItemHovered();
+
+		if (isActive) {
+			ImVec2 mousePos = ImGui::GetIO().MousePos;
+			float dx = mousePos.x - center.x;
+			float dy = mousePos.y - center.y;
+			float newAngle = atan2f(dy, dx);
+			if (newAngle != *angleRad) {
+				*angleRad = newAngle;
+				changed = true;
+			}
+		}
+
+		// 描画
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		// 外枠円
+		unsigned int bgColor = isHovered ? IM_COL32(60, 60, 70, 255) : IM_COL32(40, 40, 50, 255);
+		drawList->AddCircleFilled(center, radius + 6.0f, bgColor);
+
+		// 軸円（リング）
+		drawList->AddCircle(center, radius, circleColor, 64, 2.0f);
+
+		// 中心線（十字）
+		unsigned int lineColor = IM_COL32(80, 80, 80, 200);
+		drawList->AddLine({ center.x - radius, center.y }, { center.x + radius, center.y }, lineColor);
+		drawList->AddLine({ center.x, center.y - radius }, { center.x, center.y + radius }, lineColor);
+
+		// ハンドル位置
+		float hx = center.x + cosf(*angleRad) * radius;
+		float hy = center.y + sinf(*angleRad) * radius;
+
+		// ハンドルへの線
+		drawList->AddLine(center, { hx, hy }, handleColor, 1.5f);
+
+		// ハンドル円
+		drawList->AddCircleFilled({ hx, hy }, isActive ? 9.0f : 7.0f, handleColor);
+
+		// 中心点
+		drawList->AddCircleFilled(center, 3.0f, IM_COL32(200, 200, 200, 255));
+
+		return changed;
+#else
+		return false;
+#endif // USE_IMGUI
+	}
+
+	///-------------------------------------------/// 
+	/// タイムライン設定UI
+	///-------------------------------------------///
+	void ParticleEditor::RenderTimelineSettings() {
+#ifdef USE_IMGUI
+		ImGui::SeparatorText("タイムライン設定");
+		ImGui::TextDisabled("複数のパーティクルを1つのJSONで管理し、発生タイミングを設定します");
+		ImGui::Spacing();
+
+		// ===タイムライン情報=== //
+		ImGui::SeparatorText("タイムライン情報");
+
+		char nameBuffer[256];
+		strcpy_s(nameBuffer, currentTimeline_.name.c_str());
+		if (ImGui::InputText("タイムライン名", nameBuffer, sizeof(nameBuffer))) {
+			currentTimeline_.name = nameBuffer;
+		}
+
+		ImGui::DragFloat("全体時間（秒）", &currentTimeline_.totalDuration, 0.1f, 0.1f, 600.0f);
+		ImGui::TextDisabled("アニメーション全体の長さ");
+		ImGui::Spacing();
+		ImGui::Separator();
+
+		// ===タイムラインバー可視化=== //
+		ImGui::SeparatorText("タイムラインビュー");
+		ImGui::TextDisabled("各パーティクルの発生タイミングを視覚的に確認できます");
+
+		const float timelineBarWidth = ImGui::GetContentRegionAvail().x - 4.0f;
+		const float timelineBarHeight = 24.0f;
+		const float markerHeight = 16.0f;
+		const float totalDur = (currentTimeline_.totalDuration > 0.0f) ? currentTimeline_.totalDuration : 1.0f;
+
+		ImVec2 barPos = ImGui::GetCursorScreenPos();
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		// バー背景
+		drawList->AddRectFilled(
+			barPos,
+			{ barPos.x + timelineBarWidth, barPos.y + timelineBarHeight },
+			IM_COL32(30, 30, 40, 255)
+		);
+		drawList->AddRect(
+			barPos,
+			{ barPos.x + timelineBarWidth, barPos.y + timelineBarHeight },
+			IM_COL32(80, 80, 100, 255)
+		);
+
+		// 目盛り（1秒ごと）
+		int tickCount = static_cast<int>(totalDur);
+		for (int t = 0; t <= tickCount; ++t) {
+			float x = barPos.x + (t / totalDur) * timelineBarWidth;
+			drawList->AddLine({ x, barPos.y }, { x, barPos.y + timelineBarHeight },
+				IM_COL32(60, 60, 80, 200), 1.0f);
+		}
+
+		// エントリマーカー
+		for (int i = 0; i < static_cast<int>(currentTimeline_.entries.size()); ++i) {
+			const auto& entry = currentTimeline_.entries[i];
+			float t = entry.startTime / totalDur;
+			float x = barPos.x + t * timelineBarWidth;
+
+			bool isSelected = (i == selectedTimelineEntryIndex_);
+			unsigned int markerColor = isSelected
+				? IM_COL32(255, 220, 50, 255)
+				: IM_COL32(100, 200, 255, 255);
+
+			// マーカー（小さなひし形）
+			float my = barPos.y + timelineBarHeight * 0.5f;
+			drawList->AddTriangleFilled(
+				{ x, my - markerHeight * 0.5f },
+				{ x + 6.0f, my },
+				{ x, my + markerHeight * 0.5f },
+				markerColor
+			);
+			drawList->AddTriangleFilled(
+				{ x, my - markerHeight * 0.5f },
+				{ x - 6.0f, my },
+				{ x, my + markerHeight * 0.5f },
+				markerColor
+			);
+		}
+
+		// タイムラインバーのクリック操作（エントリ選択）
+		ImGui::InvisibleButton("##TimelineBar", { timelineBarWidth, timelineBarHeight });
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("クリックしてエントリを選択");
+		}
+		if (ImGui::IsItemClicked()) {
+			ImVec2 mousePos = ImGui::GetIO().MousePos;
+			float clickT = (mousePos.x - barPos.x) / timelineBarWidth * totalDur;
+			// 最も近いエントリを選択
+			float minDist = 0.3f; // 0.3秒以内のエントリを選択対象にする
+			int found = -1;
+			for (int i = 0; i < static_cast<int>(currentTimeline_.entries.size()); ++i) {
+				float dist = fabsf(currentTimeline_.entries[i].startTime - clickT);
+				if (dist < minDist) {
+					minDist = dist;
+					found = i;
+				}
+			}
+			selectedTimelineEntryIndex_ = found;
+		}
+
+		ImGui::Spacing();
+
+		// 時間軸ラベル
+		ImGui::Text("0s");
+		ImGui::SameLine(timelineBarWidth - 30.0f);
+		ImGui::Text("%.1fs", totalDur);
+		ImGui::Spacing();
+		ImGui::Separator();
+
+		// ===エントリ一覧=== //
+		ImGui::SeparatorText("パーティクルエントリ一覧");
+
+		// エントリ追加ボタン
+		if (ImGui::Button("エントリ追加", ImVec2(140, 28))) {
+			ParticleTimelineEntry newEntry;
+			newEntry.particleName = "";
+			newEntry.startTime = 0.0f;
+			currentTimeline_.entries.push_back(newEntry);
+			selectedTimelineEntryIndex_ = static_cast<int>(currentTimeline_.entries.size()) - 1;
+		}
+
+		ImGui::SameLine();
+
+		// エントリ削除ボタン
+		if (selectedTimelineEntryIndex_ >= 0 &&
+			selectedTimelineEntryIndex_ < static_cast<int>(currentTimeline_.entries.size())) {
+			if (ImGui::Button("選択を削除", ImVec2(140, 28))) {
+				currentTimeline_.entries.erase(
+					currentTimeline_.entries.begin() + selectedTimelineEntryIndex_
+				);
+				selectedTimelineEntryIndex_ = -1;
+			}
+		} else {
+			ImGui::BeginDisabled();
+			ImGui::Button("選択を削除", ImVec2(140, 28));
+			ImGui::EndDisabled();
+		}
+
+		ImGui::Spacing();
+
+		// エントリリスト表示
+		if (currentTimeline_.entries.empty()) {
+			ImGui::TextDisabled("エントリがありません。「エントリ追加」で追加してください。");
+		} else {
+			// テーブル形式でエントリを表示
+			if (ImGui::BeginTable("TimelineEntries", 3,
+				ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY,
+				ImVec2(0, 140))) {
+				ImGui::TableSetupColumn("パーティクル名", ImGuiTableColumnFlags_WidthStretch);
+				ImGui::TableSetupColumn("発生時間(秒)", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+				ImGui::TableSetupColumn("オフセット", ImGuiTableColumnFlags_WidthFixed, 160.0f);
+				ImGui::TableHeadersRow();
+
+				for (int i = 0; i < static_cast<int>(currentTimeline_.entries.size()); ++i) {
+					auto& entry = currentTimeline_.entries[i];
+					ImGui::TableNextRow();
+
+					bool isSelected = (i == selectedTimelineEntryIndex_);
+					if (isSelected) {
+						ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, IM_COL32(60, 80, 120, 180));
+					}
+
+					ImGui::TableSetColumnIndex(0);
+					if (ImGui::Selectable(entry.particleName.empty() ? "（未設定）" : entry.particleName.c_str(),
+						isSelected, ImGuiSelectableFlags_SpanAllColumns)) {
+						selectedTimelineEntryIndex_ = i;
+					}
+
+					ImGui::TableSetColumnIndex(1);
+					ImGui::Text("%.2f", entry.startTime);
+
+					ImGui::TableSetColumnIndex(2);
+					ImGui::Text("(%.1f, %.1f, %.1f)",
+						entry.offset.x, entry.offset.y, entry.offset.z);
+				}
+				ImGui::EndTable();
+			}
+		}
+
+		// ===選択中エントリの詳細編集=== //
+		if (selectedTimelineEntryIndex_ >= 0 &&
+			selectedTimelineEntryIndex_ < static_cast<int>(currentTimeline_.entries.size())) {
+			auto& entry = currentTimeline_.entries[selectedTimelineEntryIndex_];
+
+			ImGui::Spacing();
+			ImGui::SeparatorText("エントリ詳細編集");
+
+			// パーティクル名入力（登録済み定義名から選択可能にする）
+			strcpy_s(timelineEntryNameBuffer_, entry.particleName.c_str());
+			if (ImGui::InputText("パーティクル定義名", timelineEntryNameBuffer_, sizeof(timelineEntryNameBuffer_))) {
+				entry.particleName = timelineEntryNameBuffer_;
+			}
+			ImGui::TextDisabled("LoadParticleDefinition で登録したパーティクルの名前");
+
+			// 発生タイミングスライダー
+			ImGui::DragFloat("発生タイミング（秒）", &entry.startTime, 0.01f, 0.0f, currentTimeline_.totalDuration);
+
+			// 位置オフセット
+			ImGui::DragFloat3("位置オフセット", &entry.offset.x, 0.1f, -100.0f, 100.0f);
+			ImGui::TextDisabled("タイムライン再生位置からのオフセット");
+		}
+
+		ImGui::Spacing();
+		ImGui::Separator();
+
+		// ===タイムラインファイル操作=== //
+		ImGui::SeparatorText("タイムラインファイル操作");
+		ImGui::InputText("保存先パス##TL", timelineFilePathBuffer_, sizeof(timelineFilePathBuffer_));
+		ImGui::TextDisabled(".json拡張子は自動で付加されます");
+
+		ImGui::Spacing();
+
+		if (ImGui::Button("新規作成##TL", ImVec2(120, 28))) {
+			CreateNewTimeline();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("保存##TL", ImVec2(120, 28))) {
+			SaveTimelineToJson();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("読み込み##TL", ImVec2(120, 28))) {
+			LoadTimelineFromJson();
+		}
+
+		if (!currentTimelineFilePath_.empty()) {
+			ImGui::Spacing();
+			ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "現在のタイムライン:");
+			ImGui::TextWrapped("%s", currentTimelineFilePath_.c_str());
+		}
+#endif // USE_IMGUI
 	}
 }

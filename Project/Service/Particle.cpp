@@ -59,6 +59,20 @@ namespace Service {
 	}
 
 	///-------------------------------------------/// 
+	/// タイムライン管理
+	///-------------------------------------------///
+	// タイムライン定義を読み込み
+	void Particle::LoadParticleTimeline(const std::string& jsonPath) {
+		const std::string& baseDirectoryPath = "./Resource/Json/Particles";
+		Locator::GetParticleManager()->LoadParticleTimeline(baseDirectoryPath + "/" + jsonPath);
+	}
+
+	// タイムラインを再生
+	void Particle::EmitTimeline(const std::string& timelineName, const Vector3& basePosition) {
+		Locator::GetParticleManager()->EmitTimeline(timelineName, basePosition);
+	}
+
+	///-------------------------------------------/// 
 	/// 情報取得
 	///-------------------------------------------///
 	// 定義を取得

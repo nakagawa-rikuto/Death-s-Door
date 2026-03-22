@@ -1,5 +1,8 @@
 #pragma once
 #include "Engine/DataInfo/CData.h"
+// c++
+#include <string>
+#include <vector>
 
 namespace MiiEngine {
     ///=====================================================/// 
@@ -184,5 +187,25 @@ namespace MiiEngine {
         bool isTrajectoryParticle = false;     // 軌跡パーティクルモード
         float trailSpacing = 0.008f;           // 軌跡の間隔(秒)
         bool clearOnStop = true;               // 停止時にクリアするか
+    };
+
+    ///=====================================================/// 
+    /// パーティクルタイムラインエントリ
+    /// タイムライン内の1つのパーティクル発生情報
+    ///=====================================================///
+    struct ParticleTimelineEntry {
+        std::string particleName = "";         // 発生させるパーティクル定義名
+        float startTime = 0.0f;               // 発生タイミング（秒）
+        Vector3 offset = { 0.0f, 0.0f, 0.0f }; // 基準位置からのオフセット
+    };
+
+    ///=====================================================/// 
+    /// パーティクルタイムライン
+    /// 複数パーティクルの発生タイミングをまとめた定義
+    ///=====================================================///
+    struct ParticleTimeline {
+        std::string name = "NewTimeline";      // タイムライン名
+        float totalDuration = 5.0f;           // アニメーション全体の時間（秒）
+        std::vector<ParticleTimelineEntry> entries; // 発生エントリ一覧
     };
 }

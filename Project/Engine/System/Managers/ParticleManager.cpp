@@ -1,4 +1,6 @@
 #include "ParticleManager.h"
+// Service
+#include "Service/DeltaTime.h"
 // c++
 #include <fstream>
 #include <cassert>
@@ -10,6 +12,8 @@ namespace MiiEngine {
 	ParticleManager::~ParticleManager() {
 		definitions_.clear();
 		activeParticles_.clear();
+		timelines_.clear();
+		activeTimelines_.clear();
 	}
 
 	///-------------------------------------------/// 
@@ -78,6 +82,39 @@ namespace MiiEngine {
 	/// 全てのParticleの更新
 	///-------------------------------------------///
 	void ParticleManager::Update() {
+		float deltaTime = Service::DeltaTime::GetDeltaTime();
+
+		// アクティブなタイムラインを更新
+		for (auto& active : activeTimelines_) {
+			active.currentTime += deltaTime;
+
+			// 各エントリのタイミングチェック
+			for (size_t i = 0; i < active.timeline.entries.size(); ++i) {
+				if (!active.emitted[i]) {
+					const auto& entry = active.timeline.entries[i];
+					if (active.currentTime >= entry.startTime) {
+						// パーティクルを発生させる
+						Vector3 emitPos = {
+							active.basePosition.x + entry.offset.x,
+							active.basePosition.y + entry.offset.y,
+							active.basePosition.z + entry.offset.z
+						};
+						Emit(entry.particleName, emitPos);
+						active.emitted[i] = true;
+					}
+				}
+			}
+		}
+
+		// 終了したタイムラインを削除
+		activeTimelines_.erase(
+			std::remove_if(activeTimelines_.begin(), activeTimelines_.end(),
+				[](const ActiveTimeline& at) {
+					return at.currentTime >= at.timeline.totalDuration;
+				}),
+			activeTimelines_.end()
+		);
+
 		// 完了したパーティクルを削除
 		activeParticles_.erase(
 			std::remove_if(activeParticles_.begin(), activeParticles_.end(),
@@ -136,6 +173,62 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ParticleManager::RemoveAllParticles() {
 		activeParticles_.clear();
+	}
+
+	///-------------------------------------------/// 
+	/// タイムライン定義の読み込み（JSONファイルから）
+	///-------------------------------------------///
+	void ParticleManager::LoadParticleTimeline(const std::string& jsonPath) {
+		try {
+			std::ifstream file(jsonPath);
+			if (!file.is_open()) {
+				assert(false && "Failed to open particle timeline file");
+				return;
+			}
+
+			nlohmann::json j;
+			file >> j;
+			file.close();
+
+			ParticleTimeline timeline = ParticleTimelineSerializer::FromJson(j);
+			timelines_[timeline.name] = timeline;
+
+		} catch (const std::exception& e) {
+			assert(false && "Failed to parse particle timeline JSON");
+			e;
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// タイムライン定義の追加（直接指定）
+	///-------------------------------------------///
+	void ParticleManager::AddParticleTimeline(const std::string& name, const ParticleTimeline& timeline) {
+		timelines_[name] = timeline;
+	}
+
+	///-------------------------------------------/// 
+	/// タイムライン再生（指定位置を起点に時間経過で各パーティクルを発生させる）
+	///-------------------------------------------///
+	void ParticleManager::EmitTimeline(const std::string& timelineName, const Vector3& basePosition) {
+		auto it = timelines_.find(timelineName);
+		if (it == timelines_.end()) {
+			return; // タイムラインが見つからない
+		}
+
+		ActiveTimeline active;
+		active.timeline = it->second;
+		active.basePosition = basePosition;
+		active.currentTime = 0.0f;
+		active.emitted.assign(it->second.entries.size(), false);
+
+		activeTimelines_.push_back(std::move(active));
+	}
+
+	///-------------------------------------------/// 
+	/// タイムライン定義の存在確認
+	///-------------------------------------------///
+	bool ParticleManager::HasTimeline(const std::string& name) const {
+		return timelines_.find(name) != timelines_.end();
 	}
 
 	///-------------------------------------------/// 

@@ -502,6 +502,9 @@
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp">
       <Filter>Engine\Graphics\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleTimeline.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
     <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp">
       <Filter>Engine\Graphics\Particle</Filter>
     </ClCompile>
@@ -1099,6 +1102,9 @@
       <Filter>Engine\System\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleTimeline.h">
       <Filter>Engine\Graphics\Particle</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h">

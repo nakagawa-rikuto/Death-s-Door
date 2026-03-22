@@ -2,6 +2,8 @@
 /// ===include=== ///
 // ParticleGroup
 #include "Engine/Graphics/Particle/ParticleGroup.h"
+// Timeline
+#include "Engine/DataInfo/ParticleData.h"
 // c++
 #include <string>
 #include <vector>
@@ -26,8 +28,7 @@ namespace Service {
 		/// <summary>
 		/// パーティクル定義の追加（JSONファイルから）
 		/// </summary>
-		/// <param name="jsonPath">JSONファイルのパス</param>
-		/// <returns>読み込みに成功したかどうか</returns>
+		/// <param name="jsonPath">JSONファイルのパス（Resource/Json/Particles/以下のパス）</param>
 		static void LoadParticleDefinition(const std::string& jsonPath);
 
 		/// <summary>
@@ -61,6 +62,21 @@ namespace Service {
 		/// 全てのパーティクルを削除
 		/// </summary>
 		static void RemoveAllParticles();
+
+	public: /// ===タイムライン=== ///
+
+		/// <summary>
+		/// タイムライン定義をJSONファイルから読み込む
+		/// </summary>
+		/// <param name="jsonPath">JSONファイルのパス（Resource/Json/Particles/以下のパス）</param>
+		static void LoadParticleTimeline(const std::string& jsonPath);
+
+		/// <summary>
+		/// タイムラインを再生（時間に応じて各パーティクルを発生させる）
+		/// </summary>
+		/// <param name="timelineName">タイムライン名</param>
+		/// <param name="basePosition">基準位置</param>
+		static void EmitTimeline(const std::string& timelineName, const Vector3& basePosition);
 
 	public: /// ===設定=== ///
 		/// <summary>

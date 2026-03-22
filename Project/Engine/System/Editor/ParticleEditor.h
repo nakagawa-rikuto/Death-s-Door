@@ -1,6 +1,7 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/Graphics/Particle/ParticleDefinition.h"
+#include "Engine/Graphics/Particle/ParticleTimeline.h"
 #include "Engine/DataInfo/BlendModeData.h"
 // c++
 #include <memory>
@@ -75,6 +76,23 @@ namespace MiiEngine {
         /// </summary>
         void CreateNew();
 
+        /// ===タイムライン操作=== ///
+
+        /// <summary>
+        /// タイムラインをJSONファイルに保存
+        /// </summary>
+        void SaveTimelineToJson();
+
+        /// <summary>
+        /// タイムラインをJSONファイルから読み込み
+        /// </summary>
+        void LoadTimelineFromJson();
+
+        /// <summary>
+        /// タイムラインを新規作成
+        /// </summary>
+        void CreateNewTimeline();
+
         /// ===プレビュー制御=== ///
 
         /// <summary>
@@ -135,6 +153,11 @@ namespace MiiEngine {
         void RenderAdvancedSettings();
 
         /// <summary>
+        /// タイムラインUIの描画
+        /// </summary>
+        void RenderTimelineSettings();
+
+        /// <summary>
         /// プレビューコントロールUIの描画
         /// </summary>
         void RenderPreviewControls();
@@ -143,6 +166,20 @@ namespace MiiEngine {
         /// ファイル操作UIの描画
         /// </summary>
         void RenderFileOperations();
+
+        /// ===回転ギズモヘルパー=== ///
+
+        /// <summary>
+        /// 1軸分の回転ギズモを描画・操作する
+        /// </summary>
+        /// <param name="id">ImGui ID（一意にする文字列）</param>
+        /// <param name="angleRad">編集対象の角度（ラジアン）</param>
+        /// <param name="radius">ギズモの半径（ピクセル）</param>
+        /// <param name="circleColor">円の描画色</param>
+        /// <param name="handleColor">ハンドルの描画色</param>
+        /// <returns>値が変化した場合は true</returns>
+        bool RenderRotationGizmoAxis(const char* id, float* angleRad,
+            float radius, unsigned int circleColor, unsigned int handleColor);
 
         /// ===ヘルパー関数=== ///
 
@@ -201,6 +238,9 @@ namespace MiiEngine {
         bool showSaveDialog_ = false;                        // 保存ダイアログ表示フラグ
         bool showLoadDialog_ = false;                        // 読み込みダイアログ表示フラグ
 
+        /// ===回転ギズモ=== ///
+        bool useRotationGizmo_ = false;                      // 回転ギズモ表示フラグ
+
         /// ===軌跡プレビュー=== ///
         bool trajectoryPreviewMode_ = false;        // 軌跡プレビューモード
         Vector3 trajectoryStartPos_ = { -3, 0, 0 };   // 軌跡開始位置
@@ -208,6 +248,13 @@ namespace MiiEngine {
         float trajectoryProgress_ = 0.0f;           // 軌跡の進行度(0~1)
         float trajectorySpeed_ = 1.0f;              // 軌跡の速度
         Vector3 trajectoryRotation_ = { 0, 0, 0 };    // 軌跡の回転
+
+        /// ===タイムライン=== ///
+        ParticleTimeline currentTimeline_;                   // 編集中のタイムライン
+        char timelineFilePathBuffer_[256];                   // タイムラインファイルパス入力バッファ
+        std::string currentTimelineFilePath_;                // 現在のタイムラインファイルパス
+        int selectedTimelineEntryIndex_ = -1;               // 選択中のタイムラインエントリインデックス
+        char timelineEntryNameBuffer_[256] = "";             // エントリ名入力バッファ
 
         /// ===定数=== ///
         static constexpr const char* kDefaultSavePath = "Resource/Json/Particles/";
