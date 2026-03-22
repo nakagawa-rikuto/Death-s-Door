@@ -67,17 +67,16 @@ void GameScene::Initialize() {
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
+	stage_->Initialize("Level/MobStage.json");
 
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
+	Vector3 translation = { 0.0f, 2.0f, 0.0f };
+	player_->InitGame(translation, camera_.get());
 
 	/// ===EnemyManagerの生成=== ///
 	enemyManager_ = std::make_unique<EnemyManager>();
 	enemyManager_->SetPlayer(player_.get());
-
-	/// ===SponEntity=== ///
-	SpawnEntity("Level/EntityData2.json");
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -167,26 +166,6 @@ void GameScene::ChangState(std::unique_ptr<GameSceneFadeState> newState) {
 	currentState_->SetSceneManager(sceneManager_);
 	// 新しい状態の初期化  
 	currentState_->Enter(this);
-}
-
-///-------------------------------------------/// 
-/// 配置関数
-///-------------------------------------------///
-void GameScene::SpawnEntity(const std::string& json_name) {
-	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
-
-	// オブジェクト分回す
-	for (const auto& obj : levelData->objects) {
-
-		/// ===クラス名で分岐=== ///
-		switch (obj.classType) {
-		case LevelData::ClassTypeLevel::Player:
-			// 初期化と座標設定
-			player_->InitGame(obj.translation, camera_.get());
-			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			break;
-		}
-	}
 }
 
 ///-------------------------------------------/// 

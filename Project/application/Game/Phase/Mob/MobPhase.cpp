@@ -39,7 +39,7 @@ void MobPhase::Update() {
 		switch (currentPhase_) {
 		case PhaseState::Wave1: levelData = "Level/Wave1.json"; break;
 		case PhaseState::Wave2: levelData = "Level/Wave2.json"; break;
-		case PhaseState::Wave3: levelData = "Level/Wave2.json"; break;
+		case PhaseState::Wave3: levelData = "Level/Wave3.json"; break;
 		default: break;
 		}
 

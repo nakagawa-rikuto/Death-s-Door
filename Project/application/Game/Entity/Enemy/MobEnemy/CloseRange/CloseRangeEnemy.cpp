@@ -91,6 +91,16 @@ void CloseRangeEnemy::Information() {
 void CloseRangeEnemy::OnCollision(MiiEngine::Collider* collider) {
 	// MobEnemyの当たり判定
 	MobEnemy::OnCollision(collider);
+
+	/// ===PlayerとObject=== ///
+	if (attackInfo_.isAttack) {
+		// PlayerとObjectの当たり判定
+		if (collider->GetColliderName() == MiiEngine::ColliderName::Player ||
+			collider->GetColliderName() == MiiEngine::ColliderName::Object) {
+			// 攻撃を解除
+			attackInfo_.isAttack = false;
+		}
+	}
 }
 
 ///-------------------------------------------/// 

@@ -3,12 +3,48 @@
     "objects": [
         {
             "type": "MESH",
-            "name": "CloseEnemy",
+            "name": "ICO球",
             "transform": {
                 "translation": [
-                    0.314910888671875,
-                    -30.497543334960938,
-                    3.1115622520446777
+                    22.44571876525879,
+                    18.158641815185547,
+                    2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Enemy",
+            "file_name": "Long",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    4.0,
+                    1.0,
+                    4.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "立方体",
+            "transform": {
+                "translation": [
+                    -21.46912384033203,
+                    17.883867263793945,
+                    3.5
                 ],
                 "rotation": [
                     0.0,
@@ -34,42 +70,6 @@
                     6.0,
                     6.0,
                     6.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Player",
-            "transform": {
-                "translation": [
-                    0.0,
-                    0.0,
-                    3.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "class_name": "Player",
-            "file_name": "",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    4.0,
-                    4.0,
-                    5.0
                 ]
             }
         }

@@ -3,12 +3,12 @@
     "objects": [
         {
             "type": "MESH",
-            "name": "ICO球",
+            "name": "壁Y２",
             "transform": {
                 "translation": [
-                    22.44571876525879,
-                    18.158641815185547,
-                    2.0
+                    80.0,
+                    0.0,
+                    50.0
                 ],
                 "rotation": [
                     0.0,
@@ -21,8 +21,8 @@
                     1.0
                 ]
             },
-            "class_name": "Enemy",
-            "file_name": "Long",
+            "class_name": "Object",
+            "file_name": "MobWall",
             "collider": {
                 "type": "OBB",
                 "info1": [
@@ -31,34 +31,34 @@
                     0.0
                 ],
                 "info2": [
-                    4.0,
-                    1.0,
-                    4.0
+                    10.0,
+                    240.0,
+                    100.0
                 ]
             }
         },
         {
             "type": "MESH",
-            "name": "立方体",
+            "name": "壁Y２.001",
             "transform": {
                 "translation": [
-                    -21.46912384033203,
-                    17.883867263793945,
-                    3.5
+                    0.0,
+                    105.0,
+                    50.0
                 ],
                 "rotation": [
                     0.0,
                     -0.0,
-                    0.0
+                    90.00000762939453
                 ],
                 "scaling": [
-                    1.0,
-                    1.0,
+                    1.0000001192092896,
+                    1.0000001192092896,
                     1.0
                 ]
             },
-            "class_name": "Enemy",
-            "file_name": "Close",
+            "class_name": "Object",
+            "file_name": "MobWall",
             "collider": {
                 "type": "OBB",
                 "info1": [
@@ -67,20 +67,20 @@
                     0.0
                 ],
                 "info2": [
-                    6.0,
-                    6.0,
-                    6.0
+                    10.0,
+                    240.0,
+                    100.0
                 ]
             }
         },
         {
             "type": "MESH",
-            "name": "立方体.001",
+            "name": "壁Y２.002",
             "transform": {
                 "translation": [
-                    21.622692108154297,
-                    -30.684988021850586,
-                    3.5
+                    -80.0,
+                    0.0,
+                    50.0
                 ],
                 "rotation": [
                     0.0,
@@ -93,8 +93,8 @@
                     1.0
                 ]
             },
-            "class_name": "Enemy",
-            "file_name": "Close",
+            "class_name": "Object",
+            "file_name": "MobWall",
             "collider": {
                 "type": "OBB",
                 "info1": [
@@ -103,20 +103,56 @@
                     0.0
                 ],
                 "info2": [
-                    6.0,
-                    6.0,
-                    6.0
+                    10.0,
+                    240.0,
+                    100.0
                 ]
             }
         },
         {
             "type": "MESH",
-            "name": "ICO球.001",
+            "name": "壁Y２.003",
             "transform": {
                 "translation": [
-                    -22.644990921020508,
-                    -30.704360961914062,
-                    2.0
+                    0.0,
+                    -105.0,
+                    50.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    90.00000762939453
+                ],
+                "scaling": [
+                    1.0000001192092896,
+                    1.0000001192092896,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "MobWall",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    10.0,
+                    240.0,
+                    100.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "地面",
+            "transform": {
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -129,8 +165,8 @@
                     1.0
                 ]
             },
-            "class_name": "Enemy",
-            "file_name": "Long",
+            "class_name": "Ground",
+            "file_name": "MobGround",
             "collider": {
                 "type": "OBB",
                 "info1": [
@@ -139,9 +175,9 @@
                     0.0
                 ],
                 "info2": [
-                    4.0,
-                    1.0,
-                    4.0
+                    180.0,
+                    220.0,
+                    0.0
                 ]
             }
         }

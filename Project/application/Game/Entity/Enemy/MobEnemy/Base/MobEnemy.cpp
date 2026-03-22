@@ -212,7 +212,7 @@ void MobEnemy::SettingParamita() {
 			.chaseRange = 16.0f,
 			.evadeRange = 2.0f,
 			.moveTime = 2.0f,
-			.evadeTime = 4.0f
+			.evadeTime = 5.0f
 	};
 	moveComponent_->Initialize(moveConfig);
 	// TeleportComponentの初期化
