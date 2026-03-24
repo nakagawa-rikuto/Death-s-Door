@@ -3,12 +3,12 @@
 #include "Base/BossState.h"
 
 ///=====================================================/// 
-/// MoveState
-/// ボスの移動状態を表すクラス
+/// AttackState
+/// Bossの攻撃状態を表すクラス
 ///=====================================================///
-class MoveBossState : public BossState {
+class BossAttackState : public BossState {
 public:
-	~MoveBossState() override = default;
+	~BossAttackState() override = default;
 
 	/// <summary>
 	/// 初期化処理

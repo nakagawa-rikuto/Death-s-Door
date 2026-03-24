@@ -22,6 +22,7 @@ namespace MiiEngine {
         PlayerBullet, // プレイヤーの弾
         PlayerWeapon, // プレイヤーの武器
         EnemyBullet,  // 敵の弾
+		EnemyWeapon,  // 敵の武器
         Object,      // 壁
         Ground,     // 床
         Ceiling,   // 天井

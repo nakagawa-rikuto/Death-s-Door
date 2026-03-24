@@ -43,7 +43,7 @@ GameScene::~GameScene() {
 	// Particle
 	Service::Particle::RemoveAllParticles();
 	// Enemy
-	enemyManager_.reset();
+	enemy_.reset();
 	// Player
 	player_.reset();
 	// Ground
@@ -75,8 +75,9 @@ void GameScene::Initialize() {
 	player_->InitGame(translation, camera_.get());
 
 	/// ===EnemyManagerの生成=== ///
-	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->SetPlayer(player_.get());
+	enemy_ = std::make_unique<BossEnemy>();
+	enemy_->InitGameScene({ 0.0f, 3.0f, -50.0f });
+	enemy_->SetPlayer(player_.get());
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -116,7 +117,7 @@ void GameScene::Update() {
 	// Player
 	player_->Information();
 	// Enemy
-	enemyManager_->UpdateImGui();
+	enemy_->Information();
 
 #endif // USE_IMGUI
 
@@ -138,7 +139,7 @@ void GameScene::Draw() {
 	stage_->Draw();
 
 	/// ===Enemy=== ///
-	enemyManager_->Draw();
+	enemy_->Draw();
 
 	/// ===Player=== ///
 	player_->Draw();

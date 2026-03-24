@@ -2,13 +2,13 @@
 /// ===Include=== ///
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// Weapon
+#include "Weapon/BossWeapon.h"
 // State
 #include "State/Base/BossState.h"
 // Component
 #include "Component/Move/BossMoveComponent.h"
-#include "Component/Attack/BossAttackComponent.h"
-//C++
-#include <random>
+#include "Component/Attack/BossAttackManager.h"
 
 ///=====================================================/// 
 /// BossEnemy
@@ -66,7 +66,10 @@ public: /// ===Getter=== ///
 
 	// Componentの取得
 	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
-	BossAttackComponent& GetAttackComponent() const { return *attackComponent_; }
+	BossAttackManager& GetAttackComponent() const { return *attackManager_; }
+
+	// Weapnの取得
+	BossWeapon& GetWeapon() const { return *weapon_; }
 
 public: /// ===Setter=== ///
 
@@ -75,18 +78,26 @@ private:
 	MiiEngine::CameraCommon* camera_ = nullptr; // カメラ
 	Player* player_ = nullptr;	   // プレイヤー
 
+	/// ===Weapon=== ///
+	std::unique_ptr<BossWeapon> weapon_; // 武器
+
 	/// ===State=== ///
 	std::unique_ptr<BossState> currentState_; // 現在のState
 
 	/// ===Component=== ///
-	std::unique_ptr<BossMoveComponent> moveComponent_;		// 移動コンポーネント
-	std::unique_ptr<BossAttackComponent> attackComponent_;	// 攻撃コンポーネント
+	std::unique_ptr<BossMoveComponent> moveComponent_;	// 移動コンポーネント
+	std::unique_ptr<BossAttackManager> attackManager_;	// 攻撃コンポーネント
 
 	/// ===Particle=== ///
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
 	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 
 private:
+
+	/// <summary>
+	/// コンポーネントのパラメータの設定
+	/// </summary>
+	void SetComponentConfig();
 
 	/// <summary>
 	/// タイマーを進める

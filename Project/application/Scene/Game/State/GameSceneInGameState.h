@@ -2,8 +2,6 @@
 /// ===Include=== ///
 // Base
 #include "Base/GameSceneFadeState.h"
-// Phase
-#include "application/Game/Phase/Mob/MobPhase.h"
 // GameUI
 #include "application/Scene/Game/UI/GameSceneUI.h"
 #include "application/Game/UI/Option/OptionUI.h"
@@ -40,9 +38,6 @@ public:
 	void Finalize() override;
 
 private:
-	
-	/// ===MobPhase=== ///
-	std::unique_ptr<MobPhase> mobPhase_;
 
 	/// ===GameSceneUI=== ///
 	std::unique_ptr<GameSceneUI> ui_;

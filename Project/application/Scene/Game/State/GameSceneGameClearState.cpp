@@ -32,7 +32,7 @@ void GameSceneGameClearState::Update() {
 	// GameClearAnimationの更新
 	gameClearAnimation_->Update();
 	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->UpdateAnimation();
+	gameScene_->GetEnemy()->UpdateAnimation();
 	// Playerの更新
 	gameScene_->GetPlayer()->UpdateAnimation();
 	// アニメーション完了を確認

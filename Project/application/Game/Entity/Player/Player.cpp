@@ -174,7 +174,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 	GameCharacter::OnCollision(collider);
 
 	// Colliderによって処理を変更
-	if (collider->GetColliderName() == MiiEngine::ColliderName::Enemy || collider->GetColliderName() == MiiEngine::ColliderName::EnemyBullet) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::EnemyWeapon || collider->GetColliderName() == MiiEngine::ColliderName::EnemyBullet) {
 
 		// 無敵状態でなければダメージを受ける
 		if (!invincibleInfo_.isFlag) {
@@ -202,7 +202,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			baseInfo_.HP--;
+			//baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvincibleTime(0.5f);
 		}

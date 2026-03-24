@@ -3,7 +3,7 @@
 #include "Engine/Scene/IScene.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Enemy/Base/EnemyManager.h"
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Object
 #include "application/Game/Object/GameStage.h"
 // State
@@ -42,8 +42,8 @@ public:/// ===メンバ関数=== ///
 public: /// ===Getter=== ///
 	// Playerの取得
 	Player* GetPlayer() const { return player_.get(); }
-	// EnemyManagerの取得
-	EnemyManager* GetEnemyManager() const { return enemyManager_.get(); }
+	// Enemyの取得
+	BossEnemy* GetEnemy() const { return enemy_.get(); }
 	// Camera 取得
 	MiiEngine::FollowCamera* GetCamera() const { return camera_.get(); }
 
@@ -55,7 +55,7 @@ private:/// ===メンバ変数=== ///
 	// Player
 	std::unique_ptr<Player> player_;
 	// Enemy
-	std::unique_ptr<EnemyManager> enemyManager_;
+	std::unique_ptr<BossEnemy> enemy_;
 	// Stage
 	std::unique_ptr<GameStage> stage_;
 	// State

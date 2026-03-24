@@ -33,7 +33,7 @@ void GameSceneGameOverAnimationState::Update() {
 	gameOverAnimation_->Update();
 
 	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->UpdateAnimation();
+	gameScene_->GetEnemy()->UpdateAnimation();
 	// Playerの更新
 	gameScene_->GetPlayer()->Update();
 

@@ -36,6 +36,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
 		e->SetRotate(rot);			// 回転を設定
+		e->SetPlayer(player_);		// Playerを設定
 		enemy = std::move(e);		// 所有権移動
 		break;
 	}
@@ -44,6 +45,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);
 		e->SetRotate(rot); 
+		e->SetPlayer(player_);
 		enemy = std::move(e);
 		break;
 	}
@@ -52,6 +54,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		// 初期化
 		e->InitGameScene(pos);
 		e->SetRotate(rot); 
+		e->SetPlayer(player_);
 		enemy = std::move(e);
 		break;
 	}
@@ -59,9 +62,7 @@ BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quatern
 		return nullptr; // 未知の enum なら生成しない
 	}
 
-
 	BaseEnemy* raw = enemy.get(); // 呼び出し側が直後に触れるように生ポインタを保持
-	enemy->SetPlayer(player_); // Player をセット
 	enemies_.push_back(std::move(enemy));
 	return raw;
 }
