@@ -20,6 +20,7 @@ BossEnemy::~BossEnemy() {
 	// Componentの解放
 	moveComponent_.reset();
 	//attackManager_.reset();
+	thrustComponent_.reset();
 	// Object3Dの解放
 	object3d_.reset();
 }
@@ -114,7 +115,8 @@ void BossEnemy::Information() {
 	/// ===MoveConponentの情報表示=== ///
 	moveComponent_->Information();
 	/// ===AttackManagerの情報表示=== ///
-	attackManager_->Information();
+	thrustComponent_->Information();
+	//attackManager_->Information();
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -135,11 +137,11 @@ void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 			if (player_->GetAttackComponent()->IsAttacking()) {
 
 				// HPを減少
-				//baseInfo_.HP--;
-				//hitParticle_ = Service::Particle::Emit("Game", transform_.translate);
+				baseInfo_.HP--;
+				hitParticle_ = Service::Particle::Emit("Game", transform_.translate);
 
 				// 無敵時間のセット
-				//SetInvincibleTime();
+				SetInvincibleTime();
 			}
 		}
 	}
@@ -165,28 +167,36 @@ void BossEnemy::ChangeState(std::unique_ptr<BossState> nextState) {
 /// パラメータの設定
 ///-------------------------------------------///
 void BossEnemy::SetComponentConfig() {
+
+	attackInfo_.thrustTimer = 0.0f;
+	attackInfo_.thrustRange = 6.0f;
+	attackInfo_.thrustCooldown = 3.0f;
+
 	/// ===MoveComponentの生成=== ///
 	moveComponent_ = std::make_unique<BossMoveComponent>();
 	BossMoveComponent::MoveConfig moveConfig{
 		.speed = 0.2f,
-		.rotationSpeed = 0.4f,
+		.rotationSpeed = 8.0f,
 	};
 	// 初期化
 	moveComponent_->Initialize(moveConfig);
 
-	/// ===AttackManagerの生成=== ///
-	attackManager_ = std::make_unique<BossAttackManager>();
+	/// ===AttackComponentの生成=== ///
+	//attackManager_ = std::make_unique<BossAttackManager>();
+	thrustComponent_ = std::make_unique<BossAttackThrustComponent>();
 	BossAttackThrustComponent::ThrustConfig thrustConfig{
 		.windUpAngle = 30.0f,
 		.windUpDuration = 0.25f,
-		.strikeAngle = 15.0f,
+		.strikeAngle = -15.0f,
 		.strikeDuration = 0.12f,
 		.recoveryDuration = 0.5f,
-		.weaponRestOffset = { 0.8f,  0.0f,  0.0f },
-		.weaponWindUpOffset = { 0.8f,  0.0f, -0.3f },
-		.weaponStrikeOffset = { 0.4f,  0.0f,  1.2f },
+		.weaponRestOffset = { 0.0f,  0.0f,  4.0f },
+		.weaponWindUpOffset = { 0.0f,  0.0f, 4.0f },
+		.weaponStrikeOffset = { 0.0f,  0.0f, 4.0f },
 	};
-	BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
+	thrustComponent_->Initialize(thrustConfig);
+
+	/*BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
 		.windUpPitch = 15.0f,
 		.windUpDuration = 0.35f,
 		.strikeForwardPitch = 15.0f,
@@ -223,9 +233,9 @@ void BossEnemy::SetComponentConfig() {
 		.thrustConfig = thrustConfig,
 		.downswingConfig = downswingConfig,
 		.jumpSmashConfig = jumpSmashConfig,
-	};
+	};*/
 	// 初期化
-	attackManager_->Initialize(attackConfig);
+	//attackManager_->Initialize(attackConfig);
 }
 
 
@@ -233,6 +243,13 @@ void BossEnemy::SetComponentConfig() {
 /// 時間を進める
 ///-------------------------------------------///
 void BossEnemy::advanceTimer() {
+
+	// 攻撃のクールタイマーを進める
+	if (attackInfo_.thrustTimer > 0.0f) {
+		attackInfo_.thrustTimer -= baseInfo_.deltaTime;
+	}
+	
+
 	if (baseInfo_.isDead) {
 		// パーティクルの発生
 		deathParticle_ = Service::Particle::Emit("nakagawa", transform_.translate);

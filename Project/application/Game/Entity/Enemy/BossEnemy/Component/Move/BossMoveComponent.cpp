@@ -41,8 +41,14 @@ BossMoveComponent::UpdateResult BossMoveComponent::Update(const UpdateContext & 
 	// プレイヤーへのベクトルを計算
 	Vector3 toPlayer = context.playerPosition - context.currentPosition;
 
-	// プレイヤーに向かってゆっくり移動するベクトルを計算
-	state_.direction = Normalize(toPlayer);
+	// 高低差を無視し、水平面（XZ平面）のみの移動とY軸周りの回転にする
+	toPlayer.y = 0.0f;
+
+	// プレイヤーに向かってゆっくり移動する方向を計算
+	if (Length(toPlayer) > 0.001f) {
+		state_.direction = Normalize(toPlayer);
+	}
+
 	result.velocity = state_.direction * config_.speed;
 
 	// プレイヤーの方を徐々に向くように回転を計算
@@ -91,19 +97,13 @@ Quaternion BossMoveComponent::DirectionToQuaternion(const Vector3& from, const V
 		return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
 	}
 
-	// 2ベクトルが逆方向の場合は任意の軸で180度回転させる
+	// 2ベクトルが逆方向の場合はY軸周りで180度回転させる
 	if (dot <= -1.0f + 0.001f) {
-		// from に垂直な軸を選ぶ（Y 軸が from と平行でなければ Y 軸を使う）
-		Vector3 axis = Math::Cross({ 0.0f, 1.0f, 0.0f }, from);
-		if (Length(axis) < 0.001f) {
-			axis = Math::Cross({ 1.0f, 0.0f, 0.0f }, from);
-		}
-		axis = Normalize(axis);
-		// 180度回転
+		// キャラクターが上下反転しないように、強制的にY軸を回転軸にする
 		return Quaternion{
-			axis.x,
-			axis.y,
-			axis.z,
+			0.0f,
+			1.0f,
+			0.0f,
 			0.0f
 		};
 	}

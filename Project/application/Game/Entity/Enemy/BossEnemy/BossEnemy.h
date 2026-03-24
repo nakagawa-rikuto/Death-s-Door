@@ -14,6 +14,24 @@
 /// BossEnemy
 ///=====================================================///
 class BossEnemy : public BaseEnemy {
+private:
+	/// ===AttackInfo=== ///
+	struct AttackInfo {
+		float thrustTimer = 0.0f; 
+		float downswingTimer = 0.0f;
+		float jumpSmashTimer = 0.0f;
+
+		// 攻撃射程
+		float thrustRange = 4.0f;
+		float downswingRange = 6.0f;
+		float jumpSmashRange = 14.0f;
+
+		// 個別クールダウン（秒）
+		float thrustCooldown = 3.0f;
+		float downswingCooldown = 4.0f;
+		float jumpSmashCooldown = 6.0f;
+	};
+
 public:
 
 	BossEnemy() = default;
@@ -64,20 +82,22 @@ public: /// ===その他関数=== ///
 
 public: /// ===Getter=== ///
 
-	// Componentの取得
-	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
-	BossAttackManager& GetAttackComponent() const { return *attackManager_; }
-
 	// Weapnの取得
 	BossWeapon& GetWeapon() const { return *weapon_; }
 
+	// Componentの取得
+	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
+	///BossAttackManager& GetAttackComponent() const { return *attackManager_; }
+	BossAttackThrustComponent& GetThrustComponent() const { return *thrustComponent_; }
+
+	// Infoの取得
+	AttackInfo GetAttackInfo() const { return attackInfo_; }
+
 public: /// ===Setter=== ///
 
-private:
-	/// ===ポインタ=== ///
-	MiiEngine::CameraCommon* camera_ = nullptr; // カメラ
-	Player* player_ = nullptr;	   // プレイヤー
+	void SetThrustTimer(float time) { attackInfo_.thrustTimer = time; }
 
+private:
 	/// ===Weapon=== ///
 	std::unique_ptr<BossWeapon> weapon_; // 武器
 
@@ -86,7 +106,10 @@ private:
 
 	/// ===Component=== ///
 	std::unique_ptr<BossMoveComponent> moveComponent_;	// 移動コンポーネント
-	std::unique_ptr<BossAttackManager> attackManager_;	// 攻撃コンポーネント
+	//std::unique_ptr<BossAttackManager> attackManager_;	// 攻撃コンポーネント
+	std::unique_ptr<BossAttackThrustComponent> thrustComponent_;				// 突き攻撃コンポーネント
+
+	AttackInfo attackInfo_; // 攻撃のパラメータ
 
 	/// ===Particle=== ///
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;

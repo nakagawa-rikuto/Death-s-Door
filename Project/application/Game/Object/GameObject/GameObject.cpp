@@ -10,10 +10,10 @@ template class GameObject<MiiEngine::OBBCollider>;
 template class GameObject<MiiEngine::SphereCollider>;
 
 ///-------------------------------------------/// 
-/// デストラクタ
+/// デストラクタ						
 ///-------------------------------------------///
 template<typename TCollider> requires MiiEngine::IsCollider<TCollider>
-GameObject<TCollider>::~GameObject() {
+GameObject<TCollider>::~GameObject() {				
 	this->object3d_.reset();
 }
 

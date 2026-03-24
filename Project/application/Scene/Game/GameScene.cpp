@@ -67,16 +67,16 @@ void GameScene::Initialize() {
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/MobStage.json");
+	stage_->Initialize("Level/BossStage.json");
 
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
-	Vector3 translation = { 0.0f, 2.0f, 0.0f };
+	Vector3 translation = { 0.0f, 5.0f, -30.0f };
 	player_->InitGame(translation, camera_.get());
 
 	/// ===EnemyManagerの生成=== ///
 	enemy_ = std::make_unique<BossEnemy>();
-	enemy_->InitGameScene({ 0.0f, 3.0f, -50.0f });
+	enemy_->InitGameScene({ 0.0f, 5.0f, 30.0f });
 	enemy_->SetPlayer(player_.get());
 
 	/// ===State=== ///
@@ -123,6 +123,10 @@ void GameScene::Update() {
 
 	/// ===Groundの更新=== ///
 	stage_->Update();
+
+	/// ===EntityのPreUpdate=== ///
+	player_->PreUpdate(); // Playerの更新前処理
+	enemy_->PreUpdate();  // Enemyの更新前処理
 
 	/// ===Stateの管理=== ///
 	if (currentState_) {
@@ -175,13 +179,13 @@ void GameScene::ChangState(std::unique_ptr<GameSceneFadeState> newState) {
 void GameScene::SetUpCamera() {
 	/// ===カメラの初期設定=== ///
 	// カメラの座標設定
-	camera_->SetTranslate({ 0.0f, 5.0f, 15.0f });
+	camera_->SetTranslate({ 0.0f, 5.0f, -20.0f });
 	// カメラの回転設定
 	camera_->SetRotate({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// カメラの追従設定
 	camera_->SetFollowCamera(MiiEngine::FollowCameraType::TopDown);
 	// 追従オフセット設定
-	camera_->SetOffset({ 0.0f, 70.0f, -60.0f });
+	camera_->SetOffset({ 0.0f, 100.0f, -90.0f });
 	// 追従速度設定
 	camera_->SetFollowSpeed(0.1f);
 }

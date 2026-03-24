@@ -59,7 +59,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
-		sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -179,8 +179,9 @@ namespace MiiEngine {
 		Loader::LoadModel("Boss", "Entity/Enemy/Boss/BossEnemy.gltf");						// ボス
 
 		/// ===Object=== ///
-		Loader::LoadModel("MobGround", "Object/MobStage/Ground/Ground.gltf");			// 地面
-		Loader::LoadModel("MobWall", "Object/MobStage/Wall/Wall.gltf");					// 壁
+		Loader::LoadModel("Ground", "Object/Ground/Ground2.gltf");
+		Loader::LoadModel("Ground2", "Object/Ground/Ground.gltf");
+		Loader::LoadModel("Object", "Object/Object/Wall/BossStageWall.gltf");
 	}
 
 	///-------------------------------------------/// 
@@ -197,9 +198,6 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void MyGame::LoadJson() {
 		/// ===Game=== ///
-		Loader::LoadLevelJson("Level/MobStage.json");
-		Loader::LoadLevelJson("Level/Wave1.json");
-		Loader::LoadLevelJson("Level/Wave2.json");
-		Loader::LoadLevelJson("Level/Wave3.json");
+		Loader::LoadLevelJson("Level/BossStage.json");
 	}
 } 

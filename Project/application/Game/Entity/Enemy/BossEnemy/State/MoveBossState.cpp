@@ -5,6 +5,7 @@
 #include "application/Game/Entity/Player/Player.h"
 // State
 #include "BossAttackState.h"
+#include "BossThrustAttackState.h"
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -40,10 +41,15 @@ void MoveBossState::Update() {
 	boss_->SetRotate(result.rotate);
 
 	/// ===Stateの変更=== ///
-	if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
-		boss_->ChangeState(std::make_unique<BossAttackState>());
+	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
 		return;
 	}
+
+	/*if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
+		boss_->ChangeState(std::make_unique<BossAttackState>());
+	}*/
 }
 
 ///-------------------------------------------/// 

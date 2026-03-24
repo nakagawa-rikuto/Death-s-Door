@@ -38,5 +38,7 @@ public:
 private:
 	// GameOverAnimation
 	std::unique_ptr<GameOverAnimation> gameOverAnimation_;
+
+	bool isTransitionStarted_ = false; // シーン遷移が開始されたかどうかのフラグ
 };
 
