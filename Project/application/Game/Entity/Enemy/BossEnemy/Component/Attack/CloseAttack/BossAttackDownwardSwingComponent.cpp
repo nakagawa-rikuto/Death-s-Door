@@ -38,10 +38,11 @@ BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent:
 	UpdateResult result;
 	result.currentPhase = phase_;
 
-	// 非アクティブフェーズ：基底回転そのまま、武器は定位置
+	// 非アクティブフェーズ：基底回転そのまま、武器は定位置、速度なし
 	if (phase_ == DownwardSwingPhase::Idle || phase_ == DownwardSwingPhase::Finished) {
-		result.modelRotation = context.baseRotation;
-		result.weaponLocalOffset = config_.weaponRestOffset;
+		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+		result.rotation = context.baseRotation;
+		result.weaponPosition = config_.weaponRestOffset;
 		result.isFinished = (phase_ == DownwardSwingPhase::Finished);
 		return result;
 	}
@@ -139,13 +140,13 @@ void BossAttackDownwardSwingComponent::UpdateAttack(const UpdateContext& context
 
 		// X軸正方向（仰け反り）へ windUpPitch 度傾ける
 		const Quaternion windUpPitch = MakePitchQuaternion(config_.windUpPitch * t);
-		result.modelRotation = Multiply(context.baseRotation, windUpPitch);
+		result.rotation = Multiply(context.baseRotation, windUpPitch);
 
 		// 武器：定位置 → 頭上背中側へ
-		result.weaponLocalOffset = Math::Lerp(config_.weaponRestOffset,config_.weaponWindUpOffset,t);
+		result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponWindUpOffset, t);
 
-		// 踏み込みなし
-		result.modelPositionDelta = Vector3{ 0.0f, 0.0f, 0.0f };
+		// WindUp中は踏み込みなし
+		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 
 		// フェーズ遷移
 		if (rawT >= 1.0f) {
@@ -174,19 +175,25 @@ void BossAttackDownwardSwingComponent::UpdateAttack(const UpdateContext& context
 		const float currentAngle = startAngle + (endAngle - startAngle) * t;
 
 		const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
-		result.modelRotation = Multiply(context.baseRotation, strikePitch);
+		result.rotation = Multiply(context.baseRotation, strikePitch);
 
 		// 武器：頭上背中側 → 前方下方へ弧を描いて振り下ろす
-		result.weaponLocalOffset = Math::Lerp(config_.weaponWindUpOffset,config_.weaponStrikeOffset,t);
+		result.weaponPosition = Math::Lerp(config_.weaponWindUpOffset, config_.weaponStrikeOffset, t);
 
-		// 踏み込み：Strike 終盤に加速しながら前方へ踏み込む
+		// 踏み込み：前方へ加速しながら踏み込む速度を計算
+		// stepZ はフレームあたりの移動量なので deltaTime で割って velocity に変換する
 		const float stepZ = config_.strikeStepForward * t;
-		result.modelPositionDelta = Vector3{ 0.0f, 0.0f, stepZ };
+		const float prevT = Easing::EaseInQuad(std::max(0.0f,
+			(state_.phaseTimer - context.deltaTime) / config_.strikeDuration));
+		const float prevStepZ = config_.strikeStepForward * prevT;
+		const float deltaZ = stepZ - prevStepZ;
+		result.velocity = (context.deltaTime > 0.0f)
+			? Vector3{ 0.0f, 0.0f, deltaZ / context.deltaTime }
+		: Vector3{ 0.0f, 0.0f, 0.0f };
 
 		// フェーズ遷移：Strike → HoldDown（または HoldDown スキップ）
 		if (rawT >= 1.0f) {
 			state_.phaseTimer = 0.0f;
-			// holdDownDuration が 0 以下ならそのまま Recovery へ
 			if (config_.holdDownDuration > 0.0f) {
 				phase_ = DownwardSwingPhase::HoldDown;
 			} else {
@@ -205,11 +212,11 @@ void BossAttackDownwardSwingComponent::UpdateAttack(const UpdateContext& context
 			? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f)
 			: 1.0f;
 
-		// 姿勢・武器・踏み込みは全て Strike 終了時点の値のまま固定
+		// 姿勢・武器・速度は Strike 終了時点の値で固定
 		const Quaternion holdPitch = MakePitchQuaternion(-config_.strikeForwardPitch);
-		result.modelRotation = Multiply(context.baseRotation, holdPitch);
-		result.weaponLocalOffset = config_.weaponStrikeOffset;
-		result.modelPositionDelta = Vector3{ 0.0f, 0.0f, config_.strikeStepForward };
+		result.rotation = Multiply(context.baseRotation, holdPitch);
+		result.weaponPosition = config_.weaponStrikeOffset;
+		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f }; // 踏み込みは止まる
 
 		// フェーズ遷移
 		if (t >= 1.0f) {
@@ -233,15 +240,13 @@ void BossAttackDownwardSwingComponent::UpdateAttack(const UpdateContext& context
 		const float currentAngle = -config_.strikeForwardPitch * (1.0f - t);
 
 		const Quaternion recoveryPitch = MakePitchQuaternion(currentAngle);
-		result.modelRotation = Multiply(context.baseRotation, recoveryPitch);
+		result.rotation = Multiply(context.baseRotation, recoveryPitch);
 
 		// 武器：叩きつけ位置 → 定位置へ戻す
-		result.weaponLocalOffset = Math::Lerp(config_.weaponStrikeOffset,config_.weaponRestOffset,t
-		);
+		result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset, config_.weaponRestOffset, t);
 
-		// 踏み込み位置を元へ戻す
-		const float stepZ = config_.strikeStepForward * (1.0f - t);
-		result.modelPositionDelta = Vector3{ 0.0f, 0.0f, stepZ };
+		// Recovery中は移動しない
+		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 
 		// フェーズ遷移：Recovery → Finished
 		if (t >= 1.0f) {

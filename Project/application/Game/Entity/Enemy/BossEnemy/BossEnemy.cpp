@@ -5,6 +5,7 @@
 #include "Service/Particle.h"
 // State
 #include "State/MoveBossState.h"
+#include "State/BossHitReactionState.h"
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
@@ -14,14 +15,15 @@
 /// デストラクタ
 ///-------------------------------------------///
 BossEnemy::~BossEnemy() {
-	// 状態を解放
+	/// ===状態を解放=== ///
 	currentState_->Finalize();
 	currentState_.reset();
-	// Componentの解放
+	/// ===Componentの解放=== ///
 	moveComponent_.reset();
 	//attackManager_.reset();
 	thrustComponent_.reset();
-	// Object3Dの解放
+	hitReactionComponent_.reset();
+	/// ===Object3Dの解放=== ///
 	object3d_.reset();
 }
 
@@ -117,6 +119,8 @@ void BossEnemy::Information() {
 	/// ===AttackManagerの情報表示=== ///
 	thrustComponent_->Information();
 	//attackManager_->Information();
+	/// ===HitReactionComponentの情報表示=== ///
+	hitReactionComponent_->Information();
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -135,6 +139,15 @@ void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 		if (!invincibleInfo_.isInvincible) {
 			// 通常攻撃の時
 			if (player_->GetAttackComponent()->IsAttacking()) {
+
+				// StateをHitReactionStateに変更
+				ChangeState(std::make_unique<BossHitReactionState>());
+
+				// ノックバック方向の計算
+				Vector3 toWeapon = collider->GetTransform().translate - transform_.translate;
+				toWeapon.y = 0.0f; // Y軸は無視
+				toWeapon = -Normalize(toWeapon); // 反転して正規化
+				hitReactionComponent_->OnHit(toWeapon);
 
 				// HPを減少
 				baseInfo_.HP--;
@@ -180,6 +193,19 @@ void BossEnemy::SetComponentConfig() {
 	};
 	// 初期化
 	moveComponent_->Initialize(moveConfig);
+
+	/// ===HitReactionComponentの生成=== ///
+	hitReactionComponent_ = std::make_unique<BossHitReactionComponent>();
+	BossHitReactionComponent::KnockBackConfig hitReactionConfig{
+		.knockBackForce = 1.5f,
+		.slowdownFactor = 0.3f,
+		.slowdownDuration = 0.2f,
+		.alphaDuration = 0.2f,
+		.hitAlpha = 0.6f,
+		.flashSpeed = 10.0f,
+	};
+	// 初期化
+	hitReactionComponent_->Initialize(hitReactionConfig);
 
 	/// ===AttackComponentの生成=== ///
 	//attackManager_ = std::make_unique<BossAttackManager>();

@@ -3,6 +3,9 @@
 // IScene
 #include "Engine/Scene/IScene.h"
 
+// OceanGround
+#include <application/Game/Object/GameGround/GroundOcean.h>
+
 ///=====================================================/// 
 /// セレクトシーン
 ///=====================================================///
@@ -31,5 +34,7 @@ private:/// ===メンバ変数=== ///
 	/// <summary>
 	/// シーン用
 	/// </summary>
+	
+	std::unique_ptr<GroundOcean> oceanGround_;
 };
 

@@ -39,13 +39,12 @@ BossAttackJumpSmashComponent::UpdateResult
 BossAttackJumpSmashComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
 	result.currentPhase = phase_;
-	result.worldPosition = state_.currentPosition;
+	result.velocity = {};
 
 	// 非アクティブフェーズ：位置・姿勢は現在値のまま返す
 	if (phase_ == LeapPhase::Idle || phase_ == LeapPhase::Finished) {
-		result.modelRotation = state_.baseRotation;
-		result.weaponLocalOffset = config_.weaponRestOffset;
-		result.worldPosition = state_.currentPosition;
+		result.rotation = state_.baseRotation;
+		result.weaponPosition = config_.weaponRestOffset;
 		result.isFinished = (phase_ == LeapPhase::Finished);
 		return result;
 	}
@@ -175,11 +174,11 @@ void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
 
 	// 前傾（crouchPitch は負値 → X軸負方向 = 前のめり）
 	const Quaternion crouchRot = MakePitchQuaternion(config_.leapWindUpCrouchPitch * t);
-	result.modelRotation = Multiply(state_.baseRotation, crouchRot);
+	result.rotation = Multiply(state_.baseRotation, crouchRot);
 
 	// 武器・位置は変化なし
-	result.weaponLocalOffset = config_.weaponRestOffset;
-	result.worldPosition = state_.currentPosition;
+	result.weaponPosition = config_.weaponRestOffset;
+	result.velocity = {};
 
 	// フェーズ遷移
 	if (rawT >= 1.0f) {
@@ -216,12 +215,13 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 	const Vector3 horizontalPos = Math::Lerp(state_.startPosition, state_.targetPosition, t);
 	// 垂直：放物線加算
 	const float arcY = CalcParabolaHeight(t);
-	state_.currentPosition = Vector3{
+	const Vector3 nextPosition = Vector3{
 		horizontalPos.x,
 		horizontalPos.y + arcY,
 		horizontalPos.z
 	};
-	result.worldPosition = state_.currentPosition;
+	// --- velocity = 今フレーム位置 - 前フレーム位置 ---
+	result.velocity = nextPosition - state_.currentPosition;
 
 	// --- ピッチ計算 ---
 	float pitchAngle = 0.0f;
@@ -237,16 +237,16 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 		pitchAngle = startAngle + (endAngle - startAngle) * descT;
 	}
 	const Quaternion leapPitch = MakePitchQuaternion(pitchAngle);
-	result.modelRotation = Multiply(state_.baseRotation, leapPitch);
+	result.rotation = Multiply(state_.baseRotation, leapPitch);
 
 	// --- 武器オフセット ---
 	// 上昇中: 定位置 → 飛行中オフセット（振り上げ）
 	// 降下中: 飛行中オフセットを維持
 	if (t <= 0.5f) {
 		const float weaponT = t / 0.5f;
-		result.weaponLocalOffset = Math::Lerp(config_.weaponRestOffset,config_.weaponLeapOffset,weaponT);
+		result.weaponPosition = Math::Lerp(config_.weaponRestOffset,config_.weaponLeapOffset,weaponT);
 	} else {
-		result.weaponLocalOffset = config_.weaponLeapOffset;
+		result.weaponPosition = config_.weaponLeapOffset;
 	}
 
 	// フェーズ遷移：着地（t >= 1.0）で Strike へ
@@ -277,13 +277,13 @@ void BossAttackJumpSmashComponent::UpdateStrike(UpdateResult& result) {
 	const float currentAngle = startAngle + (endAngle - startAngle) * t;
 
 	const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
-	result.modelRotation = Multiply(state_.baseRotation, strikePitch);
+	result.rotation = Multiply(state_.baseRotation, strikePitch);
 
 	// 武器：飛行中（振り上げ）→ 叩きつけ先
-	result.weaponLocalOffset = Math::Lerp(config_.weaponLeapOffset,config_.weaponStrikeOffset,t);
+	result.weaponPosition = Math::Lerp(config_.weaponLeapOffset,config_.weaponStrikeOffset,t);
 
-	// 位置は着地点に固定
-	result.worldPosition = state_.targetPosition;
+	// 着地済みのため移動なし
+	result.velocity = {};
 
 	// フェーズ遷移：Strike → HoldDown または Recovery
 	if (rawT >= 1.0f) {
@@ -309,9 +309,9 @@ void BossAttackJumpSmashComponent::UpdateHoldDown(UpdateResult& result) {
 
 	// 姿勢・武器・位置は Strike 終了時点で固定
 	const Quaternion holdPitch = MakePitchQuaternion(config_.strikeForwardPitch);
-	result.modelRotation = Multiply(state_.baseRotation, holdPitch);
-	result.weaponLocalOffset = config_.weaponStrikeOffset;
-	result.worldPosition = state_.targetPosition;
+	result.rotation = Multiply(state_.baseRotation, holdPitch);
+	result.weaponPosition = config_.weaponStrikeOffset;
+	result.velocity = {};
 
 	// フェーズ遷移
 	if (t >= 1.0f) {
@@ -335,12 +335,12 @@ void BossAttackJumpSmashComponent::UpdateRecovery(UpdateResult& result) {
 	const float currentAngle = config_.strikeForwardPitch * (1.0f - t);
 
 	const Quaternion recoveryPitch = MakePitchQuaternion(currentAngle);
-	result.modelRotation = Multiply(state_.baseRotation, recoveryPitch);
+	result.rotation = Multiply(state_.baseRotation, recoveryPitch);
 
 	// 武器：叩きつけ位置 → 定位置へ戻す
-	result.weaponLocalOffset = Math::Lerp(config_.weaponStrikeOffset,config_.weaponRestOffset,t);
+	result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset,config_.weaponRestOffset,t);
 
-	result.worldPosition = state_.targetPosition;
+	result.velocity = {};
 
 	// フェーズ遷移：Recovery → Finished
 	if (t >= 1.0f) {

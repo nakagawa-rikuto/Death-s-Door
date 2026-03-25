@@ -252,9 +252,9 @@ BossAttackManager::UpdateResult BossAttackManager::UpdateCurrentAttack(
 			.deltaTime = context.deltaTime,
 		};
 		auto r = downswing_->Update(ctx);
-		result.modelRotation = r.modelRotation;
-		result.weaponLocalOffset = r.weaponLocalOffset;
-		result.modelPositionDelta = r.modelPositionDelta;
+		result.modelRotation = r.rotation;
+		result.weaponLocalOffset = r.weaponPosition;
+		result.modelPositionDelta = r.velocity;
 
 		if (r.isFinished) {
 			downswing_->Reset();
@@ -273,9 +273,9 @@ BossAttackManager::UpdateResult BossAttackManager::UpdateCurrentAttack(
 			.deltaTime = context.deltaTime,
 		};
 		auto r = jumpSmash_->Update(ctx);
-		result.modelRotation = r.modelRotation;
-		result.weaponLocalOffset = r.weaponLocalOffset;
-		result.modelPositionDelta = r.worldPosition - context.bossPosition;
+		result.modelRotation = r.rotation;
+		result.weaponLocalOffset = r.weaponPosition;
+		result.modelPositionDelta = r.velocity - context.bossPosition;
 
 		if (r.isFinished) {
 			jumpSmash_->Reset();

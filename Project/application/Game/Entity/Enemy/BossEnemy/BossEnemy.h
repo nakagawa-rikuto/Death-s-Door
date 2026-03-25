@@ -9,6 +9,7 @@
 // Component
 #include "Component/Move/BossMoveComponent.h"
 #include "Component/Attack/BossAttackManager.h"
+#include "Component/HitReaction/BossHitReactionComponent.h"
 
 ///=====================================================/// 
 /// BossEnemy
@@ -89,6 +90,7 @@ public: /// ===Getter=== ///
 	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
 	///BossAttackManager& GetAttackComponent() const { return *attackManager_; }
 	BossAttackThrustComponent& GetThrustComponent() const { return *thrustComponent_; }
+	BossHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; }
 
 	// Infoの取得
 	AttackInfo GetAttackInfo() const { return attackInfo_; }
@@ -107,7 +109,8 @@ private:
 	/// ===Component=== ///
 	std::unique_ptr<BossMoveComponent> moveComponent_;	// 移動コンポーネント
 	//std::unique_ptr<BossAttackManager> attackManager_;	// 攻撃コンポーネント
-	std::unique_ptr<BossAttackThrustComponent> thrustComponent_;				// 突き攻撃コンポーネント
+	std::unique_ptr<BossAttackThrustComponent> thrustComponent_; // 突き攻撃コンポーネント
+	std::unique_ptr<BossHitReactionComponent> hitReactionComponent_; // 被ダメージリアクションコンポーネント
 
 	AttackInfo attackInfo_; // 攻撃のパラメータ
 

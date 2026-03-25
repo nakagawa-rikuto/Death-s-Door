@@ -22,6 +22,7 @@ private:
 
 	/// ===状態の構造体=== ///
 	struct DownwardSwingState {
+		Vector3 currentPositino{}; // 現在のワールド座標
 		float phaseTimer = 0.0f;   // 現フェーズの経過時間
 	};
 
@@ -71,11 +72,11 @@ public:
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Quaternion modelRotation{};   // モデルに適用する回転（基底回転 + ピッチ）
-		Vector3 weaponLocalOffset{}; // ローカル座標系での武器位置オフセット
-		Vector3 modelPositionDelta{}; // 踏み込みによるモデル位置の移動量（ワールドZ方向）
+		Vector3 velocity{};             // ボスに適用する移動速度（ワールド座標系）
+		Quaternion rotation{};             // モデルに適用する回転（基底回転 + ピッチ）
+		Vector3 weaponPosition{};       // ローカル座標系での武器位置オフセット
 		DownwardSwingPhase currentPhase{}; // 現在フェーズ
-		bool isFinished = false;     // 攻撃が完全終了したか
+		bool isFinished = false;           // 攻撃が完全終了したか
 	};
 
 public:

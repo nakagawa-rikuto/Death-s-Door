@@ -66,16 +66,17 @@ public:
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
-		float deltaTime = 0.0f;  // デルタタイム
+		Vector3 currentPosition{};  // Bossの現在位置
+		float deltaTime = 0.0f;		// デルタタイム
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Vector3 worldPosition{};     // ボスに適用するワールド座標（毎フレーム上書きして使う）
-		Quaternion modelRotation{};  // モデルに適用する回転（基底回転 + ピッチ）
-		Vector3 weaponLocalOffset{}; // ローカル座標系での武器位置オフセット
+		Vector3 velocity{};          // 今フレームの移動量（呼び出し側が position += velocity で適用する）
+		Quaternion rotation{};       // モデルに適用する回転（基底回転 + ピッチ）
+		Vector3 weaponPosition{};    // ローカル座標系での武器位置オフセット
 		LeapPhase currentPhase{};    // 現在フェーズ
-		bool isFinished = false;	 // 攻撃が完全終了したか
+		bool isFinished = false;     // 攻撃が完全終了したか
 	};
 
 public:
@@ -157,7 +158,6 @@ private:
 
 	/// <summary>
 	/// 放物線の高さを計算する。
-	///   y = 4 * h * t * (1 - t)  （t=0 と t=1 でy=0、t=0.5 で y=h）
 	/// </summary>
 	float CalcParabolaHeight(float t) const;
 
