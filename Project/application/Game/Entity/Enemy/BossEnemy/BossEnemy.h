@@ -2,18 +2,37 @@
 /// ===Include=== ///
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// Weapon
+#include "Weapon/BossWeapon.h"
 // State
 #include "State/Base/BossState.h"
 // Component
 #include "Component/Move/BossMoveComponent.h"
-#include "Component/Attack/BossAttackComponent.h"
-//C++
-#include <random>
+#include "Component/Attack/BossAttackManager.h"
+#include "Component/HitReaction/BossHitReactionComponent.h"
 
 ///=====================================================/// 
 /// BossEnemy
 ///=====================================================///
 class BossEnemy : public BaseEnemy {
+private:
+	/// ===AttackInfo=== ///
+	struct AttackInfo {
+		float thrustTimer = 0.0f; 
+		float downswingTimer = 0.0f;
+		float jumpSmashTimer = 0.0f;
+
+		// 攻撃射程
+		float thrustRange = 4.0f;
+		float downswingRange = 6.0f;
+		float jumpSmashRange = 14.0f;
+
+		// 個別クールダウン（秒）
+		float thrustCooldown = 3.0f;
+		float downswingCooldown = 4.0f;
+		float jumpSmashCooldown = 6.0f;
+	};
+
 public:
 
 	BossEnemy() = default;
@@ -64,29 +83,57 @@ public: /// ===その他関数=== ///
 
 public: /// ===Getter=== ///
 
+	// Weapnの取得
+	BossWeapon& GetWeapon() const { return *weapon_; }
+
 	// Componentの取得
 	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
-	BossAttackComponent& GetAttackComponent() const { return *attackComponent_; }
+
+	BossAttackThrustComponent& GetThrustComponent() const { return *thrustComponent_; }
+	BossAttackDownwardSwingComponent& GetDownswingComponent() const { return *downswingComponent_; }
+	BossAttackJumpSmashComponent& GetJumpSmashComponent() const { return *jumpSmashComponent_; }
+	///BossAttackManager& GetAttackComponent() const { return *attackManager_; }
+
+	BossHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; }
+
+	// Infoの取得
+	AttackInfo GetAttackInfo() const { return attackInfo_; }
 
 public: /// ===Setter=== ///
 
+	void SetThrustTimer(float time) { attackInfo_.thrustTimer = time; }
+	void SetDownSwingTimer(float time) { attackInfo_.downswingTimer = time; }
+	void SetJumpSmashTimer(float time) { attackInfo_.jumpSmashTimer = time; }
+
 private:
-	/// ===ポインタ=== ///
-	MiiEngine::CameraCommon* camera_ = nullptr; // カメラ
-	Player* player_ = nullptr;	   // プレイヤー
+	/// ===Weapon=== ///
+	std::unique_ptr<BossWeapon> weapon_; // 武器
 
 	/// ===State=== ///
 	std::unique_ptr<BossState> currentState_; // 現在のState
 
 	/// ===Component=== ///
-	std::unique_ptr<BossMoveComponent> moveComponent_;		// 移動コンポーネント
-	std::unique_ptr<BossAttackComponent> attackComponent_;	// 攻撃コンポーネント
+	std::unique_ptr<BossMoveComponent> moveComponent_;	// 移動コンポーネント
+
+	std::unique_ptr<BossAttackThrustComponent> thrustComponent_; // 突き攻撃コンポーネント
+	std::unique_ptr<BossAttackDownwardSwingComponent> downswingComponent_; // 振り下ろし攻撃コンポーネント
+	std::unique_ptr<BossAttackJumpSmashComponent> jumpSmashComponent_; // ジャンプ叩きつけ攻撃コンポーネント
+	//std::unique_ptr<BossAttackManager> attackManager_;	// 攻撃コンポーネント
+
+	std::unique_ptr<BossHitReactionComponent> hitReactionComponent_; // 被ダメージリアクションコンポーネント
+
+	AttackInfo attackInfo_; // 攻撃のパラメータ
 
 	/// ===Particle=== ///
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
 	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 
 private:
+
+	/// <summary>
+	/// コンポーネントのパラメータの設定
+	/// </summary>
+	void SetComponentConfig();
 
 	/// <summary>
 	/// タイマーを進める

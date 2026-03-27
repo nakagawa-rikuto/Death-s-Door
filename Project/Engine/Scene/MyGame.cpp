@@ -179,12 +179,9 @@ namespace MiiEngine {
 		Loader::LoadModel("Boss", "Entity/Enemy/Boss/BossEnemy.gltf");						// ボス
 
 		/// ===Object=== ///
-		Loader::LoadModel("Ground", "Object/Ground/Ground.gltf");						// 地面
-		Loader::LoadModel("Ground2", "Object/Ground/Ground2.gltf");						// 地面
-		Loader::LoadModel("Bridge", "Object/Bridge/Bridge.gltf");						// 橋
-		Loader::LoadModel("Bridge2", "Object/Bridge/Bridge2.gltf");						// 橋
-		Loader::LoadModel("Stone", "Object/Object/Stone/Stone.gltf");					// 石
-		Loader::LoadModel("BossStageWall", "Object/Object/Wall/BossStageWall.gltf");	// 壁
+		Loader::LoadModel("Ground", "Object/Ground/Ground2.gltf");
+		Loader::LoadModel("Ground2", "Object/Ground/Ground.gltf");
+		Loader::LoadModel("Object", "Object/Object/Wall/BossStageWall.gltf");
 	}
 
 	///-------------------------------------------/// 
@@ -201,9 +198,6 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void MyGame::LoadJson() {
 		/// ===Game=== ///
-		Loader::LoadLevelJson("Level/StageData2.json");
-		Loader::LoadLevelJson("Level/EntityData2.json");
-		Loader::LoadLevelJson("Level/Wave1.json");
-		Loader::LoadLevelJson("Level/Wave2.json");
+		Loader::LoadLevelJson("Level/BossStage.json");
 	}
 } 

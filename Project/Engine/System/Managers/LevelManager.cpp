@@ -106,7 +106,7 @@ namespace MiiEngine {
                 // 平行移動
                 objectData.translation.x = (float)transform["translation"][0];
                 objectData.translation.y = (float)transform["translation"][2];
-                objectData.translation.z = -(float)transform["translation"][1];
+                objectData.translation.z = (float)transform["translation"][1];
                 // 回転角
                 objectData.rotation.x = -(float)transform["rotation"][0];
                 objectData.rotation.y = -(float)transform["rotation"][2];

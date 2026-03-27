@@ -3,6 +3,8 @@
 #include "application/Scene/Game/GameScene.h"
 // Service
 #include "Service/Camera.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
 // State
 #include "GameSceneExitState.h"
 
@@ -33,15 +35,21 @@ void GameSceneGameOverAnimationState::Update() {
 	gameOverAnimation_->Update();
 
 	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->UpdateAnimation();
+	gameScene_->GetEnemy()->UpdateAnimation();
 	// Playerの更新
 	gameScene_->GetPlayer()->Update();
 
 	// アニメーション完了を確認
-	if (gameOverAnimation_->IsCompleted()) {
-		//NOTE:ゲームオーバーの場合はタイトルに戻るため、Exitではなくタイトルシーンへ変更する処理を追加する予定
-		// Exit状態に変更
-		gameScene_->ChangState(std::make_unique<GameSceneExitState>());
+	if (gameOverAnimation_->IsCompleted() && !isTransitionStarted_) {
+		// シーンマネージャーでフェードインを開始
+		sceneManager_->StartFadeOut(TransitionType::BlackOut, 1.0f);
+		isTransitionStarted_ = true;
+	}
+
+	/// ===シーンの切り替え=== ///
+	if (isTransitionStarted_ && sceneManager_->GetTransitionFinished()) {
+		// タイトルへ遷移
+		sceneManager_->ChangeScene(MiiEngine::SceneType::Title);
 	}
 }
 

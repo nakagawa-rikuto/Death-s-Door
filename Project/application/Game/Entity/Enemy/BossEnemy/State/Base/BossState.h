@@ -1,6 +1,6 @@
 #pragma once
 /// ===前方宣言=== ///
-class Boss;
+class BossEnemy;
 
 ///=====================================================/// 
 /// ボスのベースステート
@@ -15,7 +15,7 @@ public:
 	/// ステートに入った時に呼ばれる処理、純粋仮想関数
 	/// </summary>
 	/// <param name="boss">Bossのポインター</param>
-	virtual void Enter(Boss* boss) = 0;
+	virtual void Enter(BossEnemy* boss) = 0;
 
 	/// <summary>
 	/// 更新処理、純粋仮想関数
@@ -29,6 +29,6 @@ public:
 
 protected:
 	// Bossのポインター
-	Boss* boss_ = nullptr;
+	BossEnemy* boss_ = nullptr;
 };
 

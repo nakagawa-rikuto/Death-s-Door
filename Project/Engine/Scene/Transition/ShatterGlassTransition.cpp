@@ -24,6 +24,15 @@ namespace MiiEngine {
 		// エフェクトタイプの設定
 		Service::PostEffect::SetOffScreenType(OffScreenType::ShatterGlass);
 
+		if (!sprite_) {
+			sprite_ = std::make_unique<Object2d>();
+			sprite_->Initialize("ShatterGlass");
+			sprite_->SetAnchorPoint({ 0.5f, 0.5f });
+			sprite_->SetPosition({ static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f });
+			sprite_->SetSize({ 2000.0f, 2000.0f });
+			sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+		}
+
 		// デフォルトパラメータの設定
 		data_.progress = 0.0f;
 		data_.impactX = 0.5f;
@@ -53,7 +62,7 @@ namespace MiiEngine {
 		sprite_->SetAnchorPoint({ 0.5f, 0.5f });
 		sprite_->SetPosition({static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f});
 		sprite_->SetSize({0.0f, 0.0f});
-		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 透明で初期化
+		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); 
 
 		// フェードイン開始
 		SceneTransitionBase::StartFadeOut(duration);

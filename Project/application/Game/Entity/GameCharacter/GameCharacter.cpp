@@ -59,7 +59,7 @@ void GameCharacter<TCollider>::Initialize() {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::PreUpdate() {
 	/// ===死亡処理=== ///
-	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -50.0f) {
+	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -10.0f) {
 		baseInfo_.isDead = true;
 	}
 

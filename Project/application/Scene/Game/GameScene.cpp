@@ -43,7 +43,7 @@ GameScene::~GameScene() {
 	// Particle
 	Service::Particle::RemoveAllParticles();
 	// Enemy
-	enemyManager_.reset();
+	enemy_.reset();
 	// Player
 	player_.reset();
 	// Ground
@@ -67,17 +67,17 @@ void GameScene::Initialize() {
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
+	stage_->Initialize("Level/BossStage.json");
 
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
+	Vector3 translation = { 0.0f, 5.0f, -30.0f };
+	player_->InitGame(translation, camera_.get());
 
 	/// ===EnemyManagerの生成=== ///
-	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->SetPlayer(player_.get());
-
-	/// ===SponEntity=== ///
-	SpawnEntity("Level/EntityData2.json");
+	enemy_ = std::make_unique<BossEnemy>();
+	enemy_->InitGameScene({ 0.0f, 5.0f, 30.0f });
+	enemy_->SetPlayer(player_.get());
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -117,12 +117,16 @@ void GameScene::Update() {
 	// Player
 	player_->Information();
 	// Enemy
-	enemyManager_->UpdateImGui();
+	enemy_->Information();
 
 #endif // USE_IMGUI
 
 	/// ===Groundの更新=== ///
 	stage_->Update();
+
+	/// ===EntityのPreUpdate=== ///
+	player_->PreUpdate(); // Playerの更新前処理
+	enemy_->PreUpdate();  // Enemyの更新前処理
 
 	/// ===Stateの管理=== ///
 	if (currentState_) {
@@ -139,7 +143,7 @@ void GameScene::Draw() {
 	stage_->Draw();
 
 	/// ===Enemy=== ///
-	enemyManager_->Draw();
+	enemy_->Draw();
 
 	/// ===Player=== ///
 	player_->Draw();
@@ -170,38 +174,18 @@ void GameScene::ChangState(std::unique_ptr<GameSceneFadeState> newState) {
 }
 
 ///-------------------------------------------/// 
-/// 配置関数
-///-------------------------------------------///
-void GameScene::SpawnEntity(const std::string& json_name) {
-	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
-
-	// オブジェクト分回す
-	for (const auto& obj : levelData->objects) {
-
-		/// ===クラス名で分岐=== ///
-		switch (obj.classType) {
-		case LevelData::ClassTypeLevel::Player:
-			// 初期化と座標設定
-			player_->InitGame(obj.translation, camera_.get());
-			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			break;
-		}
-	}
-}
-
-///-------------------------------------------/// 
 /// カメラの初期設定
 ///-------------------------------------------///
 void GameScene::SetUpCamera() {
 	/// ===カメラの初期設定=== ///
 	// カメラの座標設定
-	camera_->SetTranslate({ 0.0f, 5.0f, 15.0f });
+	camera_->SetTranslate({ 0.0f, 5.0f, -20.0f });
 	// カメラの回転設定
 	camera_->SetRotate({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// カメラの追従設定
 	camera_->SetFollowCamera(MiiEngine::FollowCameraType::TopDown);
 	// 追従オフセット設定
-	camera_->SetOffset({ 0.0f, 70.0f, -60.0f });
+	camera_->SetOffset({ 0.0f, 100.0f, -90.0f });
 	// 追従速度設定
 	camera_->SetFollowSpeed(0.1f);
 }

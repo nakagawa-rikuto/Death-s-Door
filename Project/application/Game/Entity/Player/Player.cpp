@@ -73,7 +73,7 @@ void Player::Initialize() {
 	// コライダーに追加
 	Service::Collision::AddCollider(this);
 	// OBBの設定
-	SetHalfSize({ 2.0f, 2.0f, 2.5f });
+	SetHalfSize({ 2.0f, 2.5f, 2.0f });
 }
 
 
@@ -81,8 +81,6 @@ void Player::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void Player::Update() {
-	/// ===GameCharacterの更新前=== ///
-	GameCharacter::PreUpdate();
 
 	// 早期リターン
 	if (baseInfo_.isDead) {
@@ -174,7 +172,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 	GameCharacter::OnCollision(collider);
 
 	// Colliderによって処理を変更
-	if (collider->GetColliderName() == MiiEngine::ColliderName::Enemy || collider->GetColliderName() == MiiEngine::ColliderName::EnemyBullet) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::EnemyWeapon || collider->GetColliderName() == MiiEngine::ColliderName::EnemyBullet) {
 
 		// 無敵状態でなければダメージを受ける
 		if (!invincibleInfo_.isFlag) {

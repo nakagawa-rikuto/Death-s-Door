@@ -15,7 +15,6 @@
 /// デストラクタ
 ///-------------------------------------------///
 GameSceneInGameState::~GameSceneInGameState() {
-	mobPhase_.reset();
 	optionUI_.reset();
 	ui_.reset();
 }
@@ -26,10 +25,6 @@ GameSceneInGameState::~GameSceneInGameState() {
 void GameSceneInGameState::Enter(GameScene* gameScene) {
 	// ゲームシーンのポインタを保存
 	gameScene_ = gameScene;
-
-	/// ===Phase=== ///
-	mobPhase_ = std::make_unique<MobPhase>();
-	mobPhase_->Initialize(gameScene_->GetEnemyManager());
 
 	/// ===GameSceneUI=== ///
 	ui_ = std::make_unique<GameSceneUI>();
@@ -64,9 +59,8 @@ void GameSceneInGameState::Update() {
 
 	/// ===Gameの更新処理=== ///
 	if (!isOptionActive_) {
-		mobPhase_->Update();
 		// EnemyManagerの更新
-		gameScene_->GetEnemyManager()->Update();
+		gameScene_->GetEnemy()->Update();
 		// Playerの更新
 		gameScene_->GetPlayer()->Update();
 		// GameSceneUIの更新
@@ -78,7 +72,7 @@ void GameSceneInGameState::Update() {
 	if (gameScene_->GetPlayer()->GetIsDead()) {
 		// ゲームオーバーアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
-	} else if (mobPhase_->IsCleared()) {
+	} else if (gameScene_->GetEnemy()->GetIsDead()) {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameClearState>());
 	} else if (optionUI_->GetReturnToTitle()) {

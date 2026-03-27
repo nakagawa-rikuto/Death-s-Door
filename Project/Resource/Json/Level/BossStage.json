@@ -1,0 +1,349 @@
+{
+    "name": "scene",
+    "objects": [
+        {
+            "type": "MESH",
+            "name": "平面",
+            "transform": {
+                "translation": [
+                    0.0,
+                    0.0,
+                    -2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    400.0,
+                    400.0,
+                    1.0
+                ]
+            },
+            "class_name": "Ground",
+            "file_name": "Ocean"
+        },
+        {
+            "type": "MESH",
+            "name": "BossStageWall1",
+            "transform": {
+                "translation": [
+                    274.4169921875,
+                    446.34405517578125,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "BossStageWall1.001",
+            "transform": {
+                "translation": [
+                    0.0,
+                    500.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object"
+        },
+        {
+            "type": "MESH",
+            "name": "BossStageWall1.002",
+            "transform": {
+                "translation": [
+                    -500.0,
+                    200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    -90.00000762939453
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object"
+        },
+        {
+            "type": "MESH",
+            "name": "BossStageWall1.003",
+            "transform": {
+                "translation": [
+                    500.0,
+                    200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    90.00000762939453
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object"
+        },
+        {
+            "type": "MESH",
+            "name": "BossStageWall1.004",
+            "transform": {
+                "translation": [
+                    -278.91412353515625,
+                    446.34405517578125,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Ground2.001",
+            "transform": {
+                "translation": [
+                    0.0,
+                    0.0,
+                    -1.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Ground",
+            "file_name": "Ground",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    99.0,
+                    96.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Ground2.006",
+            "transform": {
+                "translation": [
+                    75.0,
+                    0.0,
+                    -1.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    45.0
+                ],
+                "scaling": [
+                    0.9999999403953552,
+                    0.9999999403953552,
+                    1.0
+                ]
+            },
+            "class_name": "Ground",
+            "file_name": "Ground2",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    20.0,
+                    19.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Ground2.002",
+            "transform": {
+                "translation": [
+                    -75.0,
+                    0.0,
+                    -1.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    45.0
+                ],
+                "scaling": [
+                    0.9999999403953552,
+                    0.9999999403953552,
+                    1.0
+                ]
+            },
+            "class_name": "Ground",
+            "file_name": "Ground2",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    20.0,
+                    19.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Ground2.003",
+            "transform": {
+                "translation": [
+                    0.0,
+                    75.0,
+                    -1.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    45.0
+                ],
+                "scaling": [
+                    0.9999999403953552,
+                    0.9999999403953552,
+                    1.0
+                ]
+            },
+            "class_name": "Ground",
+            "file_name": "Ground2",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    20.0,
+                    19.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Ground2.004",
+            "transform": {
+                "translation": [
+                    0.0,
+                    -75.0,
+                    -1.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    45.0
+                ],
+                "scaling": [
+                    0.9999999403953552,
+                    0.9999999403953552,
+                    1.0
+                ]
+            },
+            "class_name": "Ground",
+            "file_name": "Ground2",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    20.0,
+                    19.0,
+                    2.0
+                ]
+            }
+        }
+    ]
+}

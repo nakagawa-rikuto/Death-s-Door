@@ -21,7 +21,7 @@
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Material.007",
+			"name":"Material.006",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":0
@@ -33,7 +33,7 @@
 	],
 	"meshes":[
 		{
-			"name":"Cube.022",
+			"name":"Cube.006",
 			"primitives":[
 				{
 					"attributes":{
@@ -66,14 +66,14 @@
 			"componentType":5126,
 			"count":24,
 			"max":[
-				62,
-				10,
-				60.000003814697266
+				49.60000228881836,
+				1,
+				48.000003814697266
 			],
 			"min":[
-				-62,
-				-10,
-				-60.000003814697266
+				-49.60000228881836,
+				-1,
+				-48.000003814697266
 			],
 			"type":"VEC3"
 		},

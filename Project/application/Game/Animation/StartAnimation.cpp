@@ -40,7 +40,7 @@ void StartAnimation::Initialize(Player* player, MiiEngine::FollowCamera* camera)
 	// カメラ回転アニメーション情報
 	cameraRotInfo_.cameraStartPos = camera_->GetTranslate();
 	cameraRotInfo_.cameraStartRot = camera_->GetRotate();
-	cameraRotInfo_.cameraEndPos = { 0.0f, 70.0f, -60.0f };
+	cameraRotInfo_.cameraEndPos = { 0.0f, 150.0f, -140.0f };
 	cameraRotInfo_.cameraEndRot = { 0.5f, 0.0f, 0.0f, 1.1f };
 	cameraRotInfo_.rotationDuration = 1.5f;
 	cameraRotInfo_.rotationStartTime = 1.5f;
