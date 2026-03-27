@@ -586,9 +586,6 @@
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\Base\EnemyManager.cpp">
-      <Filter>application\Game\Entity\Enemy\Base</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy</Filter>
     </ClCompile>
@@ -643,7 +640,6 @@
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
-    <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.cpp" />
@@ -656,6 +652,8 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossThrustAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossHitReactionState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossDownwarAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossJumpSmashAttackState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1198,9 +1196,6 @@
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\Base\EnemyManager.h">
-      <Filter>application\Game\Entity\Enemy\Base</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy</Filter>
     </ClInclude>
@@ -1256,7 +1251,6 @@
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
-    <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.h" />
@@ -1269,6 +1263,8 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossThrustAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossHitReactionState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossDownwarAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossJumpSmashAttackState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

@@ -1,4 +1,4 @@
-#include "BossThrustAttackState.h"
+#include "BossDownwarAttackState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
@@ -9,7 +9,7 @@
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Enter(BossEnemy* enemy) {
+void BossDownwarAttackState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
@@ -21,24 +21,28 @@ void BossThrustAttackState::Enter(BossEnemy* enemy) {
 ///-------------------------------------------///  
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Update() {
+void BossDownwarAttackState::Update() {
 	// コンテキストの準備
-	BossAttackThrustComponent::UpdateContext context{
+	BossAttackDownwardSwingComponent::UpdateContext context{
 		.baseRotation = boss_->GetTransform().rotate,
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
-	BossAttackThrustComponent::UpdateResult result = boss_->GetThrustComponent().Update(context);
+	BossAttackDownwardSwingComponent::UpdateResult result = boss_->GetDownswingComponent().Update(context);
 
-	// 結果の反映
-	boss_->SetRotate(result.modelRotation);
+	/// ===結果の反映=== ///
+	// 速度の反映
+	boss_->SetVelocity(result.velocity);
+
+	// 回転の反映
+	boss_->SetRotate(result.rotation);
 
 	// 武器のオフセットを反映
-	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
+	boss_->GetWeapon().SetTranslate(result.weaponPosition);
 
 	if (result.isFinished) {
 		// タイマーリセット
-		boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown); 
+		boss_->SetDownSwingTimer(boss_->GetAttackInfo().thrustCooldown);
 
 		// 武器を無効化
 		boss_->GetWeapon().SetActive(false);
@@ -52,13 +56,13 @@ void BossThrustAttackState::Update() {
 ///-------------------------------------------/// 
 /// 終了時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Finalize() {
+void BossDownwarAttackState::Finalize() {
 	BossState::Finalize();
 }
 
 ///-------------------------------------------/// 
 /// プレイヤーとボスの距離を計算して返す。
 ///-------------------------------------------///
-float BossThrustAttackState::CalcDistToPlayer() const {
+float BossDownwarAttackState::CalcDistToPlayer() const {
 	return 0.0f;
 }
