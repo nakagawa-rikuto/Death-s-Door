@@ -382,25 +382,51 @@
 └── └── └── └── ├── Enemy/
 └── └── └── └── └── ├── Base/
 └── └── └── └── └── └── ├── BaseEnemy.cpp
-└── └── └── └── └── └── ├── BaseEnemy.h
-└── └── └── └── └── └── ├── EnemyManager.cpp
-└── └── └── └── └── └── └── EnemyManager.h
+└── └── └── └── └── └── └── BaseEnemy.h
 └── └── └── └── └── ├── BossEnemy/
 └── └── └── └── └── └── ├── BossEnemy.cpp
 └── └── └── └── └── └── ├── BossEnemy.h
 └── └── └── └── └── └── ├── Component/
 └── └── └── └── └── └── └── ├── Attack/
-└── └── └── └── └── └── └── └── ├── BossAttackComponent.cpp
-└── └── └── └── └── └── └── └── └── BossAttackComponent.h
+└── └── └── └── └── └── └── └── ├── BossAttackManager.cpp
+└── └── └── └── └── └── └── └── ├── BossAttackManager.h
+└── └── └── └── └── └── └── └── ├── CloseAttack/
+└── └── └── └── └── └── └── └── └── ├── BossAttackDownwardSwingComponent.cpp
+└── └── └── └── └── └── └── └── └── ├── BossAttackDownwardSwingComponent.h
+└── └── └── └── └── └── └── └── └── ├── BossAttackJumpSmashComponent.cpp
+└── └── └── └── └── └── └── └── └── ├── BossAttackJumpSmashComponent.h
+└── └── └── └── └── └── └── └── └── ├── BossAttackThrustComponent.cpp
+└── └── └── └── └── └── └── └── └── └── BossAttackThrustComponent.h
+└── └── └── └── └── └── └── └── └── LongAttack/
+└── └── └── └── └── └── └── └──     ├── BossAttackOrbitingOrbsComponent.cpp
+└── └── └── └── └── └── └── └──     ├── BossAttackOrbitingOrbsComponent.h
+└── └── └── └── └── └── └── └──     ├── BossAttackShot.cpp
+└── └── └── └── └── └── └── └──     └── BossAttackShot.h
+└── └── └── └── └── └── └── ├── HitReaction/
+└── └── └── └── └── └── └── └── ├── BossHitReactionComponent.cpp
+└── └── └── └── └── └── └── └── └── BossHitReactionComponent.h
 └── └── └── └── └── └── └── └── Move/
 └── └── └── └── └── └── └──     ├── BossMoveComponent.cpp
 └── └── └── └── └── └── └──     └── BossMoveComponent.h
-└── └── └── └── └── └── └── State/
-└── └── └── └── └── └──     ├── Base/
-└── └── └── └── └── └──     └── ├── BossState.cpp
-└── └── └── └── └── └──     └── └── BossState.h
-└── └── └── └── └── └──     ├── MoveBossState.cpp
-└── └── └── └── └── └──     └── MoveBossState.h
+└── └── └── └── └── └── ├── State/
+└── └── └── └── └── └── └── ├── Base/
+└── └── └── └── └── └── └── └── ├── BossState.cpp
+└── └── └── └── └── └── └── └── └── BossState.h
+└── └── └── └── └── └── └── ├── BossAttackState.cpp
+└── └── └── └── └── └── └── ├── BossAttackState.h
+└── └── └── └── └── └── └── ├── BossDownwarAttackState.cpp
+└── └── └── └── └── └── └── ├── BossDownwarAttackState.h
+└── └── └── └── └── └── └── ├── BossHitReactionState.cpp
+└── └── └── └── └── └── └── ├── BossHitReactionState.h
+└── └── └── └── └── └── └── ├── BossJumpSmashAttackState.cpp
+└── └── └── └── └── └── └── ├── BossJumpSmashAttackState.h
+└── └── └── └── └── └── └── ├── BossThrustAttackState.cpp
+└── └── └── └── └── └── └── ├── BossThrustAttackState.h
+└── └── └── └── └── └── └── ├── MoveBossState.cpp
+└── └── └── └── └── └── └── └── MoveBossState.h
+└── └── └── └── └── └── └── Weapon/
+└── └── └── └── └── └──     ├── BossWeapon.cpp
+└── └── └── └── └── └──     └── BossWeapon.h
 └── └── └── └── └── └── MobEnemy/
 └── └── └── └── └──     ├── Base/
 └── └── └── └── └──     └── ├── MobEnemy.cpp
@@ -482,10 +508,6 @@
 └── └── └── └── └── StageObject/
 └── └── └── └──     ├── StageObject.cpp
 └── └── └── └──     └── StageObject.h
-└── └── └── ├── Phase/
-└── └── └── └── └── Mob/
-└── └── └── └──     ├── MobPhase.cpp
-└── └── └── └──     └── MobPhase.h
 └── └── └── └── UI/
 └── └── └──     ├── Game/
 └── └── └──     └── ├── PlayerUI.cpp
@@ -4848,6 +4870,7 @@ namespace MiiEngine {
         PlayerBullet, // プレイヤーの弾
         PlayerWeapon, // プレイヤーの武器
         EnemyBullet,  // 敵の弾
+		EnemyWeapon,  // 敵の武器
         Object,      // 壁
         Ground,     // 床
         Ceiling,   // 天井
@@ -19650,12 +19673,9 @@ namespace MiiEngine {
 		Loader::LoadModel("Boss", "Entity/Enemy/Boss/BossEnemy.gltf");						// ボス
 
 		/// ===Object=== ///
-		Loader::LoadModel("Ground", "Object/Ground/Ground.gltf");						// 地面
-		Loader::LoadModel("Ground2", "Object/Ground/Ground2.gltf");						// 地面
-		Loader::LoadModel("Bridge", "Object/Bridge/Bridge.gltf");						// 橋
-		Loader::LoadModel("Bridge2", "Object/Bridge/Bridge2.gltf");						// 橋
-		Loader::LoadModel("Stone", "Object/Object/Stone/Stone.gltf");					// 石
-		Loader::LoadModel("BossStageWall", "Object/Object/Wall/BossStageWall.gltf");	// 壁
+		Loader::LoadModel("Ground", "Object/Ground/Ground2.gltf");
+		Loader::LoadModel("Ground2", "Object/Ground/Ground.gltf");
+		Loader::LoadModel("Object", "Object/Object/Wall/BossStageWall.gltf");
 	}
 
 	///-------------------------------------------/// 
@@ -19672,10 +19692,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void MyGame::LoadJson() {
 		/// ===Game=== ///
-		Loader::LoadLevelJson("Level/StageData2.json");
-		Loader::LoadLevelJson("Level/EntityData2.json");
-		Loader::LoadLevelJson("Level/Wave1.json");
-		Loader::LoadLevelJson("Level/Wave2.json");
+		Loader::LoadLevelJson("Level/BossStage.json");
 	}
 } 
 
@@ -20417,6 +20434,15 @@ namespace MiiEngine {
 		// エフェクトタイプの設定
 		Service::PostEffect::SetOffScreenType(OffScreenType::ShatterGlass);
 
+		if (!sprite_) {
+			sprite_ = std::make_unique<Object2d>();
+			sprite_->Initialize("ShatterGlass");
+			sprite_->SetAnchorPoint({ 0.5f, 0.5f });
+			sprite_->SetPosition({ static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f });
+			sprite_->SetSize({ 2000.0f, 2000.0f });
+			sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+		}
+
 		// デフォルトパラメータの設定
 		data_.progress = 0.0f;
 		data_.impactX = 0.5f;
@@ -20446,7 +20472,7 @@ namespace MiiEngine {
 		sprite_->SetAnchorPoint({ 0.5f, 0.5f });
 		sprite_->SetPosition({static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()) / 2.0f, static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight()) / 2.0f});
 		sprite_->SetSize({0.0f, 0.0f});
-		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); // 透明で初期化
+		sprite_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f }); 
 
 		// フェードイン開始
 		SceneTransitionBase::StartFadeOut(duration);
@@ -25050,7 +25076,7 @@ namespace MiiEngine {
                 // 平行移動
                 objectData.translation.x = (float)transform["translation"][0];
                 objectData.translation.y = (float)transform["translation"][2];
-                objectData.translation.z = -(float)transform["translation"][1];
+                objectData.translation.z = (float)transform["translation"][1];
                 // 回転角
                 objectData.rotation.x = -(float)transform["rotation"][0];
                 objectData.rotation.y = -(float)transform["rotation"][2];
@@ -27640,7 +27666,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\Base\EnemyManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyPrePareAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\Game\GameScene.cpp" />
@@ -27651,9 +27676,21 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossThrustAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossHitReactionState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossDownwarAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossJumpSmashAttackState.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp" />
@@ -27663,7 +27700,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
-    <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -27829,9 +27865,21 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h" />
     <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossThrustAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossHitReactionState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossDownwarAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossJumpSmashAttackState.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
@@ -27840,7 +27888,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\Base\EnemyManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyPrePareAttackState.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.h" />
@@ -27856,7 +27903,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
-    <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -28854,9 +28900,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\Base\EnemyManager.cpp">
-      <Filter>application\Game\Entity\Enemy\Base</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy</Filter>
     </ClCompile>
@@ -28869,7 +28912,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp">
@@ -28911,9 +28954,20 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
-    <ClCompile Include="application\Game\Phase\Mob\MobPhase.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossThrustAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossHitReactionState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossDownwarAttackState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\BossJumpSmashAttackState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -29456,9 +29510,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\Base\EnemyManager.h">
-      <Filter>application\Game\Entity\Enemy\Base</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy</Filter>
     </ClInclude>
@@ -29471,7 +29522,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponent.h">
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h">
@@ -29514,9 +29565,20 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
-    <ClInclude Include="application\Game\Phase\Mob\MobPhase.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossThrustAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossHitReactionState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossDownwarAttackState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\BossJumpSmashAttackState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -35729,7 +35791,7 @@ void StartAnimation::Initialize(Player* player, MiiEngine::FollowCamera* camera)
 	// カメラ回転アニメーション情報
 	cameraRotInfo_.cameraStartPos = camera_->GetTranslate();
 	cameraRotInfo_.cameraStartRot = camera_->GetRotate();
-	cameraRotInfo_.cameraEndPos = { 0.0f, 70.0f, -60.0f };
+	cameraRotInfo_.cameraEndPos = { 0.0f, 150.0f, -140.0f };
 	cameraRotInfo_.cameraEndRot = { 0.5f, 0.0f, 0.0f, 1.1f };
 	cameraRotInfo_.rotationDuration = 1.5f;
 	cameraRotInfo_.rotationStartTime = 1.5f;
@@ -37909,331 +37971,6 @@ private:
 
 
 ============================================================
-File Path: Project/application/Game/Entity/Enemy/Base/EnemyManager.cpp
-============================================================
-#include "EnemyManager.h"
-#include "application/Game/Entity/Enemy/MobEnemy/CloseRange/CloseRangeEnemy.h"
-#include "application/Game/Entity/Enemy/MobEnemy/LongRange/LongRangeEnemy.h"
-#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
-// c++
-#include <algorithm> 
-// ImGui
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif // USE_IMGUI
-
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-EnemyManager::~EnemyManager() {
-	player_ = nullptr;
-	enemies_.clear();
-}
-
-///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void EnemyManager::SetPlayer(Player* player) {
-	player_ = player;
-}
-
-///-------------------------------------------/// 
-/// 生成
-///-------------------------------------------///
-BaseEnemy* EnemyManager::Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot) {
-	std::unique_ptr<BaseEnemy> enemy; // 最終的に enemies_ へ move する器
-
-	switch (type) {
-	case EnemyType::CloseRange: {
-		auto e = std::make_unique<CloseRangeEnemy>();
-		// 初期化
-		e->InitGameScene(pos);		// 出現位置を渡してゲームシーン用初期化
-		e->SetRotate(rot);			// 回転を設定
-		enemy = std::move(e);		// 所有権移動
-		break;
-	}
-	case EnemyType::LongRange: {
-		auto e = std::make_unique<LongRangeEnemy>();
-		// 初期化
-		e->InitGameScene(pos);
-		e->SetRotate(rot); 
-		enemy = std::move(e);
-		break;
-	}
-	case EnemyType::Boss: {
-		auto e = std::make_unique<BossEnemy>();
-		// 初期化
-		e->InitGameScene(pos);
-		e->SetRotate(rot); 
-		enemy = std::move(e);
-		break;
-	}
-	default:
-		return nullptr; // 未知の enum なら生成しない
-	}
-
-
-	BaseEnemy* raw = enemy.get(); // 呼び出し側が直後に触れるように生ポインタを保持
-	enemy->SetPlayer(player_); // Player をセット
-	enemies_.push_back(std::move(enemy));
-	return raw;
-}
-
-///-------------------------------------------/// 
-/// 更新
-///-------------------------------------------///
-void EnemyManager::Update() {
-	for (auto& e : enemies_) {
-		if (e) {
-			e->PreUpdate();
-			e->Update();
-		}
-	}
-
-	// 死亡した敵を削除
-	auto it = std::remove_if(enemies_.begin(), enemies_.end(),
-		[](const std::unique_ptr<BaseEnemy>& e) {
-			return !e || e->GetIsTentativeDeath();
-		});
-	enemies_.erase(it, enemies_.end());
-}
-
-///-------------------------------------------/// 
-/// アニメーション時の更新処理
-///-------------------------------------------///
-void EnemyManager::UpdateAnimation() {
-	for (auto& e : enemies_) {
-		if (e) {
-			e->PreUpdate();
-			e->UpdateAnimation();
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// 描画
-///-------------------------------------------///
-void EnemyManager::Draw(MiiEngine::BlendMode mode) {
-	for (auto& e : enemies_) {
-		if (e) e->Draw(mode);
-	}
-}
-
-///-------------------------------------------/// 
-/// ImGui
-///-------------------------------------------///
-void EnemyManager::UpdateImGui() {
-#ifdef USE_IMGUI
-
-	// EnemyMangerのウィンドウ(ウィンドウを閉じた時に中身を書かないようにするため)
-	if (ImGui::Begin("EnemyManager")) {
-
-		// ===== 統計情報 ===== //
-		int closeCount = GetEnemyCount(EnemyType::CloseRange);
-		int longCount = GetEnemyCount(EnemyType::LongRange);
-		int bossCount = GetEnemyCount(EnemyType::Boss);
-		int totalCount = GetTotalEnemyCount();
-
-		ImGui::Text("Enemy Statistics:");
-		ImGui::Text("  CloseRange: %d", closeCount);
-		ImGui::Text("  LongRange : %d", longCount);
-		ImGui::Text("  Boss      : %d", bossCount);
-		ImGui::Text("  Total     : %d", totalCount);
-		ImGui::Separator();
-
-		// ===== CloseRangeEnemy の調整 ===== //
-		BaseEnemy* closeRep = GetRepresentative(EnemyType::CloseRange);
-		if (closeRep) {
-			ImGui::Text("CloseRange Enemy Settings:");
-			closeRep->Information(); // 代表1体のImGuiを表示
-		} else {
-			ImGui::TextDisabled("No CloseRange enemies exist.");
-		}
-
-		ImGui::Separator();
-
-		// ===== LongRangeEnemy の調整 ===== //
-		BaseEnemy* longRep = GetRepresentative(EnemyType::LongRange);
-		if (longRep) {
-			ImGui::Text("LongRange Enemy Settings:");
-			longRep->Information(); // 代表1体のImGuiを表示
-		} else {
-			ImGui::TextDisabled("No LongRange enemies exist.");
-		}
-
-		ImGui::Separator();
-
-		// ===== 全体操作 ===== //
-		ImGui::Text("Bulk Operations:");
-		if (ImGui::Button("Clear All Enemies")) {
-			Clear();
-		}
-	}
-	ImGui::End();
-#endif // USE_IMGUI
-}
-
-///-------------------------------------------/// 
-/// クリア
-///-------------------------------------------///
-void EnemyManager::Clear() {
-	enemies_.clear(); // unique_ptr 破棄で各Enemyのデストラクトへ
-}
-
-///-------------------------------------------/// 
-/// 指定タイプの敵数を取得
-///-------------------------------------------///
-int EnemyManager::GetEnemyCount(EnemyType type) const {
-	int count = 0;
-	for (const auto& e : enemies_) {
-		if (!e) continue;
-
-		if (GetEnemyType(e.get()) == type) {
-			count++;
-		}
-	}
-	return count;
-}
-
-///-------------------------------------------/// 
-/// 全敵数を取得
-///-------------------------------------------///
-int EnemyManager::GetTotalEnemyCount() const {
-	int count = 0;
-	for (const auto& e : enemies_) {
-		if (e) count++;
-	}
-	return count;
-}
-
-///-------------------------------------------/// 
-/// タイプ判定
-///-------------------------------------------///
-EnemyType EnemyManager::GetEnemyType(BaseEnemy* enemy) const {
-	if (dynamic_cast<CloseRangeEnemy*>(enemy)) {
-		return EnemyType::CloseRange;
-	} else if (dynamic_cast<LongRangeEnemy*>(enemy)) {
-		return EnemyType::LongRange;
-	}
-	// デフォルト（本来ここは通らない想定）
-	return EnemyType::CloseRange;
-}
-
-#ifdef USE_IMGUI
-///-------------------------------------------/// 
-/// 指定タイプの代表敵を取得
-///-------------------------------------------///
-BaseEnemy* EnemyManager::GetRepresentative(EnemyType type) {
-	for (auto& e : enemies_) {
-		if (!e) continue;
-
-		if (GetEnemyType(e.get()) == type) {
-			return e.get();
-		}
-	}
-	return nullptr;
-}
-#endif // USE_IMGUI
-
-
-
-============================================================
-File Path: Project/application/Game/Entity/Enemy/Base/EnemyManager.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include "BaseEnemy.h"
-#include <memory>
-#include <vector>
-
-// 前方宣言
-class Player;
-
-/// ===enum=== ///
-enum class EnemyType {
-    CloseRange,
-    LongRange,
-    Boss,
-};
-
-///=====================================================/// 
-/// EnemyManager
-///=====================================================///
-class EnemyManager {
-public:
-    EnemyManager() = default;
-    ~EnemyManager();
-
-    /// <summary>
-    /// プレイヤーを設定
-    /// </summary>
-    /// <param name="player">設定する Player オブジェクトへのポインタ。</param>
-    void SetPlayer(Player* player);
-
-    /// <summary>
-    /// 指定したタイプ・位置・回転で敵を生成します。
-    /// </summary>
-    /// <param name="type">生成する敵の種類。EnemyType 型。</param>
-    /// <param name="pos">生成位置。Vector3 の const リファレンス。</param>
-    /// <param name="rot">生成時の回転。Quaternion の const リファレンス。</param>
-    /// <returns>生成された敵インスタンスへのポインタ (BaseEnemy*)。</returns>
-    BaseEnemy* Spawn(EnemyType type, const Vector3& pos, const Quaternion& rot);
-
-    /// <summary>
-    /// 更新処理
-    /// </summary>
-    void Update();
-
-	/// <summary>
-	/// アニメーション時の更新処理
-	/// </summary>
-	void UpdateAnimation();
-
-    /// <summary>
-    /// 描画処理
-    /// </summary>
-    /// <param name="mode">描画に使用するブレンドモード。省略した場合は BlendMode::KBlendModeNormal が使用されます。</param>
-    void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal);
-
-    /// <summary>
-	/// ImGui情報の表示
-    /// </summary>
-    void UpdateImGui();
-
-    /// <summary>
-    /// オブジェクトの内部状態や保持しているデータをクリア
-    /// </summary>
-    void Clear();
-
-public: /// ===Getter=== ///
-    
-    // 指定タイプの敵数を取得
-    int GetEnemyCount(EnemyType type) const;
-    // 全敵数を取得
-    int GetTotalEnemyCount() const;
-
-private:
-    // Player
-    Player* player_ = nullptr;
-
-	// BaseEnemyの配列
-    std::vector<std::unique_ptr<BaseEnemy>> enemies_;
-
-    // タイプ判定
-    EnemyType GetEnemyType(BaseEnemy* enemy) const;
-
-#ifdef USE_IMGUI
-private:
-    /// <summary>
-    /// 指定した敵タイプに対応する代表的な BaseEnemy インスタンスへのポインタを取得します。
-    /// </summary>
-    /// <param name="type">取得したい敵の種類を表す EnemyType 値。</param>
-    /// <returns>指定したタイプに対応する BaseEnemy へのポインタ。該当する敵が存在しない場合は nullptr を返すことがあります。</returns>
-    BaseEnemy* GetRepresentative(EnemyType type);
-#endif // USE_IMGUI
-};
-
-============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/BossEnemy.cpp
 ============================================================
 #include "BossEnemy.h"
@@ -38241,18 +37978,30 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/BossEnemy.cpp
 #include "application/Game/Entity/Player/Player.h"
 // Service
 #include "Service/Particle.h"
+// State
+#include "State/MoveBossState.h"
+#include "State/BossHitReactionState.h"
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
 
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
 BossEnemy::~BossEnemy() {
-	// 状態を解放
-	//currentState_->Finalize();
-	//currentState_.reset();
-	// Componentの解放
-	//moveComponent_.reset();
-	//attackComponent_.reset();
-	// Object3Dの解放
+	/// ===状態を解放=== ///
+	currentState_->Finalize();
+	currentState_.reset();
+	/// ===Componentの解放=== ///
+	moveComponent_.reset();
+	//attackManager_.reset();
+	thrustComponent_.reset();
+	downswingComponent_.reset();
+	jumpSmashComponent_.reset();
+	hitReactionComponent_.reset();
+	/// ===Object3Dの解放=== ///
+	object3d_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -38265,6 +38014,12 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
+
+	/// ===Componentの設定=== ///
+	SetComponentConfig();
+
+	// Stateの設定
+	ChangeState(std::make_unique<MoveBossState>());
 }
 
 ///-------------------------------------------/// 
@@ -38274,19 +38029,24 @@ void BossEnemy::Initialize() {
 
 	/// ===Object3Dの初期化=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Boss");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "CloseEnemy");
 
 	/// ===BaseEnemyの初期化=== ///
 	BaseEnemy::Initialize();
 
-	// Stateの設定
-	//ChangeState(std::make_unique<EnemyMoveState>());
+	/// ===OBBのサイズを設定=== ///
+	SetHalfSize({ 3.0f, 3.0f, 3.0f });
+
+	/// ===Weapon=== ///
+	weapon_ = std::make_unique<BossWeapon>();
+	weapon_->Initialize();
+	weapon_->SetUpParent(this);
 	
 	// 無敵時間
 	invincibleInfo_.time = 0.5f;
 
 	// HP 
-	baseInfo_.HP = 3;
+	baseInfo_.HP = 100;
 }
 
 ///-------------------------------------------/// 
@@ -38299,11 +38059,15 @@ void BossEnemy::Update() {
 	/// ===Timerの更新=== ///
 	advanceTimer();
 
-	// Stateの更新
-	/*if (currentState_) {
+	/// ===Stateの更新=== ///
+	if (currentState_) {
 		currentState_->Update();
-	}*/
+	}
 
+	/// ==Weaponの更新==== ///
+	weapon_->Update();
+
+	/// ===Animationの更新=== ///
 	UpdateAnimation();
 }
 
@@ -38311,16 +38075,33 @@ void BossEnemy::Update() {
 /// 描画
 ///-------------------------------------------///
 void BossEnemy::Draw(MiiEngine::BlendMode mode) {
+
+	/// ==Weaponの描画==== ///
+	weapon_->Draw(mode);
+
 	/// ===GameCharacterの描画=== ///
-	GameCharacter::Draw(mode);
+	BaseEnemy::Draw(mode);
 }
 
 ///-------------------------------------------/// 
 /// ImGui情報の表示
 ///-------------------------------------------///
 void BossEnemy::Information() {
+#ifdef USE_IMGUI
+	ImGui::Begin("ボスエネミー");
 	/// ===GameCharacterの情報表示=== ///
 	GameCharacter::Information();
+	/// ===MoveConponentの情報表示=== ///
+	moveComponent_->Information();
+	/// ===AttackManagerの情報表示=== ///
+	thrustComponent_->Information();
+	downswingComponent_->Information();
+	jumpSmashComponent_->Information();
+	//attackManager_->Information();
+	/// ===HitReactionComponentの情報表示=== ///
+	hitReactionComponent_->Information();
+	ImGui::End();
+#endif // USE_IMGUI
 }
 
 ///-------------------------------------------/// 
@@ -38328,31 +38109,169 @@ void BossEnemy::Information() {
 ///-------------------------------------------///
 void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 	/// ===GameCharacterの衝突=== ///
-	GameCharacter::OnCollision(collider);
+	BaseEnemy::OnCollision(collider);
 
 	/// ===Playerとの衝突=== ///
 	// Weaponとの当たり判定
-	//if (collider->GetColliderName() == MiiEngine::ColliderName::PlayerWeapon) {
-	//	// クールタイム中でなければノックバック処理を実行
-	//	if (!invincibleInfo_.isInvincible) {
-	//		// 通常攻撃の時
-	//		if (player_->GetAttackComponent()->IsAttacking()) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::PlayerWeapon) {
+		// クールタイム中でなければノックバック処理を実行
+		if (!invincibleInfo_.isInvincible) {
+			// 通常攻撃の時
+			if (player_->GetAttackComponent()->IsAttacking()) {
 
-	//			// HPを減少
-	//			baseInfo_.HP--;
-	//			hitParticle_ = Service::Particle::Emit("Game", transform_.translate);
+				// StateをHitReactionStateに変更
+				ChangeState(std::make_unique<BossHitReactionState>());
 
-	//			// 無敵時間のセット
-	//			SetInvincibleTime();
-	//		}
-	//	}
-	//}
+				// ノックバック方向の計算
+				Vector3 toWeapon = collider->GetTransform().translate - transform_.translate;
+				toWeapon.y = 0.0f; // Y軸は無視
+				toWeapon = -Normalize(toWeapon); // 反転して正規化
+				hitReactionComponent_->OnHit(toWeapon);
+
+				// HPを減少
+				baseInfo_.HP--;
+				hitParticle_ = Service::Particle::Emit("Game", transform_.translate);
+
+				// 無敵時間のセット
+				SetInvincibleTime();
+			}
+		}
+	}
 }
+
+///-------------------------------------------/// 
+/// 状態の変更
+///-------------------------------------------///
+void BossEnemy::ChangeState(std::unique_ptr<BossState> nextState) {
+	if (currentState_) {
+		// 古い状態を解放
+		currentState_->Finalize();
+		currentState_.reset();
+	}
+
+	// 新しい状態をセット
+	currentState_ = std::move(nextState);
+	// 新しい状態を初期化
+	currentState_->Enter(this);
+}
+
+///-------------------------------------------/// 
+/// パラメータの設定
+///-------------------------------------------///
+void BossEnemy::SetComponentConfig() {
+
+	attackInfo_.thrustTimer = 0.0f;
+	attackInfo_.thrustRange = 6.0f;
+	attackInfo_.thrustCooldown = 3.0f;
+
+	attackInfo_.downswingTimer = 0.0f;
+	attackInfo_.downswingRange = 8.0f;
+	attackInfo_.downswingCooldown = 4.0f;
+
+	attackInfo_.jumpSmashTimer = 0.0f;
+	attackInfo_.jumpSmashRange = 14.0f;
+	attackInfo_.jumpSmashCooldown = 6.0f;
+
+	/// ===MoveComponentの生成=== ///
+	moveComponent_ = std::make_unique<BossMoveComponent>();
+	BossMoveComponent::MoveConfig moveConfig{
+		.speed = 0.2f,
+		.rotationSpeed = 8.0f,
+	};
+	// 初期化
+	moveComponent_->Initialize(moveConfig);
+
+	/// ===HitReactionComponentの生成=== ///
+	hitReactionComponent_ = std::make_unique<BossHitReactionComponent>();
+	BossHitReactionComponent::KnockBackConfig hitReactionConfig{
+		.knockBackForce = 1.5f,
+		.slowdownFactor = 0.3f,
+		.slowdownDuration = 0.2f,
+		.alphaDuration = 0.2f,
+		.hitAlpha = 0.6f,
+		.flashSpeed = 10.0f,
+	};
+	// 初期化
+	hitReactionComponent_->Initialize(hitReactionConfig);
+
+	/// ===AttackComponentの生成=== ///
+	//attackManager_ = std::make_unique<BossAttackManager>();
+	thrustComponent_ = std::make_unique<BossAttackThrustComponent>();
+	BossAttackThrustComponent::ThrustConfig thrustConfig{
+		.windUpAngle = 30.0f,
+		.windUpDuration = 0.25f,
+		.strikeAngle = -15.0f,
+		.strikeDuration = 0.12f,
+		.recoveryDuration = 0.5f,
+		.weaponRestOffset = { 0.0f,  0.0f,  4.0f },
+		.weaponWindUpOffset = { 0.0f,  0.0f, 4.0f },
+		.weaponStrikeOffset = { 0.0f,  0.0f, 4.0f },
+	};
+	// 初期化
+	thrustComponent_->Initialize(thrustConfig);
+
+	downswingComponent_ = std::make_unique<BossAttackDownwardSwingComponent>();
+	BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
+		.windUpPitch = 15.0f,
+		.windUpDuration = 0.35f,
+		.strikeForwardPitch = 15.0f,
+		.strikeDuration = 0.1f,
+		.holdDownDuration = 0.08f,
+		.recoveryDuration = 0.4f,
+		.strikeStepForward = 0.5f,
+		.weaponRestOffset = { 0.0f,  0.5f,  0.3f },
+		.weaponWindUpOffset = { 0.0f,  1.4f, -0.4f },
+		.weaponStrikeOffset = { 0.0f, -0.2f,  1.5f },
+	};
+	// 初期化
+	downswingComponent_->Initialize(downswingConfig);
+
+	jumpSmashComponent_ = std::make_unique<BossAttackJumpSmashComponent>();
+	BossAttackJumpSmashComponent::JumpSmashConfig jumpSmashConfig{
+		.leapWindUpCrouchPitch = -10.0f,
+		.leapWindUpDuration = 0.3f,
+		.leapDuration = 0.6f,
+		.leapArcHeight = 4.f,
+		.leapAscentPitch = 20.0f,
+		.leapDescentPitch = 30.0f,
+		.strikeForwardPitch = 25.0f,
+		.strikeDuration = 0.1f,
+		.holdDownDuration = 0.08f,
+		.recoveryDuration = 0.45f,
+		.weaponRestOffset = { 0.0f,  0.5f,  0.3f },
+		.weaponLeapOffset = { 0.0f,  1.5f, -0.5f },
+		.weaponStrikeOffset = { 0.0f, -0.2f,  1.5f },
+	};
+	// 初期化
+	jumpSmashComponent_->Initialize(jumpSmashConfig);
+
+	/*BossAttackManager::Config attackConfig{
+		.thrustRange = 4.0f,
+		.downswingRange = 6.0f,
+		.jumpSmashRange = 14.0f,
+		.thrustCooldown = 3.0f,
+		.downswingCooldown = 4.0f,
+		.jumpSmashCooldown = 6.0f,
+		.thrustConfig = thrustConfig,
+		.downswingConfig = downswingConfig,
+		.jumpSmashConfig = jumpSmashConfig,
+	};*/
+	// 初期化
+	//attackManager_->Initialize(attackConfig);
+}
+
 
 ///-------------------------------------------/// 
 /// 時間を進める
 ///-------------------------------------------///
 void BossEnemy::advanceTimer() {
+
+	// 攻撃のクールタイマーを進める
+	if (attackInfo_.thrustTimer > 0.0f) {
+		attackInfo_.thrustTimer -= baseInfo_.deltaTime;
+	}
+	
+
 	if (baseInfo_.isDead) {
 		// パーティクルの発生
 		deathParticle_ = Service::Particle::Emit("nakagawa", transform_.translate);
@@ -38380,18 +38299,37 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/BossEnemy.h
 /// ===Include=== ///
 // BaseEnemy
 #include "application/Game/Entity/Enemy/Base/BaseEnemy.h"
+// Weapon
+#include "Weapon/BossWeapon.h"
 // State
 #include "State/Base/BossState.h"
 // Component
 #include "Component/Move/BossMoveComponent.h"
-#include "Component/Attack/BossAttackComponent.h"
-//C++
-#include <random>
+#include "Component/Attack/BossAttackManager.h"
+#include "Component/HitReaction/BossHitReactionComponent.h"
 
 ///=====================================================/// 
 /// BossEnemy
 ///=====================================================///
 class BossEnemy : public BaseEnemy {
+private:
+	/// ===AttackInfo=== ///
+	struct AttackInfo {
+		float thrustTimer = 0.0f; 
+		float downswingTimer = 0.0f;
+		float jumpSmashTimer = 0.0f;
+
+		// 攻撃射程
+		float thrustRange = 4.0f;
+		float downswingRange = 6.0f;
+		float jumpSmashRange = 14.0f;
+
+		// 個別クールダウン（秒）
+		float thrustCooldown = 3.0f;
+		float downswingCooldown = 4.0f;
+		float jumpSmashCooldown = 6.0f;
+	};
+
 public:
 
 	BossEnemy() = default;
@@ -38442,29 +38380,57 @@ public: /// ===その他関数=== ///
 
 public: /// ===Getter=== ///
 
+	// Weapnの取得
+	BossWeapon& GetWeapon() const { return *weapon_; }
+
 	// Componentの取得
 	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
-	BossAttackComponent& GetAttackComponent() const { return *attackComponent_; }
+
+	BossAttackThrustComponent& GetThrustComponent() const { return *thrustComponent_; }
+	BossAttackDownwardSwingComponent& GetDownswingComponent() const { return *downswingComponent_; }
+	BossAttackJumpSmashComponent& GetJumpSmashComponent() const { return *jumpSmashComponent_; }
+	///BossAttackManager& GetAttackComponent() const { return *attackManager_; }
+
+	BossHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; }
+
+	// Infoの取得
+	AttackInfo GetAttackInfo() const { return attackInfo_; }
 
 public: /// ===Setter=== ///
 
+	void SetThrustTimer(float time) { attackInfo_.thrustTimer = time; }
+	void SetDownSwingTimer(float time) { attackInfo_.downswingTimer = time; }
+	void SetJumpSmashTimer(float time) { attackInfo_.jumpSmashTimer = time; }
+
 private:
-	/// ===ポインタ=== ///
-	MiiEngine::CameraCommon* camera_ = nullptr; // カメラ
-	Player* player_ = nullptr;	   // プレイヤー
+	/// ===Weapon=== ///
+	std::unique_ptr<BossWeapon> weapon_; // 武器
 
 	/// ===State=== ///
 	std::unique_ptr<BossState> currentState_; // 現在のState
 
 	/// ===Component=== ///
-	std::unique_ptr<BossMoveComponent> moveComponent_;		// 移動コンポーネント
-	std::unique_ptr<BossAttackComponent> attackComponent_;	// 攻撃コンポーネント
+	std::unique_ptr<BossMoveComponent> moveComponent_;	// 移動コンポーネント
+
+	std::unique_ptr<BossAttackThrustComponent> thrustComponent_; // 突き攻撃コンポーネント
+	std::unique_ptr<BossAttackDownwardSwingComponent> downswingComponent_; // 振り下ろし攻撃コンポーネント
+	std::unique_ptr<BossAttackJumpSmashComponent> jumpSmashComponent_; // ジャンプ叩きつけ攻撃コンポーネント
+	//std::unique_ptr<BossAttackManager> attackManager_;	// 攻撃コンポーネント
+
+	std::unique_ptr<BossHitReactionComponent> hitReactionComponent_; // 被ダメージリアクションコンポーネント
+
+	AttackInfo attackInfo_; // 攻撃のパラメータ
 
 	/// ===Particle=== ///
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
 	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
 
 private:
+
+	/// <summary>
+	/// コンポーネントのパラメータの設定
+	/// </summary>
+	void SetComponentConfig();
 
 	/// <summary>
 	/// タイマーを進める
@@ -38475,30 +38441,2437 @@ private:
 
 
 ============================================================
-File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackComponent.cpp
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackManager.cpp
 ============================================================
-#include "BossAttackComponent.h"
+#include "BossAttackManager.h"
+// C++
+#include <cassert>
+#include <algorithm>
+// Math
+#include <Math/sMath.h>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
 
+#ifdef USE_IMGUI
+///-------------------------------------------///
+/// 設定の適用
+///-------------------------------------------///
+void BossAttackManager::ApplyConfig(const Config& newConfig) {
+	assert(newConfig.thrustRange > 0.0f && "thrustRange must be > 0");
+	assert(newConfig.downswingRange > 0.0f && "downswingRange must be > 0");
+	assert(newConfig.jumpSmashRange > 0.0f && "jumpSmashRange must be > 0");
+	config_ = newConfig;
+	// 各コンポーネントにも設定を反映
+	thrust_->ApplyConfig(config_.thrustConfig);
+	downswing_->ApplyConfig(config_.downswingConfig);
+	jumpSmash_->ApplyConfig(config_.jumpSmashConfig);
+}
+#endif // USE_IMGUI
+
+///-------------------------------------------///
+/// 初期化処理
+///-------------------------------------------///
+void BossAttackManager::Initialize(const Config& config) {
+	config_ = config;
+	currentAttack_ = AttackType::None;
+	cooldowns_ = Cooldowns{};
+
+	// 各コンポーネントの生成と初期化
+	thrust_ = std::make_unique<BossAttackThrustComponent>();
+	thrust_->Initialize(config_.thrustConfig);
+
+	downswing_ = std::make_unique<BossAttackDownwardSwingComponent>();
+	downswing_->Initialize(config_.downswingConfig);
+
+	jumpSmash_ = std::make_unique<BossAttackJumpSmashComponent>();
+	jumpSmash_->Initialize(config_.jumpSmashConfig);
+}
+
+///-------------------------------------------///
+/// 更新処理
+///-------------------------------------------///
+BossAttackManager::UpdateResult BossAttackManager::Update(const UpdateContext& context) {
+	// クールダウンを進める
+	UpdateCooldowns(context.deltaTime);
+
+	// 攻撃中でなければデフォルト値を返す
+	if (currentAttack_ == AttackType::None) {
+		UpdateResult result;
+		result.modelRotation = context.bossRotation;
+		result.isAttacking = false;
+		return result;
+	}
+
+	// 実行中の攻撃を更新
+	return UpdateCurrentAttack(context);
+}
+
+///-------------------------------------------///
+/// ImGui情報の表示
+///-------------------------------------------///
+void BossAttackManager::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("攻撃マネージャー")) {
+		// 現在の攻撃
+		const char* attackNames[] = { "None", "Thrust", "DownwardSwing", "JumpSmash" };
+		ImGui::Text("現在の攻撃: %s", attackNames[static_cast<int>(currentAttack_)]);
+
+		ImGui::Separator();
+
+		// クールダウン表示
+		if (ImGui::TreeNode("クールダウン")) {
+			ImGui::Text("Thrust:      %.2f / %.2f", cooldowns_.thrust, config_.thrustCooldown);
+			ImGui::Text("DownSwing:   %.2f / %.2f", cooldowns_.downswing, config_.downswingCooldown);
+			ImGui::Text("JumpSmash:   %.2f / %.2f", cooldowns_.jumpSmash, config_.jumpSmashCooldown);
+			ImGui::TreePop();
+		}
+
+		// 射程設定
+		if (ImGui::TreeNode("射程設定")) {
+			ImGui::DragFloat("Thrust 射程", &config_.thrustRange, 0.1f, 0.0f, 20.0f);
+			ImGui::DragFloat("DownSwing 射程", &config_.downswingRange, 0.1f, 0.0f, 20.0f);
+			ImGui::DragFloat("JumpSmash 射程", &config_.jumpSmashRange, 0.1f, 0.0f, 30.0f);
+			ImGui::TreePop();
+		}
+
+		// クールダウン設定
+		if (ImGui::TreeNode("クールダウン設定")) {
+			ImGui::DragFloat("Thrust CT", &config_.thrustCooldown, 0.1f, 0.0f, 20.0f);
+			ImGui::DragFloat("DownSwing CT", &config_.downswingCooldown, 0.1f, 0.0f, 20.0f);
+			ImGui::DragFloat("JumpSmash CT", &config_.jumpSmashCooldown, 0.1f, 0.0f, 20.0f);
+			ImGui::TreePop();
+		}
+
+		ImGui::Separator();
+
+		// 各攻撃コンポーネントの詳細
+		thrust_->Information();
+		downswing_->Information();
+		jumpSmash_->Information();
+
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------///
+/// 攻撃の選択と開始
+///-------------------------------------------///
+BossAttackManager::AttackType BossAttackManager::SelectAndStart(
+	float distToPlayer,
+	const Vector3& bossPosition,
+	const Vector3& playerPosition,
+	const Quaternion& bossRotation
+) {
+	// すでに攻撃中なら何もしない
+	if (IsAttacking()) {
+		return AttackType::None;
+	}
+
+	// -----------------------------------------------
+	// 距離の近い順に優先して選択する。
+	// クールダウンが切れていて射程内の攻撃を選ぶ。
+	// Thrust → DownwardSwing → JumpSmash の順で判定し、
+	// 最初にマッチした攻撃を即座に開始する。
+	// -----------------------------------------------
+
+	AttackType selected = AttackType::None;
+
+	if (distToPlayer <= config_.thrustRange && cooldowns_.thrust <= 0.0f) {
+		selected = AttackType::Thrust;
+	} else if (distToPlayer <= config_.downswingRange && cooldowns_.downswing <= 0.0f) {
+		selected = AttackType::DownwardSwing;
+	} else if (distToPlayer <= config_.jumpSmashRange && cooldowns_.jumpSmash <= 0.0f) {
+		selected = AttackType::JumpSmash;
+	}
+
+	if (selected == AttackType::None) {
+		return AttackType::None;
+	}
+
+	// 選択した攻撃を開始
+	currentAttack_ = selected;
+	switch (selected) {
+	case AttackType::Thrust:
+		thrust_->StartAttack();
+		break;
+	case AttackType::DownwardSwing:
+		downswing_->StartAttack();
+		break;
+	case AttackType::JumpSmash:
+		jumpSmash_->StartAttack(bossPosition, playerPosition, bossRotation);
+		break;
+	default:
+		break;
+	}
+
+	// クールダウンをセット
+	SetCooldown(selected);
+
+	return selected;
+}
+
+///-------------------------------------------///
+/// 攻撃可否の確認
+///-------------------------------------------///
+bool BossAttackManager::IsAnyAttackAvailable(float distToPlayer) const {
+	// 距離条件とクールダウン条件を両方満たす攻撃が1つでもあればtrue
+	if (distToPlayer <= config_.thrustRange && cooldowns_.thrust <= 0.0f) return true;
+	if (distToPlayer <= config_.downswingRange && cooldowns_.downswing <= 0.0f) return true;
+	if (distToPlayer <= config_.jumpSmashRange && cooldowns_.jumpSmash <= 0.0f) return true;
+	return false;
+}
+
+///-------------------------------------------///
+/// 強制リセット
+///-------------------------------------------///
+void BossAttackManager::ForceReset() {
+	thrust_->Reset();
+	downswing_->Reset();
+	jumpSmash_->Reset();
+	currentAttack_ = AttackType::None;
+}
+
+///-------------------------------------------///
+/// クールダウンのセット
+///-------------------------------------------///
+void BossAttackManager::SetCooldown(AttackType type) {
+	switch (type) {
+	case AttackType::Thrust:        cooldowns_.thrust = config_.thrustCooldown;    break;
+	case AttackType::DownwardSwing: cooldowns_.downswing = config_.downswingCooldown; break;
+	case AttackType::JumpSmash:     cooldowns_.jumpSmash = config_.jumpSmashCooldown; break;
+	default: break;
+	}
+}
+
+///-------------------------------------------///
+/// クールダウンの減算
+///-------------------------------------------///
+void BossAttackManager::UpdateCooldowns(float deltaTime) {
+	cooldowns_.thrust = std::max(0.0f, cooldowns_.thrust - deltaTime);
+	cooldowns_.downswing = std::max(0.0f, cooldowns_.downswing - deltaTime);
+	cooldowns_.jumpSmash = std::max(0.0f, cooldowns_.jumpSmash - deltaTime);
+}
+
+///-------------------------------------------///
+/// 実行中攻撃の更新
+///-------------------------------------------///
+BossAttackManager::UpdateResult BossAttackManager::UpdateCurrentAttack(
+	const UpdateContext& context)
+{
+	UpdateResult result;
+	result.currentAttack = currentAttack_;
+	result.isAttacking = true;
+
+	switch (currentAttack_) {
+		// -----------------------------------------------
+		// Thrust（突き）
+		// -----------------------------------------------
+	case AttackType::Thrust:
+	{
+		BossAttackThrustComponent::UpdateContext ctx{
+			.baseRotation = context.bossRotation,
+			.deltaTime = context.deltaTime,
+		};
+		auto r = thrust_->Update(ctx);
+		result.modelRotation = r.modelRotation;
+		result.weaponLocalOffset = r.weaponLocalOffset;
+
+		if (r.isFinished) {
+			thrust_->Reset();
+			currentAttack_ = AttackType::None;
+			result.isAttacking = false;
+			result.justFinished = true;
+		}
+		break;
+	}
+	// -----------------------------------------------
+	// DownwardSwing（振り下ろし）
+	// -----------------------------------------------
+	case AttackType::DownwardSwing:
+	{
+		BossAttackDownwardSwingComponent::UpdateContext ctx{
+			.baseRotation = context.bossRotation,
+			.deltaTime = context.deltaTime,
+		};
+		auto r = downswing_->Update(ctx);
+		result.modelRotation = r.rotation;
+		result.weaponLocalOffset = r.weaponPosition;
+		result.modelPositionDelta = r.velocity;
+
+		if (r.isFinished) {
+			downswing_->Reset();
+			currentAttack_ = AttackType::None;
+			result.isAttacking = false;
+			result.justFinished = true;
+		}
+		break;
+	}
+	// -----------------------------------------------
+	// JumpSmash（ジャンプ叩きつけ）
+	// -----------------------------------------------
+	case AttackType::JumpSmash:
+	{
+		BossAttackJumpSmashComponent::UpdateContext ctx{
+			.deltaTime = context.deltaTime,
+		};
+		auto r = jumpSmash_->Update(ctx);
+		result.modelRotation = r.rotation;
+		result.weaponLocalOffset = r.weaponPosition;
+		result.modelPositionDelta = r.velocity - context.bossPosition;
+
+		if (r.isFinished) {
+			jumpSmash_->Reset();
+			currentAttack_ = AttackType::None;
+			result.isAttacking = false;
+			result.justFinished = true;
+		}
+		break;
+	}
+	default:
+		result.modelRotation = context.bossRotation;
+		result.isAttacking = false;
+		break;
+	}
+
+	return result;
+}
 
 ============================================================
-File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackComponent.h
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackManager.h
 ============================================================
 #pragma once
-class BossAttackComponent {};
+/// ===Include=== ///
+// AttackComponent
+#include "CloseAttack/BossAttackDownwardSwingComponent.h"
+#include "CloseAttack/BossAttackJumpSmashComponent.h"
+#include "CloseAttack/BossAttackThrustComponent.h"
+// C++
+#include <memory>
 
+///=====================================================/// 
+/// BossEnemyの攻撃を管理するクラス
+/// 攻撃の選択・クールダウン・実行を一括管理する
+///=====================================================///
+class BossAttackManager {
+private:
+	/// ===攻撃の種類=== ///
+	enum class AttackType {
+		None,
+		Thrust,        // 突き
+		DownwardSwing, // 振り下ろし
+		JumpSmash,     // ジャンプ叩きつけ
+	};
+
+public:
+	/// ===設定パラメータの構造体=== ///
+	struct Config {
+		// 攻撃射程
+		float thrustRange = 4.0f;
+		float downswingRange = 6.0f;
+		float jumpSmashRange = 14.0f;
+
+		// 個別クールダウン（秒）
+		float thrustCooldown = 3.0f;
+		float downswingCooldown = 4.0f;
+		float jumpSmashCooldown = 6.0f;
+
+		// 各攻撃コンポーネントのConfig
+		BossAttackThrustComponent::ThrustConfig thrustConfig{};
+		BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{};
+		BossAttackJumpSmashComponent::JumpSmashConfig jumpSmashConfig{};
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Quaternion bossRotation{};  // ボスの現在回転
+		Vector3    bossPosition{};  // ボスの現在位置（JumpSmash用）
+		float      deltaTime = 0.0f;
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		AttackType currentAttack = AttackType::None; // 現在実行中の攻撃
+		Quaternion modelRotation{};                  // モデル回転（各Componentの結果）
+		Vector3    weaponLocalOffset{};              // 武器オフセット
+		Vector3    modelPositionDelta{};             // 踏み込みなどの位置オフセット
+		bool       isAttacking = false;             // 攻撃実行中か
+		bool       justFinished = false;             // このフレームで攻撃が完了したか
+	};
+
+public:
+
+	BossAttackManager() = default;
+	~BossAttackManager() = default;
+
+	BossAttackManager(const BossAttackManager&) = delete;
+	BossAttackManager& operator=(const BossAttackManager&) = delete;
+
+	/// <summary>
+	/// 初期化（生成時に一度だけ呼ぶ）
+	/// </summary>
+	void Initialize(const Config& config = Config{});
+
+	/// <summary>
+	/// 毎フレーム呼び出す更新処理。
+	/// クールダウンの減算と、実行中攻撃の更新を行う。
+	/// </summary>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// 距離に応じた攻撃を選択して開始する。
+	/// クールダウン済みかつ射程内の攻撃から選ぶ。
+	/// </summary>
+	/// <param name="distToPlayer">プレイヤーとの距離</param>
+	/// <param name="bossPosition">ボスの現在位置（JumpSmash用）</param>
+	/// <param name="playerPosition">プレイヤーの位置（JumpSmash用）</param>
+	/// <param name="bossRotation">ボスの現在回転</param>
+	/// <returns>選択・開始した攻撃の種類。何も選べなければ None</returns>
+	AttackType SelectAndStart(
+		float distToPlayer,
+		const Vector3& bossPosition,
+		const Vector3& playerPosition,
+		const Quaternion& bossRotation
+	);
+
+	/// <summary>
+	/// 現在の距離で使用可能な攻撃が1つでもあるか返す。
+	/// AttackBossState / MoveBossState の遷移判定で使用する。
+	/// </summary>
+	bool IsAnyAttackAvailable(float distToPlayer) const;
+
+	/// <summary>
+	/// 実行中の攻撃を強制終了してリセットする。
+	/// State の強制遷移時などに使用する。
+	/// </summary>
+	void ForceReset();
+
+public: /// ===Getter=== ///
+	AttackType GetCurrentAttack() const { return currentAttack_; }
+	bool IsAttacking() const { return currentAttack_ != AttackType::None; }
+
+	float GetThrustCooldown()    const { return cooldowns_.thrust; }
+	float GetDownswingCooldown() const { return cooldowns_.downswing; }
+	float GetJumpSmashCooldown() const { return cooldowns_.jumpSmash; }
+
+	const Config& GetConfig() const { return config_; }
+
+	// 各コンポーネントへの参照（BossEnemyでImGui表示に使用）
+	BossAttackThrustComponent& GetThrustComponent() { return *thrust_; }
+	BossAttackDownwardSwingComponent& GetDownswingComponent() { return *downswing_; }
+	BossAttackJumpSmashComponent& GetJumpSmashComponent() { return *jumpSmash_; }
+
+#ifdef USE_IMGUI
+public: /// ===Setter（ImGui用）=== ///
+	void ApplyConfig(const Config& newConfig);
+#endif // USE_IMGUI
+
+private:
+
+	/// ===設定・状態=== ///
+	Config config_{};
+	AttackType currentAttack_ = AttackType::None;
+
+	/// ===個別クールダウン=== ///
+	struct Cooldowns {
+		float thrust = 0.0f;
+		float downswing = 0.0f;
+		float jumpSmash = 0.0f;
+	};
+	Cooldowns cooldowns_{};
+
+	/// ===攻撃コンポーネント=== ///
+	std::unique_ptr<BossAttackThrustComponent> thrust_{};
+	std::unique_ptr<BossAttackDownwardSwingComponent> downswing_{};
+	std::unique_ptr<BossAttackJumpSmashComponent> jumpSmash_{};
+
+private:
+
+	/// <summary>
+	/// 指定した攻撃のクールダウンをConfigの値でセットする。
+	/// </summary>
+	void SetCooldown(AttackType type);
+
+	/// <summary>
+	/// 全クールダウンタイマーをdeltaTimeで減算する。
+	/// </summary>
+	void UpdateCooldowns(float deltaTime);
+
+	/// <summary>
+	/// 実行中コンポーネントを更新し結果を返す。
+	/// </summary>
+	UpdateResult UpdateCurrentAttack(const UpdateContext& context);
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/CloseAttack/BossAttackDownwardSwingComponent.cpp
+============================================================
+#include "BossAttackDownwardSwingComponent.h"
+// C++
+#include <cassert>
+#include <algorithm>
+// Math
+#include <Math/sMath.h>
+#include <Math/EasingMath.h>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+#ifdef USE_IMGUI
+///-------------------------------------------///
+/// 設定の適用
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::ApplyConfig(const DownwardSwingConfig& newConfig) {
+	assert(newConfig.windUpDuration > 0.0f && "windUpDuration must be > 0");
+	assert(newConfig.strikeDuration > 0.0f && "strikeDuration must be > 0");
+	assert(newConfig.recoveryDuration > 0.0f && "recoveryDuration must be > 0");
+	config_ = newConfig;
+}
+#endif // USE_IMGUI
+
+///-------------------------------------------///
+/// 初期化処理
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::Initialize(const DownwardSwingConfig& config) {
+	config_ = config;
+	state_ = DownwardSwingState{};
+	phase_ = DownwardSwingPhase::Idle;
+}
+
+///-------------------------------------------///
+/// 更新処理
+///-------------------------------------------///
+BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent::Update(const UpdateContext& context) {
+	UpdateResult result;
+	result.currentPhase = phase_;
+
+	// 非アクティブフェーズ：基底回転そのまま、武器は定位置、速度なし
+	if (phase_ == DownwardSwingPhase::Idle || phase_ == DownwardSwingPhase::Finished) {
+		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+		result.rotation = context.baseRotation;
+		result.weaponPosition = config_.weaponRestOffset;
+		result.isFinished = (phase_ == DownwardSwingPhase::Finished);
+		return result;
+	}
+
+	// タイマーを進める
+	state_.phaseTimer += context.deltaTime;
+
+	// 攻撃中の更新
+	UpdateAttack(context, result);
+
+	result.currentPhase = phase_;
+	return result;
+}
+
+///-------------------------------------------///
+/// リセット
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::Reset() {
+	state_ = DownwardSwingState{};
+	phase_ = DownwardSwingPhase::Idle;
+}
+
+///-------------------------------------------///
+/// ImGui情報の表示
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("叩きつけ攻撃情報")) {
+		const char* phaseNames[] = { "Idle", "WindUp", "Strike", "HoldDown", "Recovery", "Finished" };
+		ImGui::Text("フェーズ: %s", phaseNames[static_cast<int>(phase_)]);
+		ImGui::Text("フェーズタイマー: %.3f", state_.phaseTimer);
+
+		ImGui::Separator();
+
+		if (ImGui::TreeNode("予備動作（WindUp）")) {
+			ImGui::DragFloat("仰け反り角度 (度)", &config_.windUpPitch, 0.5f, 0.0f, 60.0f);
+			ImGui::DragFloat("タメ時間 (秒)", &config_.windUpDuration, 0.01f, 0.01f, 2.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("振り下ろし（Strike）")) {
+			ImGui::DragFloat("前傾角度 (度)", &config_.strikeForwardPitch, 0.5f, 0.0f, 60.0f);
+			ImGui::DragFloat("振り下ろし時間 (秒)", &config_.strikeDuration, 0.005f, 0.01f, 1.0f);
+			ImGui::DragFloat("踏み込み距離", &config_.strikeStepForward, 0.01f, 0.0f, 3.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("余韻（HoldDown）")) {
+			ImGui::DragFloat("維持時間 (秒)", &config_.holdDownDuration, 0.005f, 0.0f, 0.5f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("戻り（Recovery）")) {
+			ImGui::DragFloat("戻り時間 (秒)", &config_.recoveryDuration, 0.01f, 0.01f, 2.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("武器オフセット")) {
+			ImGui::DragFloat3("定位置", &config_.weaponRestOffset.x, 0.01f);
+			ImGui::DragFloat3("引き上げ", &config_.weaponWindUpOffset.x, 0.01f);
+			ImGui::DragFloat3("叩きつけ先", &config_.weaponStrikeOffset.x, 0.01f);
+			ImGui::TreePop();
+		}
+
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------///
+/// 攻撃開始
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::StartAttack() {
+	// すでにアクティブな場合は無視
+	if (IsActive()) {
+		return;
+	}
+	state_.phaseTimer = 0.0f;
+	phase_ = DownwardSwingPhase::WindUp;
+}
+
+///-------------------------------------------///
+/// 攻撃の更新を実行
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateAttack(const UpdateContext& context, UpdateResult& result) {
+	// -----------------------------------------------
+	// WindUp（予備動作）
+	//   X軸正方向へ上体を仰け反らせてタメる。
+	//   EaseOut で「じわっ」と遅めに持ち上げることで
+	//   次の振り下ろしとの緩急を演出する。
+	//   武器は頭上の背中側へゆっくり引き上げる。
+	// -----------------------------------------------
+	if (phase_ == DownwardSwingPhase::WindUp) {
+		const float rawT = (config_.windUpDuration > 0.0f)
+			? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f)
+			: 1.0f;
+		// EaseOut：最初は速く、終わりはじわっと
+		const float t = Easing::EaseOutQuad(rawT);
+
+		// X軸正方向（仰け反り）へ windUpPitch 度傾ける
+		const Quaternion windUpPitch = MakePitchQuaternion(config_.windUpPitch * t);
+		result.rotation = Multiply(context.baseRotation, windUpPitch);
+
+		// 武器：定位置 → 頭上背中側へ
+		result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponWindUpOffset, t);
+
+		// WindUp中は踏み込みなし
+		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+
+		// フェーズ遷移
+		if (rawT >= 1.0f) {
+			state_.phaseTimer = 0.0f;
+			phase_ = DownwardSwingPhase::Strike;
+		}
+	}
+	// -----------------------------------------------
+	// Strike（振り下ろし）
+	//   仰け反り位置（+windUpPitch）から
+	//   前傾位置（-strikeForwardPitch）まで一気に振り抜く。
+	//   EaseIn で加速しながら叩きつけることで「シュッ」とした
+	//   鋭さと重量感を両立させる。
+	//   同時に前方へ踏み込ませてリーチと迫力を追加する。
+	// -----------------------------------------------
+	else if (phase_ == DownwardSwingPhase::Strike) {
+		const float rawT = (config_.strikeDuration > 0.0f)
+			? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
+			: 1.0f;
+		// EaseIn：終盤に加速することで叩きつけの鋭さを演出
+		const float t = Easing::EaseInQuad(rawT);
+
+		// +windUpPitch → -strikeForwardPitch への補間
+		const float startAngle = config_.windUpPitch;
+		const float endAngle = -config_.strikeForwardPitch;
+		const float currentAngle = startAngle + (endAngle - startAngle) * t;
+
+		const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
+		result.rotation = Multiply(context.baseRotation, strikePitch);
+
+		// 武器：頭上背中側 → 前方下方へ弧を描いて振り下ろす
+		result.weaponPosition = Math::Lerp(config_.weaponWindUpOffset, config_.weaponStrikeOffset, t);
+
+		// 踏み込み：前方へ加速しながら踏み込む速度を計算
+		// stepZ はフレームあたりの移動量なので deltaTime で割って velocity に変換する
+		const float stepZ = config_.strikeStepForward * t;
+		const float prevT = Easing::EaseInQuad(std::max(0.0f,
+			(state_.phaseTimer - context.deltaTime) / config_.strikeDuration));
+		const float prevStepZ = config_.strikeStepForward * prevT;
+		const float deltaZ = stepZ - prevStepZ;
+		result.velocity = (context.deltaTime > 0.0f)
+			? Vector3{ 0.0f, 0.0f, deltaZ / context.deltaTime }
+		: Vector3{ 0.0f, 0.0f, 0.0f };
+
+		// フェーズ遷移：Strike → HoldDown（または HoldDown スキップ）
+		if (rawT >= 1.0f) {
+			state_.phaseTimer = 0.0f;
+			if (config_.holdDownDuration > 0.0f) {
+				phase_ = DownwardSwingPhase::HoldDown;
+			} else {
+				phase_ = DownwardSwingPhase::Recovery;
+			}
+		}
+	}
+	// -----------------------------------------------
+	// HoldDown（余韻）
+	//   叩きつけた深い前傾姿勢を一瞬だけ維持する。
+	//   武器も叩きつけ位置に止まったまま。
+	//   この「止め」があることで攻撃の「出し切り感」が出る。
+	// -----------------------------------------------
+	else if (phase_ == DownwardSwingPhase::HoldDown) {
+		const float t = (config_.holdDownDuration > 0.0f)
+			? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f)
+			: 1.0f;
+
+		// 姿勢・武器・速度は Strike 終了時点の値で固定
+		const Quaternion holdPitch = MakePitchQuaternion(-config_.strikeForwardPitch);
+		result.rotation = Multiply(context.baseRotation, holdPitch);
+		result.weaponPosition = config_.weaponStrikeOffset;
+		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f }; // 踏み込みは止まる
+
+		// フェーズ遷移
+		if (t >= 1.0f) {
+			state_.phaseTimer = 0.0f;
+			phase_ = DownwardSwingPhase::Recovery;
+		}
+	}
+	// -----------------------------------------------
+	// Recovery（戻り）
+	//   -strikeForwardPitch → 0° へゆっくり戻す。
+	//   武器も叩きつけ位置から定位置へ引き戻す。
+	//   踏み込んだ分の位置も元へ戻す。
+	//   Strike より長めの時間をかけて自然に収束させる。
+	// -----------------------------------------------
+	else if (phase_ == DownwardSwingPhase::Recovery) {
+		const float t = (config_.recoveryDuration > 0.0f)
+			? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
+			: 1.0f;
+
+		// -strikeForwardPitch → 0° へ補間
+		const float currentAngle = -config_.strikeForwardPitch * (1.0f - t);
+
+		const Quaternion recoveryPitch = MakePitchQuaternion(currentAngle);
+		result.rotation = Multiply(context.baseRotation, recoveryPitch);
+
+		// 武器：叩きつけ位置 → 定位置へ戻す
+		result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset, config_.weaponRestOffset, t);
+
+		// Recovery中は移動しない
+		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+
+		// フェーズ遷移：Recovery → Finished
+		if (t >= 1.0f) {
+			phase_ = DownwardSwingPhase::Finished;
+			result.isFinished = true;
+		}
+	}
+}
+
+///-------------------------------------------///
+/// X軸周りに angleDeg 度回転するクォータニオンを生成
+///   正値: 後方仰け反り（WindUp方向）
+///   負値: 前方前傾  （Strike方向）
+///-------------------------------------------///
+Quaternion BossAttackDownwardSwingComponent::MakePitchQuaternion(float angleDeg) const {
+	const float kDegToRad = Math::Pi() / 180.0f;
+	const float halfRad = angleDeg * kDegToRad * 0.5f;
+	return Quaternion{
+		std::sin(halfRad),
+		0.0f,
+		0.0f,
+		std::cos(halfRad)
+	};
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/CloseAttack/BossAttackDownwardSwingComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include <Math/Vector3.h>
+#include <Math/Quaternion.h>
+
+///=====================================================/// 
+/// DownwardSwing
+/// 振り下ろし攻撃
+///=====================================================///
+class BossAttackDownwardSwingComponent {
+private:
+
+	/// ===フェーズ定義=== ///
+	enum class DownwardSwingPhase {
+		Idle,       // 非アクティブ（待機）
+		WindUp,     // 予備動作（上体を後ろへ反らしてタメる）
+		Strike,     // 攻撃（前方へ一気に振り下ろす）
+		HoldDown,   // 余韻（叩きつけた深い前傾を一瞬維持）
+		Recovery,   // 回復（正位置へゆっくり戻る）
+		Finished,   // 攻撃終了
+	};
+
+	/// ===状態の構造体=== ///
+	struct DownwardSwingState {
+		Vector3 currentPositino{}; // 現在のワールド座標
+		float phaseTimer = 0.0f;   // 現フェーズの経過時間
+	};
+
+public:
+
+	/// ===設定パラメータの構造体=== ///
+	struct DownwardSwingConfig {
+		// --- WindUp（予備動作）---
+		// 上体をX軸正方向（後方仰け反り）へ傾ける角度（度）
+		float windUpPitch = 15.0f;
+		// タメにかける時間（秒）。「じわっ」と遅めに設定するほど重さが出る
+		float windUpDuration = 0.35f;
+
+		// --- Strike（振り下ろし）---
+		// 振り下ろし先のX軸負方向（前傾）角度（度）。windUpPitch との合計が可動域
+		// 例: windUpPitch=15, strikeForwardPitch=15 → 合計30度の可動
+		float strikeForwardPitch = 15.0f;
+		// 振り下ろし時間（秒）。WindUpより大幅に短くすることで「シュッ」とした鋭さを演出
+		float strikeDuration = 0.10f;
+
+		// --- HoldDown（余韻）---
+		// 叩きつけ後に深い前傾を維持する時間（秒）。0にすると余韻なし
+		float holdDownDuration = 0.08f;
+
+		// --- Recovery（戻り）---
+		// 正位置へ戻るまでの時間（秒）。Strike より長めでゆっくり収束させる
+		float recoveryDuration = 0.40f;
+
+		// --- 踏み込みオフセット ---
+		// Strike 中にボスを前方へ踏み込ませる距離（ローカルZ軸正方向）
+		float strikeStepForward = 0.5f;
+
+		// --- 武器オフセット（Bossローカル座標）---
+		// 定位置
+		Vector3 weaponRestOffset = { 0.0f,  0.5f,  0.3f };
+		// タメ時：頭上の少し背中側へ
+		Vector3 weaponWindUpOffset = { 0.0f,  1.4f, -0.4f };
+		// 振り下ろし先：モデル前方下方
+		Vector3 weaponStrikeOffset = { 0.0f, -0.2f,  1.5f };
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Quaternion baseRotation{};  // 攻撃開始時のBoss基底回転
+		float deltaTime = 0.0f;     // デルタタイム
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity{};             // ボスに適用する移動速度（ワールド座標系）
+		Quaternion rotation{};             // モデルに適用する回転（基底回転 + ピッチ）
+		Vector3 weaponPosition{};       // ローカル座標系での武器位置オフセット
+		DownwardSwingPhase currentPhase{}; // 現在フェーズ
+		bool isFinished = false;           // 攻撃が完全終了したか
+	};
+
+public:
+
+	BossAttackDownwardSwingComponent() = default;
+	~BossAttackDownwardSwingComponent() = default;
+
+	BossAttackDownwardSwingComponent(const BossAttackDownwardSwingComponent&) = delete;
+	BossAttackDownwardSwingComponent& operator=(const BossAttackDownwardSwingComponent&) = delete;
+
+	/// <summary>
+	/// 初期化（コンポーネント生成時に一度だけ呼ぶ）
+	/// </summary>
+	void Initialize(const DownwardSwingConfig& config = DownwardSwingConfig{});
+
+	/// <summary>
+	/// 更新処理。毎フレーム呼び出す。
+	/// </summary>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// 攻撃を強制リセットしIdleへ戻す。
+	/// </summary>
+	void Reset();
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// 攻撃を開始する。呼び出した瞬間からWindUpフェーズへ遷移。
+	/// </summary>
+	void StartAttack();
+
+public: /// ===Getter=== ///
+	DownwardSwingPhase GetPhase()  const { return phase_; }
+	bool IsActive()  const { return phase_ != DownwardSwingPhase::Idle && phase_ != DownwardSwingPhase::Finished; }
+	bool IsFinished()const { return phase_ == DownwardSwingPhase::Finished; }
+	const DownwardSwingConfig& GetConfig() const { return config_; }
+
+#ifdef USE_IMGUI
+public: /// ===Setter=== ///
+	void ApplyConfig(const DownwardSwingConfig& newConfig);
+#endif // USE_IMGUI
+
+private:
+	/// ===情報=== ///
+	DownwardSwingConfig config_{};
+	DownwardSwingState state_{};
+	DownwardSwingPhase phase_ = DownwardSwingPhase::Idle;
+
+private:
+	/// <summary>
+	/// 攻撃の更新を実行します。
+	/// </summary>
+	void UpdateAttack(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// X軸周りに angleDeg 度回転させるクォータニオンを生成する。
+	/// 正値: 後方仰け反り（WindUp方向）
+	/// 負値: 前方前傾（Strike方向）
+	/// </summary>
+	Quaternion MakePitchQuaternion(float angleDeg) const;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/CloseAttack/BossAttackJumpSmashComponent.cpp
+============================================================
+#include "BossAttackJumpSmashComponent.h"
+// C++
+#include <cassert>
+#include <algorithm>
+// Math
+#include <Math/sMath.h>
+#include <Math/EasingMath.h>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+#ifdef USE_IMGUI
+///-------------------------------------------///
+/// 設定の適用
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::ApplyConfig(const JumpSmashConfig& newConfig) {
+	assert(newConfig.leapWindUpDuration > 0.0f && "leapWindUpDuration must be > 0");
+	assert(newConfig.leapDuration > 0.0f && "leapDuration must be > 0");
+	assert(newConfig.strikeDuration > 0.0f && "strikeDuration must be > 0");
+	assert(newConfig.recoveryDuration > 0.0f && "recoveryDuration must be > 0");
+	config_ = newConfig;
+}
+#endif // USE_IMGUI
+
+///-------------------------------------------///
+/// 初期化処理
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::Initialize(const JumpSmashConfig& config) {
+	config_ = config;
+	state_ = JumpSmashState{};
+	phase_ = LeapPhase::Idle;
+}
+
+///-------------------------------------------///
+/// 更新処理
+///-------------------------------------------///
+BossAttackJumpSmashComponent::UpdateResult
+BossAttackJumpSmashComponent::Update(const UpdateContext& context) {
+	UpdateResult result;
+	result.currentPhase = phase_;
+	result.velocity = {};
+
+	// 非アクティブフェーズ：位置・姿勢は現在値のまま返す
+	if (phase_ == LeapPhase::Idle || phase_ == LeapPhase::Finished) {
+		result.rotation = state_.baseRotation;
+		result.weaponPosition = config_.weaponRestOffset;
+		result.isFinished = (phase_ == LeapPhase::Finished);
+		return result;
+	}
+
+	// タイマーを進める
+	state_.phaseTimer += context.deltaTime;
+
+	// 攻撃中の更新
+	UpdateAttack(context, result);
+
+	result.currentPhase = phase_;
+	return result;
+}
+
+///-------------------------------------------///
+/// リセット
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::Reset() {
+	state_ = JumpSmashState{};
+	phase_ = LeapPhase::Idle;
+}
+
+///-------------------------------------------///
+/// ImGui情報の表示
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("跳躍叩きつけ攻撃情報")) {
+		const char* phaseNames[] = {
+			"Idle", "LeapWindUp", "Leap", "Strike", "HoldDown", "Recovery", "Finished"
+		};
+		ImGui::Text("フェーズ: %s", phaseNames[static_cast<int>(phase_)]);
+		ImGui::Text("フェーズタイマー: %.3f", state_.phaseTimer);
+		ImGui::Text("現在位置: (%.2f, %.2f, %.2f)",
+			state_.currentPosition.x, state_.currentPosition.y, state_.currentPosition.z);
+		ImGui::Text("目標位置: (%.2f, %.2f, %.2f)",
+			state_.targetPosition.x, state_.targetPosition.y, state_.targetPosition.z);
+
+		ImGui::Separator();
+
+		if (ImGui::TreeNode("跳躍前溜め（LeapWindUp）")) {
+			ImGui::DragFloat("屈み前傾角度 (度)", &config_.leapWindUpCrouchPitch, 0.5f, -45.0f, 0.0f);
+			ImGui::DragFloat("溜め時間 (秒)", &config_.leapWindUpDuration, 0.01f, 0.01f, 2.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("飛行（Leap）")) {
+			ImGui::DragFloat("飛行時間 (秒)", &config_.leapDuration, 0.01f, 0.1f, 3.0f);
+			ImGui::DragFloat("放物線頂点高さ", &config_.leapArcHeight, 0.1f, 0.5f, 20.0f);
+			ImGui::DragFloat("上昇前傾角度 (度)", &config_.leapAscentPitch, 0.5f, 0.0f, 60.0f);
+			ImGui::DragFloat("降下仰け反り角度(度)", &config_.leapDescentPitch, 0.5f, 0.0f, 60.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("叩きつけ（Strike）")) {
+			ImGui::DragFloat("前傾角度 (度)", &config_.strikeForwardPitch, 0.5f, 0.0f, 60.0f);
+			ImGui::DragFloat("叩きつけ時間 (秒)", &config_.strikeDuration, 0.005f, 0.01f, 1.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("余韻（HoldDown）")) {
+			ImGui::DragFloat("維持時間 (秒)", &config_.holdDownDuration, 0.005f, 0.0f, 0.5f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("戻り（Recovery）")) {
+			ImGui::DragFloat("戻り時間 (秒)", &config_.recoveryDuration, 0.01f, 0.01f, 2.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("武器オフセット")) {
+			ImGui::DragFloat3("定位置", &config_.weaponRestOffset.x, 0.01f);
+			ImGui::DragFloat3("飛行中", &config_.weaponLeapOffset.x, 0.01f);
+			ImGui::DragFloat3("叩きつけ先", &config_.weaponStrikeOffset.x, 0.01f);
+			ImGui::TreePop();
+		}
+
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------///
+/// 攻撃開始
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::StartAttack(
+	const Vector3& bossPosition,
+	const Vector3& playerPosition,
+	const Quaternion& baseRotation
+) {
+	// すでにアクティブな場合は無視
+	if (IsActive()) {
+		return;
+	}
+	state_.phaseTimer = 0.0f;
+	state_.baseRotation = baseRotation;
+	state_.startPosition = bossPosition;
+	state_.targetPosition = playerPosition;
+	state_.currentPosition = bossPosition;
+	phase_ = LeapPhase::LeapWindUp;
+}
+
+///-------------------------------------------///
+/// 攻撃の更新を実行（フェーズのディスパッチ）
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::UpdateAttack(
+	const UpdateContext& context, UpdateResult& result)
+{
+	(void)context; // 各フェーズ関数はタイマーのみ使用
+
+	switch (phase_) {
+	case LeapPhase::LeapWindUp: UpdateLeapWindUp(result); break;
+	case LeapPhase::Leap:       UpdateLeap(result);       break;
+	case LeapPhase::Strike:     UpdateStrike(result);     break;
+	case LeapPhase::HoldDown:   UpdateHoldDown(result);   break;
+	case LeapPhase::Recovery:   UpdateRecovery(result);   break;
+	default: break;
+	}
+}
+
+///-------------------------------------------///
+/// LeapWindUp（跳躍前の溜め）
+///   膝を曲げるイメージで前方へ少し前傾し、重心を落とす。
+///   EaseOut でじわっと溜めることで跳躍の予感を演出する。
+///   武器は定位置のまま。
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
+	const float rawT = (config_.leapWindUpDuration > 0.0f)
+		? std::min(state_.phaseTimer / config_.leapWindUpDuration, 1.0f)
+		: 1.0f;
+	const float t = Easing::EaseOutQuad(rawT);
+
+	// 前傾（crouchPitch は負値 → X軸負方向 = 前のめり）
+	const Quaternion crouchRot = MakePitchQuaternion(config_.leapWindUpCrouchPitch * t);
+	result.rotation = Multiply(state_.baseRotation, crouchRot);
+
+	// 武器・位置は変化なし
+	result.weaponPosition = config_.weaponRestOffset;
+	result.velocity = {};
+
+	// フェーズ遷移
+	if (rawT >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		phase_ = LeapPhase::Leap;
+	}
+}
+
+///-------------------------------------------///
+/// Leap（放物線飛行）
+///
+/// 【水平移動】
+///   startPosition → targetPosition を線形補間（等速）
+///
+/// 【垂直移動】
+///   y = arcHeight * 4 * t * (1 - t)  の放物線加算
+///   t=0 と t=1 でY加算=0、t=0.5 で最大高さ
+///
+/// 【ピッチ変化】（飛行弧への自然な追従）
+///   t = 0.0〜0.5（上昇）: 0° → +ascentPitch   （前傾。前に飛び出す感）
+///   t = 0.5〜1.0（降下）: +ascentPitch → -descentPitch（仰け反り→着地タメ）
+///
+/// 【武器】
+///   定位置 → 飛行中（振り上げ）へ上昇に合わせて移動
+///   降下中は振り上げ位置を維持したまま着地の瞬間を待つ
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
+	const float t = (config_.leapDuration > 0.0f)
+		? std::min(state_.phaseTimer / config_.leapDuration, 1.0f)
+		: 1.0f;
+
+	// --- 位置計算 ---
+	// 水平：線形補間
+	const Vector3 horizontalPos = Math::Lerp(state_.startPosition, state_.targetPosition, t);
+	// 垂直：放物線加算
+	const float arcY = CalcParabolaHeight(t);
+	const Vector3 nextPosition = Vector3{
+		horizontalPos.x,
+		horizontalPos.y + arcY,
+		horizontalPos.z
+	};
+	// --- velocity = 今フレーム位置 - 前フレーム位置 ---
+	result.velocity = nextPosition - state_.currentPosition;
+
+	// --- ピッチ計算 ---
+	float pitchAngle = 0.0f;
+	if (t <= 0.5f) {
+		// 上昇フェーズ：0° → +ascentPitch（前傾）
+		const float ascT = t / 0.5f;              // 0.0〜1.0 に正規化
+		pitchAngle = config_.leapAscentPitch * ascT;
+	} else {
+		// 降下フェーズ：+ascentPitch → -descentPitch（仰け反り）
+		const float descT = (t - 0.5f) / 0.5f;   // 0.0〜1.0 に正規化
+		const float startAngle = config_.leapAscentPitch;
+		const float endAngle = -config_.leapDescentPitch;
+		pitchAngle = startAngle + (endAngle - startAngle) * descT;
+	}
+	const Quaternion leapPitch = MakePitchQuaternion(pitchAngle);
+	result.rotation = Multiply(state_.baseRotation, leapPitch);
+
+	// --- 武器オフセット ---
+	// 上昇中: 定位置 → 飛行中オフセット（振り上げ）
+	// 降下中: 飛行中オフセットを維持
+	if (t <= 0.5f) {
+		const float weaponT = t / 0.5f;
+		result.weaponPosition = Math::Lerp(config_.weaponRestOffset,config_.weaponLeapOffset,weaponT);
+	} else {
+		result.weaponPosition = config_.weaponLeapOffset;
+	}
+
+	// フェーズ遷移：着地（t >= 1.0）で Strike へ
+	if (t >= 1.0f) {
+		// 着地時は targetPosition にスナップして誤差を除去
+		state_.currentPosition = state_.targetPosition;
+		state_.phaseTimer = 0.0f;
+		phase_ = LeapPhase::Strike;
+	}
+}
+
+///-------------------------------------------///
+/// Strike（着地叩きつけ）
+///   Leap終了時の仰け反り（-descentPitch）を起点として
+///   一気に前傾（+strikeForwardPitch）へ振り下ろす。
+///   EaseIn で加速することで叩きつけの鋭さと重量感を演出する。
+///   着地したので位置は targetPosition に固定。
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::UpdateStrike(UpdateResult& result) {
+	const float rawT = (config_.strikeDuration > 0.0f)
+		? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
+		: 1.0f;
+	const float t = Easing::EaseInQuad(rawT);
+
+	// -descentPitch → +strikeForwardPitch への補間
+	const float startAngle = -config_.leapDescentPitch;
+	const float endAngle = config_.strikeForwardPitch;
+	const float currentAngle = startAngle + (endAngle - startAngle) * t;
+
+	const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
+	result.rotation = Multiply(state_.baseRotation, strikePitch);
+
+	// 武器：飛行中（振り上げ）→ 叩きつけ先
+	result.weaponPosition = Math::Lerp(config_.weaponLeapOffset,config_.weaponStrikeOffset,t);
+
+	// 着地済みのため移動なし
+	result.velocity = {};
+
+	// フェーズ遷移：Strike → HoldDown または Recovery
+	if (rawT >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		if (config_.holdDownDuration > 0.0f) {
+			phase_ = LeapPhase::HoldDown;
+		} else {
+			phase_ = LeapPhase::Recovery;
+		}
+	}
+}
+
+///-------------------------------------------///
+/// HoldDown（叩きつけ余韻）
+///   深い前傾（+strikeForwardPitch）を一瞬維持する。
+///   武器も叩きつけ位置に固定。
+///   この「止め」が攻撃の出し切り感・重さを演出する。
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::UpdateHoldDown(UpdateResult& result) {
+	const float t = (config_.holdDownDuration > 0.0f)
+		? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f)
+		: 1.0f;
+
+	// 姿勢・武器・位置は Strike 終了時点で固定
+	const Quaternion holdPitch = MakePitchQuaternion(config_.strikeForwardPitch);
+	result.rotation = Multiply(state_.baseRotation, holdPitch);
+	result.weaponPosition = config_.weaponStrikeOffset;
+	result.velocity = {};
+
+	// フェーズ遷移
+	if (t >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		phase_ = LeapPhase::Recovery;
+	}
+}
+
+///-------------------------------------------///
+/// Recovery（戻り）
+///   +strikeForwardPitch → 0° へゆっくり戻す。
+///   武器も叩きつけ位置から定位置へ引き戻す。
+///   Strike より長めの時間で自然に収束させる。
+///-------------------------------------------///
+void BossAttackJumpSmashComponent::UpdateRecovery(UpdateResult& result) {
+	const float t = (config_.recoveryDuration > 0.0f)
+		? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
+		: 1.0f;
+
+	// +strikeForwardPitch → 0° へ補間
+	const float currentAngle = config_.strikeForwardPitch * (1.0f - t);
+
+	const Quaternion recoveryPitch = MakePitchQuaternion(currentAngle);
+	result.rotation = Multiply(state_.baseRotation, recoveryPitch);
+
+	// 武器：叩きつけ位置 → 定位置へ戻す
+	result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset,config_.weaponRestOffset,t);
+
+	result.velocity = {};
+
+	// フェーズ遷移：Recovery → Finished
+	if (t >= 1.0f) {
+		phase_ = LeapPhase::Finished;
+		result.isFinished = true;
+	}
+}
+
+///-------------------------------------------///
+/// 放物線の高さを計算
+///   y = arcHeight * 4 * t * (1 - t)
+///   t=0 と t=1 で 0、t=0.5 で arcHeight になる
+///-------------------------------------------///
+float BossAttackJumpSmashComponent::CalcParabolaHeight(float t) const {
+	const float ct = std::clamp(t, 0.0f, 1.0f);
+	return config_.leapArcHeight * 4.0f * ct * (1.0f - ct);
+}
+
+///-------------------------------------------///
+/// X軸周りに angleDeg 度回転するクォータニオンを生成
+///   正値: 前傾（Strike方向）
+///   負値: 後方仰け反り（WindUp・降下中のタメ方向）
+///-------------------------------------------///
+Quaternion BossAttackJumpSmashComponent::MakePitchQuaternion(float angleDeg) const {
+	const float kDegToRad = Math::Pi() / 180.0f;
+	const float halfRad = angleDeg * kDegToRad * 0.5f;
+	return Quaternion{
+		std::sin(halfRad),
+		0.0f,
+		0.0f,
+		std::cos(halfRad)
+	};
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/CloseAttack/BossAttackJumpSmashComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include <Math/Vector3.h>
+#include <Math/Quaternion.h>
+
+///=====================================================/// 
+/// JumpSmashComponent
+/// ジャンプして攻撃する処理
+///=====================================================///
+class BossAttackJumpSmashComponent {
+private:
+	/// ===フェーズ定義=== ///
+	enum class LeapPhase {
+		Idle,        // 非アクティブ（待機）
+		LeapWindUp,  // 跳躍前の溜め（屈んで重心を落とす）
+		Leap,        // 放物線飛行
+		Strike,      // 着地叩きつけ
+		HoldDown,    // 叩きつけ余韻（深い前傾を一瞬維持）
+		Recovery,    // 正位置へ戻る
+		Finished,    // 攻撃終了
+	};
+
+	/// ===状態の構造体=== ///
+	struct JumpSmashState {
+		float phaseTimer = 0.0f;   // 現フェーズの経過時間
+		Quaternion baseRotation{};  // 攻撃開始時の基底回転
+
+		// --- Leap フェーズで使用する飛行データ ---
+		Vector3 startPosition{};    // 跳躍開始位置（ワールド座標）
+		Vector3 targetPosition{};   // 着地目標位置（ワールド座標）
+		Vector3 currentPosition{};  // 現在のワールド座標（毎フレーム更新）
+	};
+
+public:
+
+	/// ===設定パラメータの構造体=== ///
+	struct JumpSmashConfig {
+		// LeapWindUp
+		// 屈み時のY軸スケール縮小量（見た目の「しゃがみ」演出用。スケールは呼出し側で適用）
+		float leapWindUpCrouchPitch = -10.0f;  // 屈み時の前傾角度（度）。前のめりにしゃがむ
+		float leapWindUpDuration = 0.30f;  // 溜め時間（秒）
+
+		// Leap
+		float leapDuration = 0.60f;  // 飛行にかける時間（秒）
+		float leapArcHeight = 4.0f;   // 放物線の頂点高さ（ワールドY単位）
+
+		// 飛行中のピッチ変化
+		float leapAscentPitch = 20.0f;  // 上昇中の前傾角度（度）
+		float leapDescentPitch = 30.0f;  // 降下中に仰け反る角度（度）。着地直前の「タメ」
+
+		// Strike
+		float strikeForwardPitch = 25.0f;  // 着地時の前傾角度（度）
+		float strikeDuration = 0.10f; // 叩きつけ時間（秒）
+
+		// HoldDown
+		float holdDownDuration = 0.08f;  // 前傾維持時間（秒）。0 でスキップ
+
+		// Recovery
+		float recoveryDuration = 0.45f;  // 正位置へ戻る時間（秒）
+
+		// 武器オフセット
+		Vector3 weaponRestOffset = { 0.0f,  0.5f,  0.3f };  // 定位置
+		Vector3 weaponLeapOffset = { 0.0f,  1.5f, -0.5f };  // 飛行中（振り上げ）
+		Vector3 weaponStrikeOffset = { 0.0f, -0.2f,  1.5f };  // 叩きつけ先
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Vector3 currentPosition{};  // Bossの現在位置
+		float deltaTime = 0.0f;		// デルタタイム
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity{};          // 今フレームの移動量（呼び出し側が position += velocity で適用する）
+		Quaternion rotation{};       // モデルに適用する回転（基底回転 + ピッチ）
+		Vector3 weaponPosition{};    // ローカル座標系での武器位置オフセット
+		LeapPhase currentPhase{};    // 現在フェーズ
+		bool isFinished = false;     // 攻撃が完全終了したか
+	};
+
+public:
+
+	BossAttackJumpSmashComponent() = default;
+	~BossAttackJumpSmashComponent() = default;
+
+	BossAttackJumpSmashComponent(const BossAttackJumpSmashComponent&) = delete;
+	BossAttackJumpSmashComponent& operator=(const BossAttackJumpSmashComponent&) = delete;
+
+	/// <summary>
+	/// 初期化（コンポーネント生成時に一度だけ呼ぶ）
+	/// </summary>
+	void Initialize(const JumpSmashConfig& config = JumpSmashConfig{});
+
+	/// <summary>
+	/// 更新処理。毎フレーム呼び出す。
+	/// </summary>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// 攻撃を強制リセットしIdleへ戻す。
+	/// </summary>
+	void Reset();
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// 攻撃を開始する。
+	/// </summary>
+	/// <param name="bossPosition">攻撃開始時のBossのワールド座標</param>
+	/// <param name="playerPosition">着地目標となるPlayerのワールド座標</param>
+	/// <param name="baseRotation">攻撃開始時のBossの基底回転</param>
+	void StartAttack(
+		const Vector3& bossPosition,
+		const Vector3& playerPosition,
+		const Quaternion& baseRotation
+	);
+
+public: /// ===Getter=== ///
+	LeapPhase GetPhase() const { return phase_; }
+	bool IsActive() const { return phase_ != LeapPhase::Idle && phase_ != LeapPhase::Finished; }
+	bool IsFinished() const { return phase_ == LeapPhase::Finished; }
+	const JumpSmashConfig& GetConfig() const { return config_; }
+	const Vector3& GetPosition() const { return state_.currentPosition; }
+
+#ifdef USE_IMGUI
+public: /// ===Setter=== ///
+	void ApplyConfig(const JumpSmashConfig& newConfig);
+#endif // USE_IMGUI
+
+private:
+	/// ===情報=== ///
+	JumpSmashConfig config_{};
+	JumpSmashState  state_{};
+	LeapPhase  phase_ = LeapPhase::Idle;
+
+private:
+	/// <summary>攻撃の更新を実行します。</summary>
+	void UpdateAttack(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>LeapWindUp フェーズの更新。</summary>
+	void UpdateLeapWindUp(UpdateResult& result);
+
+	/// <summary>Leap フェーズの更新。放物線移動とピッチ変化を処理する。</summary>
+	void UpdateLeap(UpdateResult& result);
+
+	/// <summary>Strike フェーズの更新。</summary>
+	void UpdateStrike(UpdateResult& result);
+
+	/// <summary>HoldDown フェーズの更新。</summary>
+	void UpdateHoldDown(UpdateResult& result);
+
+	/// <summary>Recovery フェーズの更新。</summary>
+	void UpdateRecovery(UpdateResult& result);
+
+	/// <summary>
+	/// 放物線の高さを計算する。
+	/// </summary>
+	float CalcParabolaHeight(float t) const;
+
+	/// <summary>X軸周りに angleDeg 度回転させるクォータニオンを生成する。</summary>
+	Quaternion MakePitchQuaternion(float angleDeg) const;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/CloseAttack/BossAttackThrustComponent.cpp
+============================================================
+#include "BossAttackThrustComponent.h"
+// C++
+#include <cassert>
+#include <algorithm>
+// Math
+#include <Math/sMath.h>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+#ifdef USE_IMGUI
+///-------------------------------------------///
+/// 設定の適用
+///-------------------------------------------///
+void BossAttackThrustComponent::ApplyConfig(const ThrustConfig& newConfig) {
+	assert(newConfig.windUpDuration > 0.0f && "windUpDuration must be > 0");
+	assert(newConfig.strikeDuration > 0.0f && "strikeDuration must be > 0");
+	assert(newConfig.recoveryDuration > 0.0f && "recoveryDuration must be > 0");
+	config_ = newConfig;
+}
+#endif // USE_IMGUI
+
+///-------------------------------------------///
+/// 初期化処理
+///-------------------------------------------///
+void BossAttackThrustComponent::Initialize(const ThrustConfig& config) {
+	config_ = config;
+	state_ = ThrustState{};
+	phase_ = ThrustPhase::Idle;
+}
+
+///-------------------------------------------///
+/// 更新処理
+///-------------------------------------------///
+BossAttackThrustComponent::UpdateResult BossAttackThrustComponent::Update(const UpdateContext& context) {
+	UpdateResult result;
+	// 現在のフェーズをセット
+	result.currentPhase = phase_;
+
+	// 非アクティブフェーズ：基底回転そのまま、武器は定位置
+	if (phase_ == ThrustPhase::Idle || phase_ == ThrustPhase::Finished) {
+		// 非アクティブ：基底回転そのまま、武器は定位置
+		result.modelRotation = context.baseRotation;
+		result.weaponLocalOffset = config_.weaponRestOffset;
+		result.isFinished = (phase_ == ThrustPhase::Finished);
+		return result;
+	}
+
+	// タイマーを進める
+	state_.phaseTimer += context.deltaTime;
+
+	// 攻撃中の更新
+	UpdateAttack(context, result);
+
+	// フェーズの更新
+	result.currentPhase = phase_;
+	return result;
+}
+
+///-------------------------------------------///
+/// リセット
+///-------------------------------------------///
+void BossAttackThrustComponent::Reset() {
+	state_ = ThrustState{};
+	phase_ = ThrustPhase::Idle;
+}
+
+///-------------------------------------------///
+/// ImGui情報の表示
+///-------------------------------------------///
+void BossAttackThrustComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("突き攻撃情報")) {
+		// 現在フェーズ
+		const char* phaseNames[] = { "Idle", "WindUp", "Strike", "Recovery", "Finished" };
+		ImGui::Text("フェーズ: %s", phaseNames[static_cast<int>(phase_)]);
+		ImGui::Text("フェーズタイマー: %.3f", state_.phaseTimer);
+
+		ImGui::Separator();
+
+		if (ImGui::TreeNode("予備動作（WindUp）")) {
+			ImGui::DragFloat("タメ角度 (度)", &config_.windUpAngle, 0.5f, 0.0f, 90.0f);
+			ImGui::DragFloat("タメ時間 (秒)", &config_.windUpDuration, 0.01f, 0.01f, 2.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("突き（Strike）")) {
+			ImGui::DragFloat("切り返し角度 (度)", &config_.strikeAngle, 0.5f, 0.0f, 90.0f);
+			ImGui::DragFloat("突き時間 (秒)", &config_.strikeDuration, 0.01f, 0.01f, 2.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("戻り（Recovery）")) {
+			ImGui::DragFloat("戻り時間 (秒)", &config_.recoveryDuration, 0.01f, 0.01f, 2.0f);
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("武器オフセット")) {
+			ImGui::DragFloat3("定位置", &config_.weaponRestOffset.x, 0.01f);
+			ImGui::DragFloat3("引き絞り", &config_.weaponWindUpOffset.x, 0.01f);
+			ImGui::DragFloat3("突き出し", &config_.weaponStrikeOffset.x, 0.01f);
+			ImGui::TreePop();
+		}
+
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------///
+/// 攻撃開始
+///-------------------------------------------///
+void BossAttackThrustComponent::StartAttack() {
+	// すでにアクティブな場合は無視
+	if (IsActive()) {
+		return;
+	}
+	state_.phaseTimer = 0.0f;
+	phase_ = ThrustPhase::WindUp;
+}
+
+///-------------------------------------------/// 
+/// 攻撃の更新を実行
+///-------------------------------------------///
+void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, UpdateResult& result) {
+	// -----------------------------------------------
+	// WindUp（予備動作）
+	//   Y軸を中心にモデルを windUpAngle 度ひねり、
+	//   武器を引き絞る
+	// -----------------------------------------------
+	if (phase_ == ThrustPhase::WindUp) {
+		// 0.0 → 1.0 の進行度
+		const float t = (config_.windUpDuration > 0.0f)
+			? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f)
+			: 1.0f;
+
+		// Y軸ひねり：正の角度 = 武器側（右側）へ体をひねる
+		const Quaternion windUpYaw = MakeYawQuaternion(config_.windUpAngle * t);
+		result.modelRotation = Multiply(context.baseRotation, windUpYaw);
+
+		// 武器オフセット：定位置 → 引き絞り位置
+		result.weaponLocalOffset = LerpVector3(
+			config_.weaponRestOffset,
+			config_.weaponWindUpOffset,
+			t
+		);
+
+		// フェーズ遷移
+		if (t >= 1.0f) {
+			state_.phaseTimer = 0.0f;
+			phase_ = ThrustPhase::Strike;
+		}
+	}
+	// -----------------------------------------------
+	// Strike（突き）
+	//   タメ角度(windUpAngle)を始点とし、
+	//   正面を通り過ぎて逆方向 -strikeAngle まで鋭く切り返す。
+	//   武器を一気に前方へ押し出す。
+	// -----------------------------------------------
+	else if (phase_ == ThrustPhase::Strike) {
+		const float t = (config_.strikeDuration > 0.0f)
+			? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
+			: 1.0f;
+
+		// windUpAngle（タメ位置）→ -strikeAngle（切り返し位置）へ補間
+		const float startAngle = config_.windUpAngle;
+		const float endAngle = -config_.strikeAngle;
+		const float currentAngle = startAngle + (endAngle - startAngle) * t;
+
+		const Quaternion strikeYaw = MakeYawQuaternion(currentAngle);
+		result.modelRotation = Multiply(context.baseRotation, strikeYaw);
+
+		// 武器オフセット：引き絞り位置 → 突き出し位置
+		result.weaponLocalOffset = LerpVector3(
+			config_.weaponWindUpOffset,
+			config_.weaponStrikeOffset,
+			t
+		);
+
+		// フェーズ遷移：Strike → Recovery
+		if (t >= 1.0f) {
+			state_.phaseTimer = 0.0f;
+			phase_ = ThrustPhase::Recovery;
+		}
+	}
+	// -----------------------------------------------
+	// Recovery（戻り）
+	//   -strikeAngle から 0° へゆっくり戻す。
+	//   武器も突き出し位置から定位置へ引き戻す。
+	//   Strike より長めの時間をかけて自然に収束させる。
+	// -----------------------------------------------
+	else if (phase_ == ThrustPhase::Recovery) {
+		const float t = (config_.recoveryDuration > 0.0f)
+			? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
+			: 1.0f;
+
+		// -strikeAngle → 0° へ補間
+		const float currentAngle = -config_.strikeAngle * (1.0f - t);
+
+		const Quaternion recoveryYaw = MakeYawQuaternion(currentAngle);
+		result.modelRotation = Multiply(context.baseRotation, recoveryYaw);
+
+		// 武器オフセット：突き出し位置 → 定位置へ戻す
+		result.weaponLocalOffset = LerpVector3(
+			config_.weaponStrikeOffset,
+			config_.weaponRestOffset,
+			t
+		);
+
+		// フェーズ遷移：Recovery → Finished
+		if (t >= 1.0f) {
+			phase_ = ThrustPhase::Finished;
+			result.isFinished = true;
+		}
+	}
+}
+
+///-------------------------------------------///
+/// Y軸周りに angleDeg 度回転するクォータニオンを生成
+///-------------------------------------------///
+Quaternion BossAttackThrustComponent::MakeYawQuaternion(float angleDeg) const {
+	const float kDegToRad = Math::Pi() / 180.0f;
+	const float halfRad = angleDeg * kDegToRad * 0.5f;
+	return Quaternion{
+		0.0f,
+		std::sin(halfRad),
+		0.0f,
+		std::cos(halfRad)
+	};
+}
+
+///-------------------------------------------///
+/// Vector3 の線形補間
+///-------------------------------------------///
+Vector3 BossAttackThrustComponent::LerpVector3(const Vector3& a, const Vector3& b, float t) const {
+	const float ct = std::clamp(t, 0.0f, 1.0f);
+	return Vector3{
+		a.x + (b.x - a.x) * ct,
+		a.y + (b.y - a.y) * ct,
+		a.z + (b.z - a.z) * ct
+	};
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/CloseAttack/BossAttackThrustComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include <Math/Vector3.h>
+#include <Math/Quaternion.h>
+
+///=====================================================/// 
+/// Thrust
+/// 突き攻撃
+///=====================================================///
+class BossAttackThrustComponent {
+public:
+	/// ===フェーズ定義=== ///
+	enum class ThrustPhase {
+		Idle,       // 非アクティブ（待機）
+		WindUp,     // 予備動作（体をひねってタメる）
+		Strike,     // 攻撃（切り返して武器を突き出す）
+		Recovery,   // 回復（-strikeAngle → 0° へゆっくり戻る）
+		Finished,   // 攻撃終了
+	};
+
+	/// ====状態の構造体== ///
+	struct ThrustState {
+		float phaseTimer = 0.0f;   // 現フェーズの経過時間
+	};
+public:
+	/// ===設定パラメータの構造体=== ///
+	struct ThrustConfig {
+		// --- WindUp（予備動作）---
+		float windUpAngle = 30.0f;  // タメ時にY軸回転させる角度（度）
+		float windUpDuration = 0.25f;  // タメにかける時間（秒）
+
+		// --- Strike（突き）---
+		float strikeAngle = 15.0f;  // 切り返しのY軸回転角度（度）正面を超えた反対側まで（度）
+		float strikeDuration = 0.12f;  // 突き動作にかける時間（秒）
+
+		// --- Recovery（戻り）---
+		float recoveryDuration = 0.35f;  // 0° へ戻るまでの時間（秒）。Strike より長めでゆっくり戻る
+
+		// --- 武器オフセット ---
+		// 武器の初期位置オフセット（Bossローカル座標）
+		Vector3 weaponRestOffset = { 0.8f,  0.0f,  0.0f };
+		// タメ時の武器引き絞りオフセット（Bossローカル座標）
+		Vector3 weaponWindUpOffset = { 0.8f,  0.0f, -0.3f };
+		// 突き時の武器前方オフセット（Bossローカル座標）
+		Vector3 weaponStrikeOffset = { 0.4f,  0.0f,  1.2f };
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Quaternion baseRotation{};  // 攻撃開始時のBoss基底回転
+		float deltaTime = 0.0f;		// デルタタイム
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Quaternion modelRotation{};  // モデルに適用する回転（基底回転 + ひねり）
+		Vector3 weaponLocalOffset{}; // ローカル座標系での武器位置オフセット
+		ThrustPhase currentPhase{};  // 現在フェーズ
+		bool isFinished = false;	 // 攻撃が完全終了したか
+	};
+
+public:
+
+	BossAttackThrustComponent() = default;
+	~BossAttackThrustComponent() = default;
+
+	BossAttackThrustComponent(const BossAttackThrustComponent&) = delete;
+	BossAttackThrustComponent& operator=(const BossAttackThrustComponent&) = delete;
+
+	/// <summary>
+	/// 初期化（コンポーネント生成時に一度だけ呼ぶ）
+	/// </summary>
+	void Initialize(const ThrustConfig& config = ThrustConfig{});
+
+	/// <summary>
+	/// 更新処理。毎フレーム呼び出す。
+	/// </summary>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// 攻撃を強制リセットしIdleへ戻す。
+	/// </summary>
+	void Reset();
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// 攻撃を開始する。呼び出した瞬間からWindUpフェーズへ遷移。
+	/// </summary>
+	void StartAttack();
+
+public: /// ===Getter=== ///
+	ThrustPhase GetPhase()  const { return phase_; }
+	bool IsActive()  const { return phase_ != ThrustPhase::Idle && phase_ != ThrustPhase::Finished; }
+	bool IsFinished()const { return phase_ == ThrustPhase::Finished; }
+	const ThrustConfig& GetConfig() const { return config_; }
+
+#ifdef USE_IMGUI
+public: /// ===Setter=== ///
+	void ApplyConfig(const ThrustConfig& newConfig);
+#endif // USE_IMGUI
+
+private:
+	/// ===情報=== ///
+	ThrustConfig config_{};
+	ThrustState  state_{};
+	ThrustPhase  phase_ = ThrustPhase::Idle;
+
+private:
+
+	/// <summary>
+	/// 攻撃の更新を実行します。
+	/// </summary>
+	/// <param name="context">更新のコンテキスト情報。</param>
+	/// <param name="result">更新結果を格納する出力パラメータ。</param>
+	void UpdateAttack(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// Y軸周りに angle 度回転させるクォータニオンを生成する。
+	/// </summary>
+	Quaternion MakeYawQuaternion(float angleDeg) const;
+
+	/// <summary>
+	/// 2つのベクトルをtで線形補間する。
+	/// </summary>
+	Vector3 LerpVector3(const Vector3& a, const Vector3& b, float t) const;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/LongAttack/BossAttackOrbitingOrbsComponent.cpp
+============================================================
+#include "BossAttackOrbitingOrbsComponent.h"
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/LongAttack/BossAttackOrbitingOrbsComponent.h
+============================================================
+#pragma once
+
+///=====================================================/// 
+/// OrbitionOrbs
+/// 周りを回る球体を出現させる
+///=====================================================///
+class BossAttackOrbitingOrbsComponent {};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/LongAttack/BossAttackShot.cpp
+============================================================
+#include "BossAttackShot.h"
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/LongAttack/BossAttackShot.h
+============================================================
+#pragma once
+
+///=====================================================/// 
+/// Shot
+/// Bulletを発射する
+///=====================================================///
+class BossAttackShot {};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/HitReaction/BossHitReactionComponent.cpp
+============================================================
+#include "BossHitReactionComponent.h"
+// C++
+#include <cassert>
+#include <numbers>
+// Math
+#include <Math/sMath.h>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+#ifdef USE_IMGUI
+///-------------------------------------------/// 
+/// 設定の適用
+///-------------------------------------------///
+void BossHitReactionComponent::ApplyConfig(const KnockBackConfig& newConfig) {
+	if (newConfig.knockBackForce < 0.0f) {
+		// デバッグビルドでのみエラー
+		assert(false && "Invalid KnockBackConfig");
+	}
+	config_ = newConfig;
+}
+#endif // USE_IMGUI
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void BossHitReactionComponent::Initialize(const KnockBackConfig& config) {
+
+	// 設定の初期化
+	config_ = config;
+
+	// 状態の初期化
+	state_.slowdownTimer = 0.0f;
+	state_.slowdownMultiplier = 1.0f;
+	state_.isHit = false;
+
+	// 色の状態を初期化
+	colorState_.colorTimer = 0.0f;
+	colorState_.colorInterval = 0.0f;
+	colorState_.isColorChange = false;
+
+	// ヒット方向の初期化
+	hitParentDirection_ = { 0.0f, 0.0f, 0.0f };
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+BossHitReactionComponent::UpdateResult BossHitReactionComponent::Update(const UpdateContext& context) {
+	UpdateResult result{};
+
+	/// ===タイマーの更新=== ///
+	TimerUpdate(context.deltaTime);
+
+	/// ===減速係数の更新=== ///
+	UpdateSlowdownMultiplier();
+
+	/// ===色の更新処理=== ///
+	result.color = UpdateColor(context.currentColor);
+
+	/// ===ノックバック処理=== ///
+	if (state_.isHit) {
+		// ノックバック方向の計算(攻撃元から離れる方向)
+		Vector3 direction = hitParentDirection_;
+		direction.y = 0.0f; // Y軸方向は無視
+
+		// 正規化
+		float length = Length(direction);
+		if (length > 0.001f) {
+			direction = Normalize(direction);
+			// ノックバック速度を設定
+			result.velocity = direction * config_.knockBackForce;
+		}
+
+		// ヒットフラグをリセット
+		state_.isHit = false;
+
+	} else {
+		// ノックバック中でない場合は、現在の速度に減速係数を適用
+		result.velocity = context.currentVelocity * state_.slowdownMultiplier;
+	}
+
+	return result;
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void BossHitReactionComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("ダメージリアクション")) {
+		ImGui::DragFloat("ノックバックの強さ", &config_.knockBackForce, 0.1f, 0.0f, 100.0f);
+		ImGui::DragFloat("減速率", &config_.slowdownFactor, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("減速時間", &config_.slowdownDuration, 0.01f, 0.0f, 2.0f);
+		ImGui::DragFloat("透明度変化時間", &config_.alphaDuration, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("ヒット時の透明度", &config_.hitAlpha, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("点滅速度", &config_.flashSpeed, 0.5f, 1.0f, 30.0f);
+
+		ImGui::Separator();
+		ImGui::Text("状態");
+		ImGui::Text("減速タイマー: %.2f", state_.slowdownTimer);
+		ImGui::Text("色変化タイマー: %.2f", colorState_.colorTimer);
+		ImGui::Text("ヒットしたかどうか: %s", state_.isHit ? "true" : "false");
+		ImGui::Text("色変化中: %s", colorState_.isColorChange ? "true" : "false");
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------/// 
+/// ヒット処理の開始
+///-------------------------------------------///
+void BossHitReactionComponent::OnHit(const Vector3& hitParentDirection) {
+	// ヒットフラグを立てる
+	state_.isHit = true;
+	// 当たっている方向を取得
+	hitParentDirection_ = hitParentDirection;
+	// 減速タイマーを設定
+	state_.slowdownTimer = config_.slowdownDuration;
+	// 色変化のタイマーを設定
+	colorState_.colorTimer = config_.alphaDuration;
+	colorState_.colorInterval = 0.0f;
+	colorState_.isColorChange = true;
+}
+
+///-------------------------------------------/// 
+/// タイマーの更新処理
+///-------------------------------------------///
+void BossHitReactionComponent::TimerUpdate(const float deltaTime) {
+	// 減速タイマーの更新
+	if (state_.slowdownTimer > 0.0f) {
+		state_.slowdownTimer -= deltaTime;
+
+		if (state_.slowdownTimer < 0.0f) {
+			state_.slowdownTimer = 0.0f;
+		}
+	}
+
+	// 色変化タイマーの更新
+	if (colorState_.colorTimer > 0.0f) {
+		colorState_.colorTimer -= deltaTime;
+		colorState_.colorInterval += deltaTime;
+
+		if (colorState_.colorTimer < 0.0f) {
+			colorState_.colorTimer = 0.0f;
+			colorState_.colorInterval = 0.0f;
+			colorState_.isColorChange = false;
+		}
+	}
+}
+
+///-------------------------------------------/// 
+/// 減速係数の更新処理
+///-------------------------------------------///
+void BossHitReactionComponent::UpdateSlowdownMultiplier() {
+	if (state_.slowdownTimer > 0.0f) {
+		// 減速時間に応じて線形補間
+		// タイマーが減るにつれて、減速率から通常速度(1.0)に戻る
+		float t = state_.slowdownTimer / config_.slowdownDuration;
+		state_.slowdownMultiplier = Math::Lerp(1.0f, config_.slowdownFactor, t);
+	} else {
+		// 減速時間が終了したら通常速度
+		state_.slowdownMultiplier = 1.0f;
+	}
+}
+
+///-------------------------------------------/// 
+/// 色の更新処理
+///-------------------------------------------///
+Vector4 BossHitReactionComponent::UpdateColor(const Vector4& currentColor) const {
+	Vector4 color = currentColor;
+
+	if (colorState_.isColorChange && colorState_.colorTimer > 0.0f) {
+		// サイン波を使って点滅効果を生成
+		float wave = std::sin(colorState_.colorInterval * config_.flashSpeed * 2.0f * std::numbers::pi_v<float>);
+
+		// サイン波の値が正の時は半透明、負の時は通常
+		if (wave > 0.0f) {
+			color.w = config_.hitAlpha;
+		} else {
+			color.w = 1.0f;
+		}
+	} else {
+		// 色変化が終了したら元の色に戻す
+		color.w = 1.0f;
+	}
+
+	return color;
+}
+
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/HitReaction/BossHitReactionComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include <Math/Vector3.h>
+#include <Math/Vector4.h>
+
+///=====================================================/// 
+/// BossHitReactionComponent
+/// 
+///=====================================================///
+class BossHitReactionComponent {
+private:
+	/// ===状態の構造体=== ///
+	struct KnockBackState {
+		float slowdownTimer = 0.0f;		 // 減速用タイマー
+		float slowdownMultiplier = 1.0f; // 減速率の乗数
+		bool isHit = false;				 // ヒットしたかどうか
+	};
+	/// ===色の状態構造体=== ///
+	struct ColorState {
+		float colorTimer = 0.0f;    // 色変化用タイマー
+		float colorInterval = 0.0f; // 色変化の間隔
+		bool isColorChange = false; // 色変化フラグ
+	};
+
+public:
+	/// ===設定パラメータの構造体=== ///
+	struct KnockBackConfig {
+		float knockBackForce = 1.5f;	// ノックバックの強さ
+		float slowdownFactor = 0.3f;	// 減速率(0.0~1.0、小さいほど遅くなる)
+		float slowdownDuration = 0.2f;	// 減速効果の持続時間
+		float alphaDuration = 0.2f;		// 透明度変化の持続時間
+		float hitAlpha = 0.6f;			// ヒット時の透明度
+		float flashSpeed = 10.0f;		// 点滅速度
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Vector3 currentPosition;	// 現在の位置
+		Vector3 currentVelocity;	// 現在の速度
+		Vector4 currentColor;    // 現在の色
+		float deltaTime;
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity = { 0.0f, 0.0f, 0.0f };
+		Vector4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	};
+
+public:
+
+	BossHitReactionComponent() = default;
+	~BossHitReactionComponent() = default;
+
+	// コピー・ムーブは明示的に制御
+	BossHitReactionComponent(const BossHitReactionComponent&) = delete;
+	BossHitReactionComponent& operator=(const BossHitReactionComponent&) = delete;
+
+	/// <summary>
+	/// KnockBack の初期化を行います。
+	/// </summary>
+	/// <param name="config">初期化に使用する設定を const 参照で受け取ります。引数を省略した場合は KnockBackConfig の既定値が使用されます。</param>
+	void Initialize(const KnockBackConfig& config = KnockBackConfig{});
+
+	/// <summary>
+	/// 与えられた更新コンテキストに基づいて更新処理を行い、その結果を返します。
+	/// </summary>
+	/// <param name="context">更新に必要な情報を保持する入力コンテキスト。参照で渡され、関数はこの情報を用いて更新を実行します。</param>
+	/// <returns>更新処理の結果を表す UpdateResult。成功／失敗や状態に関する情報を含みます。</returns>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+	/// <summary>
+	/// オブジェクトがヒットされたときに呼び出されるコールバック。ヒットの方向を受け取ります。
+	/// </summary>
+	/// <param name="hitParentDirection">親座標系（親オブジェクト基準）で表されたヒットの方向を示すVector3へのconst参照。関数内で値は変更されません。</param>
+	void OnHit(const Vector3& hitParentDirection);
+
+public: /// ===Getter=== ///
+	// KnockBackConfig
+	const KnockBackConfig& GetConfig() const { return config_; }
+	// KnockBackState
+	const KnockBackState& GetKnockBackState() const { return state_; }
+	// ColorState
+	const ColorState& GetColorState() const { return colorState_; }
+
+#ifdef USE_IMGUI
+public: /// ===Setter=== ///
+	// KnockBackConfig
+	void ApplyConfig(const KnockBackConfig& newConfig);
+#endif // USE_IMGUI
+private:
+	/// ===情報=== ///
+	KnockBackConfig config_;
+	KnockBackState state_;
+	ColorState colorState_;
+
+	// ヒットした相手の方向
+	Vector3 hitParentDirection_ = { 0.0f, 0.0f, 0.0f };
+
+private:
+
+	/// <summary>
+	/// タイマーの更新処理
+	/// </summary>
+	/// <param name="deltaTime">デルタタイム</param>
+	void TimerUpdate(const float deltaTime);
+
+	/// <summary>
+	/// 減速係数の更新処理
+	/// </summary>
+	void UpdateSlowdownMultiplier();
+
+	/// <summary>
+	/// 渡された色を元に更新された色を返します。`
+	/// </summary>
+	/// <param name="color">更新の基となる色。参照渡しされた const Vector4 オブジェクト。</param>
+	/// <returns>更新された色を表す Vector4 オブジェクト。</returns>
+	Vector4 UpdateColor(const Vector4& color) const;
+};
 
 
 ============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Move/BossMoveComponent.cpp
 ============================================================
 #include "BossMoveComponent.h"
+// C++
+#include <cassert>
+#include <algorithm>
+// Math
+#include <Math/sMath.h>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
+
+#ifdef USE_IMGUI
+///-------------------------------------------///  
+///	設定の適用
+///-------------------------------------------///
+void BossMoveComponent::ApplyConfig(const MoveConfig& newconfig) {
+	if (newconfig.speed < 0.0f) {
+		assert(false && "Invalid MoveConfig");
+	}
+
+	// configの設定
+	config_ = newconfig;
+}
+#endif // USE_IMGUI
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void BossMoveComponent::Initialize(const MoveConfig& config) {
+	// 設定の初期化
+	config_ = config;
+	state_ = MoveState{};
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+BossMoveComponent::UpdateResult BossMoveComponent::Update(const UpdateContext & context) {
+	UpdateResult result;
+
+	// プレイヤーへのベクトルを計算
+	Vector3 toPlayer = context.playerPosition - context.currentPosition;
+
+	// 高低差を無視し、水平面（XZ平面）のみの移動とY軸周りの回転にする
+	toPlayer.y = 0.0f;
+
+	// プレイヤーに向かってゆっくり移動する方向を計算
+	if (Length(toPlayer) > 0.001f) {
+		state_.direction = Normalize(toPlayer);
+	}
+
+	result.velocity = state_.direction * config_.speed;
+
+	// プレイヤーの方を徐々に向くように回転を計算
+	result.rotate = CalcRotation(context.currentRotation, state_.direction, context.deltaTime);
+
+	return result;
+}
+
+///-------------------------------------------/// 
+/// ImGui情報の表示
+///-------------------------------------------///
+void BossMoveComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("移動情報")) {
+		// 速度・回転
+		ImGui::DragFloat("移動速度", &config_.speed, 0.01f, 0.0f, 10.0f);
+		ImGui::DragFloat("回転速度", &config_.rotationSpeed, 0.01f, 0.01f, 1.0f);
+		ImGui::TreePop();
+	}
+#endif // USE_IMGUI
+}
+
+///-------------------------------------------///  
+/// 現在の回転から目標方向への回転を計算します。
+///-------------------------------------------///
+Quaternion BossMoveComponent::CalcRotation(const Quaternion& current, const Vector3& targetDir, float deltaTime) const {
+	// targetDir がほぼゼロベクトルなら回転させない
+	if (Length(targetDir) < 0.001f) {
+		return current;
+	}
+	// forwardを基準に targetDir 方向への回転を計算
+	const Vector3    forward = { 0.0f, 0.0f, 1.0f };
+	const Quaternion targetRotation = DirectionToQuaternion(forward, Normalize(targetDir));
+	const float      t = std::min(config_.rotationSpeed * deltaTime, 1.0f);
+	return Math::SLerp(current, targetRotation, t);
+
+}
+
+///-------------------------------------------/// 
+/// 2つの方向ベクトル間の回転を表すクォータニオンを計算します。
+///-------------------------------------------///
+Quaternion BossMoveComponent::DirectionToQuaternion(const Vector3& from, const Vector3& to) const {
+	// 2ベクトルが同じ方向の場合は恒等Quaternionを返す
+	const float dot = Dot(from, to);
+	if (dot >= 1.0f - 0.001f) {
+		return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+	}
+
+	// 2ベクトルが逆方向の場合はY軸周りで180度回転させる
+	if (dot <= -1.0f + 0.001f) {
+		// キャラクターが上下反転しないように、強制的にY軸を回転軸にする
+		return Quaternion{
+			0.0f,
+			1.0f,
+			0.0f,
+			0.0f
+		};
+	}
+
+	// 通常ケース：外積を回転軸、内積から角度を求める
+	const Vector3 axis = Normalize(Math::Cross(from, to));
+	const float   angle = std::acos(std::clamp(dot, -1.0f, 1.0f));
+	const float   s = std::sin(angle * 0.5f);
+
+	return Quaternion{
+		axis.x * s,
+		axis.y * s,
+		axis.z * s,
+		std::cos(angle * 0.5f)
+	};
+
+}
 
 
 ============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Move/BossMoveComponent.h
 ============================================================
 #pragma once
-class BossMoveComponent {};
+/// ===Include=== ///
+#include <Math/Vector2.h>
+#include <Math/Vector3.h>
+#include <Math/Quaternion.h>
+
+///=====================================================/// 
+/// BossMoveComponent
+///=====================================================///
+class BossMoveComponent {
+private:
+
+	/// ===状態の構造体=== ///
+	struct MoveState {
+		Vector3 direction{};         // 現在の移動方向
+	};
+public:
+	/// ===設定パラメータの構造体=== ///
+	struct MoveConfig {
+		float speed = 0.05f;			// 移動速度
+		float rotationSpeed = 0.1f;		// 回転速度
+	};
+
+	/// ===更新用コンテキスト=== ///
+	struct UpdateContext {
+		Vector3 currentPosition{};		// 現在の位置
+		Quaternion currentRotation{};	// 現在の回転
+		Vector3 playerPosition{};		// プレイヤーの位置
+		float deltaTime = 0.0f;			// デルタタイム
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity{};				// 移動ベクトル
+		Quaternion rotate{};			// 回転
+	};
+
+public:
+
+	BossMoveComponent() = default;
+	~BossMoveComponent() = default;
+
+	// コピー・ムーブは明示的に制御
+	BossMoveComponent(const BossMoveComponent&) = delete;
+	BossMoveComponent& operator=(const BossMoveComponent&) = delete;
+
+	/// <summary>
+	/// 指定した敵オブジェクトを初期化し、中心位置を設定します。
+	/// </summary>
+	void Initialize(const MoveConfig& config = MoveConfig{});
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	/// <param name="context">更新処理に必要なコンテキスト情報。</param>
+	/// <returns>更新処理の実行結果。</returns>
+	UpdateResult Update(const UpdateContext& context);
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information();
+
+public: /// ===Getter=== ///
+	// MoveConfig
+	const MoveConfig& GetConfig() const { return config_; }
+	// MoveState
+	const MoveState& GetState() const { return state_; }
+
+#ifdef USE_IMGUI
+public: /// ===Setter=== ///
+	// MoveConfig
+	void ApplyConfig(const MoveConfig& newconfig);
+#endif // USE_IMGUI
+
+private:
+	/// ===情報=== ///
+	MoveConfig config_;
+	MoveState state_;
+
+	/// ===状態=== ///
+	enum class MoveStateType {
+		Idle,   // 待機
+		Chase,  // 追跡
+	};
+
+private:
+
+	/// <summary>
+	/// 現在の回転から目標方向への回転を計算します。
+	/// </summary>
+	/// <param name="current">現在の回転を表すクォータニオン。</param>
+	/// <param name="targetDir">目標となる方向ベクトル。</param>
+	/// <param name="deltaTime">前フレームからの経過時間（秒）。</param>
+	/// <returns>計算された回転を表すクォータニオン。</returns>
+	Quaternion CalcRotation(const Quaternion& current, const Vector3& targetDir, float deltaTime) const;
+
+	/// <summary>
+	/// 2つの方向ベクトル間の回転を表すクォータニオンを計算します。
+	/// </summary>
+	/// <param name="from">回転の開始方向ベクトル。</param>
+	/// <param name="to">回転の終了方向ベクトル。</param>
+	/// <returns>from方向からto方向への回転を表すクォータニオン。</returns>
+	Quaternion DirectionToQuaternion(const Vector3& from, const Vector3& to) const;
+};
 
 
 
@@ -38520,7 +40893,7 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.
 ============================================================
 #pragma once
 /// ===前方宣言=== ///
-class Boss;
+class BossEnemy;
 
 ///=====================================================/// 
 /// ボスのベースステート
@@ -38535,7 +40908,7 @@ public:
 	/// ステートに入った時に呼ばれる処理、純粋仮想関数
 	/// </summary>
 	/// <param name="boss">Bossのポインター</param>
-	virtual void Enter(Boss* boss) = 0;
+	virtual void Enter(BossEnemy* boss) = 0;
 
 	/// <summary>
 	/// 更新処理、純粋仮想関数
@@ -38549,7 +40922,587 @@ public:
 
 protected:
 	// Bossのポインター
-	Boss* boss_ = nullptr;
+	BossEnemy* boss_ = nullptr;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossAttackState.cpp
+============================================================
+#include "BossAttackState.h"
+// BossEnemy
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// State
+#include "MoveBossState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void BossAttackState::Enter(BossEnemy* enemy) {
+	boss_ = enemy;
+	// velocityをリセット
+	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+
+	// -----------------------------------------------
+	// Enter時点で即座に攻撃を選択・開始する。
+	// MoveBossState側で IsAnyAttackAvailable() が true に
+	// なってから遷移してくるので、ここでは必ず選択できる。
+	// -----------------------------------------------
+	//const float dist = CalcDistToPlayer();
+	//const Vector3& bossPos = boss_->GetTransform().translate;
+	//const Vector3& playerPos = boss_->GetPlayer()->GetTransform().translate;
+	//const Quaternion& rot = boss_->GetTransform().rotate;
+	//boss_->GetAttackComponent().SelectAndStart(dist, bossPos, playerPos, rot);
+}
+
+///-------------------------------------------/// 
+/// 更新時に呼び出す
+///-------------------------------------------///
+void BossAttackState::Update() {
+	//// コンテキストの準備
+	//BossAttackManager::UpdateContext context{
+	//	.bossRotation = boss_->GetTransform().rotate,
+	//	.bossPosition = boss_->GetTransform().translate,
+	//	.deltaTime = boss_->GetDeltaTime(),
+	//};
+	//// AttackManagerを更新
+	//BossAttackManager::UpdateResult result = boss_->GetAttackComponent().Update(context);
+
+	//// 攻撃中はボスへ結果を反映して終了
+	//if (result.isAttacking) {
+	//	// 回転を反映
+	//	boss_->SetRotate(result.modelRotation);
+
+	//	// 武器のオフセットを反映
+	//	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
+
+	//	// 踏み込みなどの位置デルタを反映
+	//	// （Y方向は物理演算に委ねるため上書きしない）
+	//	if (result.modelPositionDelta.x != 0.0f ||
+	//		result.modelPositionDelta.z != 0.0f) {
+	//		Vector3 vel = result.modelPositionDelta / boss_->GetDeltaTime();
+	//		vel.y = boss_->GetVelocity().y;
+	//		boss_->SetVelocity(vel);
+	//	}
+	//	return;
+	//}
+
+	//// -----------------------------------------------
+	//// 攻撃が完了したフレーム（justFinished == true）の処理。
+	//// 次の攻撃をすぐ打てるか判定し、
+	////   → 打てる : AttackStateのまま次の攻撃を開始（Stateを抜けない）
+	////   → 打てない: MoveBossStateへ戻る
+	//// -----------------------------------------------
+	//if (result.justFinished) {
+	//	// 攻撃完了後に velocityをリセット（踏み込み速度が残らないように）
+	//	boss_->SetVelocity({ 0.0f, boss_->GetVelocity().y, 0.0f });
+
+	//	const float dist = CalcDistToPlayer();
+
+	//	if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
+	//		// 次の攻撃を即座に開始（ChangeState不要・コスト0）
+	//		const Vector3& bossPos = boss_->GetTransform().translate;
+	//		const Vector3& playerPos = boss_->GetPlayer()->GetTransform().translate;
+	//		const Quaternion& rot = boss_->GetTransform().rotate;
+
+	//		boss_->GetAttackComponent().SelectAndStart(dist, bossPos, playerPos, rot);
+	//	} else {
+	//		/// ===Stateの変更=== ///
+	//		boss_->ChangeState(std::make_unique<MoveBossState>());
+	//	}
+	//}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void BossAttackState::Finalize() {
+	// Componentの状態を確実にリセットしておく
+	//boss_->GetAttackComponent().ForceReset();
+	// 終了処理
+	BossState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// プレイヤーとボスの距離を計算して返す。
+///-------------------------------------------///
+float BossAttackState::CalcDistToPlayer() const {
+	const Vector3 diff =
+		boss_->GetPlayer()->GetTransform().translate -
+		boss_->GetTransform().translate;
+	return Length(diff);
+}
+
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossAttackState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/BossState.h"
+
+///=====================================================/// 
+/// AttackState
+/// Bossの攻撃状態を表すクラス
+///=====================================================///
+class BossAttackState : public BossState {
+public:
+	~BossAttackState() override = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
+	void Enter(BossEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	/// <summary>
+	/// プレイヤーとボスの距離を計算して返す。
+	/// </summary>
+	float CalcDistToPlayer() const;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossDownwarAttackState.cpp
+============================================================
+#include "BossDownwarAttackState.h"
+// BossEnemy
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// State
+#include "MoveBossState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void BossDownwarAttackState::Enter(BossEnemy* enemy) {
+	boss_ = enemy;
+	// velocityをリセット
+	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+	// 攻撃開始
+	boss_->GetThrustComponent().StartAttack();
+	boss_->GetWeapon().SetActive(true); // 武器を有効化
+}
+
+///-------------------------------------------///  
+/// 更新時に呼び出す
+///-------------------------------------------///
+void BossDownwarAttackState::Update() {
+	// コンテキストの準備
+	BossAttackDownwardSwingComponent::UpdateContext context{
+		.baseRotation = boss_->GetTransform().rotate,
+		.deltaTime = boss_->GetDeltaTime(),
+	};
+	// AttackComponentを更新
+	BossAttackDownwardSwingComponent::UpdateResult result = boss_->GetDownswingComponent().Update(context);
+
+	/// ===結果の反映=== ///
+	// 速度の反映
+	boss_->SetVelocity(result.velocity);
+
+	// 回転の反映
+	boss_->SetRotate(result.rotation);
+
+	// 武器のオフセットを反映
+	boss_->GetWeapon().SetTranslate(result.weaponPosition);
+
+	if (result.isFinished) {
+		// タイマーリセット
+		boss_->SetDownSwingTimer(boss_->GetAttackInfo().thrustCooldown);
+
+		// 武器を無効化
+		boss_->GetWeapon().SetActive(false);
+
+		// 攻撃終了 → MoveBossStateへ遷移
+		boss_->ChangeState(std::make_unique<MoveBossState>());
+		return;
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void BossDownwarAttackState::Finalize() {
+	BossState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// プレイヤーとボスの距離を計算して返す。
+///-------------------------------------------///
+float BossDownwarAttackState::CalcDistToPlayer() const {
+	return 0.0f;
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossDownwarAttackState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/BossState.h"
+
+///=====================================================/// 
+/// DownwarAttackState
+/// 叩きつけ攻撃の状態を表すクラス
+///=====================================================///
+class BossDownwarAttackState : public BossState {
+public:
+	~BossDownwarAttackState() override = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
+	void Enter(BossEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	/// <summary>
+	/// プレイヤーとボスの距離を計算して返す。
+	/// </summary>
+	float CalcDistToPlayer() const;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossHitReactionState.cpp
+============================================================
+#include "BossHitReactionState.h"
+// BossEnemy
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// State
+#include "MoveBossState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void BossHitReactionState::Enter(BossEnemy* enemy) {
+	boss_ = enemy;
+}
+
+///-------------------------------------------/// 
+/// 更新時に呼び出す
+///-------------------------------------------///
+void BossHitReactionState::Update() {
+	// コンテキストの準備
+	BossHitReactionComponent::UpdateContext context{
+		.currentPosition = boss_->GetTransform().translate,
+		.currentVelocity = boss_->GetVelocity(),
+		.currentColor = boss_->GetColor(),
+		.deltaTime = boss_->GetDeltaTime()
+	};
+	// 移動コンポーネントの更新
+	BossHitReactionComponent::UpdateResult result = boss_->GetHitReactionComponent().Update(context);
+
+	// 結果の適用
+	boss_->SetVelocity(result.velocity);
+
+	// カラーの更新
+	boss_->SetColor(result.color);
+
+	/// ===Stateの変更=== ///
+	/// ===ヒットリアクションが終了したらMoveStateへ遷移=== ///
+	float slowdownTimer = boss_->GetHitReactionComponent().GetKnockBackState().slowdownTimer;
+	float colorTimer = boss_->GetHitReactionComponent().GetColorState().colorTimer;
+	if (slowdownTimer <= 0.0f && colorTimer <= 0.0f) {
+		boss_->ChangeState(std::make_unique<MoveBossState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void BossHitReactionState::Finalize() {
+	BossState::Finalize();
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossHitReactionState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/BossState.h"
+
+///=====================================================/// 
+/// BossHitReactionState
+/// ヒットリアクションの状態
+///=====================================================///
+class BossHitReactionState : public BossState {
+public:
+	~BossHitReactionState() override = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
+	void Enter(BossEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossJumpSmashAttackState.cpp
+============================================================
+#include "BossJumpSmashAttackState.h"
+// BossEnemy
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// State
+#include "MoveBossState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void BossJumpSmashAttackState::Enter(BossEnemy* enemy) {
+	boss_ = enemy;
+	// velocityをリセット
+	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+	// 攻撃開始
+	boss_->GetJumpSmashComponent().StartAttack(
+		boss_->GetTransform().translate, 
+		boss_->GetPlayer()->GetTransform().translate, 
+		boss_->GetTransform().rotate);
+
+	// 武器を有効化
+	boss_->GetWeapon().SetActive(true); 
+}
+
+///-------------------------------------------///  
+/// 更新時に呼び出す
+///-------------------------------------------///
+void BossJumpSmashAttackState::Update() {
+	// コンテキストの準備
+	BossAttackJumpSmashComponent::UpdateContext context{
+		.currentPosition = boss_->GetTransform().translate,
+		.deltaTime = boss_->GetDeltaTime(),
+	};
+	// AttackComponentを更新
+	BossAttackJumpSmashComponent::UpdateResult result = boss_->GetJumpSmashComponent().Update(context);
+
+	/// ===結果の反映=== ///
+	// 速度の反映
+	boss_->SetVelocity(result.velocity);
+
+	// 回転の反映
+	boss_->SetRotate(result.rotation);
+
+	// 武器のオフセットを反映
+	boss_->GetWeapon().SetTranslate(result.weaponPosition);
+
+	if (result.isFinished) {
+		// タイマーリセット
+		boss_->SetJumpSmashTimer(boss_->GetAttackInfo().jumpSmashCooldown);
+
+		// 武器を無効化
+		boss_->GetWeapon().SetActive(false);
+
+		// 攻撃終了 → MoveBossStateへ遷移
+		boss_->ChangeState(std::make_unique<MoveBossState>());
+		return;
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void BossJumpSmashAttackState::Finalize() {
+	BossState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// プレイヤーとボスの距離を計算して返す。
+///-------------------------------------------///
+float BossJumpSmashAttackState::CalcDistToPlayer() const {
+	return 0.0f;
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossJumpSmashAttackState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/BossState.h"
+
+///=====================================================/// 
+/// BossJumpSmashAttackState
+/// ジャンプして叩きつける攻撃の状態を表すクラス
+///=====================================================///
+class BossJumpSmashAttackState : public BossState {
+public:
+	~BossJumpSmashAttackState() override = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
+	void Enter(BossEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	/// <summary>
+	/// プレイヤーとボスの距離を計算して返す。
+	/// </summary>
+	float CalcDistToPlayer() const;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossThrustAttackState.cpp
+============================================================
+#include "BossThrustAttackState.h"
+// BossEnemy
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// State
+#include "MoveBossState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void BossThrustAttackState::Enter(BossEnemy* enemy) {
+	boss_ = enemy;
+	// velocityをリセット
+	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+	// 攻撃開始
+	boss_->GetThrustComponent().StartAttack();
+	boss_->GetWeapon().SetActive(true); // 武器を有効化
+}
+
+///-------------------------------------------///  
+/// 更新時に呼び出す
+///-------------------------------------------///
+void BossThrustAttackState::Update() {
+	// コンテキストの準備
+	BossAttackThrustComponent::UpdateContext context{
+		.baseRotation = boss_->GetTransform().rotate,
+		.deltaTime = boss_->GetDeltaTime(),
+	};
+	// AttackComponentを更新
+	BossAttackThrustComponent::UpdateResult result = boss_->GetThrustComponent().Update(context);
+
+	// 結果の反映
+	boss_->SetRotate(result.modelRotation);
+
+	// 武器のオフセットを反映
+	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
+
+	if (result.isFinished) {
+		// タイマーリセット
+		boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown); 
+
+		// 武器を無効化
+		boss_->GetWeapon().SetActive(false);
+
+		// 攻撃終了 → MoveBossStateへ遷移
+		boss_->ChangeState(std::make_unique<MoveBossState>());
+		return;
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void BossThrustAttackState::Finalize() {
+	BossState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// プレイヤーとボスの距離を計算して返す。
+///-------------------------------------------///
+float BossThrustAttackState::CalcDistToPlayer() const {
+	return 0.0f;
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossThrustAttackState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/BossState.h"
+
+///=====================================================/// 
+/// ThrustAttackState
+/// 突き攻撃の状態を表すクラス
+///=====================================================///
+class BossThrustAttackState : public BossState {
+public:
+	~BossThrustAttackState() override = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
+	void Enter(BossEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	/// <summary>
+	/// プレイヤーとボスの距離を計算して返す。
+	/// </summary>
+	float CalcDistToPlayer() const;
 };
 
 
@@ -38558,13 +41511,271 @@ protected:
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/MoveBossState.cpp
 ============================================================
 #include "MoveBossState.h"
+// BossEnemy
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// State
+#include "BossAttackState.h"
+#include "BossThrustAttackState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void MoveBossState::Enter(BossEnemy* enemy) {
+	boss_ = enemy;
+	// velocityをリセット
+	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+}
+
+///-------------------------------------------/// 
+/// 更新時に呼び出す
+///-------------------------------------------///
+void MoveBossState::Update() {
+	// プレイヤーとの距離を計算
+	const float dist = CalcDistToPlayer();
+
+	// コンテキストの準備
+	BossMoveComponent::UpdateContext context{
+		.currentPosition = boss_->GetTransform().translate,
+		.currentRotation = boss_->GetTransform().rotate,
+		.playerPosition = boss_->GetPlayer()->GetTransform().translate,
+		.deltaTime = boss_->GetDeltaTime(),
+	};
+	// 移動コンポーネントの更新
+	BossMoveComponent::UpdateResult result = boss_->GetMoveComponent().Update(context);
+
+	// 結果の適用
+	result.velocity.y = boss_->GetVelocity().y;
+	boss_->SetVelocity(result.velocity);
+
+	// 回転の更新
+	boss_->SetRotate(result.rotate);
+
+	/// ===Stateの変更=== ///
+	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+		return;
+	}
+
+	/*if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
+		boss_->ChangeState(std::make_unique<BossAttackState>());
+	}*/
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void MoveBossState::Finalize() {
+	BossState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// プレイヤーとボスの距離を計算して返す。
+///-------------------------------------------///
+float MoveBossState::CalcDistToPlayer() const {
+	const Vector3 diff =
+		boss_->GetPlayer()->GetTransform().translate -
+		boss_->GetTransform().translate;
+	return Length(diff);
+}
 
 
 ============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/MoveBossState.h
 ============================================================
 #pragma once
-class MoveBossState {};
+/// ===Include=== ///
+#include "Base/BossState.h"
+
+///=====================================================/// 
+/// MoveState
+/// ボスの移動状態を表すクラス
+///=====================================================///
+class MoveBossState : public BossState {
+public:
+	~MoveBossState() override = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
+	void Enter(BossEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	/// <summary>
+	/// プレイヤーとボスの距離を計算して返す。
+	/// </summary>
+	float CalcDistToPlayer() const;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Weapon/BossWeapon.cpp
+============================================================
+#include "BossWeapon.h"
+// BossEnemy
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// Service
+#include "Service/Collision.h"
+
+///-------------------------------------------/// 
+///	デストラクタ
+///-------------------------------------------///
+BossWeapon::~BossWeapon() {
+	object3d_.reset();
+}
+ 
+///-------------------------------------------/// 
+/// 初期化
+///-------------------------------------------///
+void BossWeapon::Initialize() {
+
+	/// ===Object3Dの初期化=== ///
+	object3d_ = std::make_unique<Object3d>();
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "PlayerWeapon");
+
+	/// ===OBBCollider=== ///
+	OBBCollider::Initialize();
+	name_ = MiiEngine::ColliderName::EnemyWeapon;
+	SetHalfSize({ 0.5f, 0.5f, 5.0f });
+
+	object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 初期状態では透明にしておく
+}
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+void BossWeapon::Update() {
+	if (!isActive_)return;
+
+	OBBCollider::Update();
+}
+
+///-------------------------------------------/// 
+/// 描画
+///-------------------------------------------///
+void BossWeapon::Draw(MiiEngine::BlendMode mode) {
+	if (!isActive_)return;
+
+	OBBCollider::Draw(mode);
+}
+
+///-------------------------------------------/// 
+/// ImGui
+///-------------------------------------------///
+void BossWeapon::Information() {
+
+}
+
+///-------------------------------------------///  
+/// 親の設定
+///-------------------------------------------///
+void BossWeapon::SetUpParent(BossEnemy * parent) {
+	bossEnemy_ = parent;
+	object3d_->SetParent(bossEnemy_->GetModelCommon());
+}
+
+///-------------------------------------------/// 
+/// 衝突処理
+///-------------------------------------------///
+void BossWeapon::OnCollision(MiiEngine::Collider * collider) {
+	collider;
+}
+
+///-------------------------------------------/// 
+/// Seter
+///-------------------------------------------///
+void BossWeapon::SetActive(bool flag) {
+	isActive_ = flag;
+
+	if (isActive_) {
+		Service::Collision::AddCollider(this);
+		object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	}
+	else {
+		Service::Collision::RemoveCollider(this);
+		object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f });
+	}
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/Weapon/BossWeapon.h
+============================================================
+#pragma once
+/// ===Include=== ///
+// OBB
+#include <Engine/Collider/OBBCollider.h>
+
+/// ===前方宣言=== ///
+class BossEnemy;
+
+///=====================================================/// 
+/// BossWeapon
+///=====================================================///
+class BossWeapon : public MiiEngine::OBBCollider {
+public:
+
+	BossWeapon() = default;
+	~BossWeapon() override;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	void Initialize() override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 描画処理
+	/// </summary>
+	/// <param name="mode">描画に使用するブレンドモード。</param>
+	void Draw(MiiEngine::BlendMode mode) override;
+
+	/// <summary>
+	/// ImGui情報の表示
+	/// </summary>
+	void Information() override;
+
+	/// <summary>
+	/// 親のボスエネミーを設定します。
+	/// </summary>
+	/// <param name="parent">親として設定するボスエネミーへのポインター。</param>
+	void SetUpParent(BossEnemy* parent);
+
+public: /// ===衝突処理=== ///
+	/// <summary>
+	/// 衝突処理
+	/// </summary>
+	/// <param name="collider">衝突した相手の Collider オブジェクトを指すポインター。</param>
+	void OnCollision(MiiEngine::Collider* collider) override;
+
+public: /// ===Setter=== ///
+	// アクティブ状態の設定
+	void SetActive(bool flag);
+
+private: /// ===メンバ変数=== ///
+	// BossEnemy
+	BossEnemy* bossEnemy_ = nullptr;
+	// Colliderのアクティブ
+	bool isActive_ = false;
+};
 
 
 
@@ -38785,7 +41996,7 @@ void MobEnemy::SettingParamita() {
 			.chaseRange = 16.0f,
 			.evadeRange = 2.0f,
 			.moveTime = 2.0f,
-			.evadeTime = 4.0f
+			.evadeTime = 5.0f
 	};
 	moveComponent_->Initialize(moveConfig);
 	// TeleportComponentの初期化
@@ -39109,6 +42320,16 @@ void CloseRangeEnemy::Information() {
 void CloseRangeEnemy::OnCollision(MiiEngine::Collider* collider) {
 	// MobEnemyの当たり判定
 	MobEnemy::OnCollision(collider);
+
+	/// ===PlayerとObject=== ///
+	if (attackInfo_.isAttack) {
+		// PlayerとObjectの当たり判定
+		if (collider->GetColliderName() == MiiEngine::ColliderName::Player ||
+			collider->GetColliderName() == MiiEngine::ColliderName::Object) {
+			// 攻撃を解除
+			attackInfo_.isAttack = false;
+		}
+	}
 }
 
 ///-------------------------------------------/// 
@@ -40929,7 +44150,7 @@ void EnemyMoveState::Update() {
     EnemyMoveComponent::UpdateResult result = enemy_->GetMovementComponent().Update(context);
 
     // 結果の適用
-    result.velocity.y = enemy_->GetVelocity().y;
+    result.velocity = enemy_->GetVelocity();
     enemy_->SetVelocity(result.velocity);
 
 	// 回転の更新
@@ -41733,7 +44954,7 @@ void GameCharacter<TCollider>::Initialize() {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::PreUpdate() {
 	/// ===死亡処理=== ///
-	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -50.0f) {
+	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -10.0f) {
 		baseInfo_.isDead = true;
 	}
 
@@ -43246,7 +46467,7 @@ void Player::Initialize() {
 	// コライダーに追加
 	Service::Collision::AddCollider(this);
 	// OBBの設定
-	SetHalfSize({ 2.0f, 2.0f, 2.5f });
+	SetHalfSize({ 2.0f, 2.5f, 2.0f });
 }
 
 
@@ -43254,8 +46475,6 @@ void Player::Initialize() {
 /// 更新
 ///-------------------------------------------///
 void Player::Update() {
-	/// ===GameCharacterの更新前=== ///
-	GameCharacter::PreUpdate();
 
 	// 早期リターン
 	if (baseInfo_.isDead) {
@@ -43347,7 +46566,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 	GameCharacter::OnCollision(collider);
 
 	// Colliderによって処理を変更
-	if (collider->GetColliderName() == MiiEngine::ColliderName::Enemy || collider->GetColliderName() == MiiEngine::ColliderName::EnemyBullet) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::EnemyWeapon || collider->GetColliderName() == MiiEngine::ColliderName::EnemyBullet) {
 
 		// 無敵状態でなければダメージを受ける
 		if (!invincibleInfo_.isFlag) {
@@ -44784,7 +48003,7 @@ void GroundOcean::Initialize() {
 	// FFTオーシャンの初期化
 	fftOcean_ = std::make_unique<MiiEngine::FFTOceanGenerator>();
 	fftOcean_->Initialize(256);
-	fftOcean_->SetTranslate({ 0.0f, -30.0f, 0.0f });
+	fftOcean_->SetTranslate({ 0.0f, -2.0f, 0.0f });
 	fftOcean_->SetScale({ 2000.0f, 1.0f, 2000.0f });
 
 	// アクティブカメラを設定
@@ -44921,10 +48140,10 @@ template class GameObject<MiiEngine::OBBCollider>;
 template class GameObject<MiiEngine::SphereCollider>;
 
 ///-------------------------------------------/// 
-/// デストラクタ
+/// デストラクタ						
 ///-------------------------------------------///
 template<typename TCollider> requires MiiEngine::IsCollider<TCollider>
-GameObject<TCollider>::~GameObject() {
+GameObject<TCollider>::~GameObject() {				
 	this->object3d_.reset();
 }
 
@@ -45134,41 +48353,35 @@ void GameStage::LoadStageData(const std::string& stageData) {
 	// オブジェクト分回す
 	for (const auto& stage : levelData->objects) {
 		if (stage.classType == LevelData::ClassTypeLevel::Ground) {
-			// Object3dの生成
-			std::shared_ptr<Ground> ground = std::make_shared<Ground>();
-			if (stage.fileName == "Ground") {
+
+			if (stage.fileName == "Ocean") {
+				std::shared_ptr<GroundOcean> ocean = std::make_shared<GroundOcean>();
+				ocean->Initialize();
+				ocean->Update();
+				Oceans_.emplace_back(ocean);
+			} else {
+				// Object3dの生成
+				std::shared_ptr<Ground> ground = std::make_shared<Ground>();
 				ground->GameInit(stage.fileName);
-			} else if (stage.fileName == "Ground2"){
-				ground->GameInit(stage.fileName);
-			} else if (stage.fileName == "Bridge") {
-				ground->GameInit(stage.fileName);
-			} else if (stage.fileName == "Bridge2") {
-				ground->GameInit(stage.fileName);
+				// 座標設定
+				ground->SetTranslate(stage.translation);
+				ground->SetRotate(Math::QuaternionFromVector(stage.rotation));
+				ground->SetScale(stage.scaling);
+				// HalfSizeの設定
+				ground->SetHalfSize(stage.colliderInfo2 * 0.5f);
+				// 一回更新
+				ground->Update();
+				// 配列に追加
+				grounds_.emplace_back(ground);
 			}
-			// 座標設定
-			ground->SetTranslate(stage.translation);
-			ground->SetRotate(Math::QuaternionFromVector(stage.rotation));
-			ground->SetScale(stage.scaling);
-			// HalfSizeの設定
-			ground->SetHalfSize(stage.colliderInfo2 * 0.5f);
-			// 一回更新
-			ground->Update();
-			// 配列に追加
-			grounds_.emplace_back(ground);
 			continue;
 		} else if (stage.classType == LevelData::ClassTypeLevel::Object) {
 			std::shared_ptr<StageObject> object = std::make_shared<StageObject>();
-			if (stage.fileName == "Stone") { // 石のオブジェクト
-				object->GameInit("Stone");
-			} else if (stage.fileName == "BossStageWall") {// ボスステージの壁のオブジェクト
-				object->GameInit("BossStageWall");
-			}
+			object->GameInit(stage.fileName);
 			// Transformを設定
 			object->SetTranslate(stage.translation);
 			object->SetRotate(Math::QuaternionFromVector(stage.rotation));
 			object->SetScale(stage.scaling);
-			// HalfSizeの設定
-			object->SetHalfSize(stage.colliderInfo2 * 0.5f);
 			// 一回更新
 			object->Update();
 			// 配列に追加
@@ -45346,174 +48559,6 @@ public: /// ===OnCollision=== ///
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider へのポインタ。衝突の詳細を問い合わせしたり、衝突応答を処理するために使用される。</param>
 	void OnCollision(MiiEngine::Collider* collider) override;
-};
-
-
-
-============================================================
-File Path: Project/application/Game/Phase/Mob/MobPhase.cpp
-============================================================
-#include "MobPhase.h"
-// EnemyManager
-#include "application/Game/Entity/Enemy/Base/EnemyManager.h"
-// Service
-#include "Service/GraphicsResourceGetter.h"
-#include "Service/Particle.h"
-#include "Service/DeltaTime.h"
-// C++
-#include <random>
-// Math
-#include "Math/sMath.h"
-
-///-------------------------------------------/// 
-/// デストラクタ
-///-------------------------------------------///
-MobPhase::~MobPhase() {
-	enemyManager_ = nullptr;
-}
-
-///-------------------------------------------/// 
-/// 初期化
-///-------------------------------------------///
-void MobPhase::Initialize(EnemyManager* enemyManager) {
-	enemyManager_ = enemyManager;
-	currentPhase_ = PhaseState::Wave1;
-	isWaveStarted_ = false;
-}
-
-///-------------------------------------------/// 
-/// 更新処理
-///-------------------------------------------///
-void MobPhase::Update() {
-	// 層リターン
-	if (!enemyManager_ || currentPhase_ == PhaseState::Cleared) return;
-
-	// ウェーブが開始していなければ敵を出現させる
-	if (!isWaveStarted_) {
-		std::string levelData; // レベルデータを取得する処理を追加
-		switch (currentPhase_) {
-		case PhaseState::Wave1: levelData = "Level/Wave1.json"; break;
-		case PhaseState::Wave2: levelData = "Level/Wave2.json"; break;
-		case PhaseState::Wave3: levelData = "Level/Wave2.json"; break;
-		default: break;
-		}
-
-		SpawnWave(levelData);
-		isWaveStarted_ = true;
-	}
-
-	// 敵が全て倒されたら次のフェーズへ移行
-	if (isWaveStarted_ && enemyManager_->GetTotalEnemyCount() == 0) {
-
-		enemySpawnTimer_ -= Service::DeltaTime::GetDeltaTime();
-		if (enemySpawnTimer_ <= 0.0f) {
-			// 現在のフェーズを次のフェーズに更新
-			if (currentPhase_ != PhaseState::Cleared) {
-				currentPhase_ = static_cast<PhaseState>(static_cast<int>(currentPhase_) + 1);
-			}
-			// ウェーブ開始フラグをリセット
-			isWaveStarted_ = false;
-			// 敵出現タイマーをリセット
-			enemySpawnTimer_ = enemySpawnInterval_;
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// ウェーブの出現処理
-///-------------------------------------------///
-void MobPhase::SpawnWave(const std::string& json_name) {
-	if (!enemyManager_) return;
-
-	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
-
-	// Entity分だけ回す
-	for (const auto& obj : levelData->objects) {
-		if (obj.fileName == "Close") {
-			// Enemyの生成
-			enemyManager_->Spawn(EnemyType::CloseRange, obj.translation, Math::QuaternionFromVector(obj.translation));
-		} else if (obj.fileName == "Long") {
-			// Enemyの生成
-			enemyManager_->Spawn(EnemyType::LongRange, obj.translation, Math::QuaternionFromVector(obj.translation));
-		}
-	}
-}
-
-============================================================
-File Path: Project/application/Game/Phase/Mob/MobPhase.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// AABB
-#include "Engine/DataInfo/ColliderData.h"
-// C++
-#include <vector>
-#include <string>
-
-/// ===前方宣言=== ///
-class  EnemyManager;
-namespace MiiEngine {
-	class ParticleGroup;
-}
-
-///=====================================================/// 
-/// モブのフェーズ
-/// モブフェーズの内容。(全部で３ウェーブ)
-///=====================================================///
-class MobPhase {
-public:
-
-	MobPhase() = default;
-	~MobPhase();
-
-	/// <summary>
-	/// AABBを使用して初期化します。
-	/// </summary>
-	/// <param name="aabb">初期化に使用する軸平行境界ボックス。</param>
-	void Initialize(EnemyManager* enemyManager);
-
-	/// <summary>
-	/// 更新を実行します。
-	/// </summary>
-	void Update();
-
-public: /// ===Getter=== ///
-	/// <summary>
-	/// クリア済みかどうかを返します。
-	/// </summary>
-	/// <returns>クリア済みの場合はtrue</returns>
-	bool IsCleared() const { return currentPhase_ == PhaseState::Cleared; }
-
-private:
-
-	/// ===EnemyManager=== ///
-	EnemyManager* enemyManager_ = nullptr;
-
-	/// ===PhaseState=== ///
-	enum class PhaseState {
-		Wave1,	// 1ウェーブ目
-		Wave2,	// 2ウェーブ目
-		Wave3,	// 3ウェーブ目
-		Cleared // クリア
-	};
-	PhaseState currentPhase_ = PhaseState::Wave1;
-
-	// 現在のウェーブが開始しているかどうか
-	bool isWaveStarted_ = false;
-
-	/// ===敵出現タイマー=== ///
-	// 敵の出現までの時間
-	float enemySpawnTimer_ = 0.0f;
-	// 敵の出現間隔
-	float enemySpawnInterval_ = 5.0f;
-
-private:
-
-	/// <summary>
-	/// 指定された数の敵を出現させます。
-	/// </summary>
-	/// <param name="json_name">出現させる敵のレベルデータ</param>
-	void SpawnWave(const std::string& json_name);
 };
 
 
@@ -46488,7 +49533,7 @@ GameScene::~GameScene() {
 	// Particle
 	Service::Particle::RemoveAllParticles();
 	// Enemy
-	enemyManager_.reset();
+	enemy_.reset();
 	// Player
 	player_.reset();
 	// Ground
@@ -46512,17 +49557,17 @@ void GameScene::Initialize() {
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/StageData2.json");
+	stage_->Initialize("Level/BossStage.json");
 
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
+	Vector3 translation = { 0.0f, 5.0f, -30.0f };
+	player_->InitGame(translation, camera_.get());
 
 	/// ===EnemyManagerの生成=== ///
-	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->SetPlayer(player_.get());
-
-	/// ===SponEntity=== ///
-	SpawnEntity("Level/EntityData2.json");
+	enemy_ = std::make_unique<BossEnemy>();
+	enemy_->InitGameScene({ 0.0f, 5.0f, 30.0f });
+	enemy_->SetPlayer(player_.get());
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -46562,12 +49607,16 @@ void GameScene::Update() {
 	// Player
 	player_->Information();
 	// Enemy
-	enemyManager_->UpdateImGui();
+	enemy_->Information();
 
 #endif // USE_IMGUI
 
 	/// ===Groundの更新=== ///
 	stage_->Update();
+
+	/// ===EntityのPreUpdate=== ///
+	player_->PreUpdate(); // Playerの更新前処理
+	enemy_->PreUpdate();  // Enemyの更新前処理
 
 	/// ===Stateの管理=== ///
 	if (currentState_) {
@@ -46584,7 +49633,7 @@ void GameScene::Draw() {
 	stage_->Draw();
 
 	/// ===Enemy=== ///
-	enemyManager_->Draw();
+	enemy_->Draw();
 
 	/// ===Player=== ///
 	player_->Draw();
@@ -46615,38 +49664,18 @@ void GameScene::ChangState(std::unique_ptr<GameSceneFadeState> newState) {
 }
 
 ///-------------------------------------------/// 
-/// 配置関数
-///-------------------------------------------///
-void GameScene::SpawnEntity(const std::string& json_name) {
-	LevelData* levelData = Service::GraphicsResourceGetter::GetLevelData(json_name);
-
-	// オブジェクト分回す
-	for (const auto& obj : levelData->objects) {
-
-		/// ===クラス名で分岐=== ///
-		switch (obj.classType) {
-		case LevelData::ClassTypeLevel::Player:
-			// 初期化と座標設定
-			player_->InitGame(obj.translation, camera_.get());
-			player_->SetRotate(Math::QuaternionFromVector(obj.rotation));
-			break;
-		}
-	}
-}
-
-///-------------------------------------------/// 
 /// カメラの初期設定
 ///-------------------------------------------///
 void GameScene::SetUpCamera() {
 	/// ===カメラの初期設定=== ///
 	// カメラの座標設定
-	camera_->SetTranslate({ 0.0f, 5.0f, 15.0f });
+	camera_->SetTranslate({ 0.0f, 5.0f, -20.0f });
 	// カメラの回転設定
 	camera_->SetRotate({ 0.0f, 0.0f, 0.0f, 1.0f });
 	// カメラの追従設定
 	camera_->SetFollowCamera(MiiEngine::FollowCameraType::TopDown);
 	// 追従オフセット設定
-	camera_->SetOffset({ 0.0f, 70.0f, -60.0f });
+	camera_->SetOffset({ 0.0f, 100.0f, -90.0f });
 	// 追従速度設定
 	camera_->SetFollowSpeed(0.1f);
 }
@@ -46677,7 +49706,7 @@ File Path: Project/application/Scene/Game/GameScene.h
 #include "Engine/Scene/IScene.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Enemy/Base/EnemyManager.h"
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Object
 #include "application/Game/Object/GameStage.h"
 // State
@@ -46716,8 +49745,8 @@ public:/// ===メンバ関数=== ///
 public: /// ===Getter=== ///
 	// Playerの取得
 	Player* GetPlayer() const { return player_.get(); }
-	// EnemyManagerの取得
-	EnemyManager* GetEnemyManager() const { return enemyManager_.get(); }
+	// Enemyの取得
+	BossEnemy* GetEnemy() const { return enemy_.get(); }
 	// Camera 取得
 	MiiEngine::FollowCamera* GetCamera() const { return camera_.get(); }
 
@@ -46729,7 +49758,7 @@ private:/// ===メンバ変数=== ///
 	// Player
 	std::unique_ptr<Player> player_;
 	// Enemy
-	std::unique_ptr<EnemyManager> enemyManager_;
+	std::unique_ptr<BossEnemy> enemy_;
 	// Stage
 	std::unique_ptr<GameStage> stage_;
 	// State
@@ -46743,12 +49772,6 @@ private:/// ===メンバ変数=== ///
 	CameraInfo cameraInfo_;
 
 private: /// ===メンバ関数=== ///
-
-	/// <summary>
-	/// 配置処理
-	/// </summary>
-	/// <param name="json_name">使用するJsonファイル名</param>
-	void SpawnEntity(const std::string& json_name);
 
 	/// <summary>
 	/// カメラの初期設定
@@ -46952,7 +49975,7 @@ void GameSceneGameClearState::Update() {
 	// GameClearAnimationの更新
 	gameClearAnimation_->Update();
 	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->UpdateAnimation();
+	gameScene_->GetEnemy()->UpdateAnimation();
 	// Playerの更新
 	gameScene_->GetPlayer()->UpdateAnimation();
 	// アニメーション完了を確認
@@ -47036,6 +50059,8 @@ File Path: Project/application/Scene/Game/State/GameSceneGameOverAnimationState.
 #include "application/Scene/Game/GameScene.h"
 // Service
 #include "Service/Camera.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
 // State
 #include "GameSceneExitState.h"
 
@@ -47066,15 +50091,21 @@ void GameSceneGameOverAnimationState::Update() {
 	gameOverAnimation_->Update();
 
 	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->UpdateAnimation();
+	gameScene_->GetEnemy()->UpdateAnimation();
 	// Playerの更新
 	gameScene_->GetPlayer()->Update();
 
 	// アニメーション完了を確認
-	if (gameOverAnimation_->IsCompleted()) {
-		//NOTE:ゲームオーバーの場合はタイトルに戻るため、Exitではなくタイトルシーンへ変更する処理を追加する予定
-		// Exit状態に変更
-		gameScene_->ChangState(std::make_unique<GameSceneExitState>());
+	if (gameOverAnimation_->IsCompleted() && !isTransitionStarted_) {
+		// シーンマネージャーでフェードインを開始
+		sceneManager_->StartFadeOut(TransitionType::BlackOut, 1.0f);
+		isTransitionStarted_ = true;
+	}
+
+	/// ===シーンの切り替え=== ///
+	if (isTransitionStarted_ && sceneManager_->GetTransitionFinished()) {
+		// タイトルへ遷移
+		sceneManager_->ChangeScene(MiiEngine::SceneType::Title);
 	}
 }
 
@@ -47138,6 +50169,8 @@ public:
 private:
 	// GameOverAnimation
 	std::unique_ptr<GameOverAnimation> gameOverAnimation_;
+
+	bool isTransitionStarted_ = false; // シーン遷移が開始されたかどうかのフラグ
 };
 
 
@@ -47162,7 +50195,6 @@ File Path: Project/application/Scene/Game/State/GameSceneInGameState.cpp
 /// デストラクタ
 ///-------------------------------------------///
 GameSceneInGameState::~GameSceneInGameState() {
-	mobPhase_.reset();
 	optionUI_.reset();
 	ui_.reset();
 }
@@ -47173,10 +50205,6 @@ GameSceneInGameState::~GameSceneInGameState() {
 void GameSceneInGameState::Enter(GameScene* gameScene) {
 	// ゲームシーンのポインタを保存
 	gameScene_ = gameScene;
-
-	/// ===Phase=== ///
-	mobPhase_ = std::make_unique<MobPhase>();
-	mobPhase_->Initialize(gameScene_->GetEnemyManager());
 
 	/// ===GameSceneUI=== ///
 	ui_ = std::make_unique<GameSceneUI>();
@@ -47211,9 +50239,8 @@ void GameSceneInGameState::Update() {
 
 	/// ===Gameの更新処理=== ///
 	if (!isOptionActive_) {
-		mobPhase_->Update();
 		// EnemyManagerの更新
-		gameScene_->GetEnemyManager()->Update();
+		gameScene_->GetEnemy()->Update();
 		// Playerの更新
 		gameScene_->GetPlayer()->Update();
 		// GameSceneUIの更新
@@ -47225,7 +50252,7 @@ void GameSceneInGameState::Update() {
 	if (gameScene_->GetPlayer()->GetIsDead()) {
 		// ゲームオーバーアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameOverAnimationState>());
-	} else if (mobPhase_->IsCleared()) {
+	} else if (gameScene_->GetEnemy()->GetIsDead()) {
 		// ゲームクリアアニメーション状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneGameClearState>());
 	} else if (optionUI_->GetReturnToTitle()) {
@@ -47257,8 +50284,6 @@ File Path: Project/application/Scene/Game/State/GameSceneInGameState.h
 /// ===Include=== ///
 // Base
 #include "Base/GameSceneFadeState.h"
-// Phase
-#include "application/Game/Phase/Mob/MobPhase.h"
 // GameUI
 #include "application/Scene/Game/UI/GameSceneUI.h"
 #include "application/Game/UI/Option/OptionUI.h"
@@ -47295,9 +50320,6 @@ public:
 	void Finalize() override;
 
 private:
-	
-	/// ===MobPhase=== ///
-	std::unique_ptr<MobPhase> mobPhase_;
 
 	/// ===GameSceneUI=== ///
 	std::unique_ptr<GameSceneUI> ui_;
@@ -47339,7 +50361,7 @@ void GameSceneInitializeState::Enter(GameScene* gameScene) {
 ///-------------------------------------------///
 void GameSceneInitializeState::Update() {
 	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->UpdateAnimation();
+	gameScene_->GetEnemy()->UpdateAnimation();
 	// Playerの更新
 	gameScene_->GetPlayer()->UpdateAnimation();
 
@@ -47441,7 +50463,7 @@ void GameSceneStartAnimationState::Update() {
 	startAnimation_->Update();
 
 	// EnemyManagerの更新
-	gameScene_->GetEnemyManager()->UpdateAnimation();
+	gameScene_->GetEnemy()->UpdateAnimation();
 
 	// Playerの更新
 	gameScene_->GetPlayer()->UpdateAnimation();
@@ -47702,6 +50724,7 @@ File Path: Project/application/Scene/Select/SelectScene.cpp
 SelectScene::~SelectScene() {
 	// ISceneのデストラクタ
 	IScene::~IScene();
+	oceanGround_.reset();
 }
 
 ///-------------------------------------------/// 
@@ -47710,6 +50733,9 @@ SelectScene::~SelectScene() {
 void SelectScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
+
+	oceanGround_ = std::make_unique<GroundOcean>();
+	oceanGround_->Initialize();
 }
 
 ///-------------------------------------------/// 
@@ -47719,14 +50745,24 @@ void SelectScene::Update() {
 	/// ===デバック用ImGui=== ///
 #ifdef USE_IMGUI
 	ImGui::Begin("SelectScene");
+
+	defaultCamera_->ImGuiUpdate();
+	defaultCamera_->DebugUpdate();
+
+	oceanGround_->Information();
+	oceanGround_->ShowImGui();
 	ImGui::End();
 #endif // USE_IMGUI
+
+	oceanGround_->Update();
 }
 
 ///-------------------------------------------/// 
 /// 描画
 ///-------------------------------------------///
-void SelectScene::Draw() {}
+void SelectScene::Draw() {
+	oceanGround_->Draw();
+}
 
 
 ============================================================
@@ -47736,6 +50772,9 @@ File Path: Project/application/Scene/Select/SelectScene.h
 /// ===Include=== ///
 // IScene
 #include "Engine/Scene/IScene.h"
+
+// OceanGround
+#include <application/Game/Object/GameGround/GroundOcean.h>
 
 ///=====================================================/// 
 /// セレクトシーン
@@ -47765,6 +50804,8 @@ private:/// ===メンバ変数=== ///
 	/// <summary>
 	/// シーン用
 	/// </summary>
+	
+	std::unique_ptr<GroundOcean> oceanGround_;
 };
 
 
