@@ -4,17 +4,16 @@
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 追加
 	///-------------------------------------------///
-	void Collision::AddCollider(Collider* collider) { Locator::GetColliderManager()->AddCollider(collider); }
+	void Collision::AddCollider(MiiEngine::Collider* collider) { Locator::GetColliderManager()->AddCollider(collider); }
 
 	///-------------------------------------------/// 
 	/// 削除
 	///-------------------------------------------///
-	void Collision::RemoveCollider(Collider* collider) { Locator::GetColliderManager()->RemoveCollider(collider); }
+	void Collision::RemoveCollider(MiiEngine::Collider* collider) { Locator::GetColliderManager()->RemoveCollider(collider); }
 
 	///-------------------------------------------/// 
 	/// リセット
@@ -25,7 +24,7 @@ namespace Service {
 	/// Setter
 	///-------------------------------------------///
 	// LightTYpe
-	void Collision::SetLight(LightType lightType) { Locator::GetColliderManager()->SetLight(lightType); }
+	void Collision::SetLight(MiiEngine::LightType lightType) { Locator::GetColliderManager()->SetLight(lightType); }
 	// LightData
-	void Collision::SetLightData(LightInfo light) { Locator::GetColliderManager()->SetLightData(light); }
+	void Collision::SetLightData(MiiEngine::LightInfo light) { Locator::GetColliderManager()->SetLightData(light); }
 }

@@ -55,7 +55,7 @@ public:
 	struct UpdateResult {
 		Quaternion modelRotation{};  // モデルに適用する回転（基底回転 + ひねり）
 		Vector3 weaponLocalOffset{}; // ローカル座標系での武器位置オフセット
-		ThrustPhase currentPhase{};  // 現在フェーズ
+		bool isAttacking = false;    // 攻撃判定が有効なフレーム
 		bool isFinished = false;	 // 攻撃が完全終了したか
 	};
 

@@ -14,7 +14,9 @@ void BossJumpSmashAttackState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
+	const float dist = CalcDistToPlayer();
 	boss_->GetJumpSmashComponent().StartAttack(
+		dist,
 		boss_->GetTransform().translate, 
 		boss_->GetPlayer()->GetTransform().translate, 
 		boss_->GetTransform().rotate);
@@ -29,7 +31,6 @@ void BossJumpSmashAttackState::Enter(BossEnemy* enemy) {
 void BossJumpSmashAttackState::Update() {
 	// コンテキストの準備
 	BossAttackJumpSmashComponent::UpdateContext context{
-		.currentPosition = boss_->GetTransform().translate,
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
@@ -69,5 +70,8 @@ void BossJumpSmashAttackState::Finalize() {
 /// プレイヤーとボスの距離を計算して返す。
 ///-------------------------------------------///
 float BossJumpSmashAttackState::CalcDistToPlayer() const {
-	return 0.0f;
+	const Vector3 diff =
+		boss_->GetPlayer()->GetTransform().translate -
+		boss_->GetTransform().translate;
+	return Length(diff);
 }

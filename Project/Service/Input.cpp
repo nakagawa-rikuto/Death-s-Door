@@ -8,7 +8,6 @@
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 更新

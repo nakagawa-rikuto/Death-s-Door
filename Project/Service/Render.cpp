@@ -5,7 +5,6 @@
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// Pipeline

@@ -25,7 +25,8 @@ private:
 		// 攻撃射程
 		float thrustRange = 4.0f;
 		float downswingRange = 6.0f;
-		float jumpSmashRange = 14.0f;
+		float jumpSmashMinRange = 14.0f;
+		float jumpSmashMaxRange = 20.0f;
 
 		// 個別クールダウン（秒）
 		float thrustCooldown = 3.0f;

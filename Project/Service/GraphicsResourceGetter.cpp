@@ -15,7 +15,6 @@
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// DescriptorHandle
@@ -60,11 +59,11 @@ namespace Service {
 		return Locator::GetTextureManager()->GetMetaData(key);
 	}
 	// モデルデータの取得
-	ModelData GraphicsResourceGetter::GetModelData(const std::string& directorPath) {
+	MiiEngine::ModelData GraphicsResourceGetter::GetModelData(const std::string& directorPath) {
 		return Locator::GetModelManager()->GetModelData(directorPath);
 	}
 	// アニメーションの取得
-	std::map<std::string, Animation> GraphicsResourceGetter::GetAnimationData(const std::string& directorPath) {
+	std::map<std::string, MiiEngine::Animation> GraphicsResourceGetter::GetAnimationData(const std::string& directorPath) {
 		return Locator::GetAnimationManager()->GetAnimation(directorPath);
 	}
 	// LevelDataの取得

@@ -2,7 +2,6 @@
 // C++
 #include <cassert>
 
-using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
@@ -13,7 +12,7 @@ Object3d::~Object3d() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void Object3d::Init(std::unique_ptr<ModelCommon> model, const std::string& modelName, MiiEngine::LightType light) {
+void Object3d::Init(std::unique_ptr<MiiEngine::ModelCommon> model, const std::string& modelName, MiiEngine::LightType light) {
 	// 生成。
 	model_ = std::move(model);
 	// 初期化

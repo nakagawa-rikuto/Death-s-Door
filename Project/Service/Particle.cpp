@@ -7,7 +7,6 @@
 #include "Engine/Graphics/Particle/ParticleDefinition.h"
 #include "Engine/Graphics/Particle/ParticleParameter.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 定義の管理
@@ -34,7 +33,7 @@ namespace Service {
 	/// パーティクルの操作
 	///-------------------------------------------///
 	// パーティクルを発生
-	ParticleGroup* Particle::Emit(const std::string& name, const Vector3& translate) {
+	MiiEngine::ParticleGroup* Particle::Emit(const std::string& name, const Vector3& translate) {
 		return Locator::GetParticleManager()->Emit(name, translate);
 	}
 

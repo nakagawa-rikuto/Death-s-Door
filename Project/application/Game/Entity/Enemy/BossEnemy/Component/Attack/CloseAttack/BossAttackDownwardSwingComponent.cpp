@@ -36,9 +36,9 @@ void BossAttackDownwardSwingComponent::Initialize(const DownwardSwingConfig& con
 ///-------------------------------------------///
 BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
-	result.currentPhase = phase_;
+	result.isAttacking = (phase_ == DownwardSwingPhase::Strike || phase_ == DownwardSwingPhase::HoldDown);
 
-	// 非アクティブフェーズ：基底回転そのまま、武器は定位置、速度なし
+	// 非アクティブフェーズ
 	if (phase_ == DownwardSwingPhase::Idle || phase_ == DownwardSwingPhase::Finished) {
 		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 		result.rotation = context.baseRotation;
@@ -52,8 +52,6 @@ BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent:
 
 	// 攻撃中の更新
 	UpdateAttack(context, result);
-
-	result.currentPhase = phase_;
 	return result;
 }
 
@@ -124,142 +122,133 @@ void BossAttackDownwardSwingComponent::StartAttack() {
 /// 攻撃の更新を実行
 ///-------------------------------------------///
 void BossAttackDownwardSwingComponent::UpdateAttack(const UpdateContext& context, UpdateResult& result) {
-	// -----------------------------------------------
-	// WindUp（予備動作）
-	//   X軸正方向へ上体を仰け反らせてタメる。
-	//   EaseOut で「じわっ」と遅めに持ち上げることで
-	//   次の振り下ろしとの緩急を演出する。
-	//   武器は頭上の背中側へゆっくり引き上げる。
-	// -----------------------------------------------
-	if (phase_ == DownwardSwingPhase::WindUp) {
-		const float rawT = (config_.windUpDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f)
-			: 1.0f;
-		// EaseOut：最初は速く、終わりはじわっと
-		const float t = Easing::EaseOutQuad(rawT);
-
-		// X軸正方向（仰け反り）へ windUpPitch 度傾ける
-		const Quaternion windUpPitch = MakePitchQuaternion(config_.windUpPitch * t);
-		result.rotation = Multiply(context.baseRotation, windUpPitch);
-
-		// 武器：定位置 → 頭上背中側へ
-		result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponWindUpOffset, t);
-
-		// WindUp中は踏み込みなし
-		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
-
-		// フェーズ遷移
-		if (rawT >= 1.0f) {
-			state_.phaseTimer = 0.0f;
-			phase_ = DownwardSwingPhase::Strike;
-		}
+	/// ===Phase毎の処理=== ///
+	switch (phase_) {
+	case DownwardSwingPhase::WindUp: UpdateWindUp(context, result); break;
+	case DownwardSwingPhase::Strike: UpdateStrike(context, result); break;
+	case DownwardSwingPhase::HoldDown: UpdateHoldDown(context, result); break;
+	case DownwardSwingPhase::Recovery: UpdateRecovery(context, result); break;
+	default: break;
 	}
-	// -----------------------------------------------
-	// Strike（振り下ろし）
-	//   仰け反り位置（+windUpPitch）から
-	//   前傾位置（-strikeForwardPitch）まで一気に振り抜く。
-	//   EaseIn で加速しながら叩きつけることで「シュッ」とした
-	//   鋭さと重量感を両立させる。
-	//   同時に前方へ踏み込ませてリーチと迫力を追加する。
-	// -----------------------------------------------
-	else if (phase_ == DownwardSwingPhase::Strike) {
-		const float rawT = (config_.strikeDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
-			: 1.0f;
-		// EaseIn：終盤に加速することで叩きつけの鋭さを演出
-		const float t = Easing::EaseInQuad(rawT);
+}
 
-		// +windUpPitch → -strikeForwardPitch への補間
-		const float startAngle = config_.windUpPitch;
-		const float endAngle = -config_.strikeForwardPitch;
-		const float currentAngle = startAngle + (endAngle - startAngle) * t;
+///-------------------------------------------/// 
+/// WindUp（予備動作）
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateWindUp(const UpdateContext& context, UpdateResult& result) {
+	// t
+	const float rawT = (config_.windUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f) : 1.0f;
+	const float t = Easing::EaseOutQuad(rawT);
 
-		const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
-		result.rotation = Multiply(context.baseRotation, strikePitch);
+	// 回転の補間
+	const float currentAngle = Math::Lerp(0.0f, config_.windUpPitch, t);
+	const Quaternion crouchRot = MakePitchQuaternion(currentAngle);
+	result.rotation = Multiply(context.baseRotation, crouchRot);
 
-		// 武器：頭上背中側 → 前方下方へ弧を描いて振り下ろす
-		result.weaponPosition = Math::Lerp(config_.weaponWindUpOffset, config_.weaponStrikeOffset, t);
+	// 武器
+	result.weaponPosition = config_.weaponRestOffset;
+	// 移動なし
+	result.velocity = {};
 
-		// 踏み込み：前方へ加速しながら踏み込む速度を計算
-		// stepZ はフレームあたりの移動量なので deltaTime で割って velocity に変換する
-		const float stepZ = config_.strikeStepForward * t;
-		const float prevT = Easing::EaseInQuad(std::max(0.0f,
-			(state_.phaseTimer - context.deltaTime) / config_.strikeDuration));
-		const float prevStepZ = config_.strikeStepForward * prevT;
-		const float deltaZ = stepZ - prevStepZ;
-		result.velocity = (context.deltaTime > 0.0f)
-			? Vector3{ 0.0f, 0.0f, deltaZ / context.deltaTime }
-		: Vector3{ 0.0f, 0.0f, 0.0f };
-
-		// フェーズ遷移：Strike → HoldDown（または HoldDown スキップ）
-		if (rawT >= 1.0f) {
-			state_.phaseTimer = 0.0f;
-			if (config_.holdDownDuration > 0.0f) {
-				phase_ = DownwardSwingPhase::HoldDown;
-			} else {
-				phase_ = DownwardSwingPhase::Recovery;
-			}
-		}
+	// フェーズ遷移
+	if (rawT >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		phase_ = DownwardSwingPhase::Strike;
 	}
-	// -----------------------------------------------
-	// HoldDown（余韻）
-	//   叩きつけた深い前傾姿勢を一瞬だけ維持する。
-	//   武器も叩きつけ位置に止まったまま。
-	//   この「止め」があることで攻撃の「出し切り感」が出る。
-	// -----------------------------------------------
-	else if (phase_ == DownwardSwingPhase::HoldDown) {
-		const float t = (config_.holdDownDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f)
-			: 1.0f;
+}
 
-		// 姿勢・武器・速度は Strike 終了時点の値で固定
-		const Quaternion holdPitch = MakePitchQuaternion(-config_.strikeForwardPitch);
-		result.rotation = Multiply(context.baseRotation, holdPitch);
-		result.weaponPosition = config_.weaponStrikeOffset;
-		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f }; // 踏み込みは止まる
+///-------------------------------------------/// 
+/// Strike（振り下ろし）
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateStrike(const UpdateContext & context, UpdateResult & result) {
+	// t
+	const float rawT = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
+	const float t = Easing::EaseInQuad(rawT);
 
-		// フェーズ遷移
-		if (t >= 1.0f) {
-			state_.phaseTimer = 0.0f;
+	// 回転の補間
+	const float startAngle = config_.windUpPitch;
+	const float endAngle = config_.strikeForwardPitch;
+	const float currentAngle = startAngle + (endAngle - startAngle) * t;
+	const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
+	result.rotation = Multiply(context.baseRotation, strikePitch);
+
+	// 武器
+	result.weaponPosition = Math::Lerp(config_.weaponWindUpOffset, config_.weaponStrikeOffset, t);
+
+	// 踏み込み
+	const float prevRawT = std::max(0.0f, (state_.phaseTimer - context.deltaTime) / config_.strikeDuration);
+	const float prevT = Easing::EaseInQuad(std::min(prevRawT, 1.0f));
+	const float stepTotal = config_.strikeStepForward * t;
+	const float prevStepTotal = config_.strikeStepForward * prevT;
+	const float deltaStep = stepTotal - prevStepTotal;
+
+	// baseRotation でローカル前方をワールド空間へ変換
+	const Vector3 localForward = { 0.0f, 0.0f, 1.0f };
+	const Vector3 worldForward = Math::RotateVector(localForward, context.baseRotation);
+	// 前方単位ベクトル × 今フレームの移動量
+	result.velocity = Vector3{
+		worldForward.x * deltaStep / context.deltaTime,
+		worldForward.y * deltaStep / context.deltaTime,
+		worldForward.z * deltaStep / context.deltaTime
+	};
+
+	// フェーズ遷移
+	if (rawT >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		if (config_.holdDownDuration > 0.0f) {
+			phase_ = DownwardSwingPhase::HoldDown;
+		} else {
 			phase_ = DownwardSwingPhase::Recovery;
 		}
 	}
-	// -----------------------------------------------
-	// Recovery（戻り）
-	//   -strikeForwardPitch → 0° へゆっくり戻す。
-	//   武器も叩きつけ位置から定位置へ引き戻す。
-	//   踏み込んだ分の位置も元へ戻す。
-	//   Strike より長めの時間をかけて自然に収束させる。
-	// -----------------------------------------------
-	else if (phase_ == DownwardSwingPhase::Recovery) {
-		const float t = (config_.recoveryDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
-			: 1.0f;
+}
 
-		// -strikeForwardPitch → 0° へ補間
-		const float currentAngle = -config_.strikeForwardPitch * (1.0f - t);
+///-------------------------------------------/// 
+/// HoldDown（余韻）
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateHoldDown(const UpdateContext & context, UpdateResult & result) {
+	// t
+	const float t = (config_.holdDownDuration > 0.0f) ? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f) : 1.0f;
 
-		const Quaternion recoveryPitch = MakePitchQuaternion(currentAngle);
-		result.rotation = Multiply(context.baseRotation, recoveryPitch);
+	// 終了時点の値で固定
+	const Quaternion holdPitch = MakePitchQuaternion(-config_.strikeForwardPitch);
+	result.rotation = Multiply(context.baseRotation, holdPitch);
+	result.weaponPosition = config_.weaponStrikeOffset;
+	result.velocity = Vector3{ 0.0f, 0.0f, 0.0f }; // 踏み込みは止まる
 
-		// 武器：叩きつけ位置 → 定位置へ戻す
-		result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset, config_.weaponRestOffset, t);
+	// フェーズ遷移
+	if (t >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		phase_ = DownwardSwingPhase::Recovery;
+	}
+}
 
-		// Recovery中は移動しない
-		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+///-------------------------------------------/// 
+/// Recovery（戻り）
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateRecovery(const UpdateContext& context, UpdateResult& result) {
+	// t
+	const float t = (config_.recoveryDuration > 0.0f) ? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f) : 1.0f;
 
-		// フェーズ遷移：Recovery → Finished
-		if (t >= 1.0f) {
-			phase_ = DownwardSwingPhase::Finished;
-			result.isFinished = true;
-		}
+	// 回転の補間 
+	const Quaternion strikeEndRot = Multiply(context.baseRotation, MakePitchQuaternion(-config_.strikeForwardPitch));
+	result.rotation = Math::SLerp(strikeEndRot, context.baseRotation, t);
+
+	// 武器
+	result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset, config_.weaponRestOffset, t);
+
+	// Recovery中は移動しない
+	result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+
+	// フェーズ遷移
+	if (t >= 1.0f) {
+		phase_ = DownwardSwingPhase::Finished;
+		result.isFinished = true;
 	}
 }
 
 ///-------------------------------------------///
 /// X軸周りに angleDeg 度回転するクォータニオンを生成
-///   正値: 後方仰け反り（WindUp方向）
-///   負値: 前方前傾  （Strike方向）
 ///-------------------------------------------///
 Quaternion BossAttackDownwardSwingComponent::MakePitchQuaternion(float angleDeg) const {
 	const float kDegToRad = Math::Pi() / 180.0f;

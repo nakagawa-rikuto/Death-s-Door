@@ -22,7 +22,8 @@ private:
 
 	/// ===状態の構造体=== ///
 	struct JumpSmashState {
-		float phaseTimer = 0.0f;   // 現フェーズの経過時間
+		float phaseTimer = 0.0f;    // 現フェーズの経過時間
+		float distance;			// 攻撃開始時のBossとPlayerの距離。これを基準に飛行の放物線を計算する 
 		Quaternion baseRotation{};  // 攻撃開始時の基底回転
 
 		// --- Leap フェーズで使用する飛行データ ---
@@ -35,8 +36,11 @@ public:
 
 	/// ===設定パラメータの構造体=== ///
 	struct JumpSmashConfig {
+		// range
+		float minDistance = 2.0f;  // 攻撃開始可能な最小距離
+		float maxDistance = 5.0f;  // 攻撃開始可能な最大距離
+
 		// LeapWindUp
-		// 屈み時のY軸スケール縮小量（見た目の「しゃがみ」演出用。スケールは呼出し側で適用）
 		float leapWindUpCrouchPitch = -10.0f;  // 屈み時の前傾角度（度）。前のめりにしゃがむ
 		float leapWindUpDuration = 0.30f;  // 溜め時間（秒）
 
@@ -60,13 +64,10 @@ public:
 
 		// 武器オフセット
 		Vector3 weaponRestOffset = { 0.0f,  0.5f,  0.3f };  // 定位置
-		Vector3 weaponLeapOffset = { 0.0f,  1.5f, -0.5f };  // 飛行中（振り上げ）
-		Vector3 weaponStrikeOffset = { 0.0f, -0.2f,  1.5f };  // 叩きつけ先
 	};
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
-		Vector3 currentPosition{};  // Bossの現在位置
 		float deltaTime = 0.0f;		// デルタタイム
 	};
 
@@ -75,7 +76,7 @@ public:
 		Vector3 velocity{};          // 今フレームの移動量（呼び出し側が position += velocity で適用する）
 		Quaternion rotation{};       // モデルに適用する回転（基底回転 + ピッチ）
 		Vector3 weaponPosition{};    // ローカル座標系での武器位置オフセット
-		LeapPhase currentPhase{};    // 現在フェーズ
+		bool isAttacking = false;    // 攻撃判定が有効なフレーム
 		bool isFinished = false;     // 攻撃が完全終了したか
 	};
 
@@ -110,10 +111,12 @@ public:
 	/// <summary>
 	/// 攻撃を開始する。
 	/// </summary>
+	/// <param name="distance">攻撃対象との距離</param>
 	/// <param name="bossPosition">攻撃開始時のBossのワールド座標</param>
 	/// <param name="playerPosition">着地目標となるPlayerのワールド座標</param>
 	/// <param name="baseRotation">攻撃開始時のBossの基底回転</param>
 	void StartAttack(
+		float distance,
 		const Vector3& bossPosition,
 		const Vector3& playerPosition,
 		const Quaternion& baseRotation
@@ -138,22 +141,40 @@ private:
 	LeapPhase  phase_ = LeapPhase::Idle;
 
 private:
-	/// <summary>攻撃の更新を実行します。</summary>
-	void UpdateAttack(const UpdateContext& context, UpdateResult& result);
+	/// <summary>
+	/// 攻撃状態を更新します。
+	/// </summary>
+	/// <param name="result">更新結果を格納するオブジェクト。</param>
+	void UpdateAttack(UpdateResult& result);
 
-	/// <summary>LeapWindUp フェーズの更新。</summary>
+	/// <summary>
+	/// リープワインドアップを更新します。
+	/// </summary>
+	/// <param name="result">更新結果を格納するUpdateResultオブジェクトへの参照。</param>
 	void UpdateLeapWindUp(UpdateResult& result);
 
-	/// <summary>Leap フェーズの更新。放物線移動とピッチ変化を処理する。</summary>
+	/// <summary>
+	/// 閏年に関する情報を更新します。
+	/// </summary>
+	/// <param name="result">更新する結果オブジェクトへの参照。</param>
 	void UpdateLeap(UpdateResult& result);
 
-	/// <summary>Strike フェーズの更新。</summary>
+	/// <summary>
+	/// ストライク情報を更新します。
+	/// </summary>
+	/// <param name="result">ストライク情報で更新されるUpdateResultオブジェクトへの参照。</param>
 	void UpdateStrike(UpdateResult& result);
 
-	/// <summary>HoldDown フェーズの更新。</summary>
+	/// <summary>
+	/// ホールドダウン状態を更新します。
+	/// </summary>
+	/// <param name="result">更新される結果オブジェクトへの参照。</param>
 	void UpdateHoldDown(UpdateResult& result);
 
-	/// <summary>Recovery フェーズの更新。</summary>
+	/// <summary>
+	/// リカバリー処理を更新します。
+	/// </summary>
+	/// <param name="result">更新結果を格納するオブジェクトへの参照。</param>
 	void UpdateRecovery(UpdateResult& result);
 
 	/// <summary>

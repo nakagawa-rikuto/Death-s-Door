@@ -16,7 +16,6 @@
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// Setter
@@ -27,7 +26,7 @@ namespace Service {
 	}
 	// Dissolve
 	void PostEffect::SetDissolveData(MiiEngine::DissolveData data) {
-		if (auto dissolve = dynamic_cast<DissolveEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::Dissolve))) {
+		if (auto dissolve = dynamic_cast<MiiEngine::DissolveEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::Dissolve))) {
 			dissolve->SetData(data);
 		} else {
 			assert(false && "DissolveEffectが見つかりませんでした。");
@@ -35,7 +34,7 @@ namespace Service {
 	}
 	// RadiusBlur
 	void PostEffect::SetRadiusBlurData(MiiEngine::RadiusBlurData data) {
-		if (auto radiusBlur = dynamic_cast<RadiusBlurEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::RadiusBlur))) {
+		if (auto radiusBlur = dynamic_cast<MiiEngine::RadiusBlurEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::RadiusBlur))) {
 			radiusBlur->SetData(data);
 		} else {
 			assert(false && "RadiusBlurEffectが見つかりませんでした。");
@@ -43,7 +42,7 @@ namespace Service {
 	}
 	// Vignette
 	void PostEffect::SetVignetteData(MiiEngine::VignetteData data) {
-		if (auto vignette = dynamic_cast<VignetteEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::Vignette))) {
+		if (auto vignette = dynamic_cast<MiiEngine::VignetteEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::Vignette))) {
 			vignette->SetData(data);
 		} else {
 			assert(false && "VignetteEffectが見つかりませんでした。");
@@ -51,7 +50,7 @@ namespace Service {
 	}
 	// ShatterGlass
 	void PostEffect::SetShatterGlassData(MiiEngine::ShatterGlassData data) {
-		if (auto shatterGlass = dynamic_cast<ShatterGlassEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::ShatterGlass))) {
+		if (auto shatterGlass = dynamic_cast<MiiEngine::ShatterGlassEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::ShatterGlass))) {
 			shatterGlass->SetData(data);
 		} else {
 			assert(false && "ShatterGlassEffectが見つかりませんでした。");
