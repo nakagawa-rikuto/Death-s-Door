@@ -191,11 +191,12 @@ void BossEnemy::SetComponentConfig() {
 
 	attackInfo_.downswingTimer = 0.0f;
 	attackInfo_.downswingRange = 8.0f;
-	attackInfo_.downswingCooldown = 4.0f;
+	attackInfo_.downswingCooldown = 2.0f;
 
 	attackInfo_.jumpSmashTimer = 0.0f;
-	attackInfo_.jumpSmashRange = 14.0f;
-	attackInfo_.jumpSmashCooldown = 6.0f;
+	attackInfo_.jumpSmashMinRange = 10.0f;
+	attackInfo_.jumpSmashMaxRange = 40.0f;
+	attackInfo_.jumpSmashCooldown = 2.0f;
 
 	/// ===MoveComponentの生成=== ///
 	moveComponent_ = std::make_unique<BossMoveComponent>();
@@ -221,6 +222,7 @@ void BossEnemy::SetComponentConfig() {
 
 	/// ===AttackComponentの生成=== ///
 	//attackManager_ = std::make_unique<BossAttackManager>();
+	// Thrust
 	thrustComponent_ = std::make_unique<BossAttackThrustComponent>();
 	BossAttackThrustComponent::ThrustConfig thrustConfig{
 		.windUpAngle = 30.0f,
@@ -235,37 +237,39 @@ void BossEnemy::SetComponentConfig() {
 	// 初期化
 	thrustComponent_->Initialize(thrustConfig);
 
+	// DownSwing
 	downswingComponent_ = std::make_unique<BossAttackDownwardSwingComponent>();
 	BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
-		.windUpPitch = 15.0f,
-		.windUpDuration = 0.35f,
-		.strikeForwardPitch = 15.0f,
+		.windUpPitch = -2.0f,
+		.windUpDuration = 1.0f,
+		.strikeForwardPitch = -10.0f,
 		.strikeDuration = 0.1f,
-		.holdDownDuration = 0.08f,
-		.recoveryDuration = 0.4f,
-		.strikeStepForward = 0.5f,
-		.weaponRestOffset = { 0.0f,  0.5f,  0.3f },
-		.weaponWindUpOffset = { 0.0f,  1.4f, -0.4f },
-		.weaponStrikeOffset = { 0.0f, -0.2f,  1.5f },
+		.holdDownDuration = 0.2f,
+		.recoveryDuration = 0.45f,
+		.strikeStepForward = 0.1f,
+		.weaponRestOffset = { 0.0f,  0.0f,  0.4f },
+		.weaponWindUpOffset = { 0.0f,  0.0f,  0.4f },
+		.weaponStrikeOffset = { 0.0f,  0.0f,  0.4f },
 	};
 	// 初期化
 	downswingComponent_->Initialize(downswingConfig);
 
+	// JumpSmash
 	jumpSmashComponent_ = std::make_unique<BossAttackJumpSmashComponent>();
 	BossAttackJumpSmashComponent::JumpSmashConfig jumpSmashConfig{
-		.leapWindUpCrouchPitch = -10.0f,
-		.leapWindUpDuration = 0.3f,
-		.leapDuration = 0.6f,
-		.leapArcHeight = 4.f,
-		.leapAscentPitch = 20.0f,
-		.leapDescentPitch = 30.0f,
-		.strikeForwardPitch = 25.0f,
-		.strikeDuration = 0.1f,
-		.holdDownDuration = 0.08f,
+		.minDistance = attackInfo_.jumpSmashMinRange,
+		.maxDistance = attackInfo_.jumpSmashMaxRange,
+		.leapWindUpCrouchPitch = 5.0f,
+		.leapWindUpDuration = 0.1f,
+		.leapDuration = 0.1f,
+		.leapArcHeight = 15.0f,
+		.leapAscentPitch = 120.0f,
+		.leapDescentPitch = 120.0f,
+		.strikeForwardPitch = 20.0f,
+		.strikeDuration = 0.2f,
+		.holdDownDuration = 0.8f,
 		.recoveryDuration = 0.45f,
-		.weaponRestOffset = { 0.0f,  0.5f,  0.3f },
-		.weaponLeapOffset = { 0.0f,  1.5f, -0.5f },
-		.weaponStrikeOffset = { 0.0f, -0.2f,  1.5f },
+		.weaponRestOffset = { 0.0f,  0.0f,  0.4f },
 	};
 	// 初期化
 	jumpSmashComponent_->Initialize(jumpSmashConfig);
@@ -294,6 +298,12 @@ void BossEnemy::advanceTimer() {
 	// 攻撃のクールタイマーを進める
 	if (attackInfo_.thrustTimer > 0.0f) {
 		attackInfo_.thrustTimer -= baseInfo_.deltaTime;
+	}
+	if (attackInfo_.downswingTimer > 0.0f) {
+		attackInfo_.downswingTimer -= baseInfo_.deltaTime;
+	}
+	if (attackInfo_.jumpSmashTimer > 0.0f) {
+		attackInfo_.jumpSmashTimer -= baseInfo_.deltaTime;
 	}
 	
 

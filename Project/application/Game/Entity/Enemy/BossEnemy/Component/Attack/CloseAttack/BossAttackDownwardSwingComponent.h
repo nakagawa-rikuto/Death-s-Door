@@ -12,11 +12,11 @@ private:
 
 	/// ===フェーズ定義=== ///
 	enum class DownwardSwingPhase {
-		Idle,       // 非アクティブ（待機）
-		WindUp,     // 予備動作（上体を後ろへ反らしてタメる）
-		Strike,     // 攻撃（前方へ一気に振り下ろす）
-		HoldDown,   // 余韻（叩きつけた深い前傾を一瞬維持）
-		Recovery,   // 回復（正位置へゆっくり戻る）
+		Idle,       // 非アクティブ
+		WindUp,     // 予備動作
+		Strike,     // 攻撃
+		HoldDown,   // 余韻
+		Recovery,   // 回復
 		Finished,   // 攻撃終了
 	};
 
@@ -30,32 +30,31 @@ public:
 
 	/// ===設定パラメータの構造体=== ///
 	struct DownwardSwingConfig {
-		// --- WindUp（予備動作）---
-		// 上体をX軸正方向（後方仰け反り）へ傾ける角度（度）
+		// --- WindUp---
+		// 上体をX軸正方向へ傾ける角度
 		float windUpPitch = 15.0f;
-		// タメにかける時間（秒）。「じわっ」と遅めに設定するほど重さが出る
+		// タメにかける時間
 		float windUpDuration = 0.35f;
 
-		// --- Strike（振り下ろし）---
-		// 振り下ろし先のX軸負方向（前傾）角度（度）。windUpPitch との合計が可動域
-		// 例: windUpPitch=15, strikeForwardPitch=15 → 合計30度の可動
+		// --- Strike---
+		// 振り下ろし先のX軸負方向角度
 		float strikeForwardPitch = 15.0f;
-		// 振り下ろし時間（秒）。WindUpより大幅に短くすることで「シュッ」とした鋭さを演出
+		// 振り下ろし時間
 		float strikeDuration = 0.10f;
 
-		// --- HoldDown（余韻）---
-		// 叩きつけ後に深い前傾を維持する時間（秒）。0にすると余韻なし
+		// --- HoldDown---
+		// 叩きつけ後に深い前傾を維持する時間
 		float holdDownDuration = 0.08f;
 
-		// --- Recovery（戻り）---
-		// 正位置へ戻るまでの時間（秒）。Strike より長めでゆっくり収束させる
+		// --- Recovery---
+		// 正位置へ戻るまでの時間
 		float recoveryDuration = 0.40f;
 
 		// --- 踏み込みオフセット ---
-		// Strike 中にボスを前方へ踏み込ませる距離（ローカルZ軸正方向）
+		// Strike中にボスを前方へ踏み込ませる距離
 		float strikeStepForward = 0.5f;
 
-		// --- 武器オフセット（Bossローカル座標）---
+		// --- 武器オフセット ---
 		// 定位置
 		Vector3 weaponRestOffset = { 0.0f,  0.5f,  0.3f };
 		// タメ時：頭上の少し背中側へ
@@ -72,11 +71,11 @@ public:
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Vector3 velocity{};             // ボスに適用する移動速度（ワールド座標系）
-		Quaternion rotation{};             // モデルに適用する回転（基底回転 + ピッチ）
+		Vector3 velocity{};             // ボスに適用する移動速度
+		Quaternion rotation{};          // モデルに適用する回転
 		Vector3 weaponPosition{};       // ローカル座標系での武器位置オフセット
-		DownwardSwingPhase currentPhase{}; // 現在フェーズ
-		bool isFinished = false;           // 攻撃が完全終了したか
+		bool isAttacking = false;       // 攻撃判定が有効なフレーム
+		bool isFinished = false;        // 攻撃が完全終了したか
 	};
 
 public:
@@ -136,9 +135,35 @@ private:
 	void UpdateAttack(const UpdateContext& context, UpdateResult& result);
 
 	/// <summary>
+	/// ワインドアップを更新します。
+	/// </summary>
+	/// <param name="context">更新コンテキスト。</param>
+	/// <param name="result">更新結果を格納する出力パラメータ。</param>
+	void UpdateWindUp(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// ストライク情報を更新します。
+	/// </summary>
+	/// <param name="context">更新処理に必要なコンテキスト情報。</param>
+	/// <param name="result">更新結果を格納する出力パラメータ。</param>
+	void UpdateStrike(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// ホールドダウンの状態を更新します。
+	/// </summary>
+	/// <param name="context">更新に必要な情報を含むコンテキスト。</param>
+	/// <param name="result">ホールドダウンの状態で更新される結果オブジェクト。</param>
+	void UpdateHoldDown(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// リカバリー処理を更新します。
+	/// </summary>
+	/// <param name="context">更新処理のコンテキスト情報。</param>
+	/// <param name="result">更新結果を格納する出力パラメータ。</param>
+	void UpdateRecovery(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
 	/// X軸周りに angleDeg 度回転させるクォータニオンを生成する。
-	/// 正値: 後方仰け反り（WindUp方向）
-	/// 負値: 前方前傾（Strike方向）
 	/// </summary>
 	Quaternion MakePitchQuaternion(float angleDeg) const;
 };

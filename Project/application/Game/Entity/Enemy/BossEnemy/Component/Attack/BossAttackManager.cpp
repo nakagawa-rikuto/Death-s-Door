@@ -156,7 +156,7 @@ BossAttackManager::AttackType BossAttackManager::SelectAndStart(
 		downswing_->StartAttack();
 		break;
 	case AttackType::JumpSmash:
-		jumpSmash_->StartAttack(bossPosition, playerPosition, bossRotation);
+		jumpSmash_->StartAttack(distToPlayer, bossPosition, playerPosition, bossRotation);
 		break;
 	default:
 		break;

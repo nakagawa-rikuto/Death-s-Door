@@ -35,8 +35,7 @@ void BossAttackThrustComponent::Initialize(const ThrustConfig& config) {
 ///-------------------------------------------///
 BossAttackThrustComponent::UpdateResult BossAttackThrustComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
-	// 現在のフェーズをセット
-	result.currentPhase = phase_;
+	result.isAttacking = (phase_ == ThrustPhase::Strike || phase_ == ThrustPhase::Recovery);
 
 	// 非アクティブフェーズ：基底回転そのまま、武器は定位置
 	if (phase_ == ThrustPhase::Idle || phase_ == ThrustPhase::Finished) {
@@ -52,9 +51,6 @@ BossAttackThrustComponent::UpdateResult BossAttackThrustComponent::Update(const 
 
 	// 攻撃中の更新
 	UpdateAttack(context, result);
-
-	// フェーズの更新
-	result.currentPhase = phase_;
 	return result;
 }
 
@@ -123,20 +119,16 @@ void BossAttackThrustComponent::StartAttack() {
 void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, UpdateResult& result) {
 	// -----------------------------------------------
 	// WindUp（予備動作）
-	//   Y軸を中心にモデルを windUpAngle 度ひねり、
-	//   武器を引き絞る
 	// -----------------------------------------------
 	if (phase_ == ThrustPhase::WindUp) {
-		// 0.0 → 1.0 の進行度
-		const float t = (config_.windUpDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f)
-			: 1.0f;
+		// t
+		const float t = (config_.windUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f) : 1.0f;
 
-		// Y軸ひねり：正の角度 = 武器側（右側）へ体をひねる
+		// Y軸ひねり
 		const Quaternion windUpYaw = MakeYawQuaternion(config_.windUpAngle * t);
 		result.modelRotation = Multiply(context.baseRotation, windUpYaw);
 
-		// 武器オフセット：定位置 → 引き絞り位置
+		// 武器オフセット
 		result.weaponLocalOffset = LerpVector3(
 			config_.weaponRestOffset,
 			config_.weaponWindUpOffset,
@@ -151,31 +143,26 @@ void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, Updat
 	}
 	// -----------------------------------------------
 	// Strike（突き）
-	//   タメ角度(windUpAngle)を始点とし、
-	//   正面を通り過ぎて逆方向 -strikeAngle まで鋭く切り返す。
-	//   武器を一気に前方へ押し出す。
 	// -----------------------------------------------
 	else if (phase_ == ThrustPhase::Strike) {
-		const float t = (config_.strikeDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
-			: 1.0f;
+		// t
+		const float t = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
 
-		// windUpAngle（タメ位置）→ -strikeAngle（切り返し位置）へ補間
+		// 回転の補間
 		const float startAngle = config_.windUpAngle;
 		const float endAngle = -config_.strikeAngle;
 		const float currentAngle = startAngle + (endAngle - startAngle) * t;
-
 		const Quaternion strikeYaw = MakeYawQuaternion(currentAngle);
 		result.modelRotation = Multiply(context.baseRotation, strikeYaw);
 
-		// 武器オフセット：引き絞り位置 → 突き出し位置
+		// 武器オフセット
 		result.weaponLocalOffset = LerpVector3(
 			config_.weaponWindUpOffset,
 			config_.weaponStrikeOffset,
 			t
 		);
 
-		// フェーズ遷移：Strike → Recovery
+		// フェーズ遷移
 		if (t >= 1.0f) {
 			state_.phaseTimer = 0.0f;
 			phase_ = ThrustPhase::Recovery;
@@ -183,29 +170,24 @@ void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, Updat
 	}
 	// -----------------------------------------------
 	// Recovery（戻り）
-	//   -strikeAngle から 0° へゆっくり戻す。
-	//   武器も突き出し位置から定位置へ引き戻す。
-	//   Strike より長めの時間をかけて自然に収束させる。
 	// -----------------------------------------------
 	else if (phase_ == ThrustPhase::Recovery) {
-		const float t = (config_.recoveryDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
-			: 1.0f;
+		// t
+		const float t = (config_.recoveryDuration > 0.0f) ? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f) : 1.0f;
 
-		// -strikeAngle → 0° へ補間
-		const float currentAngle = -config_.strikeAngle * (1.0f - t);
+		// 回転の補間
+		const Quaternion strikeEndYaw = MakeYawQuaternion(-config_.strikeAngle);
+		const Quaternion strikeEndRot = Multiply(context.baseRotation, strikeEndYaw);
+		result.modelRotation = Math::SLerp(strikeEndRot, context.baseRotation, t);
 
-		const Quaternion recoveryYaw = MakeYawQuaternion(currentAngle);
-		result.modelRotation = Multiply(context.baseRotation, recoveryYaw);
-
-		// 武器オフセット：突き出し位置 → 定位置へ戻す
+		// 武器オフセット
 		result.weaponLocalOffset = LerpVector3(
 			config_.weaponStrikeOffset,
 			config_.weaponRestOffset,
 			t
 		);
 
-		// フェーズ遷移：Recovery → Finished
+		// フェーズ遷移
 		if (t >= 1.0f) {
 			phase_ = ThrustPhase::Finished;
 			result.isFinished = true;

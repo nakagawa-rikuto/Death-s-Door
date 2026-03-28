@@ -14,8 +14,9 @@ void BossDownwarAttackState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetThrustComponent().StartAttack();
-	boss_->GetWeapon().SetActive(true); // 武器を有効化
+	boss_->GetDownswingComponent().StartAttack();
+	// 武器を有効化
+	boss_->GetWeapon().SetActive(true); 
 }
 
 ///-------------------------------------------///  
@@ -42,7 +43,7 @@ void BossDownwarAttackState::Update() {
 
 	if (result.isFinished) {
 		// タイマーリセット
-		boss_->SetDownSwingTimer(boss_->GetAttackInfo().thrustCooldown);
+		boss_->SetDownSwingTimer(boss_->GetAttackInfo().downswingCooldown);
 
 		// 武器を無効化
 		boss_->GetWeapon().SetActive(false);

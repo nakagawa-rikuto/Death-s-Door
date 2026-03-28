@@ -7,7 +7,6 @@
 // Math
 #include "Math/MatrixMath.h"
 
-using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ、デストラクタ
 ///-------------------------------------------///
@@ -57,7 +56,7 @@ void Object2d::Initialize(const std::string textureFilePath, MiiEngine::GroundTy
 	filePath_ = textureFilePath;
 
 	/// ===SpriteCommonの初期化=== ///
-	SpriteCommon::Initialize(filePath_, type);
+	MiiEngine::SpriteCommon::Initialize(filePath_, type);
 
 	/// ===WorldTransformの設定=== ///
 	worldTransform_ = { {1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f, }, { 0.0f, 0.0f, 0.0f } };

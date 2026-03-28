@@ -6,23 +6,22 @@
 // Math
 #include "Math/sMath.h"
 
-using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// テンプレート候補の明示的インスタンス化
 ///-------------------------------------------///
 // 球体とOBBのGameCharacter衝突処理
-template void GameCharacterCollision::HandleSphereOBBCollision<SphereCollider, OBBCollider>(GameCharacter<SphereCollider>*, GameCharacter<OBBCollider>*, float);
-template void GameCharacterCollision::HandleSphereOBBCollision<OBBCollider, SphereCollider>(GameCharacter<OBBCollider>*, GameCharacter<SphereCollider>*, float);
+template void GameCharacterCollision::HandleSphereOBBCollision<MiiEngine::SphereCollider, MiiEngine::OBBCollider>(GameCharacter<MiiEngine::SphereCollider>*, GameCharacter<MiiEngine::OBBCollider>*, float);
+template void GameCharacterCollision::HandleSphereOBBCollision<MiiEngine::OBBCollider, MiiEngine::SphereCollider>(GameCharacter<MiiEngine::OBBCollider>*, GameCharacter<MiiEngine::SphereCollider>*, float);
 // 汎用衝突処理
-template void GameCharacterCollision::ProcessCollision<SphereCollider, SphereCollider>(GameCharacter<SphereCollider>*, GameCharacter<SphereCollider>*, float);
-template void GameCharacterCollision::ProcessCollision<SphereCollider, OBBCollider>(GameCharacter<SphereCollider>*, GameCharacter<OBBCollider>*, float);
-template void GameCharacterCollision::ProcessCollision<OBBCollider, OBBCollider>(GameCharacter<OBBCollider>*, GameCharacter<OBBCollider>*, float);
-template void GameCharacterCollision::ProcessCollision<OBBCollider, SphereCollider>(GameCharacter<OBBCollider>*, GameCharacter<SphereCollider>*, float);
+template void GameCharacterCollision::ProcessCollision<MiiEngine::SphereCollider, MiiEngine::SphereCollider>(GameCharacter<MiiEngine::SphereCollider>*, GameCharacter<MiiEngine::SphereCollider>*, float);
+template void GameCharacterCollision::ProcessCollision<MiiEngine::SphereCollider, MiiEngine::OBBCollider>(GameCharacter<MiiEngine::SphereCollider>*, GameCharacter<MiiEngine::OBBCollider>*, float);
+template void GameCharacterCollision::ProcessCollision<MiiEngine::OBBCollider, MiiEngine::OBBCollider>(GameCharacter<MiiEngine::OBBCollider>*, GameCharacter<MiiEngine::OBBCollider>*, float);
+template void GameCharacterCollision::ProcessCollision<MiiEngine::OBBCollider, MiiEngine::SphereCollider>(GameCharacter<MiiEngine::OBBCollider>*, GameCharacter<MiiEngine::SphereCollider>*, float);
 
 ///-------------------------------------------/// 
 /// 球体GameCharacter同士の衝突処理
 ///-------------------------------------------///
-void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCollider>* characterA, GameCharacter<SphereCollider>* characterB, const float pushBackRatio) {
+void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<MiiEngine::SphereCollider>* characterA, GameCharacter<MiiEngine::SphereCollider>* characterB, const float pushBackRatio) {
 
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
@@ -62,7 +61,7 @@ void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCol
 ///-------------------------------------------/// 
 /// OBBGameCharacter同士の衝突処理
 ///-------------------------------------------///
-void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* characterA, GameCharacter<OBBCollider>* characterB, const float pushBackRatio) {
+void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<MiiEngine::OBBCollider>* characterA, GameCharacter<MiiEngine::OBBCollider>* characterB, const float pushBackRatio) {
 
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
@@ -106,16 +105,16 @@ void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* c
 template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
-	GameCharacter<OBBCollider>* obbCharacter = nullptr;
-	GameCharacter<SphereCollider>* sphereCharacter = nullptr;
+	GameCharacter<MiiEngine::OBBCollider>* obbCharacter = nullptr;
+	GameCharacter<MiiEngine::SphereCollider>* sphereCharacter = nullptr;
 	/// ===キャスト=== ///
-	if (GetColliderTypeFromCharacter(characterA) == ColliderType::OBB) {
-		obbCharacter = dynamic_cast<GameCharacter<OBBCollider>*>(characterA);
-		sphereCharacter = dynamic_cast<GameCharacter<SphereCollider>*>(characterB);
+	if (GetColliderTypeFromCharacter(characterA) == MiiEngine::ColliderType::OBB) {
+		obbCharacter = dynamic_cast<GameCharacter<MiiEngine::OBBCollider>*>(characterA);
+		sphereCharacter = dynamic_cast<GameCharacter<MiiEngine::SphereCollider>*>(characterB);
 
-	} else if (GetColliderTypeFromCharacter(characterA) == ColliderType::Sphere) {
-		sphereCharacter = dynamic_cast<GameCharacter<SphereCollider>*>(characterA);
-		obbCharacter = dynamic_cast<GameCharacter<OBBCollider>*>(characterB);
+	} else if (GetColliderTypeFromCharacter(characterA) == MiiEngine::ColliderType::Sphere) {
+		sphereCharacter = dynamic_cast<GameCharacter<MiiEngine::SphereCollider>*>(characterA);
+		obbCharacter = dynamic_cast<GameCharacter<MiiEngine::OBBCollider>*>(characterB);
 	}
 
 	/// ===Nullチェック=== ///
@@ -165,19 +164,19 @@ void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>*
 template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
-	ColliderType typeA = GetColliderTypeFromCharacter(characterA);
-	ColliderType typeB = GetColliderTypeFromCharacter(characterB);
+	MiiEngine::ColliderType typeA = GetColliderTypeFromCharacter(characterA);
+	MiiEngine::ColliderType typeB = GetColliderTypeFromCharacter(characterB);
 
 	// 同じ型の場合
 	if (typeA == typeB) {
 
-		if (typeA == ColliderType::Sphere) {
-			GameCharacter<SphereCollider>* sphereA = dynamic_cast<GameCharacter<SphereCollider>*>(characterA);
-			GameCharacter<SphereCollider>* sphereB = dynamic_cast<GameCharacter<SphereCollider>*>(characterB);
+		if (typeA == MiiEngine::ColliderType::Sphere) {
+			GameCharacter<MiiEngine::SphereCollider>* sphereA = dynamic_cast<GameCharacter<MiiEngine::SphereCollider>*>(characterA);
+			GameCharacter<MiiEngine::SphereCollider>* sphereB = dynamic_cast<GameCharacter<MiiEngine::SphereCollider>*>(characterB);
 			HandleSphereSphereCollision(sphereA, sphereB, pushBackRatio);
-		} else if (typeA == ColliderType::OBB) {
-			GameCharacter<OBBCollider>* obbA = dynamic_cast<GameCharacter<OBBCollider>*>(characterA);
-			GameCharacter<OBBCollider>* obbB = dynamic_cast<GameCharacter<OBBCollider>*>(characterB);
+		} else if (typeA == MiiEngine::ColliderType::OBB) {
+			GameCharacter<MiiEngine::OBBCollider>* obbA = dynamic_cast<GameCharacter<MiiEngine::OBBCollider>*>(characterA);
+			GameCharacter<MiiEngine::OBBCollider>* obbB = dynamic_cast<GameCharacter<MiiEngine::OBBCollider>*>(characterB);
 			HandleOBBOBBCollision(obbA, obbB, pushBackRatio);
 		}
 		// 同じでない場合
@@ -191,20 +190,20 @@ void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* charact
 /// コライダー型の判定
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const {
+MiiEngine::ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const {
 	return character->GetColliderType();
 }
 
 ///-------------------------------------------/// 
 /// OBB上の最近点計算（GameCharacter用）
 ///-------------------------------------------///
-Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) const {
-	if (obbCharacter->GetColliderType() != ColliderType::OBB) {
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<MiiEngine::OBBCollider>* obbCharacter) const {
+	if (obbCharacter->GetColliderType() != MiiEngine::ColliderType::OBB) {
 		return point; // OBBでない場合は元の点を返す
 	}
 
-	OBBCollider* obb = static_cast<OBBCollider*>(obbCharacter);
-	OBB obbData = obb->GetOBB();
+	MiiEngine::OBBCollider* obb = static_cast<MiiEngine::OBBCollider*>(obbCharacter);
+	MiiEngine::OBB obbData = obb->GetOBB();
 
 	return CalculateClosestPointOnOBB(point, obbData);
 }
@@ -212,7 +211,7 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Ve
 ///-------------------------------------------/// 
 /// OBB上の最近点計算
 ///-------------------------------------------///
-Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) const {
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const MiiEngine::OBB& obb) const {
 	Vector3 dir = point - obb.center;
 	Vector3 closest = obb.center;
 
@@ -236,7 +235,7 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point,
 ///-------------------------------------------/// 
 /// OBBの軸上での重なりを計算
 ///-------------------------------------------///
-float GameCharacterCollision::CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) const {
+float GameCharacterCollision::CalculateOverlapOnAxis(const MiiEngine::OBB& obb1, const MiiEngine::OBB& obb2, const Vector3& axis) const {
 	// 各OBBの軸への射影の半径を計算
 	float r1 = 0.0f;
 	for (int i = 0; i < 3; ++i) {

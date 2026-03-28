@@ -10,11 +10,9 @@
 #include "imgui.h"
 #endif // USE_IMGUI
 
-using namespace MiiEngine;
-
 /// ===テンプレート候補=== ///
-template class GameCharacter<OBBCollider>;
-template class GameCharacter<SphereCollider>;
+template class GameCharacter<MiiEngine::OBBCollider>;
+template class GameCharacter<MiiEngine::SphereCollider>;
 
 ///-------------------------------------------/// 
 /// コンストラクタ
@@ -37,7 +35,7 @@ GameCharacter<TCollider>::~GameCharacter() {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Initialize() {
 	/// ===ColliderCollision=== ///
-	collision_ = std::make_unique<ColliderCollision>();
+	collision_ = std::make_unique<MiiEngine::ColliderCollision>();
 	gCollision_ = std::make_unique<GameCharacterCollision>();
 
 	/// ===BaseInfoの初期化設定=== ///
@@ -92,7 +90,7 @@ void GameCharacter<TCollider>::Update() {
 /// 描画
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::Draw(BlendMode mode) {
+void GameCharacter<TCollider>::Draw(MiiEngine::BlendMode mode) {
 	/// ===TCollider=== ///
 	TCollider::Draw(mode);
 }
@@ -117,12 +115,12 @@ void GameCharacter<TCollider>::Information() {
 /// 衝突
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::OnCollision(Collider* collider) {
+void GameCharacter<TCollider>::OnCollision(MiiEngine::Collider* collider) {
 	// === 早期リターン === //
 	if (!collider) return;
 
 	/// ===Colliderとの衝突処理=== ///
-	if (collider->GetColliderName() == ColliderName::Ground) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::Ground) {
 
 		// 地面に接地
 		groundInfo_.isGrounded = true;
@@ -130,7 +128,7 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 		// 地面に衝突した際の処理
 		GroundOnCollision(collider);
 
-	} else if (collider->GetColliderName() == ColliderName::Object) {
+	} else if (collider->GetColliderName() == MiiEngine::ColliderName::Object) {
 		// Objectとの衝突処理
 		//NOTE:thisを100%押し戻し
 		collision_->ProcessCollision(this, collider, 0.0f);
@@ -178,7 +176,7 @@ void GameCharacter<TCollider>::GroundCollision() {
 	/// ===地面の範囲を出たかチェック=== ///
 	bool isOutOfRange = false;
 
-	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) {
 		// min～maxの範囲
 		float minX = groundInfo_.currentGroundFirst.x;
 		float maxX = groundInfo_.currentGroundSecond.x;
@@ -188,7 +186,7 @@ void GameCharacter<TCollider>::GroundCollision() {
 		isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
 			this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
 
-	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) {
 		// center +- halfSize
 		float centerX = groundInfo_.currentGroundFirst.x;
 		float halfSizeX = groundInfo_.currentGroundSecond.x;
@@ -209,24 +207,24 @@ void GameCharacter<TCollider>::GroundCollision() {
 /// 地面に衝突した際の処理
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
+void GameCharacter<TCollider>::GroundOnCollision(MiiEngine::Collider* collider) {
 
 	// タイプの取得
 	groundInfo_.currentGroundType = collider->GetColliderType();
 
 	/// ===タイプ別の地面情報の取得=== ///
-	if (groundInfo_.currentGroundType == ColliderType::AABB) { // AABBの場合
-		AABBCollider* aabbCollider = dynamic_cast<AABBCollider*>(collider);
+	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) { // AABBの場合
+		MiiEngine::AABBCollider* aabbCollider = dynamic_cast<MiiEngine::AABBCollider*>(collider);
 		if (aabbCollider) {
-			AABB groundAABB = aabbCollider->GetAABB();
+			MiiEngine::AABB groundAABB = aabbCollider->GetAABB();
 			// 地面の情報を保存(Min, Max)
 			groundInfo_.currentGroundFirst = groundAABB.min;
 			groundInfo_.currentGroundSecond = groundAABB.max;
 		}
-	} else if (groundInfo_.currentGroundType == ColliderType::OBB) { // OBBの場合
-		OBBCollider* obbCollider = dynamic_cast<OBBCollider*>(collider);
+	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) { // OBBの場合
+		MiiEngine::OBBCollider* obbCollider = dynamic_cast<MiiEngine::OBBCollider*>(collider);
 		if (obbCollider) {
-			OBB groundOBB = obbCollider->GetOBB();
+			MiiEngine::OBB groundOBB = obbCollider->GetOBB();
 			// 地面の情報を保存(Center, HalfSize)
 			groundInfo_.currentGroundFirst = groundOBB.center;
 			groundInfo_.currentGroundSecond = groundOBB.halfSize;
@@ -235,22 +233,22 @@ void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
 
 	/// ===GameCharacterの情報を取得=== ///
 	float characterHalfSizeY = 0.0f;
-	if (this->GetColliderType() == ColliderType::OBB) {
-		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
+	if (this->GetColliderType() == MiiEngine::ColliderType::OBB) {
+		MiiEngine::OBB obb = dynamic_cast<MiiEngine::OBBCollider*>(this)->GetOBB();
 		characterHalfSizeY = obb.halfSize.y;
 		
-	} else if (this->GetColliderType() == ColliderType::Sphere) {
-		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
+	} else if (this->GetColliderType() == MiiEngine::ColliderType::Sphere) {
+		MiiEngine::Sphere sphere = dynamic_cast<MiiEngine::SphereCollider*>(this)->GetSphere();
 		characterHalfSizeY = sphere.radius;
 	}
 
 	/// ===地面のY座標を計算（地面タイプに応じて）=== ///
 	float groundTopY = 0.0f;
-	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) {
 		// AABBの場合: maxがそのまま上端
 		groundTopY = groundInfo_.currentGroundSecond.y;
 
-	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) {
 		// OBBの場合: center + halfSize
 		groundTopY = groundInfo_.currentGroundFirst.y + groundInfo_.currentGroundSecond.y;
 	}

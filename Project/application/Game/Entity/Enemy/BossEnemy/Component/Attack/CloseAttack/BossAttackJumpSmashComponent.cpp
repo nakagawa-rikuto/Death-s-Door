@@ -38,10 +38,10 @@ void BossAttackJumpSmashComponent::Initialize(const JumpSmashConfig& config) {
 BossAttackJumpSmashComponent::UpdateResult
 BossAttackJumpSmashComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
-	result.currentPhase = phase_;
+	result.isAttacking = (phase_ == LeapPhase::Strike || phase_ == LeapPhase::HoldDown);
 	result.velocity = {};
 
-	// 非アクティブフェーズ：位置・姿勢は現在値のまま返す
+	// 非アクティブフェーズ
 	if (phase_ == LeapPhase::Idle || phase_ == LeapPhase::Finished) {
 		result.rotation = state_.baseRotation;
 		result.weaponPosition = config_.weaponRestOffset;
@@ -53,9 +53,8 @@ BossAttackJumpSmashComponent::Update(const UpdateContext& context) {
 	state_.phaseTimer += context.deltaTime;
 
 	// 攻撃中の更新
-	UpdateAttack(context, result);
+	UpdateAttack(result);
 
-	result.currentPhase = phase_;
 	return result;
 }
 
@@ -112,8 +111,6 @@ void BossAttackJumpSmashComponent::Information() {
 		}
 		if (ImGui::TreeNode("武器オフセット")) {
 			ImGui::DragFloat3("定位置", &config_.weaponRestOffset.x, 0.01f);
-			ImGui::DragFloat3("飛行中", &config_.weaponLeapOffset.x, 0.01f);
-			ImGui::DragFloat3("叩きつけ先", &config_.weaponStrikeOffset.x, 0.01f);
 			ImGui::TreePop();
 		}
 
@@ -126,6 +123,7 @@ void BossAttackJumpSmashComponent::Information() {
 /// 攻撃開始
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::StartAttack(
+	float distance,
 	const Vector3& bossPosition,
 	const Vector3& playerPosition,
 	const Quaternion& baseRotation
@@ -134,7 +132,9 @@ void BossAttackJumpSmashComponent::StartAttack(
 	if (IsActive()) {
 		return;
 	}
+	// 攻撃開始に必要な情報を state_ に保存
 	state_.phaseTimer = 0.0f;
+	state_.distance = distance;
 	state_.baseRotation = baseRotation;
 	state_.startPosition = bossPosition;
 	state_.targetPosition = playerPosition;
@@ -145,11 +145,8 @@ void BossAttackJumpSmashComponent::StartAttack(
 ///-------------------------------------------///
 /// 攻撃の更新を実行（フェーズのディスパッチ）
 ///-------------------------------------------///
-void BossAttackJumpSmashComponent::UpdateAttack(
-	const UpdateContext& context, UpdateResult& result)
-{
-	(void)context; // 各フェーズ関数はタイマーのみ使用
-
+void BossAttackJumpSmashComponent::UpdateAttack(UpdateResult& result) {
+	/// ===Phase毎の処理=== ///
 	switch (phase_) {
 	case LeapPhase::LeapWindUp: UpdateLeapWindUp(result); break;
 	case LeapPhase::Leap:       UpdateLeap(result);       break;
@@ -162,22 +159,20 @@ void BossAttackJumpSmashComponent::UpdateAttack(
 
 ///-------------------------------------------///
 /// LeapWindUp（跳躍前の溜め）
-///   膝を曲げるイメージで前方へ少し前傾し、重心を落とす。
-///   EaseOut でじわっと溜めることで跳躍の予感を演出する。
-///   武器は定位置のまま。
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
-	const float rawT = (config_.leapWindUpDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.leapWindUpDuration, 1.0f)
-		: 1.0f;
+	// t
+	const float rawT = (config_.leapWindUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.leapWindUpDuration, 1.0f) : 1.0f;
 	const float t = Easing::EaseOutQuad(rawT);
 
-	// 前傾（crouchPitch は負値 → X軸負方向 = 前のめり）
-	const Quaternion crouchRot = MakePitchQuaternion(config_.leapWindUpCrouchPitch * t);
+	// 回転の補間
+	const float crouchAngle = Math::Lerp(0.0f, config_.leapWindUpCrouchPitch, t);
+	const Quaternion crouchRot = MakePitchQuaternion(crouchAngle);
 	result.rotation = Multiply(state_.baseRotation, crouchRot);
 
-	// 武器・位置は変化なし
+	// 武器
 	result.weaponPosition = config_.weaponRestOffset;
+	// 移動なし
 	result.velocity = {};
 
 	// フェーズ遷移
@@ -189,49 +184,39 @@ void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// Leap（放物線飛行）
-///
-/// 【水平移動】
-///   startPosition → targetPosition を線形補間（等速）
-///
-/// 【垂直移動】
-///   y = arcHeight * 4 * t * (1 - t)  の放物線加算
-///   t=0 と t=1 でY加算=0、t=0.5 で最大高さ
-///
-/// 【ピッチ変化】（飛行弧への自然な追従）
-///   t = 0.0〜0.5（上昇）: 0° → +ascentPitch   （前傾。前に飛び出す感）
-///   t = 0.5〜1.0（降下）: +ascentPitch → -descentPitch（仰け反り→着地タメ）
-///
-/// 【武器】
-///   定位置 → 飛行中（振り上げ）へ上昇に合わせて移動
-///   降下中は振り上げ位置を維持したまま着地の瞬間を待つ
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
-	const float t = (config_.leapDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.leapDuration, 1.0f)
-		: 1.0f;
+	// t
+	state_.distance = std::clamp(state_.distance, config_.minDistance, config_.maxDistance);
+	float ration = state_.distance / config_.minDistance;
+	float actualDuration = config_.leapDuration * ration;
+	const float t = (actualDuration > 0.0f) ? std::min(state_.phaseTimer / actualDuration, 1.0f) : 1.0f;
 
-	// --- 位置計算 ---
-	// 水平：線形補間
+	/// ===位置計算=== ///
+	// 水平
 	const Vector3 horizontalPos = Math::Lerp(state_.startPosition, state_.targetPosition, t);
-	// 垂直：放物線加算
+	// 垂直
 	const float arcY = CalcParabolaHeight(t);
 	const Vector3 nextPosition = Vector3{
 		horizontalPos.x,
 		horizontalPos.y + arcY,
 		horizontalPos.z
 	};
-	// --- velocity = 今フレーム位置 - 前フレーム位置 ---
+	// velcoity
 	result.velocity = nextPosition - state_.currentPosition;
 
-	// --- ピッチ計算 ---
+	// currentPositionを更新更新
+	state_.currentPosition = nextPosition;
+
+	/// ===ピッチ計算=== ///
 	float pitchAngle = 0.0f;
 	if (t <= 0.5f) {
-		// 上昇フェーズ：0° → +ascentPitch（前傾）
-		const float ascT = t / 0.5f;              // 0.0〜1.0 に正規化
+		// 上昇フェーズ
+		const float ascT = t / 0.5f; // 0.0〜1.0 に正規化
 		pitchAngle = config_.leapAscentPitch * ascT;
 	} else {
-		// 降下フェーズ：+ascentPitch → -descentPitch（仰け反り）
-		const float descT = (t - 0.5f) / 0.5f;   // 0.0〜1.0 に正規化
+		// 降下フェーズ
+		const float descT = (t - 0.5f) / 0.5f; // 0.0〜1.0 に正規化
 		const float startAngle = config_.leapAscentPitch;
 		const float endAngle = -config_.leapDescentPitch;
 		pitchAngle = startAngle + (endAngle - startAngle) * descT;
@@ -239,17 +224,15 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 	const Quaternion leapPitch = MakePitchQuaternion(pitchAngle);
 	result.rotation = Multiply(state_.baseRotation, leapPitch);
 
-	// --- 武器オフセット ---
-	// 上昇中: 定位置 → 飛行中オフセット（振り上げ）
-	// 降下中: 飛行中オフセットを維持
-	if (t <= 0.5f) {
+	/// ===武器オフセット=== ///
+	if (t <= 0.5f) { // 上昇中
 		const float weaponT = t / 0.5f;
-		result.weaponPosition = Math::Lerp(config_.weaponRestOffset,config_.weaponLeapOffset,weaponT);
-	} else {
-		result.weaponPosition = config_.weaponLeapOffset;
+		result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponRestOffset, weaponT);
+	} else { // 降下中
+		result.weaponPosition = config_.weaponRestOffset;
 	}
 
-	// フェーズ遷移：着地（t >= 1.0）で Strike へ
+	// フェーズ遷移
 	if (t >= 1.0f) {
 		// 着地時は targetPosition にスナップして誤差を除去
 		state_.currentPosition = state_.targetPosition;
@@ -260,32 +243,27 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// Strike（着地叩きつけ）
-///   Leap終了時の仰け反り（-descentPitch）を起点として
-///   一気に前傾（+strikeForwardPitch）へ振り下ろす。
-///   EaseIn で加速することで叩きつけの鋭さと重量感を演出する。
-///   着地したので位置は targetPosition に固定。
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateStrike(UpdateResult& result) {
-	const float rawT = (config_.strikeDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
-		: 1.0f;
+
+	// t
+	const float rawT = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
 	const float t = Easing::EaseInQuad(rawT);
 
-	// -descentPitch → +strikeForwardPitch への補間
+	// 回転の補間
 	const float startAngle = -config_.leapDescentPitch;
 	const float endAngle = config_.strikeForwardPitch;
 	const float currentAngle = startAngle + (endAngle - startAngle) * t;
-
 	const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
 	result.rotation = Multiply(state_.baseRotation, strikePitch);
 
-	// 武器：飛行中（振り上げ）→ 叩きつけ先
-	result.weaponPosition = Math::Lerp(config_.weaponLeapOffset,config_.weaponStrikeOffset,t);
+	// 武器
+	result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponRestOffset, t);
 
 	// 着地済みのため移動なし
 	result.velocity = {};
 
-	// フェーズ遷移：Strike → HoldDown または Recovery
+	// フェーズ遷移
 	if (rawT >= 1.0f) {
 		state_.phaseTimer = 0.0f;
 		if (config_.holdDownDuration > 0.0f) {
@@ -298,19 +276,15 @@ void BossAttackJumpSmashComponent::UpdateStrike(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// HoldDown（叩きつけ余韻）
-///   深い前傾（+strikeForwardPitch）を一瞬維持する。
-///   武器も叩きつけ位置に固定。
-///   この「止め」が攻撃の出し切り感・重さを演出する。
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateHoldDown(UpdateResult& result) {
-	const float t = (config_.holdDownDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f)
-		: 1.0f;
+	// t
+	const float t = (config_.holdDownDuration > 0.0f) ? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f) : 1.0f;
 
-	// 姿勢・武器・位置は Strike 終了時点で固定
+	// 終了時点で固定
 	const Quaternion holdPitch = MakePitchQuaternion(config_.strikeForwardPitch);
 	result.rotation = Multiply(state_.baseRotation, holdPitch);
-	result.weaponPosition = config_.weaponStrikeOffset;
+	result.weaponPosition = config_.weaponRestOffset;
 	result.velocity = {};
 
 	// フェーズ遷移
@@ -322,27 +296,22 @@ void BossAttackJumpSmashComponent::UpdateHoldDown(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// Recovery（戻り）
-///   +strikeForwardPitch → 0° へゆっくり戻す。
-///   武器も叩きつけ位置から定位置へ引き戻す。
-///   Strike より長めの時間で自然に収束させる。
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateRecovery(UpdateResult& result) {
-	const float t = (config_.recoveryDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
-		: 1.0f;
+	// t
+	const float t = (config_.recoveryDuration > 0.0f) ? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f) : 1.0f;
 
-	// +strikeForwardPitch → 0° へ補間
-	const float currentAngle = config_.strikeForwardPitch * (1.0f - t);
+	// 回転の補間
+	const Quaternion strikeEndRot = Multiply(state_.baseRotation, MakePitchQuaternion(config_.strikeForwardPitch));
+	result.rotation = Math::SLerp(strikeEndRot, state_.baseRotation, t);
 
-	const Quaternion recoveryPitch = MakePitchQuaternion(currentAngle);
-	result.rotation = Multiply(state_.baseRotation, recoveryPitch);
+	// 武器
+	result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponRestOffset, t);
 
-	// 武器：叩きつけ位置 → 定位置へ戻す
-	result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset,config_.weaponRestOffset,t);
-
+	// velocity
 	result.velocity = {};
 
-	// フェーズ遷移：Recovery → Finished
+	// フェーズ遷移
 	if (t >= 1.0f) {
 		phase_ = LeapPhase::Finished;
 		result.isFinished = true;
@@ -351,8 +320,6 @@ void BossAttackJumpSmashComponent::UpdateRecovery(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// 放物線の高さを計算
-///   y = arcHeight * 4 * t * (1 - t)
-///   t=0 と t=1 で 0、t=0.5 で arcHeight になる
 ///-------------------------------------------///
 float BossAttackJumpSmashComponent::CalcParabolaHeight(float t) const {
 	const float ct = std::clamp(t, 0.0f, 1.0f);
@@ -361,8 +328,6 @@ float BossAttackJumpSmashComponent::CalcParabolaHeight(float t) const {
 
 ///-------------------------------------------///
 /// X軸周りに angleDeg 度回転するクォータニオンを生成
-///   正値: 前傾（Strike方向）
-///   負値: 後方仰け反り（WindUp・降下中のタメ方向）
 ///-------------------------------------------///
 Quaternion BossAttackJumpSmashComponent::MakePitchQuaternion(float angleDeg) const {
 	const float kDegToRad = Math::Pi() / 180.0f;
