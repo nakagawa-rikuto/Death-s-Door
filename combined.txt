@@ -32358,7 +32358,6 @@ File Path: Project/Service/Camera.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 追加
@@ -32463,17 +32462,16 @@ File Path: Project/Service/Collision.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 追加
 	///-------------------------------------------///
-	void Collision::AddCollider(Collider* collider) { Locator::GetColliderManager()->AddCollider(collider); }
+	void Collision::AddCollider(MiiEngine::Collider* collider) { Locator::GetColliderManager()->AddCollider(collider); }
 
 	///-------------------------------------------/// 
 	/// 削除
 	///-------------------------------------------///
-	void Collision::RemoveCollider(Collider* collider) { Locator::GetColliderManager()->RemoveCollider(collider); }
+	void Collision::RemoveCollider(MiiEngine::Collider* collider) { Locator::GetColliderManager()->RemoveCollider(collider); }
 
 	///-------------------------------------------/// 
 	/// リセット
@@ -32484,9 +32482,9 @@ namespace Service {
 	/// Setter
 	///-------------------------------------------///
 	// LightTYpe
-	void Collision::SetLight(LightType lightType) { Locator::GetColliderManager()->SetLight(lightType); }
+	void Collision::SetLight(MiiEngine::LightType lightType) { Locator::GetColliderManager()->SetLight(lightType); }
 	// LightData
-	void Collision::SetLightData(LightInfo light) { Locator::GetColliderManager()->SetLightData(light); }
+	void Collision::SetLightData(MiiEngine::LightInfo light) { Locator::GetColliderManager()->SetLightData(light); }
 }
 
 ============================================================
@@ -32551,7 +32549,6 @@ File Path: Project/Service/DeltaTime.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// Setter
@@ -32614,7 +32611,6 @@ File Path: Project/Service/GraphicsResourceGetter.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// DescriptorHandle
@@ -32659,11 +32655,11 @@ namespace Service {
 		return Locator::GetTextureManager()->GetMetaData(key);
 	}
 	// モデルデータの取得
-	ModelData GraphicsResourceGetter::GetModelData(const std::string& directorPath) {
+	MiiEngine::ModelData GraphicsResourceGetter::GetModelData(const std::string& directorPath) {
 		return Locator::GetModelManager()->GetModelData(directorPath);
 	}
 	// アニメーションの取得
-	std::map<std::string, Animation> GraphicsResourceGetter::GetAnimationData(const std::string& directorPath) {
+	std::map<std::string, MiiEngine::Animation> GraphicsResourceGetter::GetAnimationData(const std::string& directorPath) {
 		return Locator::GetAnimationManager()->GetAnimation(directorPath);
 	}
 	// LevelDataの取得
@@ -32821,7 +32817,6 @@ File Path: Project/Service/Input.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 更新
@@ -33105,7 +33100,6 @@ File Path: Project/Service/Loader.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// テクスチャ
@@ -33669,7 +33663,6 @@ File Path: Project/Service/Particle.cpp
 #include "Engine/Graphics/Particle/ParticleDefinition.h"
 #include "Engine/Graphics/Particle/ParticleParameter.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// 定義の管理
@@ -33696,7 +33689,7 @@ namespace Service {
 	/// パーティクルの操作
 	///-------------------------------------------///
 	// パーティクルを発生
-	ParticleGroup* Particle::Emit(const std::string& name, const Vector3& translate) {
+	MiiEngine::ParticleGroup* Particle::Emit(const std::string& name, const Vector3& translate) {
 		return Locator::GetParticleManager()->Emit(name, translate);
 	}
 
@@ -33890,7 +33883,6 @@ File Path: Project/Service/PostEffect.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// Setter
@@ -33901,7 +33893,7 @@ namespace Service {
 	}
 	// Dissolve
 	void PostEffect::SetDissolveData(MiiEngine::DissolveData data) {
-		if (auto dissolve = dynamic_cast<DissolveEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::Dissolve))) {
+		if (auto dissolve = dynamic_cast<MiiEngine::DissolveEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::Dissolve))) {
 			dissolve->SetData(data);
 		} else {
 			assert(false && "DissolveEffectが見つかりませんでした。");
@@ -33909,7 +33901,7 @@ namespace Service {
 	}
 	// RadiusBlur
 	void PostEffect::SetRadiusBlurData(MiiEngine::RadiusBlurData data) {
-		if (auto radiusBlur = dynamic_cast<RadiusBlurEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::RadiusBlur))) {
+		if (auto radiusBlur = dynamic_cast<MiiEngine::RadiusBlurEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::RadiusBlur))) {
 			radiusBlur->SetData(data);
 		} else {
 			assert(false && "RadiusBlurEffectが見つかりませんでした。");
@@ -33917,7 +33909,7 @@ namespace Service {
 	}
 	// Vignette
 	void PostEffect::SetVignetteData(MiiEngine::VignetteData data) {
-		if (auto vignette = dynamic_cast<VignetteEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::Vignette))) {
+		if (auto vignette = dynamic_cast<MiiEngine::VignetteEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::Vignette))) {
 			vignette->SetData(data);
 		} else {
 			assert(false && "VignetteEffectが見つかりませんでした。");
@@ -33925,7 +33917,7 @@ namespace Service {
 	}
 	// ShatterGlass
 	void PostEffect::SetShatterGlassData(MiiEngine::ShatterGlassData data) {
-		if (auto shatterGlass = dynamic_cast<ShatterGlassEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(OffScreenType::ShatterGlass))) {
+		if (auto shatterGlass = dynamic_cast<MiiEngine::ShatterGlassEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::ShatterGlass))) {
 			shatterGlass->SetData(data);
 		} else {
 			assert(false && "ShatterGlassEffectが見つかりませんでした。");
@@ -34005,7 +33997,6 @@ File Path: Project/Service/Render.cpp
 // Locator
 #include "Locator.h"
 
-using namespace MiiEngine;
 namespace Service {
 	///-------------------------------------------/// 
 	/// Pipeline
@@ -34161,7 +34152,6 @@ File Path: Project/application/Drawing/2d/Object2d.cpp
 // Math
 #include "Math/MatrixMath.h"
 
-using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// コンストラクタ、デストラクタ
 ///-------------------------------------------///
@@ -34211,7 +34201,7 @@ void Object2d::Initialize(const std::string textureFilePath, MiiEngine::GroundTy
 	filePath_ = textureFilePath;
 
 	/// ===SpriteCommonの初期化=== ///
-	SpriteCommon::Initialize(filePath_, type);
+	MiiEngine::SpriteCommon::Initialize(filePath_, type);
 
 	/// ===WorldTransformの設定=== ///
 	worldTransform_ = { {1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f, }, { 0.0f, 0.0f, 0.0f } };
@@ -34905,7 +34895,6 @@ File Path: Project/application/Drawing/3d/Object3d.cpp
 // C++
 #include <cassert>
 
-using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
@@ -34916,7 +34905,7 @@ Object3d::~Object3d() {
 ///-------------------------------------------/// 
 /// 初期化
 ///-------------------------------------------///
-void Object3d::Init(std::unique_ptr<ModelCommon> model, const std::string& modelName, MiiEngine::LightType light) {
+void Object3d::Init(std::unique_ptr<MiiEngine::ModelCommon> model, const std::string& modelName, MiiEngine::LightType light) {
 	// 生成。
 	model_ = std::move(model);
 	// 初期化
@@ -38166,11 +38155,12 @@ void BossEnemy::SetComponentConfig() {
 
 	attackInfo_.downswingTimer = 0.0f;
 	attackInfo_.downswingRange = 8.0f;
-	attackInfo_.downswingCooldown = 4.0f;
+	attackInfo_.downswingCooldown = 2.0f;
 
 	attackInfo_.jumpSmashTimer = 0.0f;
-	attackInfo_.jumpSmashRange = 14.0f;
-	attackInfo_.jumpSmashCooldown = 6.0f;
+	attackInfo_.jumpSmashMinRange = 10.0f;
+	attackInfo_.jumpSmashMaxRange = 40.0f;
+	attackInfo_.jumpSmashCooldown = 2.0f;
 
 	/// ===MoveComponentの生成=== ///
 	moveComponent_ = std::make_unique<BossMoveComponent>();
@@ -38196,6 +38186,7 @@ void BossEnemy::SetComponentConfig() {
 
 	/// ===AttackComponentの生成=== ///
 	//attackManager_ = std::make_unique<BossAttackManager>();
+	// Thrust
 	thrustComponent_ = std::make_unique<BossAttackThrustComponent>();
 	BossAttackThrustComponent::ThrustConfig thrustConfig{
 		.windUpAngle = 30.0f,
@@ -38210,37 +38201,39 @@ void BossEnemy::SetComponentConfig() {
 	// 初期化
 	thrustComponent_->Initialize(thrustConfig);
 
+	// DownSwing
 	downswingComponent_ = std::make_unique<BossAttackDownwardSwingComponent>();
 	BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
-		.windUpPitch = 15.0f,
-		.windUpDuration = 0.35f,
-		.strikeForwardPitch = 15.0f,
+		.windUpPitch = -2.0f,
+		.windUpDuration = 1.0f,
+		.strikeForwardPitch = -10.0f,
 		.strikeDuration = 0.1f,
-		.holdDownDuration = 0.08f,
-		.recoveryDuration = 0.4f,
-		.strikeStepForward = 0.5f,
-		.weaponRestOffset = { 0.0f,  0.5f,  0.3f },
-		.weaponWindUpOffset = { 0.0f,  1.4f, -0.4f },
-		.weaponStrikeOffset = { 0.0f, -0.2f,  1.5f },
+		.holdDownDuration = 0.2f,
+		.recoveryDuration = 0.45f,
+		.strikeStepForward = 0.1f,
+		.weaponRestOffset = { 0.0f,  0.0f,  0.4f },
+		.weaponWindUpOffset = { 0.0f,  0.0f,  0.4f },
+		.weaponStrikeOffset = { 0.0f,  0.0f,  0.4f },
 	};
 	// 初期化
 	downswingComponent_->Initialize(downswingConfig);
 
+	// JumpSmash
 	jumpSmashComponent_ = std::make_unique<BossAttackJumpSmashComponent>();
 	BossAttackJumpSmashComponent::JumpSmashConfig jumpSmashConfig{
-		.leapWindUpCrouchPitch = -10.0f,
-		.leapWindUpDuration = 0.3f,
-		.leapDuration = 0.6f,
-		.leapArcHeight = 4.f,
-		.leapAscentPitch = 20.0f,
-		.leapDescentPitch = 30.0f,
-		.strikeForwardPitch = 25.0f,
-		.strikeDuration = 0.1f,
-		.holdDownDuration = 0.08f,
+		.minDistance = attackInfo_.jumpSmashMinRange,
+		.maxDistance = attackInfo_.jumpSmashMaxRange,
+		.leapWindUpCrouchPitch = 5.0f,
+		.leapWindUpDuration = 0.1f,
+		.leapDuration = 0.1f,
+		.leapArcHeight = 15.0f,
+		.leapAscentPitch = 120.0f,
+		.leapDescentPitch = 120.0f,
+		.strikeForwardPitch = 20.0f,
+		.strikeDuration = 0.2f,
+		.holdDownDuration = 0.8f,
 		.recoveryDuration = 0.45f,
-		.weaponRestOffset = { 0.0f,  0.5f,  0.3f },
-		.weaponLeapOffset = { 0.0f,  1.5f, -0.5f },
-		.weaponStrikeOffset = { 0.0f, -0.2f,  1.5f },
+		.weaponRestOffset = { 0.0f,  0.0f,  0.4f },
 	};
 	// 初期化
 	jumpSmashComponent_->Initialize(jumpSmashConfig);
@@ -38269,6 +38262,12 @@ void BossEnemy::advanceTimer() {
 	// 攻撃のクールタイマーを進める
 	if (attackInfo_.thrustTimer > 0.0f) {
 		attackInfo_.thrustTimer -= baseInfo_.deltaTime;
+	}
+	if (attackInfo_.downswingTimer > 0.0f) {
+		attackInfo_.downswingTimer -= baseInfo_.deltaTime;
+	}
+	if (attackInfo_.jumpSmashTimer > 0.0f) {
+		attackInfo_.jumpSmashTimer -= baseInfo_.deltaTime;
 	}
 	
 
@@ -38322,7 +38321,8 @@ private:
 		// 攻撃射程
 		float thrustRange = 4.0f;
 		float downswingRange = 6.0f;
-		float jumpSmashRange = 14.0f;
+		float jumpSmashMinRange = 14.0f;
+		float jumpSmashMaxRange = 20.0f;
 
 		// 個別クールダウン（秒）
 		float thrustCooldown = 3.0f;
@@ -38601,7 +38601,7 @@ BossAttackManager::AttackType BossAttackManager::SelectAndStart(
 		downswing_->StartAttack();
 		break;
 	case AttackType::JumpSmash:
-		jumpSmash_->StartAttack(bossPosition, playerPosition, bossRotation);
+		jumpSmash_->StartAttack(distToPlayer, bossPosition, playerPosition, bossRotation);
 		break;
 	default:
 		break;
@@ -38953,9 +38953,9 @@ void BossAttackDownwardSwingComponent::Initialize(const DownwardSwingConfig& con
 ///-------------------------------------------///
 BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
-	result.currentPhase = phase_;
+	result.isAttacking = (phase_ == DownwardSwingPhase::Strike || phase_ == DownwardSwingPhase::HoldDown);
 
-	// 非アクティブフェーズ：基底回転そのまま、武器は定位置、速度なし
+	// 非アクティブフェーズ
 	if (phase_ == DownwardSwingPhase::Idle || phase_ == DownwardSwingPhase::Finished) {
 		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 		result.rotation = context.baseRotation;
@@ -38969,8 +38969,6 @@ BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent:
 
 	// 攻撃中の更新
 	UpdateAttack(context, result);
-
-	result.currentPhase = phase_;
 	return result;
 }
 
@@ -39041,142 +39039,133 @@ void BossAttackDownwardSwingComponent::StartAttack() {
 /// 攻撃の更新を実行
 ///-------------------------------------------///
 void BossAttackDownwardSwingComponent::UpdateAttack(const UpdateContext& context, UpdateResult& result) {
-	// -----------------------------------------------
-	// WindUp（予備動作）
-	//   X軸正方向へ上体を仰け反らせてタメる。
-	//   EaseOut で「じわっ」と遅めに持ち上げることで
-	//   次の振り下ろしとの緩急を演出する。
-	//   武器は頭上の背中側へゆっくり引き上げる。
-	// -----------------------------------------------
-	if (phase_ == DownwardSwingPhase::WindUp) {
-		const float rawT = (config_.windUpDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f)
-			: 1.0f;
-		// EaseOut：最初は速く、終わりはじわっと
-		const float t = Easing::EaseOutQuad(rawT);
-
-		// X軸正方向（仰け反り）へ windUpPitch 度傾ける
-		const Quaternion windUpPitch = MakePitchQuaternion(config_.windUpPitch * t);
-		result.rotation = Multiply(context.baseRotation, windUpPitch);
-
-		// 武器：定位置 → 頭上背中側へ
-		result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponWindUpOffset, t);
-
-		// WindUp中は踏み込みなし
-		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
-
-		// フェーズ遷移
-		if (rawT >= 1.0f) {
-			state_.phaseTimer = 0.0f;
-			phase_ = DownwardSwingPhase::Strike;
-		}
+	/// ===Phase毎の処理=== ///
+	switch (phase_) {
+	case DownwardSwingPhase::WindUp: UpdateWindUp(context, result); break;
+	case DownwardSwingPhase::Strike: UpdateStrike(context, result); break;
+	case DownwardSwingPhase::HoldDown: UpdateHoldDown(context, result); break;
+	case DownwardSwingPhase::Recovery: UpdateRecovery(context, result); break;
+	default: break;
 	}
-	// -----------------------------------------------
-	// Strike（振り下ろし）
-	//   仰け反り位置（+windUpPitch）から
-	//   前傾位置（-strikeForwardPitch）まで一気に振り抜く。
-	//   EaseIn で加速しながら叩きつけることで「シュッ」とした
-	//   鋭さと重量感を両立させる。
-	//   同時に前方へ踏み込ませてリーチと迫力を追加する。
-	// -----------------------------------------------
-	else if (phase_ == DownwardSwingPhase::Strike) {
-		const float rawT = (config_.strikeDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
-			: 1.0f;
-		// EaseIn：終盤に加速することで叩きつけの鋭さを演出
-		const float t = Easing::EaseInQuad(rawT);
+}
 
-		// +windUpPitch → -strikeForwardPitch への補間
-		const float startAngle = config_.windUpPitch;
-		const float endAngle = -config_.strikeForwardPitch;
-		const float currentAngle = startAngle + (endAngle - startAngle) * t;
+///-------------------------------------------/// 
+/// WindUp（予備動作）
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateWindUp(const UpdateContext& context, UpdateResult& result) {
+	// t
+	const float rawT = (config_.windUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f) : 1.0f;
+	const float t = Easing::EaseOutQuad(rawT);
 
-		const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
-		result.rotation = Multiply(context.baseRotation, strikePitch);
+	// 回転の補間
+	const float currentAngle = Math::Lerp(0.0f, config_.windUpPitch, t);
+	const Quaternion crouchRot = MakePitchQuaternion(currentAngle);
+	result.rotation = Multiply(context.baseRotation, crouchRot);
 
-		// 武器：頭上背中側 → 前方下方へ弧を描いて振り下ろす
-		result.weaponPosition = Math::Lerp(config_.weaponWindUpOffset, config_.weaponStrikeOffset, t);
+	// 武器
+	result.weaponPosition = config_.weaponRestOffset;
+	// 移動なし
+	result.velocity = {};
 
-		// 踏み込み：前方へ加速しながら踏み込む速度を計算
-		// stepZ はフレームあたりの移動量なので deltaTime で割って velocity に変換する
-		const float stepZ = config_.strikeStepForward * t;
-		const float prevT = Easing::EaseInQuad(std::max(0.0f,
-			(state_.phaseTimer - context.deltaTime) / config_.strikeDuration));
-		const float prevStepZ = config_.strikeStepForward * prevT;
-		const float deltaZ = stepZ - prevStepZ;
-		result.velocity = (context.deltaTime > 0.0f)
-			? Vector3{ 0.0f, 0.0f, deltaZ / context.deltaTime }
-		: Vector3{ 0.0f, 0.0f, 0.0f };
-
-		// フェーズ遷移：Strike → HoldDown（または HoldDown スキップ）
-		if (rawT >= 1.0f) {
-			state_.phaseTimer = 0.0f;
-			if (config_.holdDownDuration > 0.0f) {
-				phase_ = DownwardSwingPhase::HoldDown;
-			} else {
-				phase_ = DownwardSwingPhase::Recovery;
-			}
-		}
+	// フェーズ遷移
+	if (rawT >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		phase_ = DownwardSwingPhase::Strike;
 	}
-	// -----------------------------------------------
-	// HoldDown（余韻）
-	//   叩きつけた深い前傾姿勢を一瞬だけ維持する。
-	//   武器も叩きつけ位置に止まったまま。
-	//   この「止め」があることで攻撃の「出し切り感」が出る。
-	// -----------------------------------------------
-	else if (phase_ == DownwardSwingPhase::HoldDown) {
-		const float t = (config_.holdDownDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f)
-			: 1.0f;
+}
 
-		// 姿勢・武器・速度は Strike 終了時点の値で固定
-		const Quaternion holdPitch = MakePitchQuaternion(-config_.strikeForwardPitch);
-		result.rotation = Multiply(context.baseRotation, holdPitch);
-		result.weaponPosition = config_.weaponStrikeOffset;
-		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f }; // 踏み込みは止まる
+///-------------------------------------------/// 
+/// Strike（振り下ろし）
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateStrike(const UpdateContext & context, UpdateResult & result) {
+	// t
+	const float rawT = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
+	const float t = Easing::EaseInQuad(rawT);
 
-		// フェーズ遷移
-		if (t >= 1.0f) {
-			state_.phaseTimer = 0.0f;
+	// 回転の補間
+	const float startAngle = config_.windUpPitch;
+	const float endAngle = config_.strikeForwardPitch;
+	const float currentAngle = startAngle + (endAngle - startAngle) * t;
+	const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
+	result.rotation = Multiply(context.baseRotation, strikePitch);
+
+	// 武器
+	result.weaponPosition = Math::Lerp(config_.weaponWindUpOffset, config_.weaponStrikeOffset, t);
+
+	// 踏み込み
+	const float prevRawT = std::max(0.0f, (state_.phaseTimer - context.deltaTime) / config_.strikeDuration);
+	const float prevT = Easing::EaseInQuad(std::min(prevRawT, 1.0f));
+	const float stepTotal = config_.strikeStepForward * t;
+	const float prevStepTotal = config_.strikeStepForward * prevT;
+	const float deltaStep = stepTotal - prevStepTotal;
+
+	// baseRotation でローカル前方をワールド空間へ変換
+	const Vector3 localForward = { 0.0f, 0.0f, 1.0f };
+	const Vector3 worldForward = Math::RotateVector(localForward, context.baseRotation);
+	// 前方単位ベクトル × 今フレームの移動量
+	result.velocity = Vector3{
+		worldForward.x * deltaStep / context.deltaTime,
+		worldForward.y * deltaStep / context.deltaTime,
+		worldForward.z * deltaStep / context.deltaTime
+	};
+
+	// フェーズ遷移
+	if (rawT >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		if (config_.holdDownDuration > 0.0f) {
+			phase_ = DownwardSwingPhase::HoldDown;
+		} else {
 			phase_ = DownwardSwingPhase::Recovery;
 		}
 	}
-	// -----------------------------------------------
-	// Recovery（戻り）
-	//   -strikeForwardPitch → 0° へゆっくり戻す。
-	//   武器も叩きつけ位置から定位置へ引き戻す。
-	//   踏み込んだ分の位置も元へ戻す。
-	//   Strike より長めの時間をかけて自然に収束させる。
-	// -----------------------------------------------
-	else if (phase_ == DownwardSwingPhase::Recovery) {
-		const float t = (config_.recoveryDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
-			: 1.0f;
+}
 
-		// -strikeForwardPitch → 0° へ補間
-		const float currentAngle = -config_.strikeForwardPitch * (1.0f - t);
+///-------------------------------------------/// 
+/// HoldDown（余韻）
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateHoldDown(const UpdateContext & context, UpdateResult & result) {
+	// t
+	const float t = (config_.holdDownDuration > 0.0f) ? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f) : 1.0f;
 
-		const Quaternion recoveryPitch = MakePitchQuaternion(currentAngle);
-		result.rotation = Multiply(context.baseRotation, recoveryPitch);
+	// 終了時点の値で固定
+	const Quaternion holdPitch = MakePitchQuaternion(-config_.strikeForwardPitch);
+	result.rotation = Multiply(context.baseRotation, holdPitch);
+	result.weaponPosition = config_.weaponStrikeOffset;
+	result.velocity = Vector3{ 0.0f, 0.0f, 0.0f }; // 踏み込みは止まる
 
-		// 武器：叩きつけ位置 → 定位置へ戻す
-		result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset, config_.weaponRestOffset, t);
+	// フェーズ遷移
+	if (t >= 1.0f) {
+		state_.phaseTimer = 0.0f;
+		phase_ = DownwardSwingPhase::Recovery;
+	}
+}
 
-		// Recovery中は移動しない
-		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+///-------------------------------------------/// 
+/// Recovery（戻り）
+///-------------------------------------------///
+void BossAttackDownwardSwingComponent::UpdateRecovery(const UpdateContext& context, UpdateResult& result) {
+	// t
+	const float t = (config_.recoveryDuration > 0.0f) ? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f) : 1.0f;
 
-		// フェーズ遷移：Recovery → Finished
-		if (t >= 1.0f) {
-			phase_ = DownwardSwingPhase::Finished;
-			result.isFinished = true;
-		}
+	// 回転の補間 
+	const Quaternion strikeEndRot = Multiply(context.baseRotation, MakePitchQuaternion(-config_.strikeForwardPitch));
+	result.rotation = Math::SLerp(strikeEndRot, context.baseRotation, t);
+
+	// 武器
+	result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset, config_.weaponRestOffset, t);
+
+	// Recovery中は移動しない
+	result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+
+	// フェーズ遷移
+	if (t >= 1.0f) {
+		phase_ = DownwardSwingPhase::Finished;
+		result.isFinished = true;
 	}
 }
 
 ///-------------------------------------------///
 /// X軸周りに angleDeg 度回転するクォータニオンを生成
-///   正値: 後方仰け反り（WindUp方向）
-///   負値: 前方前傾  （Strike方向）
 ///-------------------------------------------///
 Quaternion BossAttackDownwardSwingComponent::MakePitchQuaternion(float angleDeg) const {
 	const float kDegToRad = Math::Pi() / 180.0f;
@@ -39206,11 +39195,11 @@ private:
 
 	/// ===フェーズ定義=== ///
 	enum class DownwardSwingPhase {
-		Idle,       // 非アクティブ（待機）
-		WindUp,     // 予備動作（上体を後ろへ反らしてタメる）
-		Strike,     // 攻撃（前方へ一気に振り下ろす）
-		HoldDown,   // 余韻（叩きつけた深い前傾を一瞬維持）
-		Recovery,   // 回復（正位置へゆっくり戻る）
+		Idle,       // 非アクティブ
+		WindUp,     // 予備動作
+		Strike,     // 攻撃
+		HoldDown,   // 余韻
+		Recovery,   // 回復
 		Finished,   // 攻撃終了
 	};
 
@@ -39224,32 +39213,31 @@ public:
 
 	/// ===設定パラメータの構造体=== ///
 	struct DownwardSwingConfig {
-		// --- WindUp（予備動作）---
-		// 上体をX軸正方向（後方仰け反り）へ傾ける角度（度）
+		// --- WindUp---
+		// 上体をX軸正方向へ傾ける角度
 		float windUpPitch = 15.0f;
-		// タメにかける時間（秒）。「じわっ」と遅めに設定するほど重さが出る
+		// タメにかける時間
 		float windUpDuration = 0.35f;
 
-		// --- Strike（振り下ろし）---
-		// 振り下ろし先のX軸負方向（前傾）角度（度）。windUpPitch との合計が可動域
-		// 例: windUpPitch=15, strikeForwardPitch=15 → 合計30度の可動
+		// --- Strike---
+		// 振り下ろし先のX軸負方向角度
 		float strikeForwardPitch = 15.0f;
-		// 振り下ろし時間（秒）。WindUpより大幅に短くすることで「シュッ」とした鋭さを演出
+		// 振り下ろし時間
 		float strikeDuration = 0.10f;
 
-		// --- HoldDown（余韻）---
-		// 叩きつけ後に深い前傾を維持する時間（秒）。0にすると余韻なし
+		// --- HoldDown---
+		// 叩きつけ後に深い前傾を維持する時間
 		float holdDownDuration = 0.08f;
 
-		// --- Recovery（戻り）---
-		// 正位置へ戻るまでの時間（秒）。Strike より長めでゆっくり収束させる
+		// --- Recovery---
+		// 正位置へ戻るまでの時間
 		float recoveryDuration = 0.40f;
 
 		// --- 踏み込みオフセット ---
-		// Strike 中にボスを前方へ踏み込ませる距離（ローカルZ軸正方向）
+		// Strike中にボスを前方へ踏み込ませる距離
 		float strikeStepForward = 0.5f;
 
-		// --- 武器オフセット（Bossローカル座標）---
+		// --- 武器オフセット ---
 		// 定位置
 		Vector3 weaponRestOffset = { 0.0f,  0.5f,  0.3f };
 		// タメ時：頭上の少し背中側へ
@@ -39266,11 +39254,11 @@ public:
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Vector3 velocity{};             // ボスに適用する移動速度（ワールド座標系）
-		Quaternion rotation{};             // モデルに適用する回転（基底回転 + ピッチ）
+		Vector3 velocity{};             // ボスに適用する移動速度
+		Quaternion rotation{};          // モデルに適用する回転
 		Vector3 weaponPosition{};       // ローカル座標系での武器位置オフセット
-		DownwardSwingPhase currentPhase{}; // 現在フェーズ
-		bool isFinished = false;           // 攻撃が完全終了したか
+		bool isAttacking = false;       // 攻撃判定が有効なフレーム
+		bool isFinished = false;        // 攻撃が完全終了したか
 	};
 
 public:
@@ -39330,9 +39318,35 @@ private:
 	void UpdateAttack(const UpdateContext& context, UpdateResult& result);
 
 	/// <summary>
+	/// ワインドアップを更新します。
+	/// </summary>
+	/// <param name="context">更新コンテキスト。</param>
+	/// <param name="result">更新結果を格納する出力パラメータ。</param>
+	void UpdateWindUp(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// ストライク情報を更新します。
+	/// </summary>
+	/// <param name="context">更新処理に必要なコンテキスト情報。</param>
+	/// <param name="result">更新結果を格納する出力パラメータ。</param>
+	void UpdateStrike(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// ホールドダウンの状態を更新します。
+	/// </summary>
+	/// <param name="context">更新に必要な情報を含むコンテキスト。</param>
+	/// <param name="result">ホールドダウンの状態で更新される結果オブジェクト。</param>
+	void UpdateHoldDown(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
+	/// リカバリー処理を更新します。
+	/// </summary>
+	/// <param name="context">更新処理のコンテキスト情報。</param>
+	/// <param name="result">更新結果を格納する出力パラメータ。</param>
+	void UpdateRecovery(const UpdateContext& context, UpdateResult& result);
+
+	/// <summary>
 	/// X軸周りに angleDeg 度回転させるクォータニオンを生成する。
-	/// 正値: 後方仰け反り（WindUp方向）
-	/// 負値: 前方前傾（Strike方向）
 	/// </summary>
 	Quaternion MakePitchQuaternion(float angleDeg) const;
 };
@@ -39382,10 +39396,10 @@ void BossAttackJumpSmashComponent::Initialize(const JumpSmashConfig& config) {
 BossAttackJumpSmashComponent::UpdateResult
 BossAttackJumpSmashComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
-	result.currentPhase = phase_;
+	result.isAttacking = (phase_ == LeapPhase::Strike || phase_ == LeapPhase::HoldDown);
 	result.velocity = {};
 
-	// 非アクティブフェーズ：位置・姿勢は現在値のまま返す
+	// 非アクティブフェーズ
 	if (phase_ == LeapPhase::Idle || phase_ == LeapPhase::Finished) {
 		result.rotation = state_.baseRotation;
 		result.weaponPosition = config_.weaponRestOffset;
@@ -39397,9 +39411,8 @@ BossAttackJumpSmashComponent::Update(const UpdateContext& context) {
 	state_.phaseTimer += context.deltaTime;
 
 	// 攻撃中の更新
-	UpdateAttack(context, result);
+	UpdateAttack(result);
 
-	result.currentPhase = phase_;
 	return result;
 }
 
@@ -39456,8 +39469,6 @@ void BossAttackJumpSmashComponent::Information() {
 		}
 		if (ImGui::TreeNode("武器オフセット")) {
 			ImGui::DragFloat3("定位置", &config_.weaponRestOffset.x, 0.01f);
-			ImGui::DragFloat3("飛行中", &config_.weaponLeapOffset.x, 0.01f);
-			ImGui::DragFloat3("叩きつけ先", &config_.weaponStrikeOffset.x, 0.01f);
 			ImGui::TreePop();
 		}
 
@@ -39470,6 +39481,7 @@ void BossAttackJumpSmashComponent::Information() {
 /// 攻撃開始
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::StartAttack(
+	float distance,
 	const Vector3& bossPosition,
 	const Vector3& playerPosition,
 	const Quaternion& baseRotation
@@ -39478,7 +39490,9 @@ void BossAttackJumpSmashComponent::StartAttack(
 	if (IsActive()) {
 		return;
 	}
+	// 攻撃開始に必要な情報を state_ に保存
 	state_.phaseTimer = 0.0f;
+	state_.distance = distance;
 	state_.baseRotation = baseRotation;
 	state_.startPosition = bossPosition;
 	state_.targetPosition = playerPosition;
@@ -39489,11 +39503,8 @@ void BossAttackJumpSmashComponent::StartAttack(
 ///-------------------------------------------///
 /// 攻撃の更新を実行（フェーズのディスパッチ）
 ///-------------------------------------------///
-void BossAttackJumpSmashComponent::UpdateAttack(
-	const UpdateContext& context, UpdateResult& result)
-{
-	(void)context; // 各フェーズ関数はタイマーのみ使用
-
+void BossAttackJumpSmashComponent::UpdateAttack(UpdateResult& result) {
+	/// ===Phase毎の処理=== ///
 	switch (phase_) {
 	case LeapPhase::LeapWindUp: UpdateLeapWindUp(result); break;
 	case LeapPhase::Leap:       UpdateLeap(result);       break;
@@ -39506,22 +39517,20 @@ void BossAttackJumpSmashComponent::UpdateAttack(
 
 ///-------------------------------------------///
 /// LeapWindUp（跳躍前の溜め）
-///   膝を曲げるイメージで前方へ少し前傾し、重心を落とす。
-///   EaseOut でじわっと溜めることで跳躍の予感を演出する。
-///   武器は定位置のまま。
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
-	const float rawT = (config_.leapWindUpDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.leapWindUpDuration, 1.0f)
-		: 1.0f;
+	// t
+	const float rawT = (config_.leapWindUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.leapWindUpDuration, 1.0f) : 1.0f;
 	const float t = Easing::EaseOutQuad(rawT);
 
-	// 前傾（crouchPitch は負値 → X軸負方向 = 前のめり）
-	const Quaternion crouchRot = MakePitchQuaternion(config_.leapWindUpCrouchPitch * t);
+	// 回転の補間
+	const float crouchAngle = Math::Lerp(0.0f, config_.leapWindUpCrouchPitch, t);
+	const Quaternion crouchRot = MakePitchQuaternion(crouchAngle);
 	result.rotation = Multiply(state_.baseRotation, crouchRot);
 
-	// 武器・位置は変化なし
+	// 武器
 	result.weaponPosition = config_.weaponRestOffset;
+	// 移動なし
 	result.velocity = {};
 
 	// フェーズ遷移
@@ -39533,49 +39542,39 @@ void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// Leap（放物線飛行）
-///
-/// 【水平移動】
-///   startPosition → targetPosition を線形補間（等速）
-///
-/// 【垂直移動】
-///   y = arcHeight * 4 * t * (1 - t)  の放物線加算
-///   t=0 と t=1 でY加算=0、t=0.5 で最大高さ
-///
-/// 【ピッチ変化】（飛行弧への自然な追従）
-///   t = 0.0〜0.5（上昇）: 0° → +ascentPitch   （前傾。前に飛び出す感）
-///   t = 0.5〜1.0（降下）: +ascentPitch → -descentPitch（仰け反り→着地タメ）
-///
-/// 【武器】
-///   定位置 → 飛行中（振り上げ）へ上昇に合わせて移動
-///   降下中は振り上げ位置を維持したまま着地の瞬間を待つ
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
-	const float t = (config_.leapDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.leapDuration, 1.0f)
-		: 1.0f;
+	// t
+	state_.distance = std::clamp(state_.distance, config_.minDistance, config_.maxDistance);
+	float ration = state_.distance / config_.minDistance;
+	float actualDuration = config_.leapDuration * ration;
+	const float t = (actualDuration > 0.0f) ? std::min(state_.phaseTimer / actualDuration, 1.0f) : 1.0f;
 
-	// --- 位置計算 ---
-	// 水平：線形補間
+	/// ===位置計算=== ///
+	// 水平
 	const Vector3 horizontalPos = Math::Lerp(state_.startPosition, state_.targetPosition, t);
-	// 垂直：放物線加算
+	// 垂直
 	const float arcY = CalcParabolaHeight(t);
 	const Vector3 nextPosition = Vector3{
 		horizontalPos.x,
 		horizontalPos.y + arcY,
 		horizontalPos.z
 	};
-	// --- velocity = 今フレーム位置 - 前フレーム位置 ---
+	// velcoity
 	result.velocity = nextPosition - state_.currentPosition;
 
-	// --- ピッチ計算 ---
+	// currentPositionを更新更新
+	state_.currentPosition = nextPosition;
+
+	/// ===ピッチ計算=== ///
 	float pitchAngle = 0.0f;
 	if (t <= 0.5f) {
-		// 上昇フェーズ：0° → +ascentPitch（前傾）
-		const float ascT = t / 0.5f;              // 0.0〜1.0 に正規化
+		// 上昇フェーズ
+		const float ascT = t / 0.5f; // 0.0〜1.0 に正規化
 		pitchAngle = config_.leapAscentPitch * ascT;
 	} else {
-		// 降下フェーズ：+ascentPitch → -descentPitch（仰け反り）
-		const float descT = (t - 0.5f) / 0.5f;   // 0.0〜1.0 に正規化
+		// 降下フェーズ
+		const float descT = (t - 0.5f) / 0.5f; // 0.0〜1.0 に正規化
 		const float startAngle = config_.leapAscentPitch;
 		const float endAngle = -config_.leapDescentPitch;
 		pitchAngle = startAngle + (endAngle - startAngle) * descT;
@@ -39583,17 +39582,15 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 	const Quaternion leapPitch = MakePitchQuaternion(pitchAngle);
 	result.rotation = Multiply(state_.baseRotation, leapPitch);
 
-	// --- 武器オフセット ---
-	// 上昇中: 定位置 → 飛行中オフセット（振り上げ）
-	// 降下中: 飛行中オフセットを維持
-	if (t <= 0.5f) {
+	/// ===武器オフセット=== ///
+	if (t <= 0.5f) { // 上昇中
 		const float weaponT = t / 0.5f;
-		result.weaponPosition = Math::Lerp(config_.weaponRestOffset,config_.weaponLeapOffset,weaponT);
-	} else {
-		result.weaponPosition = config_.weaponLeapOffset;
+		result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponRestOffset, weaponT);
+	} else { // 降下中
+		result.weaponPosition = config_.weaponRestOffset;
 	}
 
-	// フェーズ遷移：着地（t >= 1.0）で Strike へ
+	// フェーズ遷移
 	if (t >= 1.0f) {
 		// 着地時は targetPosition にスナップして誤差を除去
 		state_.currentPosition = state_.targetPosition;
@@ -39604,32 +39601,27 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// Strike（着地叩きつけ）
-///   Leap終了時の仰け反り（-descentPitch）を起点として
-///   一気に前傾（+strikeForwardPitch）へ振り下ろす。
-///   EaseIn で加速することで叩きつけの鋭さと重量感を演出する。
-///   着地したので位置は targetPosition に固定。
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateStrike(UpdateResult& result) {
-	const float rawT = (config_.strikeDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
-		: 1.0f;
+
+	// t
+	const float rawT = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
 	const float t = Easing::EaseInQuad(rawT);
 
-	// -descentPitch → +strikeForwardPitch への補間
+	// 回転の補間
 	const float startAngle = -config_.leapDescentPitch;
 	const float endAngle = config_.strikeForwardPitch;
 	const float currentAngle = startAngle + (endAngle - startAngle) * t;
-
 	const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
 	result.rotation = Multiply(state_.baseRotation, strikePitch);
 
-	// 武器：飛行中（振り上げ）→ 叩きつけ先
-	result.weaponPosition = Math::Lerp(config_.weaponLeapOffset,config_.weaponStrikeOffset,t);
+	// 武器
+	result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponRestOffset, t);
 
 	// 着地済みのため移動なし
 	result.velocity = {};
 
-	// フェーズ遷移：Strike → HoldDown または Recovery
+	// フェーズ遷移
 	if (rawT >= 1.0f) {
 		state_.phaseTimer = 0.0f;
 		if (config_.holdDownDuration > 0.0f) {
@@ -39642,19 +39634,15 @@ void BossAttackJumpSmashComponent::UpdateStrike(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// HoldDown（叩きつけ余韻）
-///   深い前傾（+strikeForwardPitch）を一瞬維持する。
-///   武器も叩きつけ位置に固定。
-///   この「止め」が攻撃の出し切り感・重さを演出する。
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateHoldDown(UpdateResult& result) {
-	const float t = (config_.holdDownDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f)
-		: 1.0f;
+	// t
+	const float t = (config_.holdDownDuration > 0.0f) ? std::min(state_.phaseTimer / config_.holdDownDuration, 1.0f) : 1.0f;
 
-	// 姿勢・武器・位置は Strike 終了時点で固定
+	// 終了時点で固定
 	const Quaternion holdPitch = MakePitchQuaternion(config_.strikeForwardPitch);
 	result.rotation = Multiply(state_.baseRotation, holdPitch);
-	result.weaponPosition = config_.weaponStrikeOffset;
+	result.weaponPosition = config_.weaponRestOffset;
 	result.velocity = {};
 
 	// フェーズ遷移
@@ -39666,27 +39654,22 @@ void BossAttackJumpSmashComponent::UpdateHoldDown(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// Recovery（戻り）
-///   +strikeForwardPitch → 0° へゆっくり戻す。
-///   武器も叩きつけ位置から定位置へ引き戻す。
-///   Strike より長めの時間で自然に収束させる。
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateRecovery(UpdateResult& result) {
-	const float t = (config_.recoveryDuration > 0.0f)
-		? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
-		: 1.0f;
+	// t
+	const float t = (config_.recoveryDuration > 0.0f) ? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f) : 1.0f;
 
-	// +strikeForwardPitch → 0° へ補間
-	const float currentAngle = config_.strikeForwardPitch * (1.0f - t);
+	// 回転の補間
+	const Quaternion strikeEndRot = Multiply(state_.baseRotation, MakePitchQuaternion(config_.strikeForwardPitch));
+	result.rotation = Math::SLerp(strikeEndRot, state_.baseRotation, t);
 
-	const Quaternion recoveryPitch = MakePitchQuaternion(currentAngle);
-	result.rotation = Multiply(state_.baseRotation, recoveryPitch);
+	// 武器
+	result.weaponPosition = Math::Lerp(config_.weaponRestOffset, config_.weaponRestOffset, t);
 
-	// 武器：叩きつけ位置 → 定位置へ戻す
-	result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset,config_.weaponRestOffset,t);
-
+	// velocity
 	result.velocity = {};
 
-	// フェーズ遷移：Recovery → Finished
+	// フェーズ遷移
 	if (t >= 1.0f) {
 		phase_ = LeapPhase::Finished;
 		result.isFinished = true;
@@ -39695,8 +39678,6 @@ void BossAttackJumpSmashComponent::UpdateRecovery(UpdateResult& result) {
 
 ///-------------------------------------------///
 /// 放物線の高さを計算
-///   y = arcHeight * 4 * t * (1 - t)
-///   t=0 と t=1 で 0、t=0.5 で arcHeight になる
 ///-------------------------------------------///
 float BossAttackJumpSmashComponent::CalcParabolaHeight(float t) const {
 	const float ct = std::clamp(t, 0.0f, 1.0f);
@@ -39705,8 +39686,6 @@ float BossAttackJumpSmashComponent::CalcParabolaHeight(float t) const {
 
 ///-------------------------------------------///
 /// X軸周りに angleDeg 度回転するクォータニオンを生成
-///   正値: 前傾（Strike方向）
-///   負値: 後方仰け反り（WindUp・降下中のタメ方向）
 ///-------------------------------------------///
 Quaternion BossAttackJumpSmashComponent::MakePitchQuaternion(float angleDeg) const {
 	const float kDegToRad = Math::Pi() / 180.0f;
@@ -39718,7 +39697,6 @@ Quaternion BossAttackJumpSmashComponent::MakePitchQuaternion(float angleDeg) con
 		std::cos(halfRad)
 	};
 }
-
 
 ============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/CloseAttack/BossAttackJumpSmashComponent.h
@@ -39747,7 +39725,8 @@ private:
 
 	/// ===状態の構造体=== ///
 	struct JumpSmashState {
-		float phaseTimer = 0.0f;   // 現フェーズの経過時間
+		float phaseTimer = 0.0f;    // 現フェーズの経過時間
+		float distance;			// 攻撃開始時のBossとPlayerの距離。これを基準に飛行の放物線を計算する 
 		Quaternion baseRotation{};  // 攻撃開始時の基底回転
 
 		// --- Leap フェーズで使用する飛行データ ---
@@ -39760,8 +39739,11 @@ public:
 
 	/// ===設定パラメータの構造体=== ///
 	struct JumpSmashConfig {
+		// range
+		float minDistance = 2.0f;  // 攻撃開始可能な最小距離
+		float maxDistance = 5.0f;  // 攻撃開始可能な最大距離
+
 		// LeapWindUp
-		// 屈み時のY軸スケール縮小量（見た目の「しゃがみ」演出用。スケールは呼出し側で適用）
 		float leapWindUpCrouchPitch = -10.0f;  // 屈み時の前傾角度（度）。前のめりにしゃがむ
 		float leapWindUpDuration = 0.30f;  // 溜め時間（秒）
 
@@ -39785,13 +39767,10 @@ public:
 
 		// 武器オフセット
 		Vector3 weaponRestOffset = { 0.0f,  0.5f,  0.3f };  // 定位置
-		Vector3 weaponLeapOffset = { 0.0f,  1.5f, -0.5f };  // 飛行中（振り上げ）
-		Vector3 weaponStrikeOffset = { 0.0f, -0.2f,  1.5f };  // 叩きつけ先
 	};
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
-		Vector3 currentPosition{};  // Bossの現在位置
 		float deltaTime = 0.0f;		// デルタタイム
 	};
 
@@ -39800,7 +39779,7 @@ public:
 		Vector3 velocity{};          // 今フレームの移動量（呼び出し側が position += velocity で適用する）
 		Quaternion rotation{};       // モデルに適用する回転（基底回転 + ピッチ）
 		Vector3 weaponPosition{};    // ローカル座標系での武器位置オフセット
-		LeapPhase currentPhase{};    // 現在フェーズ
+		bool isAttacking = false;    // 攻撃判定が有効なフレーム
 		bool isFinished = false;     // 攻撃が完全終了したか
 	};
 
@@ -39835,10 +39814,12 @@ public:
 	/// <summary>
 	/// 攻撃を開始する。
 	/// </summary>
+	/// <param name="distance">攻撃対象との距離</param>
 	/// <param name="bossPosition">攻撃開始時のBossのワールド座標</param>
 	/// <param name="playerPosition">着地目標となるPlayerのワールド座標</param>
 	/// <param name="baseRotation">攻撃開始時のBossの基底回転</param>
 	void StartAttack(
+		float distance,
 		const Vector3& bossPosition,
 		const Vector3& playerPosition,
 		const Quaternion& baseRotation
@@ -39863,22 +39844,40 @@ private:
 	LeapPhase  phase_ = LeapPhase::Idle;
 
 private:
-	/// <summary>攻撃の更新を実行します。</summary>
-	void UpdateAttack(const UpdateContext& context, UpdateResult& result);
+	/// <summary>
+	/// 攻撃状態を更新します。
+	/// </summary>
+	/// <param name="result">更新結果を格納するオブジェクト。</param>
+	void UpdateAttack(UpdateResult& result);
 
-	/// <summary>LeapWindUp フェーズの更新。</summary>
+	/// <summary>
+	/// リープワインドアップを更新します。
+	/// </summary>
+	/// <param name="result">更新結果を格納するUpdateResultオブジェクトへの参照。</param>
 	void UpdateLeapWindUp(UpdateResult& result);
 
-	/// <summary>Leap フェーズの更新。放物線移動とピッチ変化を処理する。</summary>
+	/// <summary>
+	/// 閏年に関する情報を更新します。
+	/// </summary>
+	/// <param name="result">更新する結果オブジェクトへの参照。</param>
 	void UpdateLeap(UpdateResult& result);
 
-	/// <summary>Strike フェーズの更新。</summary>
+	/// <summary>
+	/// ストライク情報を更新します。
+	/// </summary>
+	/// <param name="result">ストライク情報で更新されるUpdateResultオブジェクトへの参照。</param>
 	void UpdateStrike(UpdateResult& result);
 
-	/// <summary>HoldDown フェーズの更新。</summary>
+	/// <summary>
+	/// ホールドダウン状態を更新します。
+	/// </summary>
+	/// <param name="result">更新される結果オブジェクトへの参照。</param>
 	void UpdateHoldDown(UpdateResult& result);
 
-	/// <summary>Recovery フェーズの更新。</summary>
+	/// <summary>
+	/// リカバリー処理を更新します。
+	/// </summary>
+	/// <param name="result">更新結果を格納するオブジェクトへの参照。</param>
 	void UpdateRecovery(UpdateResult& result);
 
 	/// <summary>
@@ -39932,8 +39931,7 @@ void BossAttackThrustComponent::Initialize(const ThrustConfig& config) {
 ///-------------------------------------------///
 BossAttackThrustComponent::UpdateResult BossAttackThrustComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
-	// 現在のフェーズをセット
-	result.currentPhase = phase_;
+	result.isAttacking = (phase_ == ThrustPhase::Strike || phase_ == ThrustPhase::Recovery);
 
 	// 非アクティブフェーズ：基底回転そのまま、武器は定位置
 	if (phase_ == ThrustPhase::Idle || phase_ == ThrustPhase::Finished) {
@@ -39949,9 +39947,6 @@ BossAttackThrustComponent::UpdateResult BossAttackThrustComponent::Update(const 
 
 	// 攻撃中の更新
 	UpdateAttack(context, result);
-
-	// フェーズの更新
-	result.currentPhase = phase_;
 	return result;
 }
 
@@ -40020,20 +40015,16 @@ void BossAttackThrustComponent::StartAttack() {
 void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, UpdateResult& result) {
 	// -----------------------------------------------
 	// WindUp（予備動作）
-	//   Y軸を中心にモデルを windUpAngle 度ひねり、
-	//   武器を引き絞る
 	// -----------------------------------------------
 	if (phase_ == ThrustPhase::WindUp) {
-		// 0.0 → 1.0 の進行度
-		const float t = (config_.windUpDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f)
-			: 1.0f;
+		// t
+		const float t = (config_.windUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f) : 1.0f;
 
-		// Y軸ひねり：正の角度 = 武器側（右側）へ体をひねる
+		// Y軸ひねり
 		const Quaternion windUpYaw = MakeYawQuaternion(config_.windUpAngle * t);
 		result.modelRotation = Multiply(context.baseRotation, windUpYaw);
 
-		// 武器オフセット：定位置 → 引き絞り位置
+		// 武器オフセット
 		result.weaponLocalOffset = LerpVector3(
 			config_.weaponRestOffset,
 			config_.weaponWindUpOffset,
@@ -40048,31 +40039,26 @@ void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, Updat
 	}
 	// -----------------------------------------------
 	// Strike（突き）
-	//   タメ角度(windUpAngle)を始点とし、
-	//   正面を通り過ぎて逆方向 -strikeAngle まで鋭く切り返す。
-	//   武器を一気に前方へ押し出す。
 	// -----------------------------------------------
 	else if (phase_ == ThrustPhase::Strike) {
-		const float t = (config_.strikeDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f)
-			: 1.0f;
+		// t
+		const float t = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
 
-		// windUpAngle（タメ位置）→ -strikeAngle（切り返し位置）へ補間
+		// 回転の補間
 		const float startAngle = config_.windUpAngle;
 		const float endAngle = -config_.strikeAngle;
 		const float currentAngle = startAngle + (endAngle - startAngle) * t;
-
 		const Quaternion strikeYaw = MakeYawQuaternion(currentAngle);
 		result.modelRotation = Multiply(context.baseRotation, strikeYaw);
 
-		// 武器オフセット：引き絞り位置 → 突き出し位置
+		// 武器オフセット
 		result.weaponLocalOffset = LerpVector3(
 			config_.weaponWindUpOffset,
 			config_.weaponStrikeOffset,
 			t
 		);
 
-		// フェーズ遷移：Strike → Recovery
+		// フェーズ遷移
 		if (t >= 1.0f) {
 			state_.phaseTimer = 0.0f;
 			phase_ = ThrustPhase::Recovery;
@@ -40080,29 +40066,24 @@ void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, Updat
 	}
 	// -----------------------------------------------
 	// Recovery（戻り）
-	//   -strikeAngle から 0° へゆっくり戻す。
-	//   武器も突き出し位置から定位置へ引き戻す。
-	//   Strike より長めの時間をかけて自然に収束させる。
 	// -----------------------------------------------
 	else if (phase_ == ThrustPhase::Recovery) {
-		const float t = (config_.recoveryDuration > 0.0f)
-			? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f)
-			: 1.0f;
+		// t
+		const float t = (config_.recoveryDuration > 0.0f) ? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f) : 1.0f;
 
-		// -strikeAngle → 0° へ補間
-		const float currentAngle = -config_.strikeAngle * (1.0f - t);
+		// 回転の補間
+		const Quaternion strikeEndYaw = MakeYawQuaternion(-config_.strikeAngle);
+		const Quaternion strikeEndRot = Multiply(context.baseRotation, strikeEndYaw);
+		result.modelRotation = Math::SLerp(strikeEndRot, context.baseRotation, t);
 
-		const Quaternion recoveryYaw = MakeYawQuaternion(currentAngle);
-		result.modelRotation = Multiply(context.baseRotation, recoveryYaw);
-
-		// 武器オフセット：突き出し位置 → 定位置へ戻す
+		// 武器オフセット
 		result.weaponLocalOffset = LerpVector3(
 			config_.weaponStrikeOffset,
 			config_.weaponRestOffset,
 			t
 		);
 
-		// フェーズ遷移：Recovery → Finished
+		// フェーズ遷移
 		if (t >= 1.0f) {
 			phase_ = ThrustPhase::Finished;
 			result.isFinished = true;
@@ -40196,7 +40177,7 @@ public:
 	struct UpdateResult {
 		Quaternion modelRotation{};  // モデルに適用する回転（基底回転 + ひねり）
 		Vector3 weaponLocalOffset{}; // ローカル座標系での武器位置オフセット
-		ThrustPhase currentPhase{};  // 現在フェーズ
+		bool isAttacking = false;    // 攻撃判定が有効なフレーム
 		bool isFinished = false;	 // 攻撃が完全終了したか
 	};
 
@@ -41098,8 +41079,9 @@ void BossDownwarAttackState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetThrustComponent().StartAttack();
-	boss_->GetWeapon().SetActive(true); // 武器を有効化
+	boss_->GetDownswingComponent().StartAttack();
+	// 武器を有効化
+	boss_->GetWeapon().SetActive(true); 
 }
 
 ///-------------------------------------------///  
@@ -41126,7 +41108,7 @@ void BossDownwarAttackState::Update() {
 
 	if (result.isFinished) {
 		// タイマーリセット
-		boss_->SetDownSwingTimer(boss_->GetAttackInfo().thrustCooldown);
+		boss_->SetDownSwingTimer(boss_->GetAttackInfo().downswingCooldown);
 
 		// 武器を無効化
 		boss_->GetWeapon().SetActive(false);
@@ -41299,7 +41281,9 @@ void BossJumpSmashAttackState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
+	const float dist = CalcDistToPlayer();
 	boss_->GetJumpSmashComponent().StartAttack(
+		dist,
 		boss_->GetTransform().translate, 
 		boss_->GetPlayer()->GetTransform().translate, 
 		boss_->GetTransform().rotate);
@@ -41314,7 +41298,6 @@ void BossJumpSmashAttackState::Enter(BossEnemy* enemy) {
 void BossJumpSmashAttackState::Update() {
 	// コンテキストの準備
 	BossAttackJumpSmashComponent::UpdateContext context{
-		.currentPosition = boss_->GetTransform().translate,
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
@@ -41354,7 +41337,10 @@ void BossJumpSmashAttackState::Finalize() {
 /// プレイヤーとボスの距離を計算して返す。
 ///-------------------------------------------///
 float BossJumpSmashAttackState::CalcDistToPlayer() const {
-	return 0.0f;
+	const Vector3 diff =
+		boss_->GetPlayer()->GetTransform().translate -
+		boss_->GetTransform().translate;
+	return Length(diff);
 }
 
 
@@ -41518,6 +41504,8 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/MoveBossState.c
 // State
 #include "BossAttackState.h"
 #include "BossThrustAttackState.h"
+#include "BossDownwarAttackState.h"
+#include "BossJumpSmashAttackState.h"
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -41553,11 +41541,26 @@ void MoveBossState::Update() {
 	boss_->SetRotate(result.rotate);
 
 	/// ===Stateの変更=== ///
-	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+	// 突き攻撃への遷移条件
+	//if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+	//	// 突き攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+	//	return;
+	//}
+
+	// Downswing攻撃への遷移条件
+	if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
 		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
 		return;
 	}
+
+	// JumpSmash攻撃への遷移条件
+	//if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
+	//	// 突き攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+	//	return;
+	//}
 
 	/*if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
 		boss_->ChangeState(std::make_unique<BossAttackState>());
@@ -44534,23 +44537,22 @@ File Path: Project/application/Game/Entity/GameCharacter/Collision/GameCharacter
 // Math
 #include "Math/sMath.h"
 
-using namespace MiiEngine;
 ///-------------------------------------------/// 
 /// テンプレート候補の明示的インスタンス化
 ///-------------------------------------------///
 // 球体とOBBのGameCharacter衝突処理
-template void GameCharacterCollision::HandleSphereOBBCollision<SphereCollider, OBBCollider>(GameCharacter<SphereCollider>*, GameCharacter<OBBCollider>*, float);
-template void GameCharacterCollision::HandleSphereOBBCollision<OBBCollider, SphereCollider>(GameCharacter<OBBCollider>*, GameCharacter<SphereCollider>*, float);
+template void GameCharacterCollision::HandleSphereOBBCollision<MiiEngine::SphereCollider, MiiEngine::OBBCollider>(GameCharacter<MiiEngine::SphereCollider>*, GameCharacter<MiiEngine::OBBCollider>*, float);
+template void GameCharacterCollision::HandleSphereOBBCollision<MiiEngine::OBBCollider, MiiEngine::SphereCollider>(GameCharacter<MiiEngine::OBBCollider>*, GameCharacter<MiiEngine::SphereCollider>*, float);
 // 汎用衝突処理
-template void GameCharacterCollision::ProcessCollision<SphereCollider, SphereCollider>(GameCharacter<SphereCollider>*, GameCharacter<SphereCollider>*, float);
-template void GameCharacterCollision::ProcessCollision<SphereCollider, OBBCollider>(GameCharacter<SphereCollider>*, GameCharacter<OBBCollider>*, float);
-template void GameCharacterCollision::ProcessCollision<OBBCollider, OBBCollider>(GameCharacter<OBBCollider>*, GameCharacter<OBBCollider>*, float);
-template void GameCharacterCollision::ProcessCollision<OBBCollider, SphereCollider>(GameCharacter<OBBCollider>*, GameCharacter<SphereCollider>*, float);
+template void GameCharacterCollision::ProcessCollision<MiiEngine::SphereCollider, MiiEngine::SphereCollider>(GameCharacter<MiiEngine::SphereCollider>*, GameCharacter<MiiEngine::SphereCollider>*, float);
+template void GameCharacterCollision::ProcessCollision<MiiEngine::SphereCollider, MiiEngine::OBBCollider>(GameCharacter<MiiEngine::SphereCollider>*, GameCharacter<MiiEngine::OBBCollider>*, float);
+template void GameCharacterCollision::ProcessCollision<MiiEngine::OBBCollider, MiiEngine::OBBCollider>(GameCharacter<MiiEngine::OBBCollider>*, GameCharacter<MiiEngine::OBBCollider>*, float);
+template void GameCharacterCollision::ProcessCollision<MiiEngine::OBBCollider, MiiEngine::SphereCollider>(GameCharacter<MiiEngine::OBBCollider>*, GameCharacter<MiiEngine::SphereCollider>*, float);
 
 ///-------------------------------------------/// 
 /// 球体GameCharacter同士の衝突処理
 ///-------------------------------------------///
-void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCollider>* characterA, GameCharacter<SphereCollider>* characterB, const float pushBackRatio) {
+void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<MiiEngine::SphereCollider>* characterA, GameCharacter<MiiEngine::SphereCollider>* characterB, const float pushBackRatio) {
 
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
@@ -44590,7 +44592,7 @@ void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<SphereCol
 ///-------------------------------------------/// 
 /// OBBGameCharacter同士の衝突処理
 ///-------------------------------------------///
-void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* characterA, GameCharacter<OBBCollider>* characterB, const float pushBackRatio) {
+void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<MiiEngine::OBBCollider>* characterA, GameCharacter<MiiEngine::OBBCollider>* characterB, const float pushBackRatio) {
 
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
@@ -44634,16 +44636,16 @@ void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<OBBCollider>* c
 template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
-	GameCharacter<OBBCollider>* obbCharacter = nullptr;
-	GameCharacter<SphereCollider>* sphereCharacter = nullptr;
+	GameCharacter<MiiEngine::OBBCollider>* obbCharacter = nullptr;
+	GameCharacter<MiiEngine::SphereCollider>* sphereCharacter = nullptr;
 	/// ===キャスト=== ///
-	if (GetColliderTypeFromCharacter(characterA) == ColliderType::OBB) {
-		obbCharacter = dynamic_cast<GameCharacter<OBBCollider>*>(characterA);
-		sphereCharacter = dynamic_cast<GameCharacter<SphereCollider>*>(characterB);
+	if (GetColliderTypeFromCharacter(characterA) == MiiEngine::ColliderType::OBB) {
+		obbCharacter = dynamic_cast<GameCharacter<MiiEngine::OBBCollider>*>(characterA);
+		sphereCharacter = dynamic_cast<GameCharacter<MiiEngine::SphereCollider>*>(characterB);
 
-	} else if (GetColliderTypeFromCharacter(characterA) == ColliderType::Sphere) {
-		sphereCharacter = dynamic_cast<GameCharacter<SphereCollider>*>(characterA);
-		obbCharacter = dynamic_cast<GameCharacter<OBBCollider>*>(characterB);
+	} else if (GetColliderTypeFromCharacter(characterA) == MiiEngine::ColliderType::Sphere) {
+		sphereCharacter = dynamic_cast<GameCharacter<MiiEngine::SphereCollider>*>(characterA);
+		obbCharacter = dynamic_cast<GameCharacter<MiiEngine::OBBCollider>*>(characterB);
 	}
 
 	/// ===Nullチェック=== ///
@@ -44693,19 +44695,19 @@ void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>*
 template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
-	ColliderType typeA = GetColliderTypeFromCharacter(characterA);
-	ColliderType typeB = GetColliderTypeFromCharacter(characterB);
+	MiiEngine::ColliderType typeA = GetColliderTypeFromCharacter(characterA);
+	MiiEngine::ColliderType typeB = GetColliderTypeFromCharacter(characterB);
 
 	// 同じ型の場合
 	if (typeA == typeB) {
 
-		if (typeA == ColliderType::Sphere) {
-			GameCharacter<SphereCollider>* sphereA = dynamic_cast<GameCharacter<SphereCollider>*>(characterA);
-			GameCharacter<SphereCollider>* sphereB = dynamic_cast<GameCharacter<SphereCollider>*>(characterB);
+		if (typeA == MiiEngine::ColliderType::Sphere) {
+			GameCharacter<MiiEngine::SphereCollider>* sphereA = dynamic_cast<GameCharacter<MiiEngine::SphereCollider>*>(characterA);
+			GameCharacter<MiiEngine::SphereCollider>* sphereB = dynamic_cast<GameCharacter<MiiEngine::SphereCollider>*>(characterB);
 			HandleSphereSphereCollision(sphereA, sphereB, pushBackRatio);
-		} else if (typeA == ColliderType::OBB) {
-			GameCharacter<OBBCollider>* obbA = dynamic_cast<GameCharacter<OBBCollider>*>(characterA);
-			GameCharacter<OBBCollider>* obbB = dynamic_cast<GameCharacter<OBBCollider>*>(characterB);
+		} else if (typeA == MiiEngine::ColliderType::OBB) {
+			GameCharacter<MiiEngine::OBBCollider>* obbA = dynamic_cast<GameCharacter<MiiEngine::OBBCollider>*>(characterA);
+			GameCharacter<MiiEngine::OBBCollider>* obbB = dynamic_cast<GameCharacter<MiiEngine::OBBCollider>*>(characterB);
 			HandleOBBOBBCollision(obbA, obbB, pushBackRatio);
 		}
 		// 同じでない場合
@@ -44719,20 +44721,20 @@ void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* charact
 /// コライダー型の判定
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const {
+MiiEngine::ColliderType GameCharacterCollision::GetColliderTypeFromCharacter(GameCharacter<TCollider>* character) const {
 	return character->GetColliderType();
 }
 
 ///-------------------------------------------/// 
 /// OBB上の最近点計算（GameCharacter用）
 ///-------------------------------------------///
-Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<OBBCollider>* obbCharacter) const {
-	if (obbCharacter->GetColliderType() != ColliderType::OBB) {
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Vector3& point, GameCharacter<MiiEngine::OBBCollider>* obbCharacter) const {
+	if (obbCharacter->GetColliderType() != MiiEngine::ColliderType::OBB) {
 		return point; // OBBでない場合は元の点を返す
 	}
 
-	OBBCollider* obb = static_cast<OBBCollider*>(obbCharacter);
-	OBB obbData = obb->GetOBB();
+	MiiEngine::OBBCollider* obb = static_cast<MiiEngine::OBBCollider*>(obbCharacter);
+	MiiEngine::OBB obbData = obb->GetOBB();
 
 	return CalculateClosestPointOnOBB(point, obbData);
 }
@@ -44740,7 +44742,7 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBBFromCharacter(const Ve
 ///-------------------------------------------/// 
 /// OBB上の最近点計算
 ///-------------------------------------------///
-Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const OBB& obb) const {
+Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point, const MiiEngine::OBB& obb) const {
 	Vector3 dir = point - obb.center;
 	Vector3 closest = obb.center;
 
@@ -44764,7 +44766,7 @@ Vector3 GameCharacterCollision::CalculateClosestPointOnOBB(const Vector3& point,
 ///-------------------------------------------/// 
 /// OBBの軸上での重なりを計算
 ///-------------------------------------------///
-float GameCharacterCollision::CalculateOverlapOnAxis(const OBB& obb1, const OBB& obb2, const Vector3& axis) const {
+float GameCharacterCollision::CalculateOverlapOnAxis(const MiiEngine::OBB& obb1, const MiiEngine::OBB& obb2, const Vector3& axis) const {
 	// 各OBBの軸への射影の半径を計算
 	float r1 = 0.0f;
 	for (int i = 0; i < 3; ++i) {
@@ -44905,11 +44907,9 @@ File Path: Project/application/Game/Entity/GameCharacter/GameCharacter.cpp
 #include "imgui.h"
 #endif // USE_IMGUI
 
-using namespace MiiEngine;
-
 /// ===テンプレート候補=== ///
-template class GameCharacter<OBBCollider>;
-template class GameCharacter<SphereCollider>;
+template class GameCharacter<MiiEngine::OBBCollider>;
+template class GameCharacter<MiiEngine::SphereCollider>;
 
 ///-------------------------------------------/// 
 /// コンストラクタ
@@ -44932,7 +44932,7 @@ GameCharacter<TCollider>::~GameCharacter() {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::Initialize() {
 	/// ===ColliderCollision=== ///
-	collision_ = std::make_unique<ColliderCollision>();
+	collision_ = std::make_unique<MiiEngine::ColliderCollision>();
 	gCollision_ = std::make_unique<GameCharacterCollision>();
 
 	/// ===BaseInfoの初期化設定=== ///
@@ -44987,7 +44987,7 @@ void GameCharacter<TCollider>::Update() {
 /// 描画
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::Draw(BlendMode mode) {
+void GameCharacter<TCollider>::Draw(MiiEngine::BlendMode mode) {
 	/// ===TCollider=== ///
 	TCollider::Draw(mode);
 }
@@ -45012,12 +45012,12 @@ void GameCharacter<TCollider>::Information() {
 /// 衝突
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::OnCollision(Collider* collider) {
+void GameCharacter<TCollider>::OnCollision(MiiEngine::Collider* collider) {
 	// === 早期リターン === //
 	if (!collider) return;
 
 	/// ===Colliderとの衝突処理=== ///
-	if (collider->GetColliderName() == ColliderName::Ground) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::Ground) {
 
 		// 地面に接地
 		groundInfo_.isGrounded = true;
@@ -45025,7 +45025,7 @@ void GameCharacter<TCollider>::OnCollision(Collider* collider) {
 		// 地面に衝突した際の処理
 		GroundOnCollision(collider);
 
-	} else if (collider->GetColliderName() == ColliderName::Object) {
+	} else if (collider->GetColliderName() == MiiEngine::ColliderName::Object) {
 		// Objectとの衝突処理
 		//NOTE:thisを100%押し戻し
 		collision_->ProcessCollision(this, collider, 0.0f);
@@ -45073,7 +45073,7 @@ void GameCharacter<TCollider>::GroundCollision() {
 	/// ===地面の範囲を出たかチェック=== ///
 	bool isOutOfRange = false;
 
-	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) {
 		// min～maxの範囲
 		float minX = groundInfo_.currentGroundFirst.x;
 		float maxX = groundInfo_.currentGroundSecond.x;
@@ -45083,7 +45083,7 @@ void GameCharacter<TCollider>::GroundCollision() {
 		isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
 			this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
 
-	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) {
 		// center +- halfSize
 		float centerX = groundInfo_.currentGroundFirst.x;
 		float halfSizeX = groundInfo_.currentGroundSecond.x;
@@ -45104,24 +45104,24 @@ void GameCharacter<TCollider>::GroundCollision() {
 /// 地面に衝突した際の処理
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
+void GameCharacter<TCollider>::GroundOnCollision(MiiEngine::Collider* collider) {
 
 	// タイプの取得
 	groundInfo_.currentGroundType = collider->GetColliderType();
 
 	/// ===タイプ別の地面情報の取得=== ///
-	if (groundInfo_.currentGroundType == ColliderType::AABB) { // AABBの場合
-		AABBCollider* aabbCollider = dynamic_cast<AABBCollider*>(collider);
+	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) { // AABBの場合
+		MiiEngine::AABBCollider* aabbCollider = dynamic_cast<MiiEngine::AABBCollider*>(collider);
 		if (aabbCollider) {
-			AABB groundAABB = aabbCollider->GetAABB();
+			MiiEngine::AABB groundAABB = aabbCollider->GetAABB();
 			// 地面の情報を保存(Min, Max)
 			groundInfo_.currentGroundFirst = groundAABB.min;
 			groundInfo_.currentGroundSecond = groundAABB.max;
 		}
-	} else if (groundInfo_.currentGroundType == ColliderType::OBB) { // OBBの場合
-		OBBCollider* obbCollider = dynamic_cast<OBBCollider*>(collider);
+	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) { // OBBの場合
+		MiiEngine::OBBCollider* obbCollider = dynamic_cast<MiiEngine::OBBCollider*>(collider);
 		if (obbCollider) {
-			OBB groundOBB = obbCollider->GetOBB();
+			MiiEngine::OBB groundOBB = obbCollider->GetOBB();
 			// 地面の情報を保存(Center, HalfSize)
 			groundInfo_.currentGroundFirst = groundOBB.center;
 			groundInfo_.currentGroundSecond = groundOBB.halfSize;
@@ -45130,22 +45130,22 @@ void GameCharacter<TCollider>::GroundOnCollision(Collider* collider) {
 
 	/// ===GameCharacterの情報を取得=== ///
 	float characterHalfSizeY = 0.0f;
-	if (this->GetColliderType() == ColliderType::OBB) {
-		OBB obb = dynamic_cast<OBBCollider*>(this)->GetOBB();
+	if (this->GetColliderType() == MiiEngine::ColliderType::OBB) {
+		MiiEngine::OBB obb = dynamic_cast<MiiEngine::OBBCollider*>(this)->GetOBB();
 		characterHalfSizeY = obb.halfSize.y;
 		
-	} else if (this->GetColliderType() == ColliderType::Sphere) {
-		Sphere sphere = dynamic_cast<SphereCollider*>(this)->GetSphere();
+	} else if (this->GetColliderType() == MiiEngine::ColliderType::Sphere) {
+		MiiEngine::Sphere sphere = dynamic_cast<MiiEngine::SphereCollider*>(this)->GetSphere();
 		characterHalfSizeY = sphere.radius;
 	}
 
 	/// ===地面のY座標を計算（地面タイプに応じて）=== ///
 	float groundTopY = 0.0f;
-	if (groundInfo_.currentGroundType == ColliderType::AABB) {
+	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) {
 		// AABBの場合: maxがそのまま上端
 		groundTopY = groundInfo_.currentGroundSecond.y;
 
-	} else if (groundInfo_.currentGroundType == ColliderType::OBB) {
+	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) {
 		// OBBの場合: center + halfSize
 		groundTopY = groundInfo_.currentGroundFirst.y + groundInfo_.currentGroundSecond.y;
 	}
