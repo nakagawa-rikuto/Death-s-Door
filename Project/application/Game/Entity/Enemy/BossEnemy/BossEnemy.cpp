@@ -191,12 +191,12 @@ void BossEnemy::SetComponentConfig() {
 
 	attackInfo_.downswingTimer = 0.0f;
 	attackInfo_.downswingRange = 8.0f;
-	attackInfo_.downswingCooldown = 2.0f;
+	attackInfo_.downswingCooldown = 4.0f;
 
 	attackInfo_.jumpSmashTimer = 0.0f;
 	attackInfo_.jumpSmashMinRange = 10.0f;
 	attackInfo_.jumpSmashMaxRange = 40.0f;
-	attackInfo_.jumpSmashCooldown = 2.0f;
+	attackInfo_.jumpSmashCooldown = 8.0f;
 
 	/// ===MoveComponentの生成=== ///
 	moveComponent_ = std::make_unique<BossMoveComponent>();

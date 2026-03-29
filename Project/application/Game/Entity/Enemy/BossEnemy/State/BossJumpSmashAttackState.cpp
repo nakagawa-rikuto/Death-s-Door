@@ -47,11 +47,6 @@ void BossJumpSmashAttackState::Update() {
 	boss_->GetWeapon().SetTranslate(result.weaponPosition);
 
 	if (result.isFinished) {
-		// タイマーリセット
-		boss_->SetJumpSmashTimer(boss_->GetAttackInfo().jumpSmashCooldown);
-
-		// 武器を無効化
-		boss_->GetWeapon().SetActive(false);
 
 		// 攻撃終了 → MoveBossStateへ遷移
 		boss_->ChangeState(std::make_unique<MoveBossState>());
@@ -63,6 +58,12 @@ void BossJumpSmashAttackState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossJumpSmashAttackState::Finalize() {
+	// タイマーリセット
+	boss_->SetJumpSmashTimer(boss_->GetAttackInfo().jumpSmashCooldown);
+
+	// 武器を無効化
+	boss_->GetWeapon().SetActive(false);
+
 	BossState::Finalize();
 }
 

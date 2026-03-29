@@ -22,7 +22,7 @@ private:
 		bool isActive = false;      // 攻撃中フラグ
 		bool canCombo = false;      // コンボ可能フラグ
 		int currentAttackID = -1;   // 現在の攻撃ID
-		int previousAttackID = -1;  // ← 追加：前の攻撃ID（コンボ受付用）
+		int previousAttackID = -1;  // 前の攻撃ID
 		int comboCount = 0;         // コンボカウント
 	};
 

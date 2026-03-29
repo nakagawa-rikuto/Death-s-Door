@@ -37,12 +37,6 @@ void BossThrustAttackState::Update() {
 	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
 
 	if (result.isFinished) {
-		// タイマーリセット
-		boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown); 
-
-		// 武器を無効化
-		boss_->GetWeapon().SetActive(false);
-
 		// 攻撃終了 → MoveBossStateへ遷移
 		boss_->ChangeState(std::make_unique<MoveBossState>());
 		return;
@@ -53,6 +47,12 @@ void BossThrustAttackState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossThrustAttackState::Finalize() {
+	// タイマーリセット
+	boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown);
+
+	// 武器を無効化
+	boss_->GetWeapon().SetActive(false);
+
 	BossState::Finalize();
 }
 
