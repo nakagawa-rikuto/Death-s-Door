@@ -292,6 +292,7 @@
 └── └── └── ├── Entity/
 └── └── └── └── ├── Enemy/
 └── └── └── └── └── ├── Boss/
+└── └── └── └── └── └── └── Weapon/
 └── └── └── └── └── ├── CloseEnemy/
 └── └── └── └── └── └── LongEnemy/
 └── └── └── └── └── Player/
@@ -19670,7 +19671,8 @@ namespace MiiEngine {
 		Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.gltf");	// プレイヤー武器
 		Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
 		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
-		Loader::LoadModel("Boss", "Entity/Enemy/Boss/BossEnemy.gltf");						// ボス
+		Loader::LoadModel("Boss", "Entity/Enemy/Boss/Boss.gltf");							// ボス
+		Loader::LoadModel("BossWeapon", "Entity/Enemy/Boss/Weapon/BossWeapon.gltf");		// ボス武器
 
 		/// ===Object=== ///
 		Loader::LoadModel("Ground", "Object/Ground/Ground2.gltf");
@@ -38024,7 +38026,7 @@ void BossEnemy::Initialize() {
 	BaseEnemy::Initialize();
 
 	/// ===OBBのサイズを設定=== ///
-	SetHalfSize({ 3.0f, 3.0f, 3.0f });
+	SetHalfSize({ 7.0f, 7.0f, 7.5f });
 
 	/// ===Weapon=== ///
 	weapon_ = std::make_unique<BossWeapon>();
@@ -38035,7 +38037,7 @@ void BossEnemy::Initialize() {
 	invincibleInfo_.time = 0.5f;
 
 	// HP 
-	baseInfo_.HP = 100;
+	baseInfo_.HP = 12;
 }
 
 ///-------------------------------------------/// 
@@ -38150,17 +38152,18 @@ void BossEnemy::ChangeState(std::unique_ptr<BossState> nextState) {
 void BossEnemy::SetComponentConfig() {
 
 	attackInfo_.thrustTimer = 0.0f;
-	attackInfo_.thrustRange = 6.0f;
-	attackInfo_.thrustCooldown = 3.0f;
+	attackInfo_.thrustRange = 14.0f;
+	attackInfo_.thrustCooldown = 2.5f;
 
 	attackInfo_.downswingTimer = 0.0f;
-	attackInfo_.downswingRange = 8.0f;
-	attackInfo_.downswingCooldown = 2.0f;
+	attackInfo_.downswingRange = 20.0f;
+	attackInfo_.downswingCooldown = 4.0f;
 
-	attackInfo_.jumpSmashTimer = 0.0f;
-	attackInfo_.jumpSmashMinRange = 10.0f;
-	attackInfo_.jumpSmashMaxRange = 40.0f;
-	attackInfo_.jumpSmashCooldown = 2.0f;
+	attackInfo_.jumpSmashCooldown = 8.0f;
+	attackInfo_.jumpSmashTimer = attackInfo_.jumpSmashCooldown;
+	attackInfo_.jumpSmashMinRange = 30.0f;
+	attackInfo_.jumpSmashMaxRange = 50.0f;
+	
 
 	/// ===MoveComponentの生成=== ///
 	moveComponent_ = std::make_unique<BossMoveComponent>();
@@ -38185,7 +38188,6 @@ void BossEnemy::SetComponentConfig() {
 	hitReactionComponent_->Initialize(hitReactionConfig);
 
 	/// ===AttackComponentの生成=== ///
-	//attackManager_ = std::make_unique<BossAttackManager>();
 	// Thrust
 	thrustComponent_ = std::make_unique<BossAttackThrustComponent>();
 	BossAttackThrustComponent::ThrustConfig thrustConfig{
@@ -38194,9 +38196,9 @@ void BossEnemy::SetComponentConfig() {
 		.strikeAngle = -15.0f,
 		.strikeDuration = 0.12f,
 		.recoveryDuration = 0.5f,
-		.weaponRestOffset = { 0.0f,  0.0f,  4.0f },
-		.weaponWindUpOffset = { 0.0f,  0.0f, 4.0f },
-		.weaponStrikeOffset = { 0.0f,  0.0f, 4.0f },
+		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
+		.weaponWindUpOffset = { 0.0f,  0.0f, 12.0f },
+		.weaponStrikeOffset = { 0.0f,  0.0f, 12.0f },
 	};
 	// 初期化
 	thrustComponent_->Initialize(thrustConfig);
@@ -38211,9 +38213,9 @@ void BossEnemy::SetComponentConfig() {
 		.holdDownDuration = 0.2f,
 		.recoveryDuration = 0.45f,
 		.strikeStepForward = 0.1f,
-		.weaponRestOffset = { 0.0f,  0.0f,  0.4f },
-		.weaponWindUpOffset = { 0.0f,  0.0f,  0.4f },
-		.weaponStrikeOffset = { 0.0f,  0.0f,  0.4f },
+		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
+		.weaponWindUpOffset = { 0.0f,  0.0f,  12.0f },
+		.weaponStrikeOffset = { 0.0f,  0.0f,  12.0f },
 	};
 	// 初期化
 	downswingComponent_->Initialize(downswingConfig);
@@ -38225,7 +38227,7 @@ void BossEnemy::SetComponentConfig() {
 		.maxDistance = attackInfo_.jumpSmashMaxRange,
 		.leapWindUpCrouchPitch = 5.0f,
 		.leapWindUpDuration = 0.1f,
-		.leapDuration = 0.1f,
+		.leapDuration = 0.2f,
 		.leapArcHeight = 15.0f,
 		.leapAscentPitch = 120.0f,
 		.leapDescentPitch = 120.0f,
@@ -38233,7 +38235,7 @@ void BossEnemy::SetComponentConfig() {
 		.strikeDuration = 0.2f,
 		.holdDownDuration = 0.8f,
 		.recoveryDuration = 0.45f,
-		.weaponRestOffset = { 0.0f,  0.0f,  0.4f },
+		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
 	};
 	// 初期化
 	jumpSmashComponent_->Initialize(jumpSmashConfig);
@@ -41107,11 +41109,6 @@ void BossDownwarAttackState::Update() {
 	boss_->GetWeapon().SetTranslate(result.weaponPosition);
 
 	if (result.isFinished) {
-		// タイマーリセット
-		boss_->SetDownSwingTimer(boss_->GetAttackInfo().downswingCooldown);
-
-		// 武器を無効化
-		boss_->GetWeapon().SetActive(false);
 
 		// 攻撃終了 → MoveBossStateへ遷移
 		boss_->ChangeState(std::make_unique<MoveBossState>());
@@ -41123,6 +41120,12 @@ void BossDownwarAttackState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossDownwarAttackState::Finalize() {
+	// タイマーリセット
+	boss_->SetDownSwingTimer(boss_->GetAttackInfo().downswingCooldown);
+
+	// 武器を無効化
+	boss_->GetWeapon().SetActive(false);
+
 	BossState::Finalize();
 }
 
@@ -41184,6 +41187,10 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/BossHitReaction
 #include "application/Game/Entity/Player/Player.h"
 // State
 #include "MoveBossState.h"
+// Math
+#include <Math/sMath.h>
+// C++
+#include <algorithm>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -41212,10 +41219,22 @@ void BossHitReactionState::Update() {
 	// カラーの更新
 	boss_->SetColor(result.color);
 
+	// 回転の更新（ヒット時ののけ反りから徐々にX,Z軸の回転を自然な状態(0.0f)へ戻す）
+	Quaternion currentRotation = boss_->GetTransform().rotate;
+	Quaternion targetRotation = currentRotation;
+	targetRotation.x = 0.0f;
+	targetRotation.z = 0.0f;
+	targetRotation = Normalize(targetRotation);
+
+	float lerpT = (std::min)(1.0f, 10.0f * boss_->GetDeltaTime()); // 戻るスピード（10.0fは調整可能）
+	currentRotation = Math::SLerp(currentRotation, targetRotation, lerpT);
+	boss_->SetRotate(currentRotation);
+
 	/// ===Stateの変更=== ///
 	/// ===ヒットリアクションが終了したらMoveStateへ遷移=== ///
 	float slowdownTimer = boss_->GetHitReactionComponent().GetKnockBackState().slowdownTimer;
 	float colorTimer = boss_->GetHitReactionComponent().GetColorState().colorTimer;
+
 	if (slowdownTimer <= 0.0f && colorTimer <= 0.0f) {
 		boss_->ChangeState(std::make_unique<MoveBossState>());
 	}
@@ -41314,11 +41333,6 @@ void BossJumpSmashAttackState::Update() {
 	boss_->GetWeapon().SetTranslate(result.weaponPosition);
 
 	if (result.isFinished) {
-		// タイマーリセット
-		boss_->SetJumpSmashTimer(boss_->GetAttackInfo().jumpSmashCooldown);
-
-		// 武器を無効化
-		boss_->GetWeapon().SetActive(false);
 
 		// 攻撃終了 → MoveBossStateへ遷移
 		boss_->ChangeState(std::make_unique<MoveBossState>());
@@ -41330,6 +41344,12 @@ void BossJumpSmashAttackState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossJumpSmashAttackState::Finalize() {
+	// タイマーリセット
+	boss_->SetJumpSmashTimer(boss_->GetAttackInfo().jumpSmashCooldown);
+
+	// 武器を無効化
+	boss_->GetWeapon().SetActive(false);
+
 	BossState::Finalize();
 }
 
@@ -41426,12 +41446,6 @@ void BossThrustAttackState::Update() {
 	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
 
 	if (result.isFinished) {
-		// タイマーリセット
-		boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown); 
-
-		// 武器を無効化
-		boss_->GetWeapon().SetActive(false);
-
 		// 攻撃終了 → MoveBossStateへ遷移
 		boss_->ChangeState(std::make_unique<MoveBossState>());
 		return;
@@ -41442,6 +41456,12 @@ void BossThrustAttackState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossThrustAttackState::Finalize() {
+	// タイマーリセット
+	boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown);
+
+	// 武器を無効化
+	boss_->GetWeapon().SetActive(false);
+
 	BossState::Finalize();
 }
 
@@ -41542,25 +41562,22 @@ void MoveBossState::Update() {
 
 	/// ===Stateの変更=== ///
 	// 突き攻撃への遷移条件
-	//if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
-	//	// 突き攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossThrustAttackState>());
-	//	return;
-	//}
-
+	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+		return;
 	// Downswing攻撃への遷移条件
-	if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
+	} else if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
 		// 突き攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
 		return;
-	}
 
 	// JumpSmash攻撃への遷移条件
-	//if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
-	//	// 突き攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
-	//	return;
-	//}
+	} else if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+		return;
+	}
 
 	/*if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
 		boss_->ChangeState(std::make_unique<BossAttackState>());
@@ -41648,12 +41665,12 @@ void BossWeapon::Initialize() {
 
 	/// ===Object3Dの初期化=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(std::make_unique<MiiEngine::Model>(), "PlayerWeapon");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "BossWeapon");
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
 	name_ = MiiEngine::ColliderName::EnemyWeapon;
-	SetHalfSize({ 0.5f, 0.5f, 5.0f });
+	SetHalfSize({ 4.0f, 4.0f, 4.0f });
 
 	object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 初期状態では透明にしておく
 }
@@ -45569,7 +45586,7 @@ private:
 		bool isActive = false;      // 攻撃中フラグ
 		bool canCombo = false;      // コンボ可能フラグ
 		int currentAttackID = -1;   // 現在の攻撃ID
-		int previousAttackID = -1;  // ← 追加：前の攻撃ID（コンボ受付用）
+		int previousAttackID = -1;  // 前の攻撃ID
 		int comboCount = 0;         // コンボカウント
 	};
 
@@ -46467,7 +46484,7 @@ void Player::Initialize() {
 	// コライダーに追加
 	Service::Collision::AddCollider(this);
 	// OBBの設定
-	SetHalfSize({ 2.0f, 2.5f, 2.0f });
+	SetHalfSize({ 2.0f, 2.0f, 2.0f });
 }
 
 
@@ -46890,7 +46907,15 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	camera_ = camera;
 
 	// 攻撃の開始
-	player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
+	if (player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
+		// 見栄え向上のために少し攻撃方向に進む
+		Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
+		forward.y = 0.0f;
+		if (forward.x != 0.0f || forward.z != 0.0f) {
+			forward = Normalize(forward);
+			player_->SetVelocity(forward * 0.5f);
+		}
+	}
 }
 
 ///-------------------------------------------/// 
@@ -46914,7 +46939,15 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 	// 攻撃ボタンが押されたらコンボを試行
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
-			attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
+			if (attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
+				// コンボ時も少し前に進む
+				Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
+				forward.y = 0.0f;
+				if (forward.x != 0.0f || forward.z != 0.0f) {
+					forward = Normalize(forward);
+					player_->SetVelocity(forward * 2.5f); // コンボ時は少し強めに踏み込む
+				}
+			}
 		}
 	}
 
@@ -49566,7 +49599,7 @@ void GameScene::Initialize() {
 
 	/// ===EnemyManagerの生成=== ///
 	enemy_ = std::make_unique<BossEnemy>();
-	enemy_->InitGameScene({ 0.0f, 5.0f, 30.0f });
+	enemy_->InitGameScene({ 0.0f, 7.0f, 30.0f });
 	enemy_->SetPlayer(player_.get());
 
 	/// ===State=== ///
