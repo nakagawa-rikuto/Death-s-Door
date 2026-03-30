@@ -56,37 +56,37 @@
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"Player",
-			"uri":"Player.png"
+			"name":"Boss",
+			"uri":"Boss.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":4224,
+			"count":4000,
 			"max":[
-				2.407217025756836,
-				2.7404890060424805,
-				2.407217502593994
+				8.024056434631348,
+				9.134963035583496,
+				8.02405834197998
 			],
 			"min":[
-				-2.407217264175415,
-				-1.8036041259765625,
-				-2.407217025756836
+				-8.024057388305664,
+				-6.0120134353637695,
+				-8.024056434631348
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":4224,
+			"count":4000,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":4224,
+			"count":4000,
 			"type":"VEC2"
 		},
 		{
@@ -99,26 +99,26 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":50688,
+			"byteLength":48000,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":50688,
-			"byteOffset":50688,
+			"byteLength":48000,
+			"byteOffset":48000,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":33792,
-			"byteOffset":101376,
+			"byteLength":32000,
+			"byteOffset":96000,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":12240,
-			"byteOffset":135168,
+			"byteOffset":128000,
 			"target":34963
 		}
 	],
@@ -130,8 +130,8 @@
 	],
 	"buffers":[
 		{
-			"byteLength":147408,
-			"uri":"Player.bin"
+			"byteLength":140240,
+			"uri":"Boss.bin"
 		}
 	]
 }

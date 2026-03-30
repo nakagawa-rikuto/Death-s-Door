@@ -42,11 +42,6 @@ void BossDownwarAttackState::Update() {
 	boss_->GetWeapon().SetTranslate(result.weaponPosition);
 
 	if (result.isFinished) {
-		// タイマーリセット
-		boss_->SetDownSwingTimer(boss_->GetAttackInfo().downswingCooldown);
-
-		// 武器を無効化
-		boss_->GetWeapon().SetActive(false);
 
 		// 攻撃終了 → MoveBossStateへ遷移
 		boss_->ChangeState(std::make_unique<MoveBossState>());
@@ -58,6 +53,12 @@ void BossDownwarAttackState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossDownwarAttackState::Finalize() {
+	// タイマーリセット
+	boss_->SetDownSwingTimer(boss_->GetAttackInfo().downswingCooldown);
+
+	// 武器を無効化
+	boss_->GetWeapon().SetActive(false);
+
 	BossState::Finalize();
 }
 

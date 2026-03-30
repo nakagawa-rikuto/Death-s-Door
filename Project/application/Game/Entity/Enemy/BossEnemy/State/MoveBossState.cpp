@@ -44,25 +44,22 @@ void MoveBossState::Update() {
 
 	/// ===Stateの変更=== ///
 	// 突き攻撃への遷移条件
-	//if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
-	//	// 突き攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossThrustAttackState>());
-	//	return;
-	//}
-
+	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+		return;
 	// Downswing攻撃への遷移条件
-	if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
+	} else if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
 		// 突き攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
 		return;
-	}
 
 	// JumpSmash攻撃への遷移条件
-	//if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
-	//	// 突き攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
-	//	return;
-	//}
+	} else if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+		return;
+	}
 
 	/*if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
 		boss_->ChangeState(std::make_unique<BossAttackState>());

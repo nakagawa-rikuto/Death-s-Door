@@ -18,7 +18,15 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	camera_ = camera;
 
 	// 攻撃の開始
-	player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
+	if (player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
+		// 見栄え向上のために少し攻撃方向に進む
+		Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
+		forward.y = 0.0f;
+		if (forward.x != 0.0f || forward.z != 0.0f) {
+			forward = Normalize(forward);
+			player_->SetVelocity(forward * 0.5f);
+		}
+	}
 }
 
 ///-------------------------------------------/// 
@@ -42,7 +50,15 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 	// 攻撃ボタンが押されたらコンボを試行
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
-			attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand());
+			if (attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
+				// コンボ時も少し前に進む
+				Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
+				forward.y = 0.0f;
+				if (forward.x != 0.0f || forward.z != 0.0f) {
+					forward = Normalize(forward);
+					player_->SetVelocity(forward * 2.5f); // コンボ時は少し強めに踏み込む
+				}
+			}
 		}
 	}
 

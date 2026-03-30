@@ -60,7 +60,7 @@ void BossEnemy::Initialize() {
 	BaseEnemy::Initialize();
 
 	/// ===OBBのサイズを設定=== ///
-	SetHalfSize({ 3.0f, 3.0f, 3.0f });
+	SetHalfSize({ 7.0f, 7.0f, 7.5f });
 
 	/// ===Weapon=== ///
 	weapon_ = std::make_unique<BossWeapon>();
@@ -71,7 +71,7 @@ void BossEnemy::Initialize() {
 	invincibleInfo_.time = 0.5f;
 
 	// HP 
-	baseInfo_.HP = 100;
+	baseInfo_.HP = 12;
 }
 
 ///-------------------------------------------/// 
@@ -186,17 +186,18 @@ void BossEnemy::ChangeState(std::unique_ptr<BossState> nextState) {
 void BossEnemy::SetComponentConfig() {
 
 	attackInfo_.thrustTimer = 0.0f;
-	attackInfo_.thrustRange = 6.0f;
-	attackInfo_.thrustCooldown = 3.0f;
+	attackInfo_.thrustRange = 14.0f;
+	attackInfo_.thrustCooldown = 2.5f;
 
 	attackInfo_.downswingTimer = 0.0f;
-	attackInfo_.downswingRange = 8.0f;
-	attackInfo_.downswingCooldown = 2.0f;
+	attackInfo_.downswingRange = 20.0f;
+	attackInfo_.downswingCooldown = 4.0f;
 
-	attackInfo_.jumpSmashTimer = 0.0f;
-	attackInfo_.jumpSmashMinRange = 10.0f;
-	attackInfo_.jumpSmashMaxRange = 40.0f;
-	attackInfo_.jumpSmashCooldown = 2.0f;
+	attackInfo_.jumpSmashCooldown = 8.0f;
+	attackInfo_.jumpSmashTimer = attackInfo_.jumpSmashCooldown;
+	attackInfo_.jumpSmashMinRange = 30.0f;
+	attackInfo_.jumpSmashMaxRange = 50.0f;
+	
 
 	/// ===MoveComponentの生成=== ///
 	moveComponent_ = std::make_unique<BossMoveComponent>();
@@ -221,7 +222,6 @@ void BossEnemy::SetComponentConfig() {
 	hitReactionComponent_->Initialize(hitReactionConfig);
 
 	/// ===AttackComponentの生成=== ///
-	//attackManager_ = std::make_unique<BossAttackManager>();
 	// Thrust
 	thrustComponent_ = std::make_unique<BossAttackThrustComponent>();
 	BossAttackThrustComponent::ThrustConfig thrustConfig{
@@ -230,9 +230,9 @@ void BossEnemy::SetComponentConfig() {
 		.strikeAngle = -15.0f,
 		.strikeDuration = 0.12f,
 		.recoveryDuration = 0.5f,
-		.weaponRestOffset = { 0.0f,  0.0f,  4.0f },
-		.weaponWindUpOffset = { 0.0f,  0.0f, 4.0f },
-		.weaponStrikeOffset = { 0.0f,  0.0f, 4.0f },
+		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
+		.weaponWindUpOffset = { 0.0f,  0.0f, 12.0f },
+		.weaponStrikeOffset = { 0.0f,  0.0f, 12.0f },
 	};
 	// 初期化
 	thrustComponent_->Initialize(thrustConfig);
@@ -247,9 +247,9 @@ void BossEnemy::SetComponentConfig() {
 		.holdDownDuration = 0.2f,
 		.recoveryDuration = 0.45f,
 		.strikeStepForward = 0.1f,
-		.weaponRestOffset = { 0.0f,  0.0f,  0.4f },
-		.weaponWindUpOffset = { 0.0f,  0.0f,  0.4f },
-		.weaponStrikeOffset = { 0.0f,  0.0f,  0.4f },
+		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
+		.weaponWindUpOffset = { 0.0f,  0.0f,  12.0f },
+		.weaponStrikeOffset = { 0.0f,  0.0f,  12.0f },
 	};
 	// 初期化
 	downswingComponent_->Initialize(downswingConfig);
@@ -261,7 +261,7 @@ void BossEnemy::SetComponentConfig() {
 		.maxDistance = attackInfo_.jumpSmashMaxRange,
 		.leapWindUpCrouchPitch = 5.0f,
 		.leapWindUpDuration = 0.1f,
-		.leapDuration = 0.1f,
+		.leapDuration = 0.2f,
 		.leapArcHeight = 15.0f,
 		.leapAscentPitch = 120.0f,
 		.leapDescentPitch = 120.0f,
@@ -269,7 +269,7 @@ void BossEnemy::SetComponentConfig() {
 		.strikeDuration = 0.2f,
 		.holdDownDuration = 0.8f,
 		.recoveryDuration = 0.45f,
-		.weaponRestOffset = { 0.0f,  0.0f,  0.4f },
+		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
 	};
 	// 初期化
 	jumpSmashComponent_->Initialize(jumpSmashConfig);

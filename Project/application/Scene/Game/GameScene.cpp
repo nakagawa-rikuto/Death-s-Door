@@ -76,7 +76,7 @@ void GameScene::Initialize() {
 
 	/// ===EnemyManagerの生成=== ///
 	enemy_ = std::make_unique<BossEnemy>();
-	enemy_->InitGameScene({ 0.0f, 5.0f, 30.0f });
+	enemy_->InitGameScene({ 0.0f, 7.0f, 30.0f });
 	enemy_->SetPlayer(player_.get());
 
 	/// ===State=== ///
