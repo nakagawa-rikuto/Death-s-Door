@@ -60,7 +60,9 @@ void BossEnemy::Initialize() {
 	BaseEnemy::Initialize();
 
 	/// ===OBBのサイズを設定=== ///
-	SetHalfSize({ 7.0f, 7.0f, 7.5f });
+	SetHalfSize({ 7.0f, 7.5f, 7.0f });
+	// 地面との衝突処理のために半サイズYをGroundInfoにセット
+	SetHalfSizeY(GetOBB().halfSize.y);
 
 	/// ===Weapon=== ///
 	weapon_ = std::make_unique<BossWeapon>();

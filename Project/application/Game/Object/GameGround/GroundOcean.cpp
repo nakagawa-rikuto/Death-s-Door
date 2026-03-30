@@ -22,24 +22,21 @@ void GroundOcean::Initialize() {
 	// FFTオーシャンの初期化
 	fftOcean_ = std::make_unique<MiiEngine::FFTOceanGenerator>();
 	fftOcean_->Initialize(256);
-	fftOcean_->SetTranslate({ 0.0f, -2.0f, 0.0f });
-	fftOcean_->SetScale({ 2000.0f, 1.0f, 2000.0f });
+	fftOcean_->SetTranslate({ 0.0f, 0.0f, 0.0f });
+	fftOcean_->SetScale({ 1000.0f, 1.0f, 1000.0f });
 
 	// アクティブカメラを設定
 	fftOcean_->SetCamera(Service::Camera::GetActiveCamera());
 
-	// 初回更新
-	fftOcean_->Update();
-
 	// OceanParamsの初期設定
 	MiiEngine::OceanParams oceanParams = fftOcean_->GetOceanParams();
 	oceanParams.gridWidth = 2000.0f;
+	oceanParams.windDirection = { 1.0f, 1.0f };
 	oceanParams.windowSpeed = 9.5f;
-	oceanParams.amplitude = 30.0f;
+	oceanParams.amplitude = 50.0f;
 	oceanParams.lambda = 0.5f;
 	fftOcean_->SetOceanParams(oceanParams);
 	
-
 	// Oceanの描画コールバックを設定
 	MiiEngine::OceanRenderCB oceanRenderCB = fftOcean_->GetOceanRenderCB();
 	oceanRenderCB.sunDirection = { 0.0f, 0.7f, 0.9f };
@@ -49,6 +46,9 @@ void GroundOcean::Initialize() {
 	oceanRenderCB.sssStrength = 0.01f;
 	oceanRenderCB.foamSoftness = 1.0f;
 	fftOcean_->SetOceanRenderCB(oceanRenderCB);
+
+	// 初回更新
+	fftOcean_->Update();
 }
 
 ///-------------------------------------------/// 

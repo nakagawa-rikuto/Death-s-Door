@@ -44,8 +44,16 @@ void GameCharacter<TCollider>::Initialize() {
 	baseInfo_.gravity = -9.8f;
 	baseInfo_.isDead = false;
 
+	/// ===キャラクターの半サイズY軸=== ///
+	characterHalfSizeY_ = 0.0f; 
+
 	/// ===GroundInfo=== ///
+	groundInfo_.currentGroundYPos = 0.0f;
 	groundInfo_.isGrounded = false;
+
+	/// ===AreaInfo=== ///
+	areaInfo_.center = { 0.0f, 0.0f, 0.0f };
+	areaInfo_.halfSize = { 200.0f, 100.0f, 200.0f };
 
 	/// ===TCollider=== ///
 	TCollider::Initialize();
@@ -57,12 +65,13 @@ void GameCharacter<TCollider>::Initialize() {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::PreUpdate() {
 	/// ===死亡処理=== ///
-	if (baseInfo_.HP <= 0 || this->transform_.translate.y < -10.0f) {
+	if (baseInfo_.HP <= 0) {
 		baseInfo_.isDead = true;
 	}
 
-	/// ===フラグのリセット=== ///
-	if (this->transform_.translate.y > groundInfo_.currentGroundYPos) {
+	/// ===地面との当たり判定フラグのリセット=== ///
+	float limitY = groundInfo_.currentGroundYPos + characterHalfSizeY_;
+	if (this->transform_.translate.y > limitY) {
 		groundInfo_.isGrounded = false;
 	}
 
@@ -78,6 +87,9 @@ void GameCharacter<TCollider>::Update() {
 
 	/// ===地面との衝突処理=== ///
 	GroundCollision();
+
+	/// ===エリアの衝突処理=== ///
+	AreaCollision();
 
 	/// ===位置の更新=== ///
 	this->transform_.translate += baseInfo_.velocity;
@@ -120,15 +132,7 @@ void GameCharacter<TCollider>::OnCollision(MiiEngine::Collider* collider) {
 	if (!collider) return;
 
 	/// ===Colliderとの衝突処理=== ///
-	if (collider->GetColliderName() == MiiEngine::ColliderName::Ground) {
-
-		// 地面に接地
-		groundInfo_.isGrounded = true;
-
-		// 地面に衝突した際の処理
-		GroundOnCollision(collider);
-
-	} else if (collider->GetColliderName() == MiiEngine::ColliderName::Object) {
+	if (collider->GetColliderName() == MiiEngine::ColliderName::Object) {
 		// Objectとの衝突処理
 		//NOTE:thisを100%押し戻し
 		collision_->ProcessCollision(this, collider, 0.0f);
@@ -147,112 +151,54 @@ void GameCharacter<TCollider>::OnCollision(MiiEngine::Collider* collider) {
 template<typename TCollider> requires IsCollider<TCollider>
 void GameCharacter<TCollider>::GroundCollision() {
 
-	/// ===地面から離れている場合の処理=== ///
+	/// ===地面の範囲という概念を無くし、常に特定の値より下に行かないようにする=== ///
+
+	// 地面より上にいる場合は重力を適用
 	if (!groundInfo_.isGrounded) {
-		// 重力の適用
 		baseInfo_.velocity.y += baseInfo_.gravity * baseInfo_.deltaTime;
 
-		// Y方向の速度の最大値を制限
-		const float kMaxFullSpeed = -10.0f;
-		// 下方向への速度を制限
-		baseInfo_.velocity.y = std::clamp(baseInfo_.velocity.y, kMaxFullSpeed, 0.0f);
-
-		// 早期リターン
-		return;
-	}
-
-	/// ===地面より下に行かないようにする=== ///
-	if (this->transform_.translate.y < groundInfo_.currentGroundYPos) {
-
-		// はみ出し分を押し戻す
-		this->transform_.translate.y = groundInfo_.currentGroundYPos;
-
-		// 下降中なら速度を0にする
-		if (baseInfo_.velocity.y < 0.0f) {
-			baseInfo_.velocity.y = 0.0f;
+		// 落下速度の最大値を制限
+		const float kMaxFallSpeed = -10.0f;
+		if (baseInfo_.velocity.y < kMaxFallSpeed) {
+			baseInfo_.velocity.y = kMaxFallSpeed;
 		}
 	}
 
-	/// ===地面の範囲を出たかチェック=== ///
-	bool isOutOfRange = false;
+	// 次のフレームの予測Y座標
+	float nextY = this->transform_.translate.y + baseInfo_.velocity.y;
 
-	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) {
-		// min～maxの範囲
-		float minX = groundInfo_.currentGroundFirst.x;
-		float maxX = groundInfo_.currentGroundSecond.x;
-		float minZ = groundInfo_.currentGroundFirst.z;
-		float maxZ = groundInfo_.currentGroundSecond.z;
-
-		isOutOfRange = (this->transform_.translate.x > maxX || this->transform_.translate.x < minX ||
-			this->transform_.translate.z > maxZ || this->transform_.translate.z < minZ);
-
-	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) {
-		// center +- halfSize
-		float centerX = groundInfo_.currentGroundFirst.x;
-		float halfSizeX = groundInfo_.currentGroundSecond.x;
-		float centerZ = groundInfo_.currentGroundFirst.z;
-		float halfSizeZ = groundInfo_.currentGroundSecond.z;
-
-		isOutOfRange = (this->transform_.translate.x > centerX + halfSizeX || this->transform_.translate.x < centerX - halfSizeX ||
-			this->transform_.translate.z > centerZ + halfSizeZ || this->transform_.translate.z < centerZ - halfSizeZ);
-	}
-
-	// 地面の範囲から出たらフラグをリセット
-	if (isOutOfRange) {
-		groundInfo_.isGrounded = false;
+	// limitYより下に行かないように制限
+	float limitY = groundInfo_.currentGroundYPos + characterHalfSizeY_;
+	if (nextY <= limitY) {
+		// 地面の位置にピッタリ合わせるように速度を調整
+		baseInfo_.velocity.y = limitY - this->transform_.translate.y;
+		groundInfo_.isGrounded = true;
 	}
 }
 
 ///-------------------------------------------/// 
-/// 地面に衝突した際の処理
+/// エリアの衝突処理
 ///-------------------------------------------///
 template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::GroundOnCollision(MiiEngine::Collider* collider) {
-
-	// タイプの取得
-	groundInfo_.currentGroundType = collider->GetColliderType();
-
-	/// ===タイプ別の地面情報の取得=== ///
-	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) { // AABBの場合
-		MiiEngine::AABBCollider* aabbCollider = dynamic_cast<MiiEngine::AABBCollider*>(collider);
-		if (aabbCollider) {
-			MiiEngine::AABB groundAABB = aabbCollider->GetAABB();
-			// 地面の情報を保存(Min, Max)
-			groundInfo_.currentGroundFirst = groundAABB.min;
-			groundInfo_.currentGroundSecond = groundAABB.max;
-		}
-	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) { // OBBの場合
-		MiiEngine::OBBCollider* obbCollider = dynamic_cast<MiiEngine::OBBCollider*>(collider);
-		if (obbCollider) {
-			MiiEngine::OBB groundOBB = obbCollider->GetOBB();
-			// 地面の情報を保存(Center, HalfSize)
-			groundInfo_.currentGroundFirst = groundOBB.center;
-			groundInfo_.currentGroundSecond = groundOBB.halfSize;
-		}
+void GameCharacter<TCollider>::AreaCollision() {
+	// X軸の制限
+	if (areaInfo_.halfSize.x > 0.0f) {
+		float minX = areaInfo_.center.x - areaInfo_.halfSize.x;
+		float maxX = areaInfo_.center.x + areaInfo_.halfSize.x;
+		this->transform_.translate.x = std::clamp(this->transform_.translate.x, minX, maxX);
 	}
 
-	/// ===GameCharacterの情報を取得=== ///
-	float characterHalfSizeY = 0.0f;
-	if (this->GetColliderType() == MiiEngine::ColliderType::OBB) {
-		MiiEngine::OBB obb = dynamic_cast<MiiEngine::OBBCollider*>(this)->GetOBB();
-		characterHalfSizeY = obb.halfSize.y;
-		
-	} else if (this->GetColliderType() == MiiEngine::ColliderType::Sphere) {
-		MiiEngine::Sphere sphere = dynamic_cast<MiiEngine::SphereCollider*>(this)->GetSphere();
-		characterHalfSizeY = sphere.radius;
+	// Y軸の制限
+	if (areaInfo_.halfSize.y > 0.0f) {
+		float minY = areaInfo_.center.y - areaInfo_.halfSize.y;
+		float maxY = areaInfo_.center.y + areaInfo_.halfSize.y;
+		this->transform_.translate.y = std::clamp(this->transform_.translate.y, minY, maxY);
 	}
 
-	/// ===地面のY座標を計算（地面タイプに応じて）=== ///
-	float groundTopY = 0.0f;
-	if (groundInfo_.currentGroundType == MiiEngine::ColliderType::AABB) {
-		// AABBの場合: maxがそのまま上端
-		groundTopY = groundInfo_.currentGroundSecond.y;
-
-	} else if (groundInfo_.currentGroundType == MiiEngine::ColliderType::OBB) {
-		// OBBの場合: center + halfSize
-		groundTopY = groundInfo_.currentGroundFirst.y + groundInfo_.currentGroundSecond.y;
+	// Z軸の制限
+	if (areaInfo_.halfSize.z > 0.0f) {
+		float minZ = areaInfo_.center.z - areaInfo_.halfSize.z;
+		float maxZ = areaInfo_.center.z + areaInfo_.halfSize.z;
+		this->transform_.translate.z = std::clamp(this->transform_.translate.z, minZ, maxZ);
 	}
-
-	/// ===押し戻し後のY座標を計算=== ///
-	groundInfo_.currentGroundYPos = groundTopY + characterHalfSizeY;
 }

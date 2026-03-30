@@ -124,7 +124,7 @@ namespace MiiEngine {
 			// --- TransformCB（VS用）---
 			if (ImGui::CollapsingHeader("TransformCB")) {
 				float tileScale = base_->GetTileScale();
-				ImGui::DragFloat("タイルスケール", &tileScale, 0.01f, 0.01f, 100.0f);
+				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 1.0f, 1000.0f);
 				base_->SetTileScale(tileScale);
 			}
 
@@ -152,7 +152,7 @@ namespace MiiEngine {
 				ImGui::DragFloat("風速", &p.windowSpeed, 0.1f, 0.0f, 100.0f);
 				ImGui::DragFloat2("風向", &p.windDirection.x, 0.01f, -1.0f, 1.0f);
 				ImGui::DragFloat("振幅", &p.amplitude, 0.01f, 0.0f, 100.0f);
-				ImGui::DragFloat("波長", &p.lambda, 0.1f, 0.0f, 512.0f);
+				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 1.0f);
 				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 5.0f);
 			}
 		}

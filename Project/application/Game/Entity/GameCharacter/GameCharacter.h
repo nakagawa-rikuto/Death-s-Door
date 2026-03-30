@@ -62,10 +62,18 @@ public: /// ===Getter=== ///
     uint32_t GetHP() const { return baseInfo_.HP; }
    
 public: /// ===Setter=== ///
-    // Velocity
-    void SetVelocity(const Vector3 vel) { baseInfo_.velocity = vel; };
-    // isDead
-    void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
+	// Velocity
+	void SetVelocity(const Vector3 vel) { baseInfo_.velocity = vel; };
+	// isDead
+	void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
+	// HalfSizeY
+	void SetHalfSizeY(const float halfSizeY) { characterHalfSizeY_ = halfSizeY; }
+	// AreaInfo
+	void SetArea(const Vector3& center, const Vector3& halfSize) { 
+		areaInfo_.center = center;
+		areaInfo_.halfSize = halfSize;
+	}
+
 protected:
     // Collisionクラス
     std::unique_ptr<MiiEngine::ColliderCollision> collision_;
@@ -83,26 +91,31 @@ protected:
 
 private: /// ===地面との衝突処理=== ///
 
+    // キャラクターの半サイズY軸
+    float characterHalfSizeY_ = 0.0f;   
+
     /// ===GroundInfo=== ///
     struct GroundInfo {
-        MiiEngine::ColliderType currentGroundType;    // 現在の地面のコライダータイプ
-        Vector3 currentGroundFirst{};      // 現在の地面の情報1
-		Vector3 currentGroundSecond{};     // 現在の地面の情報2
         float currentGroundYPos = 0.0f;    // 現在の地面のY軸
         bool isGrounded = false;		   // 地面接地フラグ
     };
 	GroundInfo groundInfo_;
 
+    /// ===AreaInfo=== ///
+    struct AreaInfo {
+        Vector3 center;    // 衝突エリアの中心位置
+        Vector3 halfSize;  // 衝突エリアの半サイズ
+	};
+	AreaInfo areaInfo_;
+
     /// <summary>
     /// 指定した中心位置と半サイズを持つオブジェクトの地面との衝突を検出して処理します。
     /// </summary>
     void GroundCollision();
-  
-    /// <summary>
-    ///  地面に衝突した際の処理
-    /// </summary>
-    /// <param name="collider">衝突したコライダーへのポインタ。</param>
-    void GroundOnCollision(MiiEngine::Collider* collider);
 
+	/// <summary>
+	/// エリアの衝突判定を処理します。
+	/// </summary>
+	void AreaCollision();
 };
 

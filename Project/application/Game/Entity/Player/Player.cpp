@@ -74,6 +74,8 @@ void Player::Initialize() {
 	Service::Collision::AddCollider(this);
 	// OBBの設定
 	SetHalfSize({ 2.0f, 2.0f, 2.0f });
+	// 地面との衝突処理のために半サイズYをGroundInfoにセット
+	SetHalfSizeY(GetOBB().halfSize.y);
 }
 
 
@@ -200,7 +202,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			baseInfo_.HP--;
+			//baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvincibleTime(0.5f);
 		}
