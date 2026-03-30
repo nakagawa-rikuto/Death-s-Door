@@ -15,13 +15,18 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"\u7403.001"
+			"name":"\u7acb\u65b9\u4f53",
+			"scale":[
+				2,
+				2,
+				2
+			]
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"\u30de\u30c6\u30ea\u30a2\u30eb.002",
+			"name":"\u30de\u30c6\u30ea\u30a2\u30eb",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":0
@@ -33,7 +38,7 @@
 	],
 	"meshes":[
 		{
-			"name":"\u7403.001",
+			"name":"\u7acb\u65b9\u4f53",
 			"primitives":[
 				{
 					"attributes":{
@@ -56,69 +61,69 @@
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"Player",
-			"uri":"Player.png"
+			"name":"BossWeapon",
+			"uri":"BossWeapon.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":4224,
+			"count":24,
 			"max":[
-				2.407217025756836,
-				2.7404890060424805,
-				2.407217502593994
+				1,
+				1,
+				1
 			],
 			"min":[
-				-2.407217264175415,
-				-1.8036041259765625,
-				-2.407217025756836
+				-1,
+				-1,
+				-1
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":4224,
+			"count":24,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":4224,
+			"count":24,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":6120,
+			"count":36,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":50688,
+			"byteLength":288,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":50688,
-			"byteOffset":50688,
+			"byteLength":288,
+			"byteOffset":288,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":33792,
-			"byteOffset":101376,
+			"byteLength":192,
+			"byteOffset":576,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":12240,
-			"byteOffset":135168,
+			"byteLength":72,
+			"byteOffset":768,
 			"target":34963
 		}
 	],
@@ -130,8 +135,8 @@
 	],
 	"buffers":[
 		{
-			"byteLength":147408,
-			"uri":"Player.bin"
+			"byteLength":840,
+			"uri":"BossWeapon.bin"
 		}
 	]
 }

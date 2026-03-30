@@ -176,7 +176,8 @@ namespace MiiEngine {
 		Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.gltf");	// プレイヤー武器
 		Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
 		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
-		Loader::LoadModel("Boss", "Entity/Enemy/Boss/BossEnemy.gltf");						// ボス
+		Loader::LoadModel("Boss", "Entity/Enemy/Boss/Boss.gltf");							// ボス
+		Loader::LoadModel("BossWeapon", "Entity/Enemy/Boss/Weapon/BossWeapon.gltf");		// ボス武器
 
 		/// ===Object=== ///
 		Loader::LoadModel("Ground", "Object/Ground/Ground2.gltf");

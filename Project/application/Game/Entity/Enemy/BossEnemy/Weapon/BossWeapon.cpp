@@ -18,12 +18,12 @@ void BossWeapon::Initialize() {
 
 	/// ===Object3Dの初期化=== ///
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(std::make_unique<MiiEngine::Model>(), "PlayerWeapon");
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "BossWeapon");
 
 	/// ===OBBCollider=== ///
 	OBBCollider::Initialize();
 	name_ = MiiEngine::ColliderName::EnemyWeapon;
-	SetHalfSize({ 0.5f, 0.5f, 5.0f });
+	SetHalfSize({ 4.0f, 4.0f, 4.0f });
 
 	object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f }); // 初期状態では透明にしておく
 }

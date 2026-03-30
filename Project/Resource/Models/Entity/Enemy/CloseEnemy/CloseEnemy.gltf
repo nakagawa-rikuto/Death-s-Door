@@ -15,12 +15,7 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"\u7acb\u65b9\u4f53",
-			"scale":[
-				0.4000000059604645,
-				0.4000000059604645,
-				0.4000000059604645
-			]
+			"name":"\u7acb\u65b9\u4f53"
 		}
 	],
 	"materials":[
@@ -70,35 +65,35 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":2506,
+			"count":2508,
 			"max":[
-				3.5,
-				3.125,
-				3.125
+				8.40000057220459,
+				7.5,
+				7.5
 			],
 			"min":[
-				-3.5,
-				-3.125,
-				-3.125
+				-8.40000057220459,
+				-7.5,
+				-7.5
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":2506,
+			"count":2508,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":2506,
+			"count":2508,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":2506,
+			"count":2508,
 			"type":"VEC2"
 		},
 		{
@@ -111,32 +106,32 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":30072,
+			"byteLength":30096,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":30072,
-			"byteOffset":30072,
+			"byteLength":30096,
+			"byteOffset":30096,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":20048,
-			"byteOffset":60144,
+			"byteLength":20064,
+			"byteOffset":60192,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":20048,
-			"byteOffset":80192,
+			"byteLength":20064,
+			"byteOffset":80256,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":7392,
-			"byteOffset":100240,
+			"byteOffset":100320,
 			"target":34963
 		}
 	],
@@ -148,7 +143,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":107632,
+			"byteLength":107712,
 			"uri":"CloseEnemy.bin"
 		}
 	]
