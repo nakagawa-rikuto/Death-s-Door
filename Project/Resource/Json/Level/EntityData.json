@@ -3,12 +3,12 @@
     "objects": [
         {
             "type": "MESH",
-            "name": "Player",
+            "name": "球.001",
             "transform": {
                 "translation": [
                     0.0,
-                    0.0,
-                    3.0
+                    -30.0,
+                    2.0
                 ],
                 "rotation": [
                     0.0,
@@ -21,8 +21,7 @@
                     1.0
                 ]
             },
-            "class_name": "Player1",
-            "file_name": "",
+            "class_name": "Player",
             "collider": {
                 "type": "OBB",
                 "info1": [
@@ -39,17 +38,17 @@
         },
         {
             "type": "MESH",
-            "name": "Enemy1",
+            "name": "立方体",
             "transform": {
                 "translation": [
-                    -25.07788848876953,
-                    14.80105209350586,
-                    3.0
+                    0.0,
+                    30.0,
+                    7.5
                 ],
                 "rotation": [
                     0.0,
                     -0.0,
-                    34.93999099731445
+                    0.0
                 ],
                 "scaling": [
                     1.0,
@@ -57,8 +56,7 @@
                     1.0
                 ]
             },
-            "class_name": "Enemy1",
-            "file_name": "",
+            "class_name": "Enemy",
             "collider": {
                 "type": "OBB",
                 "info1": [
@@ -67,117 +65,9 @@
                     0.0
                 ],
                 "info2": [
-                    4.0,
-                    4.0,
-                    4.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Enemy2",
-            "transform": {
-                "translation": [
-                    24.685935974121094,
-                    12.406367301940918,
-                    3.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -66.78987121582031
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "class_name": "Enemy2",
-            "file_name": "",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    4.0,
-                    4.0,
-                    4.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Enemy2.001",
-            "transform": {
-                "translation": [
-                    -20.583303451538086,
-                    -30.745330810546875,
-                    3.0
-                ],
-                "rotation": [
-                    0.0,
-                    0.0,
-                    -82.69046020507812
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "class_name": "Enemy2",
-            "file_name": "",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    4.0,
-                    4.0,
-                    4.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Enemy1.001",
-            "transform": {
-                "translation": [
-                    11.337566375732422,
-                    -18.33115005493164,
-                    3.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    66.10257720947266
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "class_name": "Enemy1",
-            "file_name": "",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    4.0,
-                    4.0,
-                    4.0
+                    14.0,
+                    14.0,
+                    15.0
                 ]
             }
         }

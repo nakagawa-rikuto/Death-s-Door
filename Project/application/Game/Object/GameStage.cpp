@@ -24,12 +24,6 @@ void GameStage::Initialize(const std::string& levelData) {
 
 	// ステージデータを読み込む
 	LoadStageData(levelData);
-
-	// Oceanの初期化
-	std::shared_ptr<GroundOcean> ocean = std::make_shared<GroundOcean>();
-	ocean->Initialize();
-	ocean->Update();
-	Oceans_.emplace_back(ocean);
 }
 
 ///-------------------------------------------/// 
@@ -40,6 +34,10 @@ void GameStage::Update() {
 	// GroundOceanの更新
 	for (const auto& ocean : Oceans_) {
 		if (ocean) {
+#ifdef USE_IMGUI
+			ocean->ShowImGui();
+#endif // USE_IMGUI
+
 			ocean->Update();
 		}
 	}
@@ -48,16 +46,6 @@ void GameStage::Update() {
 	for (const auto& ground : grounds_) {
 		if (ground) {
 			ground->Update();
-		}
-	}
-
-	// Groundの更新
-	for (const auto& ocean : Oceans_) {
-		if (ocean) {
-#ifdef USE_IMGUI
-			ocean->ShowImGui();
-#endif // USE_IMGUI
-			ocean->Update();
 		}
 	}
 
@@ -108,13 +96,13 @@ void GameStage::LoadStageData(const std::string& stageData) {
 		if (stage.classType == LevelData::ClassTypeLevel::Ground) {
 
 			if (stage.fileName == "Ocean") {
-				std::shared_ptr<GroundOcean> ocean = std::make_shared<GroundOcean>();
+				std::unique_ptr<GroundOcean> ocean = std::make_unique<GroundOcean>();
 				ocean->Initialize();
 				ocean->Update();
-				Oceans_.emplace_back(ocean);
+				Oceans_.emplace_back(std::move(ocean));
 			} else {
 				// Object3dの生成
-				std::shared_ptr<Ground> ground = std::make_shared<Ground>();
+				std::unique_ptr<Ground> ground = std::make_unique<Ground>();
 				ground->GameInit(stage.fileName);
 				// 座標設定
 				ground->SetTranslate(stage.translation);
@@ -125,11 +113,11 @@ void GameStage::LoadStageData(const std::string& stageData) {
 				// 一回更新
 				ground->Update();
 				// 配列に追加
-				grounds_.emplace_back(ground);
+				grounds_.emplace_back(std::move(ground));
 			}
 			continue;
 		} else if (stage.classType == LevelData::ClassTypeLevel::Object) {
-			std::shared_ptr<StageObject> object = std::make_shared<StageObject>();
+			std::unique_ptr<StageObject> object = std::make_unique<StageObject>();
 			object->GameInit(stage.fileName);
 			// Transformを設定
 			object->SetTranslate(stage.translation);
@@ -138,7 +126,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 			// 一回更新
 			object->Update();
 			// 配列に追加
-			objects_.emplace_back(object);
+			objects_.emplace_back(std::move(object));
 			continue;
 		} else {
 			// その他のクラスは無視

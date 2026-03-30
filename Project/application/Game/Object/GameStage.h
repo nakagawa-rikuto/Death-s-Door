@@ -36,9 +36,9 @@ public:
 
 private:
 	// ステージオブジェクトのリスト
-	std::vector<std::shared_ptr<StageObject>> objects_; 
-	std::vector<std::shared_ptr<GroundOcean>> Oceans_;
-	std::vector<std::shared_ptr<Ground>> grounds_;
+	std::vector<std::unique_ptr<StageObject>> objects_; 
+	std::vector<std::unique_ptr<GroundOcean>> Oceans_;
+	std::vector<std::unique_ptr<Ground>> grounds_;
 
 private:
 

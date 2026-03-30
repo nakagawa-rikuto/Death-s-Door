@@ -8,7 +8,7 @@
                 "translation": [
                     0.0,
                     0.0,
-                    -2.0
+                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -22,7 +22,20 @@
                 ]
             },
             "class_name": "Ground",
-            "file_name": "Ocean"
+            "file_name": "Ocean",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "type": "MESH",
@@ -161,186 +174,6 @@
                 "info2": [
                     2.0,
                     2.0,
-                    2.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Ground2.001",
-            "transform": {
-                "translation": [
-                    0.0,
-                    0.0,
-                    -1.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scaling": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "class_name": "Ground",
-            "file_name": "Ground",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    99.0,
-                    96.0,
-                    2.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Ground2.006",
-            "transform": {
-                "translation": [
-                    75.0,
-                    0.0,
-                    -1.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    45.0
-                ],
-                "scaling": [
-                    0.9999999403953552,
-                    0.9999999403953552,
-                    1.0
-                ]
-            },
-            "class_name": "Ground",
-            "file_name": "Ground2",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    20.0,
-                    19.0,
-                    2.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Ground2.002",
-            "transform": {
-                "translation": [
-                    -75.0,
-                    0.0,
-                    -1.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    45.0
-                ],
-                "scaling": [
-                    0.9999999403953552,
-                    0.9999999403953552,
-                    1.0
-                ]
-            },
-            "class_name": "Ground",
-            "file_name": "Ground2",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    20.0,
-                    19.0,
-                    2.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Ground2.003",
-            "transform": {
-                "translation": [
-                    0.0,
-                    75.0,
-                    -1.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    45.0
-                ],
-                "scaling": [
-                    0.9999999403953552,
-                    0.9999999403953552,
-                    1.0
-                ]
-            },
-            "class_name": "Ground",
-            "file_name": "Ground2",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    20.0,
-                    19.0,
-                    2.0
-                ]
-            }
-        },
-        {
-            "type": "MESH",
-            "name": "Ground2.004",
-            "transform": {
-                "translation": [
-                    0.0,
-                    -75.0,
-                    -1.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    45.0
-                ],
-                "scaling": [
-                    0.9999999403953552,
-                    0.9999999403953552,
-                    1.0
-                ]
-            },
-            "class_name": "Ground",
-            "file_name": "Ground2",
-            "collider": {
-                "type": "OBB",
-                "info1": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "info2": [
-                    20.0,
-                    19.0,
                     2.0
                 ]
             }
