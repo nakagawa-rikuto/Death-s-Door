@@ -197,8 +197,8 @@ void BossEnemy::SetComponentConfig() {
 
 	attackInfo_.jumpSmashCooldown = 8.0f;
 	attackInfo_.jumpSmashTimer = attackInfo_.jumpSmashCooldown;
-	attackInfo_.jumpSmashMinRange = 10.0f;
-	attackInfo_.jumpSmashMaxRange = 20.0f;
+	attackInfo_.jumpSmashMinRange = 30.0f;
+	attackInfo_.jumpSmashMaxRange = 50.0f;
 	
 
 	/// ===MoveComponentの生成=== ///
