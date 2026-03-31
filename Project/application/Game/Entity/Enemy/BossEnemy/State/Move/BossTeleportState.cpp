@@ -91,9 +91,6 @@ void BossTeleportState::Update() {
 				boss_->GetPlayer()->GetTransform().translate, 
 				minRange_, maxRange_);
 		} else {
-			// Colliderを再度有効化
-			boss_->SetColliderActive(true);
-
 			// Stateを変更
 			boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
 		}
@@ -104,5 +101,7 @@ void BossTeleportState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossTeleportState::Finalize() {
+	// Colliderを再度有効化
+	boss_->SetColliderActive(true);
 	BossState::Finalize();
 }

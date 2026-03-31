@@ -139,6 +139,13 @@ private: /// ===変数の宣言=== ///
 	};
 	ControllerStickState stickState_;
 
+	/// ===AreaInfo=== ///
+	struct AreaInfo {
+		Vector3 center;    // 衝突エリアの中心位置
+		Vector3 halfSize;  // 衝突エリアの半サイズ
+	};
+	AreaInfo areaInfo_;
+
 private:
 
 	/// <summary>
@@ -150,4 +157,9 @@ private:
 	/// タイマーを進める関数
 	/// </summary>
 	void advanceTimer();
+
+	/// <summary>
+	/// エリアの衝突判定を処理します。
+	/// </summary>
+	void AreaCollision();
 };

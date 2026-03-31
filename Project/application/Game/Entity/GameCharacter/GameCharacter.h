@@ -96,21 +96,9 @@ private: /// ===地面との衝突処理=== ///
     };
 	GroundInfo groundInfo_;
 
-    /// ===AreaInfo=== ///
-    struct AreaInfo {
-        Vector3 center;    // 衝突エリアの中心位置
-        Vector3 halfSize;  // 衝突エリアの半サイズ
-	};
-	AreaInfo areaInfo_;
-
     /// <summary>
     /// 指定した中心位置と半サイズを持つオブジェクトの地面との衝突を検出して処理します。
     /// </summary>
     void GroundCollision();
-
-	/// <summary>
-	/// エリアの衝突判定を処理します。
-	/// </summary>
-	void AreaCollision();
 };
 
