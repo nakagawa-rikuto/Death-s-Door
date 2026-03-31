@@ -4,10 +4,10 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
-#include "BossAttackState.h"
-#include "BossThrustAttackState.h"
-#include "BossDownwarAttackState.h"
-#include "BossJumpSmashAttackState.h"
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossThrustAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDownwarAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossJumpSmashAttackState.h>
+#include "BossTeleportState.h"
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -44,20 +44,22 @@ void MoveBossState::Update() {
 
 	/// ===Stateの変更=== ///
 	// 突き攻撃への遷移条件
-	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
-		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
-		return;
-	// Downswing攻撃への遷移条件
-	} else if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
-		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-		return;
-
+	//if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+	//	// 突き攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+	//	return;
+	//	// Downswing攻撃への遷移条件
+	//} else if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
+	//	// 突き攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+	//	return;
+	//}
 	// JumpSmash攻撃への遷移条件
-	} else if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
+	if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
+		float minRange = boss_->GetAttackInfo().jumpSmashMinRange;
+		//float maxRange = boss_->GetAttackInfo().jumpSmashMaxRange;
 		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, minRange));
 		return;
 	}
 
