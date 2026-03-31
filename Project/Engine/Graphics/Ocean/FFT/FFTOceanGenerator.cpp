@@ -124,7 +124,7 @@ namespace MiiEngine {
 			// --- TransformCB（VS用）---
 			if (ImGui::CollapsingHeader("TransformCB")) {
 				float tileScale = base_->GetTileScale();
-				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 1.0f, 1000.0f);
+				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 1.0f, 10000.0f);
 				base_->SetTileScale(tileScale);
 			}
 
@@ -132,15 +132,15 @@ namespace MiiEngine {
 			if (ImGui::CollapsingHeader("色の設定")) {
 				OceanRenderCB& r = base_->GetOceanRenderCB();
 				ImGui::DragFloat3("光の方向", &r.sunDirection.x, 0.01f, -1.0f, 1.0f);
-				ImGui::DragFloat("光の強さ", &r.sunPower, 0.5f, 0.0f, 500.0f);
+				ImGui::DragFloat("光の強さ", &r.sunPower, 0.1f, 0.0f, 5.0f);
 				ImGui::ColorEdit3("光の色", &r.sunColor.x);
-				ImGui::DragFloat("フレネルバイアス", &r.fresnelBias, 0.001f, 0.0f, 1.0f);
+				ImGui::DragFloat("フレネルバイアス", &r.fresnelBias, 0.001f, 0.02f, 0.2f);
 				ImGui::ColorEdit3("深海の色", &r.deepColor.x);
 				ImGui::DragFloat("粗さ", &r.roughness, 0.01f, 0.0f, 1.0f);
 				ImGui::ColorEdit3("浅瀬の色", &r.shallowColor.x);
-				ImGui::DragFloat("SSSの強さ", &r.sssStrength, 0.01f, 0.0f, 5.0f);
+				ImGui::DragFloat("SSSの強さ", &r.sssStrength, 0.01f, 0.0f, 3.0f);
 				ImGui::ColorEdit3("泡の色", &r.foamColor.x);
-				ImGui::DragFloat("泡の柔らかさ", &r.foamSoftness, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("泡の柔らかさ", &r.foamSoftness, 0.01f, 0.01f, 1.0f);
 				ImGui::ColorEdit3("空の色（地平線）", &r.skyColorHorizon.x);
 				ImGui::ColorEdit3("空の色（天頂）", &r.skyColorZenith.x);
 			}
@@ -149,11 +149,11 @@ namespace MiiEngine {
 			if (ImGui::CollapsingHeader("波のパラメータ")) {
 				OceanParams& p = compute_->GetOceanParams();
 				ImGui::DragFloat("グリッド幅", &p.gridWidth, 0.1f, 0.1f, 10000.0f);
-				ImGui::DragFloat("風速", &p.windowSpeed, 0.1f, 0.0f, 100.0f);
+				ImGui::DragFloat("風速", &p.windowSpeed, 0.1f, 0.0f, 30.0f);
 				ImGui::DragFloat2("風向", &p.windDirection.x, 0.01f, -1.0f, 1.0f);
-				ImGui::DragFloat("振幅", &p.amplitude, 0.01f, 0.0f, 100.0f);
-				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 1.0f);
-				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 5.0f);
+				ImGui::DragFloat("振幅", &p.amplitude, 0.0001f, 0.0001f, 0.001f);
+				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 1.5f);
+				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 1.0f);
 			}
 		}
 		ImGui::End();

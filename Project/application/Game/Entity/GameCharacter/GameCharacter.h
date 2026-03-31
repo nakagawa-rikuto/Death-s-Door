@@ -62,17 +62,12 @@ public: /// ===Getter=== ///
     uint32_t GetHP() const { return baseInfo_.HP; }
    
 public: /// ===Setter=== ///
-	// Velocity
-	void SetVelocity(const Vector3 vel) { baseInfo_.velocity = vel; };
-	// isDead
-	void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
+    // Velocity
+    void SetVelocity(const Vector3 vel) { baseInfo_.velocity = vel; };
+    // isDead
+    void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
 	// HalfSizeY
 	void SetHalfSizeY(const float halfSizeY) { characterHalfSizeY_ = halfSizeY; }
-	// AreaInfo
-	void SetArea(const Vector3& center, const Vector3& halfSize) { 
-		areaInfo_.center = center;
-		areaInfo_.halfSize = halfSize;
-	}
 
 protected:
     // Collisionクラス
