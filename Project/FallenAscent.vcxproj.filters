@@ -103,24 +103,6 @@
     <ClCompile Include="application\Game\Entity\Enemy\Base\BaseEnemy.cpp">
       <Filter>application\Game\Entity\Enemy\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\CloseRange\CloseRangeEnemy.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\CloseRange</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemyBullet.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\LongRange</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemy.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\LongRange</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\Player.cpp">
       <Filter>application\Game\Entity\Player</Filter>
     </ClCompile>
@@ -433,18 +415,6 @@
     <ClCompile Include="application\Game\Animation\GameClearAnimation.cpp">
       <Filter>application\Game\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyPrePareAttackState.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClCompile>
@@ -601,9 +571,6 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.cpp">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp">
       <Filter>Engine\Camera\Base</Filter>
     </ClCompile>
@@ -640,8 +607,6 @@
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
@@ -663,24 +628,6 @@
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\Base\BaseEnemy.h">
       <Filter>application\Game\Entity\Enemy\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\CloseRange\CloseRangeEnemy.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\CloseRange</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemyBullet.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\LongRange</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\LongRange\LongRangeEnemy.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\LongRange</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\Base\EnemyState.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyMoveState.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyAttackState.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\Player.h">
       <Filter>application\Game\Entity\Player</Filter>
@@ -1036,18 +983,6 @@
     <ClInclude Include="application\Game\Animation\GameClearAnimation.h">
       <Filter>application\Game\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyHitReactionComponent.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyMoveComponent.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyPrePareAttackState.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyHitReactionState.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\State</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClInclude>
@@ -1213,9 +1148,6 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Base\MobEnemy.h">
-      <Filter>application\Game\Entity\Enemy\MobEnemy\Base</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h">
       <Filter>Engine\Camera\Base</Filter>
@@ -1253,8 +1185,6 @@
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\Component\EnemyTeleportComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\MobEnemy\State\EnemyTeleportState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
