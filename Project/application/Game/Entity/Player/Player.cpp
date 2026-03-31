@@ -267,7 +267,7 @@ void Player::SettingParamita() {
 	invincibleInfo_.isFlag = true; // このフラグをtrueにすると落ちない、falseにするとゲーム開始時から落ちる。
 
 	// HPの設定
-	baseInfo_.HP = 10;
+	baseInfo_.HP = 8;
 }
 
 ///-------------------------------------------/// 

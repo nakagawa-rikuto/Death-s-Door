@@ -82,7 +82,7 @@ void BossTeleportState::Update() {
 	if (result.isComplete) {
 		teleportCount_++;
 
-		if (teleportCount_ < kMaxTeleportCount) {
+		if (teleportCount_ < kMaxTeleportCount_) {
 			// テレポートを繰り返す
 			boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 			boss_->GetTeleportComponent().Start(

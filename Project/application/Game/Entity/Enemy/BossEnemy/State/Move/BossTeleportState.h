@@ -38,6 +38,6 @@ private:
 	MiiEngine::ParticleGroup* teleportParticle_ = nullptr; // テレポートエフェクトのパーティクル
 
 	int teleportCount_ = 0; // テレポート回数
-	const int kMaxTeleportCount = 3; // 最大テレポート回数
+	const int kMaxTeleportCount_ = 1; // 最大テレポート回数
 };
 
