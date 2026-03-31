@@ -202,7 +202,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			//baseInfo_.HP--;
+			baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvincibleTime(0.5f);
 		}
@@ -258,7 +258,7 @@ void Player::SettingParamita() {
 	invincibleInfo_.isFlag = true; // このフラグをtrueにすると落ちない、falseにするとゲーム開始時から落ちる。
 
 	// HPの設定
-	baseInfo_.HP = 5;
+	baseInfo_.HP = 10;
 }
 
 ///-------------------------------------------/// 
