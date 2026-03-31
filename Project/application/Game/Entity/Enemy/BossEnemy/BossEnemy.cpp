@@ -4,8 +4,8 @@
 // Service
 #include "Service/Particle.h"
 // State
-#include "State/MoveBossState.h"
-#include "State/BossHitReactionState.h"
+#include "State/Move/MoveBossState.h"
+#include "State/HItReaction/BossHitReactionState.h"
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
@@ -210,14 +210,23 @@ void BossEnemy::SetComponentConfig() {
 	// 初期化
 	moveComponent_->Initialize(moveConfig);
 
+	/// ===TeleportComponentの生成=== ///
+	teleportComponent_ = std::make_unique<BossTeleportComponent>();
+	BossTeleportComponent::TeleportConfig teleportConfig{
+		.rotationSpeed = 5.0f,
+		.spinOutDuration = 0.6f,
+		.warpDuration = 0.4f,
+		.spinInDuration = 0.6f,
+	};
+
 	/// ===HitReactionComponentの生成=== ///
 	hitReactionComponent_ = std::make_unique<BossHitReactionComponent>();
 	BossHitReactionComponent::KnockBackConfig hitReactionConfig{
 		.knockBackForce = 1.5f,
-		.slowdownFactor = 0.3f,
+		.slowdownFactor = 0.5f,
 		.slowdownDuration = 0.2f,
 		.alphaDuration = 0.2f,
-		.hitAlpha = 0.6f,
+		.hitAlpha = 0.2f,
 		.flashSpeed = 10.0f,
 	};
 	// 初期化
@@ -263,8 +272,8 @@ void BossEnemy::SetComponentConfig() {
 		.maxDistance = attackInfo_.jumpSmashMaxRange,
 		.leapWindUpCrouchPitch = 5.0f,
 		.leapWindUpDuration = 0.1f,
-		.leapDuration = 0.2f,
-		.leapArcHeight = 15.0f,
+		.leapDuration = 0.6f,
+		.leapArcHeight = 30.0f,
 		.leapAscentPitch = 120.0f,
 		.leapDescentPitch = 120.0f,
 		.strikeForwardPitch = 20.0f,

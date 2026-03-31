@@ -1,14 +1,14 @@
 #pragma once
 /// ===Include=== ///
-#include "Base/BossState.h"
+#include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
 
 ///=====================================================/// 
-/// DownwarAttackState
-/// 叩きつけ攻撃の状態を表すクラス
+/// BossJumpSmashAttackState
+/// ジャンプして叩きつける攻撃の状態を表すクラス
 ///=====================================================///
-class BossDownwarAttackState : public BossState {
+class BossJumpSmashAttackState : public BossState {
 public:
-	~BossDownwarAttackState() override = default;
+	~BossJumpSmashAttackState() override = default;
 
 	/// <summary>
 	/// 初期化処理

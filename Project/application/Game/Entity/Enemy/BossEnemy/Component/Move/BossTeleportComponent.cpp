@@ -1,4 +1,4 @@
-#include "EnemyTeleportComponent.h"
+#include "BossTeleportComponent.h"
 // C++
 #include <cassert>
 // Math
@@ -12,7 +12,7 @@
 ///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
-void EnemyTeleportComponent::Initialize(const TeleportConfig& config) {
+void BossTeleportComponent::Initialize(const TeleportConfig& config) {
 	// ランダムエンジンの初期化
 	std::seed_seq seed{
 		static_cast<uint32_t>(std::time(nullptr)),
@@ -27,7 +27,7 @@ void EnemyTeleportComponent::Initialize(const TeleportConfig& config) {
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-EnemyTeleportComponent::UpdateResult EnemyTeleportComponent::Update(const UpdateContext & context) {
+BossTeleportComponent::UpdateResult BossTeleportComponent::Update(const UpdateContext& context) {
 
 	UpdateResult result{};
 
@@ -44,7 +44,7 @@ EnemyTeleportComponent::UpdateResult EnemyTeleportComponent::Update(const Update
 ///-------------------------------------------/// 
 /// ImGui情報の表示
 ///-------------------------------------------///
-void EnemyTeleportComponent::Information() {
+void BossTeleportComponent::Information() {
 #ifdef USE_IMGUI
 	if (ImGui::TreeNode("テレポート情報")) {
 		ImGui::DragFloat("SpinOut時間", &config_.spinOutDuration, 0.01f, 0.05f, 2.0f);
@@ -62,11 +62,11 @@ void EnemyTeleportComponent::Information() {
 ///-------------------------------------------/// 
 /// テレポートの開始
 ///-------------------------------------------///
-void EnemyTeleportComponent::Start(
+void BossTeleportComponent::Start(
 	const Vector3& currentPosition,
 	const Quaternion& currentRotation,
 	const Vector3& playerPosition,
-	float minRange, 
+	float minRange,
 	float maxRange) {
 
 	// 状態のリセット
@@ -75,6 +75,7 @@ void EnemyTeleportComponent::Start(
 	state_.alpha = 1.0f;
 	state_.startRotation = currentRotation;
 	state_.rotation = state_.startRotation;
+	state_.warpStartPosition = currentPosition;
 
 	// ワープ先を決定
 	Vector3 offset = SetNextPosition(minRange, maxRange, currentPosition);
@@ -85,8 +86,8 @@ void EnemyTeleportComponent::Start(
 ///-------------------------------------------/// 
 /// ワープ先の座標を設定
 ///-------------------------------------------///
-Vector3 EnemyTeleportComponent::SetNextPosition(float minRange, float maxRange, const Vector3& currentPosition) {
-	
+Vector3 BossTeleportComponent::SetNextPosition(float minRange, float maxRange, const Vector3& currentPosition) {
+
 	/// ===計算=== ///
 	// minRange と maxRange の大小関係を保証する
 	if (minRange > maxRange) {
@@ -112,11 +113,12 @@ Vector3 EnemyTeleportComponent::SetNextPosition(float minRange, float maxRange, 
 ///-------------------------------------------/// 
 /// テレポート演出の更新処理\
 ///-------------------------------------------///
-void EnemyTeleportComponent::UpdateTeleport(const UpdateContext& context, UpdateResult& result) {
+void BossTeleportComponent::UpdateTeleport(const UpdateContext& context, UpdateResult& result) {
 
 	/// ===フェーズごとの演出=== ///
 	switch (state_.phase) {
-	case Phase::SpinOut: {// SpinOut：消える前の一周回転
+	case Phase::SpinOut:
+	{// SpinOut：消える前の一周回転
 		const float duration = config_.spinOutDuration;
 		float t = (duration > 0.0f) ? (state_.phaseTimer / duration) : 1.0f;
 		t = std::min(t, 1.0f);
@@ -145,7 +147,8 @@ void EnemyTeleportComponent::UpdateTeleport(const UpdateContext& context, Update
 		}
 		break;
 	}
-	case Phase::Warp: { // Warp：完全透明のまま座標をワープ
+	case Phase::Warp:
+	{ // Warp：完全透明のまま座標をワープ
 		const float duration = config_.warpDuration;
 
 		// 完全に透明のまま
@@ -156,9 +159,9 @@ void EnemyTeleportComponent::UpdateTeleport(const UpdateContext& context, Update
 		// warpStartPosition → nextPosition を warpDuration 秒で均等に移動
 		const float remaining = duration - std::min(state_.phaseTimer, duration);
 		if (remaining > 0.0f) {
-			Vector3 toNext = state_.nextPosition - context.currentPosition;
-			toNext.y = 0.0f;  
-			result.velocity = toNext * remaining;
+			Vector3 fullDistance = state_.nextPosition - state_.warpStartPosition;
+			fullDistance.y = 0.0f;
+			result.velocity = fullDistance / duration;
 		} else {
 			result.velocity = { 0.0f, 0.0f, 0.0f };
 			// NextPosition に到達したら SpinIn へ
@@ -171,7 +174,8 @@ void EnemyTeleportComponent::UpdateTeleport(const UpdateContext& context, Update
 		}
 		break;
 	}
-	case Phase::SpinIn: {// SpinIn：出現後の一周回転（EaseOut＝減速）
+	case Phase::SpinIn:
+	{// SpinIn：出現後の一周回転（EaseOut＝減速）
 		const float duration = config_.spinInDuration;
 		float t = (duration > 0.0f) ? (state_.phaseTimer / duration) : 1.0f;
 		t = std::min(t, 1.0f);
@@ -208,7 +212,7 @@ void EnemyTeleportComponent::UpdateTeleport(const UpdateContext& context, Update
 ///-------------------------------------------/// 
 /// Y軸回転のクォータニオンを作成
 ///-------------------------------------------///
-Quaternion EnemyTeleportComponent::MakeRotationY(float angleRad) {
+Quaternion BossTeleportComponent::MakeRotationY(float angleRad) {
 	const float half = angleRad * 0.5f;
 	return Quaternion{
 		0.0f,
@@ -217,3 +221,4 @@ Quaternion EnemyTeleportComponent::MakeRotationY(float angleRad) {
 		std::cos(half)
 	};
 }
+

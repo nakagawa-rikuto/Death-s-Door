@@ -5,9 +5,9 @@
 #include <random>
 
 ///=====================================================/// 
-/// EnemyTeleportComponent
+/// TeleportComponent
 ///=====================================================///
-class EnemyTeleportComponent {
+class BossTeleportComponent {
 private:
 	/// ===テレポートフェーズ=== ///
 	enum class Phase {
@@ -29,6 +29,7 @@ private:
 	};
 
 public:
+
 	/// ===設定パラメータの構造体=== ///
 	struct TeleportConfig {
 		float rotationSpeed = 5.0f;		// 向き補間速度
@@ -63,11 +64,11 @@ public:
 
 public:
 
-	EnemyTeleportComponent() = default;
-	~EnemyTeleportComponent() = default;
+	BossTeleportComponent() = default;
+	~BossTeleportComponent() = default;
 
-	EnemyTeleportComponent(const EnemyTeleportComponent&) = delete;
-	EnemyTeleportComponent& operator=(const EnemyTeleportComponent&) = delete;
+	BossTeleportComponent(const BossTeleportComponent&) = delete;
+	BossTeleportComponent& operator=(const BossTeleportComponent&) = delete;
 
 	/// <summary>
 	/// テレポート設定を使用して初期化を行います。
@@ -96,9 +97,9 @@ public:
 	/// <param name="minRange"></param>
 	/// <param name="maxRange"></param>
 	void Start(
-		const Vector3& currentPosition, 
+		const Vector3& currentPosition,
 		const Quaternion& currentRotation,
-		const Vector3& playerPosition, 
+		const Vector3& playerPosition,
 		float minRange, float maxRange);
 
 
@@ -140,4 +141,6 @@ private:
 	/// Y 軸周りに angleRad だけ回転する Quaternion を生成します。
 	/// </summary>
 	static Quaternion MakeRotationY(float angleRad);
+
 };
+

@@ -51,10 +51,6 @@ void GameCharacter<TCollider>::Initialize() {
 	groundInfo_.currentGroundYPos = 0.0f;
 	groundInfo_.isGrounded = false;
 
-	/// ===AreaInfo=== ///
-	areaInfo_.center = { 0.0f, 0.0f, 0.0f };
-	areaInfo_.halfSize = { 200.0f, 100.0f, 200.0f };
-
 	/// ===TCollider=== ///
 	TCollider::Initialize();
 }
@@ -87,9 +83,6 @@ void GameCharacter<TCollider>::Update() {
 
 	/// ===地面との衝突処理=== ///
 	GroundCollision();
-
-	/// ===エリアの衝突処理=== ///
-	AreaCollision();
 
 	/// ===位置の更新=== ///
 	this->transform_.translate += baseInfo_.velocity;
@@ -173,32 +166,5 @@ void GameCharacter<TCollider>::GroundCollision() {
 		// 地面の位置にピッタリ合わせるように速度を調整
 		baseInfo_.velocity.y = limitY - this->transform_.translate.y;
 		groundInfo_.isGrounded = true;
-	}
-}
-
-///-------------------------------------------/// 
-/// エリアの衝突処理
-///-------------------------------------------///
-template<typename TCollider> requires IsCollider<TCollider>
-void GameCharacter<TCollider>::AreaCollision() {
-	// X軸の制限
-	if (areaInfo_.halfSize.x > 0.0f) {
-		float minX = areaInfo_.center.x - areaInfo_.halfSize.x;
-		float maxX = areaInfo_.center.x + areaInfo_.halfSize.x;
-		this->transform_.translate.x = std::clamp(this->transform_.translate.x, minX, maxX);
-	}
-
-	// Y軸の制限
-	if (areaInfo_.halfSize.y > 0.0f) {
-		float minY = areaInfo_.center.y - areaInfo_.halfSize.y;
-		float maxY = areaInfo_.center.y + areaInfo_.halfSize.y;
-		this->transform_.translate.y = std::clamp(this->transform_.translate.y, minY, maxY);
-	}
-
-	// Z軸の制限
-	if (areaInfo_.halfSize.z > 0.0f) {
-		float minZ = areaInfo_.center.z - areaInfo_.halfSize.z;
-		float maxZ = areaInfo_.center.z + areaInfo_.halfSize.z;
-		this->transform_.translate.z = std::clamp(this->transform_.translate.z, minZ, maxZ);
 	}
 }

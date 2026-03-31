@@ -39,6 +39,7 @@ public:
 private:
 	// GameClearAnimation
 	std::unique_ptr<GameClearAnimation> gameClearAnimation_;
+	bool isTransitionStarted_ = false; // シーン遷移が開始されたかどうかのフラグ
 };
 
 

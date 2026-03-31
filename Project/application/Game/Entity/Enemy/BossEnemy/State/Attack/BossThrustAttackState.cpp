@@ -4,7 +4,7 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
-#include "MoveBossState.h"
+#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す

@@ -1,26 +1,20 @@
-#include "BossJumpSmashAttackState.h"
+#include "BossDownwarAttackState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
-#include "MoveBossState.h"
+#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void BossJumpSmashAttackState::Enter(BossEnemy* enemy) {
+void BossDownwarAttackState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	const float dist = CalcDistToPlayer();
-	boss_->GetJumpSmashComponent().StartAttack(
-		dist,
-		boss_->GetTransform().translate, 
-		boss_->GetPlayer()->GetTransform().translate, 
-		boss_->GetTransform().rotate);
-
+	boss_->GetDownswingComponent().StartAttack();
 	// 武器を有効化
 	boss_->GetWeapon().SetActive(true); 
 }
@@ -28,13 +22,14 @@ void BossJumpSmashAttackState::Enter(BossEnemy* enemy) {
 ///-------------------------------------------///  
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void BossJumpSmashAttackState::Update() {
+void BossDownwarAttackState::Update() {
 	// コンテキストの準備
-	BossAttackJumpSmashComponent::UpdateContext context{
+	BossAttackDownwardSwingComponent::UpdateContext context{
+		.baseRotation = boss_->GetTransform().rotate,
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
-	BossAttackJumpSmashComponent::UpdateResult result = boss_->GetJumpSmashComponent().Update(context);
+	BossAttackDownwardSwingComponent::UpdateResult result = boss_->GetDownswingComponent().Update(context);
 
 	/// ===結果の反映=== ///
 	// 速度の反映
@@ -57,9 +52,9 @@ void BossJumpSmashAttackState::Update() {
 ///-------------------------------------------/// 
 /// 終了時に呼び出す
 ///-------------------------------------------///
-void BossJumpSmashAttackState::Finalize() {
+void BossDownwarAttackState::Finalize() {
 	// タイマーリセット
-	boss_->SetJumpSmashTimer(boss_->GetAttackInfo().jumpSmashCooldown);
+	boss_->SetDownSwingTimer(boss_->GetAttackInfo().downswingCooldown);
 
 	// 武器を無効化
 	boss_->GetWeapon().SetActive(false);
@@ -70,9 +65,6 @@ void BossJumpSmashAttackState::Finalize() {
 ///-------------------------------------------/// 
 /// プレイヤーとボスの距離を計算して返す。
 ///-------------------------------------------///
-float BossJumpSmashAttackState::CalcDistToPlayer() const {
-	const Vector3 diff =
-		boss_->GetPlayer()->GetTransform().translate -
-		boss_->GetTransform().translate;
-	return Length(diff);
+float BossDownwarAttackState::CalcDistToPlayer() const {
+	return 0.0f;
 }

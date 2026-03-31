@@ -1,6 +1,6 @@
 #pragma once
 /// ===Include=== ///
-#include "Base/EnemyState.h"
+#include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
 
 namespace MiiEngine {
 	class ParticleGroup;
@@ -9,16 +9,16 @@ namespace MiiEngine {
 ///=====================================================/// 
 /// TeleportState
 ///=====================================================///
-class EnemyTeleportState : public EnemyState {
+class BossTeleportState : public BossState {
 public:
-	EnemyTeleportState(const float minRange, const float maxRange);
-	~EnemyTeleportState() override = default;
+	BossTeleportState(const float minRange, const float maxRange);
+	~BossTeleportState() override = default;
 
 	/// <summary>
 	/// ステートに入った時に呼ばれる処理
 	/// </summary>
 	/// <param name="enemy">処理対象の MobEnemy オブジェクトへのポインタ。ステートへ入る対象となる敵を指す</param>
-	void Enter(MobEnemy* enemy) override;
+	void Enter(BossEnemy* enemy) override;
 
 	/// <summary>
 	/// 更新処理
@@ -36,5 +36,8 @@ private:
 	float maxRange_ = 0.0f; // テレポートの最大距離
 
 	MiiEngine::ParticleGroup* teleportParticle_ = nullptr; // テレポートエフェクトのパーティクル
+
+	int teleportCount_ = 0; // テレポート回数
+	const int kMaxTeleportCount_ = 1; // 最大テレポート回数
 };
 

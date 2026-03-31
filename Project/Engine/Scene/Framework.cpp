@@ -10,7 +10,7 @@ namespace MiiEngine {
 		/// ===初期化=== ///
 		// MiiEngine
 		Engine_ = std::make_unique<Mii>();
-		Engine_->Initialize(title, 1920, 1080);
+		Engine_->Initialize(title, 1280, 720);
 		// CameraManager
 		cameraManager_ = std::make_unique<CameraManager>();
 		// ParticleManager

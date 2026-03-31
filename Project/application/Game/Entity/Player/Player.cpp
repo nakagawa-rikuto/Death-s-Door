@@ -7,6 +7,8 @@
 #include "Service/Input.h"
 #include "Service/Camera.h"
 #include "Service/Collision.h"
+// C++
+#include <algorithm>
 // Math
 #include "Math/sMath.h"
 // ImGui
@@ -76,6 +78,10 @@ void Player::Initialize() {
 	SetHalfSize({ 2.0f, 2.0f, 2.0f });
 	// 地面との衝突処理のために半サイズYをGroundInfoにセット
 	SetHalfSizeY(GetOBB().halfSize.y);
+
+	/// ===AreaInfo=== ///
+	areaInfo_.center = { 0.0f, 0.0f, 0.0f };
+	areaInfo_.halfSize = { 200.0f, 100.0f, 200.0f };
 }
 
 
@@ -127,7 +133,10 @@ void Player::UpdateAnimation() {
 	/// ===Weapon=== ///
 	weapon_->Update();
 
-	/// ===SphereColliderの更新=== ///
+	/// ===エリアの衝突処理=== ///
+	AreaCollision();
+
+	/// ===GameCharacterの更新=== ///
 	GameCharacter::Update();
 }
 
@@ -202,7 +211,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			ChangState(std::make_unique<RootState>());
 
 			// ダメージ処理
-			//baseInfo_.HP--;
+			baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvincibleTime(0.5f);
 		}
@@ -258,7 +267,7 @@ void Player::SettingParamita() {
 	invincibleInfo_.isFlag = true; // このフラグをtrueにすると落ちない、falseにするとゲーム開始時から落ちる。
 
 	// HPの設定
-	baseInfo_.HP = 5;
+	baseInfo_.HP = 8;
 }
 
 ///-------------------------------------------/// 
@@ -315,4 +324,30 @@ void Player::ChangState(std::unique_ptr<PlayerState> newState) {
 	currentState_ = std::move(newState);
 	// 新しい状態の初期化  
 	currentState_->Enter(this, camera_);
+}
+
+///-------------------------------------------/// 
+/// エリアの衝突処理
+///-------------------------------------------///
+void Player::AreaCollision() {
+	// X軸の制限
+	if (areaInfo_.halfSize.x > 0.0f) {
+		float minX = areaInfo_.center.x - areaInfo_.halfSize.x;
+		float maxX = areaInfo_.center.x + areaInfo_.halfSize.x;
+		this->transform_.translate.x = std::clamp(this->transform_.translate.x, minX, maxX);
+	}
+
+	// Y軸の制限
+	if (areaInfo_.halfSize.y > 0.0f) {
+		float minY = areaInfo_.center.y - areaInfo_.halfSize.y;
+		float maxY = areaInfo_.center.y + areaInfo_.halfSize.y;
+		this->transform_.translate.y = std::clamp(this->transform_.translate.y, minY, maxY);
+	}
+
+	// Z軸の制限
+	if (areaInfo_.halfSize.z > 0.0f) {
+		float minZ = areaInfo_.center.z - areaInfo_.halfSize.z;
+		float maxZ = areaInfo_.center.z + areaInfo_.halfSize.z;
+		this->transform_.translate.z = std::clamp(this->transform_.translate.z, minZ, maxZ);
+	}
 }

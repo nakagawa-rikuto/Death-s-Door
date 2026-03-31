@@ -8,8 +8,10 @@
 #include "State/Base/BossState.h"
 // Component
 #include "Component/Move/BossMoveComponent.h"
+#include "Component/Move/BossTeleportComponent.h"
 #include "Component/Attack/BossAttackManager.h"
 #include "Component/HitReaction/BossHitReactionComponent.h"
+
 
 ///=====================================================/// 
 /// BossEnemy
@@ -89,6 +91,7 @@ public: /// ===Getter=== ///
 
 	// Componentの取得
 	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
+	BossTeleportComponent& GetTeleportComponent() const { return *teleportComponent_; }
 
 	BossAttackThrustComponent& GetThrustComponent() const { return *thrustComponent_; }
 	BossAttackDownwardSwingComponent& GetDownswingComponent() const { return *downswingComponent_; }
@@ -115,12 +118,10 @@ private:
 
 	/// ===Component=== ///
 	std::unique_ptr<BossMoveComponent> moveComponent_;	// 移動コンポーネント
-
+	std::unique_ptr<BossTeleportComponent> teleportComponent_; // テレポートコンポーネント
 	std::unique_ptr<BossAttackThrustComponent> thrustComponent_; // 突き攻撃コンポーネント
 	std::unique_ptr<BossAttackDownwardSwingComponent> downswingComponent_; // 振り下ろし攻撃コンポーネント
 	std::unique_ptr<BossAttackJumpSmashComponent> jumpSmashComponent_; // ジャンプ叩きつけ攻撃コンポーネント
-	//std::unique_ptr<BossAttackManager> attackManager_;	// 攻撃コンポーネント
-
 	std::unique_ptr<BossHitReactionComponent> hitReactionComponent_; // 被ダメージリアクションコンポーネント
 
 	AttackInfo attackInfo_; // 攻撃のパラメータ
