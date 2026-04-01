@@ -7,6 +7,7 @@
 #include "Math/Quaternion.h"
 // c++
 #include <memory>
+#include <vector>
 #include <d3d12.h>
 
 namespace MiiEngine {
@@ -42,6 +43,14 @@ namespace MiiEngine {
 		/// ImGui表示処理
 		/// </summary>
 		void ShowImGui();
+
+		/// <summary>
+		/// 指定ワールド座標に波紋を発生させる。
+		/// </summary>
+		/// <param name="worldPos">波紋の中心ワールド座標（XZ 平面）</param>
+		/// <param name="radius">波紋の初期半径（グリッドセル単位、推奨: 3〜10）</param>
+		/// <param name="strength">波紋の強度（推奨: 0.5〜2.0）</param>
+		void AddRipple(const Vector3& worldPos, float radius = 5.0f, float strength = 1.0f);
 
 	public: /// ===Getter=== ///
 
@@ -97,6 +106,9 @@ namespace MiiEngine {
 		/// ===Transform=== ///
 		QuaternionTransform transform_;
 
+		/// ===波紋=== ///
+		std::vector<RippleInjection> ripplenInjections_;
+
 	private:
 
 		/// <summary>
@@ -113,5 +125,11 @@ namespace MiiEngine {
 		/// ワールド行列の更新
 		/// </summary>
 		void UpdateWorldMatrix();
+
+		/// <summary>
+		/// Ripplenインジェクションをフラッシュします。
+		/// </summary>
+		/// <param name="commandList">グラフィックスコマンドを記録するためのD3D12コマンドリスト。</param>
+		void FlushRipplenInjections(ID3D12GraphicsCommandList* commandList);
 	};
 }

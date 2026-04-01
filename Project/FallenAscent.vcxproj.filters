@@ -94,6 +94,7 @@
     <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
       <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -621,6 +622,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossJumpSmashAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1199,6 +1201,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossJumpSmashAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

@@ -161,4 +161,26 @@ namespace MiiEngine {
         Vector3 position; // POSITION (x, 0, z)
         Vector2 texCoord; // TEXCOORD0
     };
+
+    ///-------------------------------------------/// 
+	/// RippleVertex
+    ///-------------------------------------------///
+    struct RippleParams {
+		uint32_t gridSize; // グリッドのサイズ
+        float cellSize;    // セルサイズ
+        float waveSpeed;   // 速度
+        float deltaTime;   // デルタタイム
+        float damping;     // 減衰率
+		uint32_t pingPong;    // ピンポンバッファの切り替えフラグ
+		float padding[2];
+    };
+
+    ///-------------------------------------------///   
+    /// RippleInjection
+    ///-------------------------------------------///
+    struct RippleInjection {
+        Vector2 uv;     // 位置
+        float radius;   // 半径
+        float strength; // 強さ
+    };
 }

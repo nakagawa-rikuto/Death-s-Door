@@ -283,6 +283,7 @@ void BitReverseCols(uint3 DTid : SV_DispatchThreadID)
 Texture2D<float4> HeightIFFT : register(t0);
 Texture2D<float4> DxIFFT : register(t1);
 Texture2D<float4> DzIFFT : register(t2);
+Texture2D<float2> RippleMap : register(t3);
 
 [numthreads(16, 16, 1)]
 void AssembleDisplacement(uint3 DTid : SV_DispatchThreadID)
@@ -297,6 +298,10 @@ void AssembleDisplacement(uint3 DTid : SV_DispatchThreadID)
     float dx = DxIFFT[id].x * scale * sign * Lambda;
     float dz = DzIFFT[id].x * scale * sign * Lambda;
 
+    // 波紋の高さを加算
+    float ripple = RippleMap[id].x;
+    height += ripple;
+    
     DisplaceMap[id] = float4(dx, height, dz, 1.0);
 }
 
