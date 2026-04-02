@@ -136,7 +136,7 @@ namespace MiiEngine {
 			// --- TransformCB（VS用）---
 			if (ImGui::CollapsingHeader("TransformCB")) {
 				float tileScale = base_->GetTileScale();
-				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 1.0f, 10.0f);
+				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 0.1f, 10.0f);
 				base_->SetTileScale(tileScale);
 			}
 
@@ -197,8 +197,8 @@ namespace MiiEngine {
 					AddRipple({0.0f, 0.0f, 0.0f}, testRadius, testStrength);
 				}
 			}
-			ImGui::End();
 		}
+		ImGui::End();
 #endif // _DEBUG
 	}
 
