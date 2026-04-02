@@ -30,6 +30,7 @@ namespace MiiEngine {
 		index_.reset();
 		base_.reset();
 		compute_.reset();
+		ripplenInjections_.clear();
 	}
 
 	///-------------------------------------------/// 
@@ -209,27 +210,21 @@ namespace MiiEngine {
 		float scaleX = transform_.scale.x != 0.0f ? transform_.scale.x : 1.0f;
 		float scaleZ = transform_.scale.z != 0.0f ? transform_.scale.z : 1.0f;
 
-		// オブジェクトのスケールを加味してローカル座標系に変換
 		float localX = (worldPos.x - transform_.translate.x) / scaleX;
 		float localZ = (worldPos.z - transform_.translate.z) / scaleZ;
 
-		// メッシュ（[-0.5, 0.5]）外は無視
 		if (localX < -0.5f || localX > 0.5f || localZ < -0.5f || localZ > 0.5f) {
 			return;
 		}
 
-		// [ -0.5, 0.5 ] を [ 0, 1 ] の UV に変換
-		float u_mesh = localX + 0.5f;
-		float v_mesh = localZ + 0.5f;
+		float u = localX + 0.5f;
+		float v = localZ + 0.5f;
 
-		// TileScale を加味して、テクスチャのUV空間にマッピング
-		float tileScale = base_->GetTileScale();
-		float u = std::fmod(u_mesh * tileScale, 1.0f);
-		float v = std::fmod(v_mesh * tileScale, 1.0f);
-		if (u < 0.0f) u += 1.0f;
-		if (v < 0.0f) v += 1.0f;
+		// radiusをワールド単位 → グリッドセル単位に変換
+		float cellSize = scaleX / static_cast<float>(gridSize_);
+		float radiusInCells = (cellSize > 0.0f) ? (radius / cellSize) : radius;
 
-		ripplenInjections_.push_back({ {u, v}, radius, strength });
+		ripplenInjections_.push_back({ {u, v}, radiusInCells, strength });
 
 		/*Vector2 pos = { worldPos.x, worldPos.z };
 		ripplenInjections_.push_back({ pos, radius, strength });*/

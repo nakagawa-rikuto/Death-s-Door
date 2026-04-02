@@ -208,7 +208,7 @@ namespace MiiEngine {
 
         // BufferBaseにリソースを渡す
         outResource = std::make_unique<BufferBase>();
-        outResource->SetBuffer(resource.Detach()); // Detachして所有権を渡す。
+        outResource->SetBuffer(resource.Get()); 
 
         // UAVの作成
         outUAV.CreateAsTexture2D(

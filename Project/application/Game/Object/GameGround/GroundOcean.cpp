@@ -21,7 +21,7 @@ void GroundOcean::Initialize() {
 
 	// FFTオーシャンの初期化
 	fftOcean_ = std::make_unique<MiiEngine::FFTOceanGenerator>();
-	fftOcean_->Initialize(1024);
+	fftOcean_->Initialize(512);
 	fftOcean_->SetTranslate({ 0.0f, 0.0f, 0.0f });
 	fftOcean_->SetScale({ 1000.0f, 1.0f, 1000.0f });
 
@@ -30,11 +30,11 @@ void GroundOcean::Initialize() {
 
 	// OceanParamsの初期設定
 	MiiEngine::OceanParams oceanParams = fftOcean_->GetOceanParams();
-	oceanParams.gridWidth = 2000.0f;
+	oceanParams.gridWidth = 4000.0f;
 	oceanParams.windDirection = { 1.0f, 1.0f };
 	oceanParams.windowSpeed = 9.5f;
-	oceanParams.amplitude = 50.0f;
-	oceanParams.lambda = 0.5f;
+	oceanParams.amplitude = 10.0f;
+	oceanParams.lambda = 0.15f;
 	fftOcean_->SetOceanParams(oceanParams);
 	
 	// Oceanの描画コールバックを設定
