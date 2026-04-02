@@ -19,6 +19,13 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	FFTOceanGenerator::~FFTOceanGenerator() {
+		// Unmap
+		if (vertex_ && vertex_->GetBuffer()) {
+			vertex_->GetBuffer()->Unmap(0, nullptr);
+		}
+		if (index_ && index_->GetBuffer()) {
+			index_->GetBuffer()->Unmap(0, nullptr);
+		}
 		vertex_.reset();
 		index_.reset();
 		base_.reset();

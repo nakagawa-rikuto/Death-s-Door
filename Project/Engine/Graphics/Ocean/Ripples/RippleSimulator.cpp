@@ -11,6 +11,13 @@ namespace MiiEngine {
     /// デストラクタ
     ///-------------------------------------------///
     RippleSimulator::~RippleSimulator() {
+        if (paramsBuffer_ && paramsBuffer_->GetBuffer()) {
+			paramsBuffer_->GetBuffer()->Unmap(0, nullptr);
+        }
+        if (injectionBuffer_ && injectionBuffer_->GetBuffer()) {
+			injectionBuffer_->GetBuffer()->Unmap(0, nullptr);
+        }
+
         paramsBuffer_.reset();
         injectionBuffer_.reset();
         pingResource_.reset();
@@ -201,7 +208,7 @@ namespace MiiEngine {
 
         // BufferBaseにリソースを渡す
         outResource = std::make_unique<BufferBase>();
-        outResource->SetBuffer(resource.Get()); // Detachして所有権を渡す。
+        outResource->SetBuffer(resource.Detach()); // Detachして所有権を渡す。
 
         // UAVの作成
         outUAV.CreateAsTexture2D(

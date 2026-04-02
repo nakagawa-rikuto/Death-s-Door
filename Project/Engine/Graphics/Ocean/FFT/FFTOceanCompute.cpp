@@ -11,8 +11,18 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	FFTOceanCompute::~FFTOceanCompute() {
+		// RippleSimulatorのリセット
+		ripple_.reset();
+		// Unmapしてからリセット
+		if (oceanParamsBuffer_ && oceanParamsBuffer_->GetBuffer()) {
+			oceanParamsBuffer_->GetBuffer()->Unmap(0, nullptr);
+		}
+		if (butterflyParamsBuffer_ && butterflyParamsBuffer_->GetBuffer()) {
+			butterflyParamsBuffer_->GetBuffer()->Unmap(0, nullptr);
+		}
 		oceanParamsBuffer_.reset();
 		butterflyParamsBuffer_.reset();
+		// UAVリソースのリセット
 		h0Resource_.reset();
 		hktResource_.reset();
 		dxResource_.reset();
@@ -21,7 +31,6 @@ namespace MiiEngine {
 		pongResource_.reset();
 		displaceResource_.reset();
 		normalFoamResource_.reset();
-		ripple_.reset();
 	}
 
 	///-------------------------------------------/// 
@@ -371,7 +380,7 @@ namespace MiiEngine {
 
 		// BufferBaseにリソースを渡す
 		outResource = std::make_unique<BufferBase>();
-		outResource->SetBuffer(resource.Get()); // Detachして所有権を渡す。
+		outResource->SetBuffer(resource.Detach()); // Detachして所有権を渡す。
 
 		// UAVの作成
 		outUAV.CreateAsTexture2D(
