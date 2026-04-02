@@ -11,17 +11,27 @@ namespace MiiEngine {
     /// デストラクタ
     ///-------------------------------------------///
     RippleSimulator::~RippleSimulator() {
+		// Unmapしてからリセット
         if (paramsBuffer_ && paramsBuffer_->GetBuffer()) {
 			paramsBuffer_->GetBuffer()->Unmap(0, nullptr);
         }
         if (injectionBuffer_ && injectionBuffer_->GetBuffer()) {
 			injectionBuffer_->GetBuffer()->Unmap(0, nullptr);
         }
-
         paramsBuffer_.reset();
         injectionBuffer_.reset();
+
+		// UAVリソースのリセット
         pingResource_.reset();
         pongResource_.reset();
+
+		// SRVの解放
+        if (srvManager_) {
+            srvManager_->Free(uavIndices_[0]);
+            srvManager_->Free(uavIndices_[1]);
+            srvManager_->Free(srvPingIndex_);
+			srvManager_->Free(srvPongIndex_);
+        }
     }
 
     ///-------------------------------------------/// 

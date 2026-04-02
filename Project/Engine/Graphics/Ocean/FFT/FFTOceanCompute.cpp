@@ -31,6 +31,23 @@ namespace MiiEngine {
 		pongResource_.reset();
 		displaceResource_.reset();
 		normalFoamResource_.reset();
+
+		// SRVの解放
+		if (srvManager_) {
+			srvManager_->Free(uavIndices_[0]);
+			srvManager_->Free(uavIndices_[1]);
+			srvManager_->Free(uavIndices_[2]);
+			srvManager_->Free(uavIndices_[3]);
+			srvManager_->Free(uavIndices_[4]);
+			srvManager_->Free(uavIndices_[5]);
+			srvManager_->Free(uavIndices_[6]);
+			srvManager_->Free(uavIndices_[7]);
+			srvManager_->Free(srvHeightIndex_);
+			srvManager_->Free(srvDxIndex_);
+			srvManager_->Free(srvDzIndex_);
+			srvManager_->Free(srvDisplaceIndex_);
+			srvManager_->Free(srvNormalFoamIndex_);
+		}
 	}
 
 	///-------------------------------------------/// 

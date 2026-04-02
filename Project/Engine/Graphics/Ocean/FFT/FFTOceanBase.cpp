@@ -14,13 +14,13 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	FFTOceanBase::~FFTOceanBase() {
+		// Unmapしてからリセット
 		if (transformBuffer_ && transformBuffer_->GetBuffer()) {
 			transformBuffer_->GetBuffer()->Unmap(0, nullptr);
 		} 
 		if (oceanBuffer_ && oceanBuffer_->GetBuffer()) {
 			oceanBuffer_->GetBuffer()->Unmap(0, nullptr);
 		}
-
 		transformBuffer_.reset();
 		oceanBuffer_.reset();
 	}
