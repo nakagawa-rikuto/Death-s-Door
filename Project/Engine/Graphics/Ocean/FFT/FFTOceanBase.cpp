@@ -77,11 +77,13 @@ namespace MiiEngine {
 		commandList->SetGraphicsRootConstantBufferView(0, transformBuffer_->GetBuffer()->GetGPUVirtualAddress());
 		// OceanRenderCB（PS）
 		commandList->SetGraphicsRootConstantBufferView(1, oceanBuffer_->GetBuffer()->GetGPUVirtualAddress());
-		// テクスチャ３つ(t0~t1)は、FFTOceanRendererでバインド
-		// [2] t0:DisplaceMap, t1:NormalFoamMap（CSの出力をSRVとして渡す）
+		/// ===テクスチャ３つは、FFTOceanRendererでバインド=== ///
+		// [2] t0:DisplaceMap, t1:NormalFoamMap
 		commandList->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(srvDisplaceIndex_));
-		// [3] t2:FoamTexture（通常テクスチャ）
-		Service::Render::SetGraphicsRootDescriptorTable(commandList, 3, foamTextureName_);
+		// [3] t2:RippleTexture
+		commandList->SetGraphicsRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(srvRippleIndex_));
+		// [4] t2:FoamTexture
+		Service::Render::SetGraphicsRootDescriptorTable(commandList, 4, foamTextureName_);
 	}
 
 	///-------------------------------------------/// 
@@ -111,6 +113,8 @@ namespace MiiEngine {
 	void FFTOceanBase::SetDisplaceSRVIndex(uint32_t index) { srvDisplaceIndex_ = index; }
 	// CS側のSRVインデックスを受け取る
 	void FFTOceanBase::SetNormalFoamSRVIndex(uint32_t index) { srvNormalFoamIndex_ = index; }
+	// CS側のSRVインデックスを受け取る
+	void FFTOceanBase::SetRippleSRVIndex(uint32_t index) { srvRippleIndex_ = index; }
 	// 泡テクスチャ名の設定
 	void FFTOceanBase::SetFoamTextureName(const std::string& name) { foamTextureName_ = name; }
 

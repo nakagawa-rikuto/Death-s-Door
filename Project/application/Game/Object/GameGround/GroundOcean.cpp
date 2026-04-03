@@ -21,9 +21,9 @@ void GroundOcean::Initialize() {
 
 	// FFTオーシャンの初期化
 	fftOcean_ = std::make_unique<MiiEngine::FFTOceanGenerator>();
-	fftOcean_->Initialize(512);
+	fftOcean_->Initialize(1024);
 	fftOcean_->SetTranslate({ 0.0f, 0.0f, 0.0f });
-	fftOcean_->SetScale({ 1000.0f, 1.0f, 1000.0f });
+	fftOcean_->SetSize(1000.0f);
 
 	// アクティブカメラを設定
 	fftOcean_->SetCamera(Service::Camera::GetActiveCamera());

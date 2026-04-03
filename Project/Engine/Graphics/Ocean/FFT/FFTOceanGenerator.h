@@ -108,6 +108,7 @@ namespace MiiEngine {
 
 		/// ===波紋=== ///
 		std::vector<RippleInjection> ripplenInjections_;
+		Vector2 ripplePos_;
 
 	private:
 

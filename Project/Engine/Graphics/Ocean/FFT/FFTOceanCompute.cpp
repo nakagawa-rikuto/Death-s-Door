@@ -337,9 +337,6 @@ namespace MiiEngine {
 		TransitionBarrier(commandList, dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		TransitionBarrier(commandList, dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-		// RippleMap を UAV に戻す
-		ripple_->TransitionToUAV(commandList);
-
 		// DisplaceMap と NormalFoamMap を UAV → SRV に遷移（レンダリングで使用するため）
 		TransitionBarrier(commandList, displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS,D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		TransitionBarrier(commandList, normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -349,6 +346,10 @@ namespace MiiEngine {
 	/// 次のフレームのためにリソース状態をリセットします 
 	///-------------------------------------------///
 	void FFTOceanCompute::ResetResourceStatesForNextFrame(ID3D12GraphicsCommandList* commandList) {
+
+		// RippleMap を UAV に戻す
+		ripple_->TransitionToUAV(commandList);
+
 		// SRV->UAVに遷移
 		TransitionBarrier(commandList, displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		TransitionBarrier(commandList, normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);

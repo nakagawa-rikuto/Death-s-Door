@@ -297,11 +297,11 @@ void AssembleDisplacement(uint3 DTid : SV_DispatchThreadID)
     float height = HeightIFFT[id].x * scale * sign;
     float dx = DxIFFT[id].x * scale * sign * Lambda;
     float dz = DzIFFT[id].x * scale * sign * Lambda;
-
+    
     // 波紋の高さを加算
     float ripple = RippleMap[id].x;
     height += ripple;
-    
+
     DisplaceMap[id] = float4(dx, height, dz, 1.0);
 }
 

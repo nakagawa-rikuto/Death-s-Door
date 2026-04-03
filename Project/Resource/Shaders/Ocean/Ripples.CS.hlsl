@@ -95,22 +95,24 @@ void AddRipplePoint(uint3 DTid : SV_DispatchThreadID)
     int2 id = (int2) DTid.xy;
     uint N = GridSize;
 
-    // 注入位置をグリッド座標に変換（ラップアラウンド考慮）
-    float2 center = RippleUV * float(N);
-    float2 diff = abs((float2) id - center);
-    diff.x = min(diff.x, float(N) - diff.x);
-    diff.y = min(diff.y, float(N) - diff.y);
+    // UV化
+    float2 uv = (float2) id / N;
+    
+    // ラップ考慮（UV版）
+    float2 diff = abs(uv - RippleUV);
+    diff = min(diff, 1.0 - diff); // ← ここが修正ポイント
+
     float dist = length(diff);
 
     if (dist > RippleRadius)
         return;
 
-    // コサインプロファイルで滑らかな注入
+    // コサインプロファイル
     float t = dist / RippleRadius;
     float bump = RippleStrength * cos(t * 3.14159265 * 0.5);
     bump = max(bump, 0.0);
 
-    // 現在のバッファに加算
+    // 加算
     if (PingPong == 0)
     {
         float2 v = RipplePing[id];

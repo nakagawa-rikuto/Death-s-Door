@@ -68,6 +68,9 @@ namespace MiiEngine {
 		void PostDraw();
 
 	private:
+		int width_;
+		int height_;
+
 		// Mii
 		std::unique_ptr<Mii> Engine_;
 		// CameraManager

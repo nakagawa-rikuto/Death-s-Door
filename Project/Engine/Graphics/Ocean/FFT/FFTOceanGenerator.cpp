@@ -59,6 +59,7 @@ namespace MiiEngine {
 		// Compute側のSRVインデックスをBaseに渡す
 		base_->SetDisplaceSRVIndex(compute_->GetSRVDisplaceIndex());
 		base_->SetNormalFoamSRVIndex(compute_->GetSRVNormalFoamIndex());
+		base_->SetRippleSRVIndex(compute_->GetRippleSimulator()->GetCurrentSRVIndex());
 		// テクスチャの設定
 		base_->SetFoamTextureName("oceanFFT");
 
@@ -102,6 +103,9 @@ namespace MiiEngine {
 		// コンピュートシェーダーのディスパッチ
 		compute_->Dispatch(commandList);
 
+		// RippleのSRVインデックス（最新）をBaseに渡す
+		base_->SetRippleSRVIndex(compute_->GetRippleSimulator()->GetCurrentSRVIndex());
+
 		// パイプラインのセット
 		Service::Render::SetPSO(commandList, PipelineType::FFTOcean, mode);
 
@@ -130,7 +134,9 @@ namespace MiiEngine {
 			// --- Transform ---
 			if (ImGui::CollapsingHeader("Transform")) {
 				ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
-				ImGui::DragFloat3("Scale", &transform_.scale.x, 0.1f);
+				float size = base_->GetSize();
+				ImGui::DragFloat("Size", &size, 0.1f);
+				SetSize(size);
 			}
 
 			// --- TransformCB（VS用）---
@@ -182,19 +188,19 @@ namespace MiiEngine {
 					ripple->SetDamping(damping);
 				}
 
-				Vector2 injectionUV = ripple->GetInjectionUV();
-				if (ImGui::DragFloat2("出現位置UV", &injectionUV.x, 0.0f, -1.0f, 1.0f)) {
-					ripple->SetInjectionUV(injectionUV);
+				if (ImGui::DragFloat2("出現位置UV", &ripplePos_.x, 0.1f)) {
+					ripple->SetInjectionUV(ripplePos_);
 				}
 
 				// テスト用: ボタンでグリッド中央に波紋を発生
 				ImGui::Separator();
 				static float testRadius = 5.0f;
 				static float testStrength = 1.0f;
-				ImGui::DragFloat("テスト半径", &testRadius, 0.1f, 1.0f, 150.0f);
+				ImGui::DragFloat("テスト半径", &testRadius, 0.1f, 0.1f, 150.0f);
 				ImGui::DragFloat("テスト強度", &testStrength, 0.1f, 0.1f, 10.0f);
 				if (ImGui::Button("中央に波紋を発生")) {
-					AddRipple({0.0f, 0.0f, 0.0f}, testRadius, testStrength);
+					AddRipple({ripplePos_.x, 0.0f, ripplePos_.y}, testRadius, testStrength);
+					AddRipple({ ripplePos_.x + 30.0f, 0.0f, ripplePos_.y }, testRadius, testStrength);
 				}
 			}
 		}
@@ -207,28 +213,20 @@ namespace MiiEngine {
 	/// 波紋の追加
 	///-------------------------------------------///
 	void FFTOceanGenerator::AddRipple(const Vector3& worldPos, float radius, float strength) {
-		float scaleX = transform_.scale.x != 0.0f ? transform_.scale.x : 1.0f;
-		float scaleZ = transform_.scale.z != 0.0f ? transform_.scale.z : 1.0f;
 
-		float localX = (worldPos.x - transform_.translate.x) / scaleX;
-		float localZ = (worldPos.z - transform_.translate.z) / scaleZ;
+		float posX = (worldPos.x - transform_.translate.x) / transform_.scale.x;
+		float posZ = (worldPos.z - transform_.translate.z) / transform_.scale.z;
 
-		if (localX < -0.5f || localX > 0.5f || localZ < -0.5f || localZ > 0.5f) {
-			return;
-		}
+		/*posX = posX + 0.5f;*/
+		posZ = posZ + 0.5f;
 
-		float u = localX + 0.5f;
-		float v = localZ + 0.5f;
+		float uvX = posZ;
+		float uvY = posX;
 
-		// radiusをワールド単位 → グリッドセル単位に変換
-		float cellSize = scaleX / static_cast<float>(gridSize_);
-		float radiusInCells = (cellSize > 0.0f) ? (radius / cellSize) : radius;
+		float rippleRadius = radius / transform_.scale.x;
 
-		ripplenInjections_.push_back({ {u, v}, radiusInCells, strength });
-
-		/*Vector2 pos = { worldPos.x, worldPos.z };
-		ripplenInjections_.push_back({ pos, radius, strength });*/
-
+		// 波紋を追加
+		ripplenInjections_.push_back({ {uvX, uvY}, rippleRadius, strength });
 	}
 
 	///-------------------------------------------/// 
@@ -257,7 +255,10 @@ namespace MiiEngine {
 	// タイルスケールの設定
 	void FFTOceanGenerator::SetTileScale(float tileScale) { base_->SetTileScale(tileScale); }
 	// サイズの設定
-	void FFTOceanGenerator::SetSize(float size) { base_->SetSize(size); }
+	void FFTOceanGenerator::SetSize(float size) { 
+		base_->SetSize(size); 
+		transform_.scale = { size, 1.0f, size }; // サイズに合わせてスケールも更新
+	}
 
 	///-------------------------------------------/// 
 	/// 頂点バッファの生成
@@ -347,13 +348,14 @@ namespace MiiEngine {
 		if (ripplenInjections_.empty()) {
 			return;
 		}
-
+		// 参照
 		RippleSimulator* ripple = compute_->GetRippleSimulator();
-
+		// 波紋の追加
 		for (const RippleInjection& r : ripplenInjections_) {
 			ripple->AddRipple(commandList, r.uv, r.radius, r.strength);
 		}
 
+		// 波紋をGPUに送った後はクリア
 		ripplenInjections_.clear();
 	}
 }

@@ -7,10 +7,19 @@ namespace MiiEngine {
 	/// 初期化
 	///-------------------------------------------///
 	void Framework::Initialize(const wchar_t* title) {
+		/// ===ウィンドウサイズの設定=== ///
+#ifdef _DEBUG
+		width_ = 1920;
+		height_ = 1080;
+#else
+		width_ = 1600;
+		height_ = 900;
+#endif // DEBUG
+
 		/// ===初期化=== ///
 		// MiiEngine
 		Engine_ = std::make_unique<Mii>();
-		Engine_->Initialize(title, 1920, 1080);
+		Engine_->Initialize(title, width_, height_);
 		// CameraManager
 		cameraManager_ = std::make_unique<CameraManager>();
 		// ParticleManager

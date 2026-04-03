@@ -171,7 +171,7 @@ namespace MiiEngine {
         float waveSpeed;   // 速度
         float deltaTime;   // デルタタイム
         float damping;     // 減衰率
-		uint32_t pingPong;    // ピンポンバッファの切り替えフラグ
+		uint32_t pingPong; // ピンポンバッファの切り替えフラグ
 		float padding[2];
     };
 

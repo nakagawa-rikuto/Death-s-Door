@@ -86,7 +86,7 @@ namespace MiiEngine {
 
 	private:
 		// スレッドグループサイズ
-		static constexpr uint32_t kThreadGroupSize_ = 16;
+		static constexpr uint32_t kThreadGroupSize_ = 8;
 
 		uint32_t gridSize_ = 256;
 		float    gridWidth_ = 1000.0f;

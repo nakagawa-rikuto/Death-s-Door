@@ -38,7 +38,7 @@ namespace MiiEngine {
     /// SRVインデックスの取得
     ///-------------------------------------------///
     uint32_t RippleSimulator::GetCurrentSRVIndex() const {
-        return ((pingPong_ ^ 1) == 0) ? srvPingIndex_ : srvPongIndex_;
+        return (pingPong_ == 0) ? srvPingIndex_ : srvPongIndex_;
     }
 
     ///-------------------------------------------/// 
@@ -153,23 +153,23 @@ namespace MiiEngine {
         UAVBarrier(commandList, pongResource_->GetBuffer());
     }
 
-    ///-------------------------------------------/// 
+	///-------------------------------------------/// 
 	/// リソースの状態をSRVに遷移 
-    ///-------------------------------------------///
-    void RippleSimulator::TransitionToSRV(ID3D12GraphicsCommandList* commandList) {
-        // GetCurrentSRVIndex() と対応するリソースを遷移する。
-        ID3D12Resource* target = ((pingPong_ ^ 1) == 0) ? pingResource_->GetBuffer() : pongResource_->GetBuffer();
+	///-------------------------------------------///
+	void RippleSimulator::TransitionToSRV(ID3D12GraphicsCommandList* commandList) {
+		// GetCurrentSRVIndex() と対応するリソースを遷移する。
+		ID3D12Resource* target = (pingPong_ == 0) ? pingResource_->GetBuffer() : pongResource_->GetBuffer();
 
 		// SRV状態に遷移
         TransitionBarrier(commandList, target, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     }
 
-    ///-------------------------------------------/// 
+	///-------------------------------------------/// 
 	/// リソースの状態をUAVに遷移 
-    ///-------------------------------------------///
-    void RippleSimulator::TransitionToUAV(ID3D12GraphicsCommandList * commandList) {
+	///-------------------------------------------///
+	void RippleSimulator::TransitionToUAV(ID3D12GraphicsCommandList * commandList) {
 		// GetCurrentSRVIndex() と対応するリソースを遷移する。
-        ID3D12Resource* target = ((pingPong_ ^ 1) == 0) ? pingResource_->GetBuffer() : pongResource_->GetBuffer();
+		ID3D12Resource* target = (pingPong_ == 0) ? pingResource_->GetBuffer() : pongResource_->GetBuffer();
 
 		// UAV状態に遷移
         TransitionBarrier(commandList, target, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
