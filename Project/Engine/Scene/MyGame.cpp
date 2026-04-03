@@ -59,7 +59,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
-		sceneManager_->ChangeScene(SceneType::Select);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 

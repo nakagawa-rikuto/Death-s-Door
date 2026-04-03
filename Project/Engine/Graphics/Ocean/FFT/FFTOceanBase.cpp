@@ -82,7 +82,7 @@ namespace MiiEngine {
 		commandList->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(srvDisplaceIndex_));
 		// [3] t2:RippleTexture
 		commandList->SetGraphicsRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(srvRippleIndex_));
-		// [4] t2:FoamTexture
+		// [4] t3:FoamTexture
 		Service::Render::SetGraphicsRootDescriptorTable(commandList, 4, foamTextureName_);
 	}
 
