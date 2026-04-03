@@ -9621,7 +9621,7 @@ namespace MiiEngine {
 		commandList->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(srvDisplaceIndex_));
 		// [3] t2:RippleTexture
 		commandList->SetGraphicsRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(srvRippleIndex_));
-		// [4] t2:FoamTexture
+		// [4] t3:FoamTexture
 		Service::Render::SetGraphicsRootDescriptorTable(commandList, 4, foamTextureName_);
 	}
 
@@ -10692,7 +10692,6 @@ namespace MiiEngine {
 				ImGui::DragFloat("テスト強度", &testStrength, 0.1f, 0.1f, 10.0f);
 				if (ImGui::Button("中央に波紋を発生")) {
 					AddRipple({ripplePos_.x, 0.0f, ripplePos_.y}, testRadius, testStrength);
-					AddRipple({ ripplePos_.x + 30.0f, 0.0f, ripplePos_.y }, testRadius, testStrength);
 				}
 			}
 		}
@@ -20250,7 +20249,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
-		sceneManager_->ChangeScene(SceneType::Select);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -28825,6 +28824,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\OffScreen\BoxFilter3x3.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
