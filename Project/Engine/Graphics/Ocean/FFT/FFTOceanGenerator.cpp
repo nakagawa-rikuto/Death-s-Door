@@ -200,7 +200,6 @@ namespace MiiEngine {
 				ImGui::DragFloat("テスト強度", &testStrength, 0.1f, 0.1f, 10.0f);
 				if (ImGui::Button("中央に波紋を発生")) {
 					AddRipple({ripplePos_.x, 0.0f, ripplePos_.y}, testRadius, testStrength);
-					AddRipple({ ripplePos_.x + 30.0f, 0.0f, ripplePos_.y }, testRadius, testStrength);
 				}
 			}
 		}
