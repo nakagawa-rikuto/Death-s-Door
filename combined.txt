@@ -115,7 +115,10 @@
 └── └── └── └── ├── OceanGenerator.cpp
 └── └── └── └── ├── OceanGenerator.h
 └── └── └── └── ├── OceanWaveCompute.cpp
-└── └── └── └── └── OceanWaveCompute.h
+└── └── └── └── ├── OceanWaveCompute.h
+└── └── └── └── └── Ripples/
+└── └── └── └──     ├── RippleSimulator.cpp
+└── └── └── └──     └── RippleSimulator.h
 └── └── └── ├── OffScreen/
 └── └── └── └── ├── Effect/
 └── └── └── └── └── ├── BoxFilter3x3Effect.cpp
@@ -5398,6 +5401,28 @@ namespace MiiEngine {
         Vector3 position; // POSITION (x, 0, z)
         Vector2 texCoord; // TEXCOORD0
     };
+
+    ///-------------------------------------------/// 
+	/// RippleVertex
+    ///-------------------------------------------///
+    struct RippleParams {
+		uint32_t gridSize; // グリッドのサイズ
+        float cellSize;    // セルサイズ
+        float waveSpeed;   // 速度
+        float deltaTime;   // デルタタイム
+        float damping;     // 減衰率
+		uint32_t pingPong; // ピンポンバッファの切り替えフラグ
+		float padding[2];
+    };
+
+    ///-------------------------------------------///   
+    /// RippleInjection
+    ///-------------------------------------------///
+    struct RippleInjection {
+        Vector2 uv;     // 位置
+        float radius;   // 半径
+        float strength; // 強さ
+    };
 }
 
 ============================================================
@@ -5674,6 +5699,8 @@ namespace MiiEngine {
 		Ocean,
 		// FFTOcean
 		FFTOcean,
+		// Ripples
+		Ripples,
 
 		// 総数(これは最後にしなければいけない)
 		CountOfCSPipelineType,
@@ -5711,6 +5738,7 @@ namespace MiiEngine {
 		return {
 			CSPipelineType::Ocean,
 			CSPipelineType::FFTOcean,
+			CSPipelineType::Ripples,
 		};
 	}
 }
@@ -9525,6 +9553,13 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	FFTOceanBase::~FFTOceanBase() {
+		// Unmapしてからリセット
+		if (transformBuffer_ && transformBuffer_->GetBuffer()) {
+			transformBuffer_->GetBuffer()->Unmap(0, nullptr);
+		} 
+		if (oceanBuffer_ && oceanBuffer_->GetBuffer()) {
+			oceanBuffer_->GetBuffer()->Unmap(0, nullptr);
+		}
 		transformBuffer_.reset();
 		oceanBuffer_.reset();
 	}
@@ -9581,11 +9616,13 @@ namespace MiiEngine {
 		commandList->SetGraphicsRootConstantBufferView(0, transformBuffer_->GetBuffer()->GetGPUVirtualAddress());
 		// OceanRenderCB（PS）
 		commandList->SetGraphicsRootConstantBufferView(1, oceanBuffer_->GetBuffer()->GetGPUVirtualAddress());
-		// テクスチャ３つ(t0~t1)は、FFTOceanRendererでバインド
-		// [2] t0:DisplaceMap, t1:NormalFoamMap（CSの出力をSRVとして渡す）
+		/// ===テクスチャ３つは、FFTOceanRendererでバインド=== ///
+		// [2] t0:DisplaceMap, t1:NormalFoamMap
 		commandList->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(srvDisplaceIndex_));
-		// [3] t2:FoamTexture（通常テクスチャ）
-		Service::Render::SetGraphicsRootDescriptorTable(commandList, 3, foamTextureName_);
+		// [3] t2:RippleTexture
+		commandList->SetGraphicsRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(srvRippleIndex_));
+		// [4] t2:FoamTexture
+		Service::Render::SetGraphicsRootDescriptorTable(commandList, 4, foamTextureName_);
 	}
 
 	///-------------------------------------------/// 
@@ -9615,6 +9652,8 @@ namespace MiiEngine {
 	void FFTOceanBase::SetDisplaceSRVIndex(uint32_t index) { srvDisplaceIndex_ = index; }
 	// CS側のSRVインデックスを受け取る
 	void FFTOceanBase::SetNormalFoamSRVIndex(uint32_t index) { srvNormalFoamIndex_ = index; }
+	// CS側のSRVインデックスを受け取る
+	void FFTOceanBase::SetRippleSRVIndex(uint32_t index) { srvRippleIndex_ = index; }
 	// 泡テクスチャ名の設定
 	void FFTOceanBase::SetFoamTextureName(const std::string& name) { foamTextureName_ = name; }
 
@@ -9708,6 +9747,8 @@ namespace MiiEngine {
 		void SetDisplaceSRVIndex(uint32_t index);
 		// CS側のSRVインデックスを受け取る
 		void SetNormalFoamSRVIndex(uint32_t index);
+		// CS側のSRVインデックスを受け取る
+		void SetRippleSRVIndex(uint32_t index);
 		// 泡テクスチャ名の設定
 		void SetFoamTextureName(const std::string& name);
 
@@ -9725,7 +9766,8 @@ namespace MiiEngine {
 		// テクスチャ３つ(t0~t1)
 		uint32_t srvDisplaceIndex_ = 0;	  // t0
 		uint32_t srvNormalFoamIndex_ = 0; // t1
-		std::string foamTextureName_;	  // t2
+		uint32_t srvRippleIndex_ = 0;      // t2
+		std::string foamTextureName_;	  // t3
 
 		/// ===カメラ=== ///
 		CameraCommon* camera_ = nullptr;
@@ -9786,8 +9828,18 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	FFTOceanCompute::~FFTOceanCompute() {
+		// RippleSimulatorのリセット
+		ripple_.reset();
+		// Unmapしてからリセット
+		if (oceanParamsBuffer_ && oceanParamsBuffer_->GetBuffer()) {
+			oceanParamsBuffer_->GetBuffer()->Unmap(0, nullptr);
+		}
+		if (butterflyParamsBuffer_ && butterflyParamsBuffer_->GetBuffer()) {
+			butterflyParamsBuffer_->GetBuffer()->Unmap(0, nullptr);
+		}
 		oceanParamsBuffer_.reset();
 		butterflyParamsBuffer_.reset();
+		// UAVリソースのリセット
 		h0Resource_.reset();
 		hktResource_.reset();
 		dxResource_.reset();
@@ -9796,7 +9848,48 @@ namespace MiiEngine {
 		pongResource_.reset();
 		displaceResource_.reset();
 		normalFoamResource_.reset();
+
+		// SRVの解放
+		if (srvManager_) {
+			srvManager_->Free(uavIndices_[0]);
+			srvManager_->Free(uavIndices_[1]);
+			srvManager_->Free(uavIndices_[2]);
+			srvManager_->Free(uavIndices_[3]);
+			srvManager_->Free(uavIndices_[4]);
+			srvManager_->Free(uavIndices_[5]);
+			srvManager_->Free(uavIndices_[6]);
+			srvManager_->Free(uavIndices_[7]);
+			srvManager_->Free(srvHeightIndex_);
+			srvManager_->Free(srvDxIndex_);
+			srvManager_->Free(srvDzIndex_);
+			srvManager_->Free(srvDisplaceIndex_);
+			srvManager_->Free(srvNormalFoamIndex_);
+		}
 	}
+
+	///-------------------------------------------/// 
+	/// Getter
+	///-------------------------------------------///
+	// 最終変位マップの取得（SRVとして使用）
+	ID3D12Resource* FFTOceanCompute::GetDisplacementMap() const { return displaceResource_->GetBuffer(); }
+	// 法線・泡マップの取得（SRVとして使用）
+	ID3D12Resource* FFTOceanCompute::GetNormalFoamMap() const { return normalFoamResource_->GetBuffer(); }
+	// OceanParamsの取得
+	OceanParams& FFTOceanCompute::GetOceanParams() { return params_; }
+	// SRVDisplaceIndexの取得
+	uint32_t FFTOceanCompute::GetSRVDisplaceIndex() const { return srvDisplaceIndex_; }
+	// SRVNormalFoamIndexの取得
+	uint32_t FFTOceanCompute::GetSRVNormalFoamIndex() const { return srvNormalFoamIndex_; }
+	// RippleSimulator
+	RippleSimulator* FFTOceanCompute::GetRippleSimulator() const { return ripple_.get(); }
+
+	///-------------------------------------------/// 
+	/// Setter
+	///-------------------------------------------///
+	// OceanParamsの設定
+	void FFTOceanCompute::SetOceanParams(const OceanParams& params) { params_ = params; }
+	// グリッドサイズの設定
+	void FFTOceanCompute::SetGridSize(uint32_t gridSize) { params_.gridSize = gridSize; }
 
 	///-------------------------------------------/// 
 	/// 初期化
@@ -9811,9 +9904,7 @@ namespace MiiEngine {
 		params_.gridSize = gridSize;
 		const uint32_t N = params_.gridSize;
 
-		// -----------------------------------------------
-		// OceanParams 定数バッファ
-		// -----------------------------------------------
+		/// ===OceanParams 定数バッファ=== ///
 		oceanParamsBuffer_ = std::make_unique<BufferBase>();
 		oceanParamsBuffer_->Create(device, sizeof(OceanParams)); {
 			void* mapped = nullptr;
@@ -9821,9 +9912,7 @@ namespace MiiEngine {
 			oceanParamsData_ = static_cast<OceanParams*>(mapped);
 		}
 
-		// -----------------------------------------------
-		// ButterflyParams 定数バッファ
-		// -----------------------------------------------
+		/// ===ButterflyParams 定数バッファ=== ///
 		butterflyParamsBuffer_ = std::make_unique<BufferBase>();
 		butterflyParamsBuffer_->Create(device, sizeof(ButterflyParams)); {
 			void* mapped = nullptr;
@@ -9831,9 +9920,7 @@ namespace MiiEngine {
 			butterflyParamsData_ = static_cast<ButterflyParams*>(mapped);
 		}
 
-		///-------------------------------------------/// 
-		/// UAVテクスチャリソースの生成
-		///-------------------------------------------///
+		/// ===UAVテクスチャリソースの生成=== ///
 		// u0?u7の8個の連続したデスクリプタを確保する
 		uint32_t baseUAVIndex = srvManager_->AllocateContiguous(8);
 		for (int i = 0; i < 8; ++i) {
@@ -9857,10 +9944,8 @@ namespace MiiEngine {
 		// u7: NormalFoamMap
 		CreateTextureUAV(device, normalFoamResource_, normalFoamUAV_, 7, N, N);
 
-		///-------------------------------------------/// 
-		/// SRVインデックスの管理
-		///-------------------------------------------///
-		// CSのt0?t2として使用するため、3個の連続したデスクリプタを確保する
+		/// ===SRVインデックスの管理=== ///
+		// CSのt0~t2として使用するため、3個の連続したデスクリプタを確保する
 		uint32_t baseSRVIndex = srvManager_->AllocateContiguous(3);
 		srvHeightIndex_ = baseSRVIndex;
 		srvDxIndex_ = baseSRVIndex + 1;
@@ -9868,7 +9953,7 @@ namespace MiiEngine {
 
 		uint32_t baseSRVDisplace = srvManager_->AllocateContiguous(2);
 		srvDisplaceIndex_ = baseSRVDisplace;      // t0
-		srvNormalFoamIndex_ = baseSRVDisplace + 1;  // t1（必ず連続）
+		srvNormalFoamIndex_ = baseSRVDisplace + 1;  // t1
 
 		// srvHeightIndex（t0）
 		CreateTextureSRV(srvHeightIndex_, pingResource_);
@@ -9883,31 +9968,36 @@ namespace MiiEngine {
 
 		// 初期値書き込み
 		WriteOceanParams();
-
 		preParams_ = params_;
+
+		/// ===RippleSimulatorの初期化=== ///
+		ripple_ = std::make_unique<RippleSimulator>();
+		ripple_->Initialize(device, N, params_.gridWidth);
 	}
 
 	///-------------------------------------------/// 
 	/// 更新
 	///-------------------------------------------///
 	void FFTOceanCompute::Update(float deltaTime) {
+		// 経過時間の更新
 		elapsedTime_ += deltaTime;
 		params_.time = elapsedTime_;
+
+		// rippleの更新処理
+		ripple_->Update(deltaTime);
 
 		// スペクトルに影響するパラメータが変更されたか検知
 		if (params_.gridWidth != preParams_.gridWidth || 
 			params_.windowSpeed != preParams_.windowSpeed ||
-		    params_.windDirection.x != preParams_.windDirection.x || params_.windDirection.y != preParams_.windDirection.y ||
+		    params_.windDirection.x != preParams_.windDirection.x || 
+			params_.windDirection.y != preParams_.windDirection.y ||
 		    params_.amplitude != preParams_.amplitude || 
 			params_.gridSize != preParams_.gridSize ||
 			params_.lambda != preParams_.lambda ||
-			params_.foamThreshold != preParams_.foamThreshold
-			) {
+			params_.foamThreshold != preParams_.foamThreshold) {
 
 			// InitSpectrum を再実行させる
 			isInitialized_ = false;
-
-			// 前回値を更新
 			preParams_ = params_;
 		}
 
@@ -10020,25 +10110,23 @@ namespace MiiEngine {
 		}
 
 		// =============================================
+		//   RippleSimulator（波紋シミュレーション）
+		//   FFT処理の後、AssembleDisplacementの前に実行
+		// =============================================
+		ripple_->Simulate(commandList);
+
+		// =============================================
 		//   AssembleDisplacement
 		//   Ping/Pong の結果を DisplaceMap(u6) に合成
 		// =============================================
 		// バリアの遷移
-		auto TransitionBarrier = [&](ID3D12Resource* res,
-			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
-				D3D12_RESOURCE_BARRIER b = {};
-				b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-				b.Transition.pResource = res;
-				b.Transition.StateBefore = before;
-				b.Transition.StateAfter = after;
-				b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-				commandList->ResourceBarrier(1, &b);
-			};
-
 		// Ping(Height) / Dx / Dz を UAV → SRV に遷移
-		TransitionBarrier(pingResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		TransitionBarrier(dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		TransitionBarrier(dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(commandList, pingResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(commandList, dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(commandList, dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+		// RippleMap を SRV に遷移
+		ripple_->TransitionToSRV(commandList);
 
 		// AssembleDisplacement
 		Service::Render::SetCSPSO(commandList, CSPipelineType::FFTOcean, L"AssembleDisplacement");
@@ -10046,6 +10134,8 @@ namespace MiiEngine {
 		commandList->SetComputeRootDescriptorTable(2, UAVTable);
 		// t0〜t2 を DescriptorTable でセット
 		commandList->SetComputeRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(srvHeightIndex_));
+		// t3
+		commandList->SetComputeRootDescriptorTable(4, srvManager_->GetGPUDescriptorHandle(ripple_->GetCurrentSRVIndex()));
 		commandList->Dispatch(threadGroupX, threadGroupY, 1);
 		UAVBarrier(commandList, displaceResource_->GetBuffer());
 
@@ -10060,13 +10150,13 @@ namespace MiiEngine {
 		UAVBarrier(commandList, normalFoamResource_->GetBuffer());
 
 		// SRV → UAV に戻す（次フレームでまた書き込むため）
-		TransitionBarrier(pingResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		TransitionBarrier(dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		TransitionBarrier(dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(commandList, pingResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(commandList, dxResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(commandList, dzResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 		// DisplaceMap と NormalFoamMap を UAV → SRV に遷移（レンダリングで使用するため）
-		TransitionBarrier(displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS,D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		TransitionBarrier(normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(commandList, displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS,D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		TransitionBarrier(commandList, normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	}
 
 	///-------------------------------------------/// 
@@ -10074,44 +10164,13 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void FFTOceanCompute::ResetResourceStatesForNextFrame(ID3D12GraphicsCommandList* commandList) {
 
-		// バリアの遷移
-		auto TransitionBarrier = [&](ID3D12Resource* res,
-			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
-				D3D12_RESOURCE_BARRIER b = {};
-				b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-				b.Transition.pResource = res;
-				b.Transition.StateBefore = before;
-				b.Transition.StateAfter = after;
-				b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-				commandList->ResourceBarrier(1, &b);
-		};
+		// RippleMap を UAV に戻す
+		ripple_->TransitionToUAV(commandList);
 
 		// SRV->UAVに遷移
-		TransitionBarrier(displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		TransitionBarrier(normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(commandList, displaceResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		TransitionBarrier(commandList, normalFoamResource_->GetBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	}
-
-	///-------------------------------------------/// 
-	/// Getter
-	///-------------------------------------------///
-	// 最終変位マップの取得（SRVとして使用）
-	ID3D12Resource* FFTOceanCompute::GetDisplacementMap() const {return displaceResource_->GetBuffer();}
-	// 法線・泡マップの取得（SRVとして使用）
-	ID3D12Resource* FFTOceanCompute::GetNormalFoamMap() const {return normalFoamResource_->GetBuffer();}
-	// OceanParamsの取得
-	OceanParams& FFTOceanCompute::GetOceanParams() {return params_;}
-	// SRVDisplaceIndexの取得
-	uint32_t FFTOceanCompute::GetSRVDisplaceIndex() const { return srvDisplaceIndex_; }
-	// SRVNormalFoamIndexの取得
-	uint32_t FFTOceanCompute::GetSRVNormalFoamIndex() const { return srvNormalFoamIndex_; }
-
-	///-------------------------------------------/// 
-	/// Setter
-	///-------------------------------------------///
-	// OceanParamsの設定
-	void FFTOceanCompute::SetOceanParams(const OceanParams& params) {params_ = params;}
-	// グリッドサイズの設定
-	void FFTOceanCompute::SetGridSize(uint32_t gridSize) {params_.gridSize = gridSize;}
 
 	///-------------------------------------------/// 
 	/// テクスチャUAVリソースの生成
@@ -10156,7 +10215,7 @@ namespace MiiEngine {
 
 		// BufferBaseにリソースを渡す
 		outResource = std::make_unique<BufferBase>();
-		outResource->SetBuffer(resource.Get()); // Detachして所有権を渡す。
+		outResource->SetBuffer(resource.Get());
 
 		// UAVの作成
 		outUAV.CreateAsTexture2D(
@@ -10210,6 +10269,19 @@ namespace MiiEngine {
 		barrier.UAV.pResource = resource;
 		commandList->ResourceBarrier(1, &barrier);
 	}
+
+	///-------------------------------------------/// 
+	/// リソース状態の遷移バリア
+	///-------------------------------------------///
+	void FFTOceanCompute::TransitionBarrier(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+		D3D12_RESOURCE_BARRIER b = {};
+		b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		b.Transition.pResource = resource;
+		b.Transition.StateBefore = before;
+		b.Transition.StateAfter = after;
+		b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		commandList->ResourceBarrier(1, &b);
+	}
 }
 
 
@@ -10222,6 +10294,7 @@ File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanCompute.h
 #include "Engine/Graphics/Base/UAV.h"
 #include "Engine/Graphics/Pipeline/CS/CSPSOCommon.h"
 #include "Engine/DataInfo/OceanData.h"
+#include "Engine/Graphics/Ocean/Ripples/RippleSimulator.h"
 // c++
 #include <memory>
 #include <d3d12.h>
@@ -10277,6 +10350,8 @@ namespace MiiEngine {
 		// SRVインデックスの取得
 		uint32_t GetSRVDisplaceIndex() const;
 		uint32_t GetSRVNormalFoamIndex() const;
+		// RippleSimulatorの取得
+		RippleSimulator* GetRippleSimulator() const;
 
 	public: /// ===Setter=== ///
 
@@ -10342,6 +10417,9 @@ namespace MiiEngine {
 		uint32_t srvDisplaceIndex_ = 0;
 		uint32_t srvNormalFoamIndex_ = 0;
 
+		/// ===RipplesSimulator=== ///
+		std::unique_ptr<RippleSimulator> ripple_;
+
 		/// ===OceanParams初期値=== ///
 		OceanParams params_ = {
 			kDefaultGridSize_,   // gridSize
@@ -10353,7 +10431,6 @@ namespace MiiEngine {
 			1.0f,                // lambda
 			0.0f                 // foamThreshold
 		};
-
 		OceanParams preParams_;
 
 	private:
@@ -10391,6 +10468,19 @@ namespace MiiEngine {
 		/// UAVバリア
 		/// </summary>
 		void UAVBarrier(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource);
+
+		/// <summary>
+		/// リソースの状態遷移バリアを設定します。
+		/// </summary>
+		/// <param name="commandList">バリアを記録するコマンドリスト。</param>
+		/// <param name="resource">状態を遷移するリソース。</param>
+		/// <param name="before">遷移前のリソース状態。</param>
+		/// <param name="after">遷移後のリソース状態。</param>
+		void TransitionBarrier(
+			ID3D12GraphicsCommandList* commandList,
+			ID3D12Resource* resource,
+			D3D12_RESOURCE_STATES before,
+			D3D12_RESOURCE_STATES after);
 	};
 }
 
@@ -10409,6 +10499,7 @@ File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanGenerator.cpp
 #include "Service/Render.h"
 // C++
 #include <cassert>
+#include <cmath>
 // Math
 #include "Math/MatrixMath.h"
 #ifdef USE_IMGUI
@@ -10420,10 +10511,18 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	FFTOceanGenerator::~FFTOceanGenerator() {
+		// Unmap
+		if (vertex_ && vertex_->GetBuffer()) {
+			vertex_->GetBuffer()->Unmap(0, nullptr);
+		}
+		if (index_ && index_->GetBuffer()) {
+			index_->GetBuffer()->Unmap(0, nullptr);
+		}
 		vertex_.reset();
 		index_.reset();
 		base_.reset();
 		compute_.reset();
+		ripplenInjections_.clear();
 	}
 
 	///-------------------------------------------/// 
@@ -10452,6 +10551,7 @@ namespace MiiEngine {
 		// Compute側のSRVインデックスをBaseに渡す
 		base_->SetDisplaceSRVIndex(compute_->GetSRVDisplaceIndex());
 		base_->SetNormalFoamSRVIndex(compute_->GetSRVNormalFoamIndex());
+		base_->SetRippleSRVIndex(compute_->GetRippleSimulator()->GetCurrentSRVIndex());
 		// テクスチャの設定
 		base_->SetFoamTextureName("oceanFFT");
 
@@ -10489,8 +10589,14 @@ namespace MiiEngine {
 		ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
 		assert(commandList);
 
+		// 波紋
+		FlushRipplenInjections(commandList);
+
 		// コンピュートシェーダーのディスパッチ
 		compute_->Dispatch(commandList);
+
+		// RippleのSRVインデックス（最新）をBaseに渡す
+		base_->SetRippleSRVIndex(compute_->GetRippleSimulator()->GetCurrentSRVIndex());
 
 		// パイプラインのセット
 		Service::Render::SetPSO(commandList, PipelineType::FFTOcean, mode);
@@ -10520,13 +10626,15 @@ namespace MiiEngine {
 			// --- Transform ---
 			if (ImGui::CollapsingHeader("Transform")) {
 				ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
-				ImGui::DragFloat3("Scale", &transform_.scale.x, 0.1f);
+				float size = base_->GetSize();
+				ImGui::DragFloat("Size", &size, 0.1f);
+				SetSize(size);
 			}
 
 			// --- TransformCB（VS用）---
 			if (ImGui::CollapsingHeader("TransformCB")) {
 				float tileScale = base_->GetTileScale();
-				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 1.0f, 10000.0f);
+				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 0.1f, 10.0f);
 				base_->SetTileScale(tileScale);
 			}
 
@@ -10550,16 +10658,67 @@ namespace MiiEngine {
 			// --- OceanParams（CS用）---
 			if (ImGui::CollapsingHeader("波のパラメータ")) {
 				OceanParams& p = compute_->GetOceanParams();
-				ImGui::DragFloat("グリッド幅", &p.gridWidth, 0.1f, 0.1f, 10000.0f);
-				ImGui::DragFloat("風速", &p.windowSpeed, 0.1f, 0.0f, 30.0f);
+				ImGui::DragFloat("グリッド幅", &p.gridWidth, 0.1f, 0.1f, 50000.0f);
+				ImGui::DragFloat("風速", &p.windowSpeed, 0.1f, 0.0f, 100.0f);
 				ImGui::DragFloat2("風向", &p.windDirection.x, 0.01f, -1.0f, 1.0f);
-				ImGui::DragFloat("振幅", &p.amplitude, 0.0001f, 0.0001f, 0.001f);
-				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 1.5f);
-				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("振幅", &p.amplitude, 0.0001f, 0.0001f, 50.0f);
+				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 30.0f);
+				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 5.0f);
+			}
+
+			/// ===Ripple（波紋）=== ///
+			if (ImGui::CollapsingHeader("波紋の設定")) {
+				RippleSimulator* ripple = compute_->GetRippleSimulator();
+
+				float waveSpeed = ripple->GetWaveSpeed();
+				if (ImGui::DragFloat("伝播速度", &waveSpeed, 0.1f, 0.5f, 100.0f)) {
+					ripple->SetWaveSpeed(waveSpeed);
+				}
+
+				float damping = ripple->GetDamping();
+				if (ImGui::DragFloat("減衰係数", &damping, 0.001f, 0.900f, 0.999f)) {
+					ripple->SetDamping(damping);
+				}
+
+				if (ImGui::DragFloat2("出現位置UV", &ripplePos_.x, 0.1f)) {
+					ripple->SetInjectionUV(ripplePos_);
+				}
+
+				// テスト用: ボタンでグリッド中央に波紋を発生
+				ImGui::Separator();
+				static float testRadius = 5.0f;
+				static float testStrength = 1.0f;
+				ImGui::DragFloat("テスト半径", &testRadius, 0.1f, 0.1f, 150.0f);
+				ImGui::DragFloat("テスト強度", &testStrength, 0.1f, 0.1f, 10.0f);
+				if (ImGui::Button("中央に波紋を発生")) {
+					AddRipple({ripplePos_.x, 0.0f, ripplePos_.y}, testRadius, testStrength);
+					AddRipple({ ripplePos_.x + 30.0f, 0.0f, ripplePos_.y }, testRadius, testStrength);
+				}
 			}
 		}
 		ImGui::End();
 #endif // _DEBUG
+	}
+
+
+	///-------------------------------------------/// 
+	/// 波紋の追加
+	///-------------------------------------------///
+	void FFTOceanGenerator::AddRipple(const Vector3& worldPos, float radius, float strength) {
+
+		float posX = (worldPos.x - transform_.translate.x) / transform_.scale.x;
+		float posZ = (worldPos.z - transform_.translate.z) / transform_.scale.z;
+
+		/*posX = posX + 0.5f;*/
+		posZ = posZ + 0.5f;
+
+		float uvX = posZ;
+		float uvY = posX;
+
+		float rippleRadius = radius / transform_.scale.x;
+
+		// 波紋を追加
+		ripplenInjections_.push_back({ {uvX, uvY}, rippleRadius, strength });
 	}
 
 	///-------------------------------------------/// 
@@ -10574,21 +10733,24 @@ namespace MiiEngine {
 	/// Setter
 	///-------------------------------------------///
 	// Camera
-	void FFTOceanGenerator::SetCamera(CameraCommon* camera) {base_->SetCamera(camera);}
+	void FFTOceanGenerator::SetCamera(CameraCommon* camera) { base_->SetCamera(camera); }
 	// 座標の設定
-	void FFTOceanGenerator::SetTranslate(const Vector3& translate) {transform_.translate = translate;}
+	void FFTOceanGenerator::SetTranslate(const Vector3& translate) { transform_.translate = translate; }
 	// 回転の設定
-	void FFTOceanGenerator::SetRotate(const Quaternion& rotate) {transform_.rotate = rotate;}
+	void FFTOceanGenerator::SetRotate(const Quaternion& rotate) { transform_.rotate = rotate; }
 	// スケールの設定
-	void FFTOceanGenerator::SetScale(const Vector3& scale) {transform_.scale = scale;}
+	void FFTOceanGenerator::SetScale(const Vector3& scale) { transform_.scale = scale; }
 	// OceanRenderCBの設定
-	void FFTOceanGenerator::SetOceanRenderCB(const OceanRenderCB& data) {base_->SetOceanRenderCB(data);}
+	void FFTOceanGenerator::SetOceanRenderCB(const OceanRenderCB& data) { base_->SetOceanRenderCB(data); }
 	// OceanParamsの設定（CS側）
-	void FFTOceanGenerator::SetOceanParams(const OceanParams& params) {compute_->SetOceanParams(params);}
+	void FFTOceanGenerator::SetOceanParams(const OceanParams& params) { compute_->SetOceanParams(params); }
 	// タイルスケールの設定
-	void FFTOceanGenerator::SetTileScale(float tileScale) {base_->SetTileScale(tileScale);}
+	void FFTOceanGenerator::SetTileScale(float tileScale) { base_->SetTileScale(tileScale); }
 	// サイズの設定
-	void FFTOceanGenerator::SetSize(float size) {base_->SetSize(size);}
+	void FFTOceanGenerator::SetSize(float size) { 
+		base_->SetSize(size); 
+		transform_.scale = { size, 1.0f, size }; // サイズに合わせてスケールも更新
+	}
 
 	///-------------------------------------------/// 
 	/// 頂点バッファの生成
@@ -10670,6 +10832,24 @@ namespace MiiEngine {
 		Matrix4x4 worldMatrix = Math::MakeAffineQuaternionMatrix(transform_.scale, transform_.rotate, transform_.translate);
 		base_->SetWorldMatrix(worldMatrix);
 	}
+
+	///-------------------------------------------/// 
+	/// 波紋をGPUへ 
+	///-------------------------------------------///
+	void FFTOceanGenerator::FlushRipplenInjections(ID3D12GraphicsCommandList* commandList) {
+		if (ripplenInjections_.empty()) {
+			return;
+		}
+		// 参照
+		RippleSimulator* ripple = compute_->GetRippleSimulator();
+		// 波紋の追加
+		for (const RippleInjection& r : ripplenInjections_) {
+			ripple->AddRipple(commandList, r.uv, r.radius, r.strength);
+		}
+
+		// 波紋をGPUに送った後はクリア
+		ripplenInjections_.clear();
+	}
 }
 
 
@@ -10685,6 +10865,7 @@ File Path: Project/Engine/Graphics/Ocean/FFT/FFTOceanGenerator.h
 #include "Math/Quaternion.h"
 // c++
 #include <memory>
+#include <vector>
 #include <d3d12.h>
 
 namespace MiiEngine {
@@ -10720,6 +10901,14 @@ namespace MiiEngine {
 		/// ImGui表示処理
 		/// </summary>
 		void ShowImGui();
+
+		/// <summary>
+		/// 指定ワールド座標に波紋を発生させる。
+		/// </summary>
+		/// <param name="worldPos">波紋の中心ワールド座標（XZ 平面）</param>
+		/// <param name="radius">波紋の初期半径（グリッドセル単位、推奨: 3〜10）</param>
+		/// <param name="strength">波紋の強度（推奨: 0.5〜2.0）</param>
+		void AddRipple(const Vector3& worldPos, float radius = 5.0f, float strength = 1.0f);
 
 	public: /// ===Getter=== ///
 
@@ -10775,6 +10964,10 @@ namespace MiiEngine {
 		/// ===Transform=== ///
 		QuaternionTransform transform_;
 
+		/// ===波紋=== ///
+		std::vector<RippleInjection> ripplenInjections_;
+		Vector2 ripplePos_;
+
 	private:
 
 		/// <summary>
@@ -10791,6 +10984,12 @@ namespace MiiEngine {
 		/// ワールド行列の更新
 		/// </summary>
 		void UpdateWorldMatrix();
+
+		/// <summary>
+		/// Ripplenインジェクションをフラッシュします。
+		/// </summary>
+		/// <param name="commandList">グラフィックスコマンドを記録するためのD3D12コマンドリスト。</param>
+		void FlushRipplenInjections(ID3D12GraphicsCommandList* commandList);
 	};
 }
 
@@ -12047,6 +12246,436 @@ namespace MiiEngine {
         void CreateViews(ID3D12Device* device, SRVManager* srvMangaer);
     };
 }
+
+============================================================
+File Path: Project/Engine/Graphics/Ocean/Ripples/RippleSimulator.cpp
+============================================================
+#include "RippleSimulator.h"
+#include "Engine/System/Managers/SRVManager.h"
+#include "Service/Locator.h"
+#include "Service/Render.h"
+#include <cassert>
+#include <cmath>
+
+namespace MiiEngine {
+
+    ///-------------------------------------------/// 
+    /// デストラクタ
+    ///-------------------------------------------///
+    RippleSimulator::~RippleSimulator() {
+		// Unmapしてからリセット
+        if (paramsBuffer_ && paramsBuffer_->GetBuffer()) {
+			paramsBuffer_->GetBuffer()->Unmap(0, nullptr);
+        }
+        if (injectionBuffer_ && injectionBuffer_->GetBuffer()) {
+			injectionBuffer_->GetBuffer()->Unmap(0, nullptr);
+        }
+        paramsBuffer_.reset();
+        injectionBuffer_.reset();
+
+		// UAVリソースのリセット
+        pingResource_.reset();
+        pongResource_.reset();
+
+		// SRVの解放
+        if (srvManager_) {
+            srvManager_->Free(uavIndices_[0]);
+            srvManager_->Free(uavIndices_[1]);
+            srvManager_->Free(srvPingIndex_);
+			srvManager_->Free(srvPongIndex_);
+        }
+    }
+
+    ///-------------------------------------------/// 
+    /// SRVインデックスの取得
+    ///-------------------------------------------///
+    uint32_t RippleSimulator::GetCurrentSRVIndex() const {
+        return (pingPong_ == 0) ? srvPingIndex_ : srvPongIndex_;
+    }
+
+    ///-------------------------------------------/// 
+    /// 初期化
+    ///-------------------------------------------///
+    void RippleSimulator::Initialize(ID3D12Device* device, uint32_t gridSize, float gridWidth) {
+        // SRVの取得
+        srvManager_ = Service::Locator::GetSRVManager();
+
+        // グリッドサイズの取得
+        gridSize_ = gridSize;
+        gridWidth_ = gridWidth;
+
+        /// ===RippleParamsの定数バッファ=== ///
+        paramsBuffer_ = std::make_unique<BufferBase>();
+        paramsBuffer_->Create(device, sizeof(RippleParams));
+        void* m = nullptr;
+        paramsBuffer_->GetBuffer()->Map(0, nullptr, &m);
+        paramsData_ = static_cast<RippleParams*>(m);
+
+        injectionBuffer_ = std::make_unique<BufferBase>();
+        injectionBuffer_->Create(device, sizeof(RippleInjection));
+        void* m2 = nullptr;
+        injectionBuffer_->GetBuffer()->Map(0, nullptr, &m2);
+        injectionData_ = static_cast<RippleInjection*>(m2);
+
+        /// ===UAVインデックス管理=== ///
+        uint32_t base = srvManager_->AllocateContiguous(2);
+        uavIndices_[0] = base;
+        uavIndices_[1] = base + 1;
+        // u0:Ping
+        CreateTextureUAV(device, pingResource_, pingUAV_, 0, gridSize, gridSize);
+        // u1:Pong
+        CreateTextureUAV(device, pongResource_, pongUAV_, 1, gridSize, gridSize);
+
+        // SRV(t3)
+        uint32_t srvBase = srvManager_->AllocateContiguous(2);
+        srvPingIndex_ = srvBase;
+        srvPongIndex_ = srvBase + 1;
+        // 
+        srvManager_->CreateSRVForTexture2D(srvPingIndex_, pingResource_->GetBuffer(), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
+        srvManager_->CreateSRVForTexture2D(srvPongIndex_, pongResource_->GetBuffer(), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
+
+        // 初期値
+        params_.gridSize = gridSize_;
+        params_.cellSize = gridWidth_ / static_cast<float>(gridSize_);
+        params_.waveSpeed = 5.0f;
+        params_.damping = 0.990f;
+        params_.pingPong = 0;
+    }
+
+    ///-------------------------------------------/// 
+    /// 更新処理 
+    ///-------------------------------------------///
+    void RippleSimulator::Update(float deltaTime) {
+        params_.deltaTime = deltaTime;
+        params_.pingPong = pingPong_;
+        *paramsData_ = params_;
+    }
+
+    ///-------------------------------------------/// 
+    /// 波紋シミュレーション
+    ///-------------------------------------------///
+    void RippleSimulator::Simulate(ID3D12GraphicsCommandList* commandList) {
+
+        const uint32_t tg = (gridSize_ + kThreadGroupSize_ - 1) / kThreadGroupSize_;
+        auto CBV0 = paramsBuffer_->GetBuffer()->GetGPUVirtualAddress();
+        auto UAVTable = srvManager_->GetGPUDescriptorHandle(uavIndices_[0]);
+
+        // どちらのバッファを読み・書きするかはシェーダー内のPingPongで制御
+        Service::Render::SetCSPSO(commandList, CSPipelineType::Ripples, L"SimulateRipple");
+        commandList->SetComputeRootConstantBufferView(0, CBV0);
+        commandList->SetComputeRootDescriptorTable(2, UAVTable);
+        commandList->Dispatch(tg, tg, 1);
+
+        // バッファを反転
+        UAVBarrier(commandList, pingResource_->GetBuffer());
+        UAVBarrier(commandList, pongResource_->GetBuffer());
+
+		// PingPongフラグを反転
+        pingPong_ ^= 1;
+    }
+
+    ///-------------------------------------------/// 
+    /// 波紋の発生
+    ///-------------------------------------------///
+    void RippleSimulator::AddRipple(ID3D12GraphicsCommandList* commandList, Vector2 uv, float radius, float strength) {
+
+        /// ===パラメーターの書き込み=== ///
+        // Injection
+        injection_.uv = uv;
+        injection_.radius = radius;
+        injection_.strength = strength;
+        *injectionData_ = injection_;
+
+        // Params
+        params_.pingPong = pingPong_; // 現在書き込み対象に注入
+        *paramsData_ = params_;
+
+        const uint32_t tg = (gridSize_ + kThreadGroupSize_ - 1) / kThreadGroupSize_;
+        auto CBV0 = paramsBuffer_->GetBuffer()->GetGPUVirtualAddress();
+        auto CBV1 = injectionBuffer_->GetBuffer()->GetGPUVirtualAddress();
+        auto UAVTable = srvManager_->GetGPUDescriptorHandle(uavIndices_[0]);
+
+        Service::Render::SetCSPSO(commandList, CSPipelineType::Ripples, L"AddRipplePoint");
+        commandList->SetComputeRootConstantBufferView(0, CBV0);
+        commandList->SetComputeRootConstantBufferView(1, CBV1);
+        commandList->SetComputeRootDescriptorTable(2, UAVTable);
+        commandList->Dispatch(tg, tg, 1);
+
+        UAVBarrier(commandList, pingResource_->GetBuffer());
+        UAVBarrier(commandList, pongResource_->GetBuffer());
+    }
+
+	///-------------------------------------------/// 
+	/// リソースの状態をSRVに遷移 
+	///-------------------------------------------///
+	void RippleSimulator::TransitionToSRV(ID3D12GraphicsCommandList* commandList) {
+		// GetCurrentSRVIndex() と対応するリソースを遷移する。
+		ID3D12Resource* target = (pingPong_ == 0) ? pingResource_->GetBuffer() : pongResource_->GetBuffer();
+
+		// SRV状態に遷移
+        TransitionBarrier(commandList, target, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    }
+
+	///-------------------------------------------/// 
+	/// リソースの状態をUAVに遷移 
+	///-------------------------------------------///
+	void RippleSimulator::TransitionToUAV(ID3D12GraphicsCommandList * commandList) {
+		// GetCurrentSRVIndex() と対応するリソースを遷移する。
+		ID3D12Resource* target = (pingPong_ == 0) ? pingResource_->GetBuffer() : pongResource_->GetBuffer();
+
+		// UAV状態に遷移
+        TransitionBarrier(commandList, target, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    }
+
+    ///-------------------------------------------/// 
+    /// テクスチャUAVリソースの生成
+    ///-------------------------------------------///
+    void RippleSimulator::CreateTextureUAV(
+        ID3D12Device* device,
+        std::unique_ptr<BufferBase>& outResource,
+        UAV& outUAV,
+        int uavSlot,
+        uint32_t width, uint32_t height,
+        DXGI_FORMAT format) {
+
+        HRESULT hr;
+
+        // Texture2D リソースとして作成
+        D3D12_RESOURCE_DESC texDesc{};
+        texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        texDesc.Width = width;
+        texDesc.Height = height;
+        texDesc.DepthOrArraySize = 1;
+        texDesc.MipLevels = 1;
+        texDesc.Format = format; // RWTexture2D<float4>
+        texDesc.SampleDesc.Count = 1;
+        texDesc.SampleDesc.Quality = 0;
+        texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+        D3D12_HEAP_PROPERTIES heapProps{};
+        heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+        // Texture2Dリソースを直接作成
+        ComPtr<ID3D12Resource> resource;
+        hr = device->CreateCommittedResource(
+            &heapProps,
+            D3D12_HEAP_FLAG_NONE,
+            &texDesc,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            nullptr,
+            IID_PPV_ARGS(&resource)
+        );
+        assert(SUCCEEDED(hr));
+
+        // BufferBaseにリソースを渡す
+        outResource = std::make_unique<BufferBase>();
+        outResource->SetBuffer(resource.Get()); 
+
+        // UAVの作成
+        outUAV.CreateAsTexture2D(
+            device,
+            outResource->GetBuffer(),
+            DXGI_FORMAT_R32G32B32A32_FLOAT,
+            srvManager_->GetCPUDescriptorHandle(uavIndices_[uavSlot])
+        );
+    }
+
+    ///-------------------------------------------/// 
+    /// UAVバリア
+    ///-------------------------------------------///
+    void RippleSimulator::UAVBarrier(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource) {
+        D3D12_RESOURCE_BARRIER barrier = {};
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+        barrier.UAV.pResource = resource;
+        commandList->ResourceBarrier(1, &barrier);
+    }
+
+    ///-------------------------------------------/// 
+    /// リソース状態の遷移バリア 
+    ///-------------------------------------------///
+    void RippleSimulator::TransitionBarrier(
+        ID3D12GraphicsCommandList* commandList, 
+        ID3D12Resource* resource, 
+        D3D12_RESOURCE_STATES before, 
+        D3D12_RESOURCE_STATES after) {
+
+        D3D12_RESOURCE_BARRIER b = {};
+        b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        b.Transition.pResource = resource;
+        b.Transition.StateBefore = before;
+        b.Transition.StateAfter = after;
+        b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        commandList->ResourceBarrier(1, &b);
+    }
+}
+
+============================================================
+File Path: Project/Engine/Graphics/Ocean/Ripples/RippleSimulator.h
+============================================================
+#pragma once
+/// ===Incudle=== ///
+#include <Engine/Graphics/Base/BufferBase.h>
+#include <Engine/Graphics/Base/UAV.h>
+#include <Engine/DataInfo/OceanData.h>
+// c++
+#include <memory>
+#include <d3d12.h>
+#include <wrl.h>
+
+namespace MiiEngine {
+
+	class SRVManager;
+
+	///=====================================================/// 
+	/// 波紋シュミレーター
+	///=====================================================///
+	class RippleSimulator {
+	public:
+		RippleSimulator() = default;
+		~RippleSimulator();
+
+		/// <summary>
+		/// グリッドを初期化します。
+		/// </summary>
+		/// <param name="device">初期化に使用するDirect3D 12デバイス。</param>
+		/// <param name="gridSize">グリッドのサイズ。</param>
+		/// <param name="gridWidth">グリッドの幅。</param>
+		void Initialize(ID3D12Device* device, uint32_t gridSize, float gridWidth);
+
+		/// <summary>
+		/// 状態を更新します。
+		/// </summary>
+		/// <param name="deltaTime">前回の更新からの経過時間（秒単位）。</param>
+		void Update(float deltaTime);
+
+		/// <summary>
+		/// 波紋シミュレーション
+		/// </summary>
+		void Simulate(ID3D12GraphicsCommandList* commandList);
+
+		/// <summary>
+		/// 指定UV座標に波紋を注入する
+		/// </summary>
+		/// <param name="uv">注入位置 [0,1]</param>
+		/// <param name="radius">波紋の初期半径（グリッドセル単位、例:5.0）</param>
+		/// <param name="strength">波紋の強度（例:1.0）</param>
+		void AddRipple(
+			ID3D12GraphicsCommandList* commandList,
+			Vector2 uv,
+			float  radius = 5.0f,
+			float  strength = 1.0f);
+
+		/// <summary>
+		/// リソースをシェーダー リソース ビュー (SRV) 状態に遷移します。
+		/// </summary>
+		/// <param name="commandList">遷移を記録するコマンド リスト。</param>
+		void TransitionToSRV(ID3D12GraphicsCommandList* commandList);
+
+		/// <summary>
+		/// リソースをUAV状態に遷移します。
+		/// </summary>
+		/// <param name="commandList">遷移コマンドを記録するコマンドリスト。</param>
+		void TransitionToUAV(ID3D12GraphicsCommandList* commandList);
+
+	public: /// ===Getter=== ///
+		/// <summary>
+		/// 現在のRippleバッファのSRVインデックスを返す
+		/// </summary>
+		uint32_t GetCurrentSRVIndex() const;
+		// 波紋の速度を取得
+		float GetWaveSpeed() const { return params_.waveSpeed; }
+		// 波紋の減衰率を取得
+		float GetDamping() const { return params_.damping; }
+		// 出現位置のUV座標を取得
+		Vector2 GetInjectionUV() const { return injection_.uv; }
+
+
+	public: /// ===Setter=== ///
+		// 波紋の速度を設定
+		void SetWaveSpeed(float speed) { params_.waveSpeed = speed; }
+		// 波紋の減衰率を設定
+		void SetDamping(float damping) { params_.damping = damping; }
+		// 出現位置のUV座標を設定
+		void SetInjectionUV(const Vector2& uv) { injection_.uv = uv; }
+
+	private:
+		// スレッドグループサイズ
+		static constexpr uint32_t kThreadGroupSize_ = 8;
+
+		uint32_t gridSize_ = 256;
+		float    gridWidth_ = 1000.0f;
+		uint32_t pingPong_ = 0;
+
+		// SRV管理クラスへのポインタ
+		SRVManager* srvManager_ = nullptr;
+
+		// 定数バッファ
+		std::unique_ptr<BufferBase> paramsBuffer_;
+		RippleParams* paramsData_ = nullptr;
+
+		std::unique_ptr<BufferBase> injectionBuffer_;
+		RippleInjection* injectionData_ = nullptr;
+
+		// Ping/Pong テクスチ
+		std::unique_ptr<BufferBase> pingResource_;
+		UAV pingUAV_;
+		std::unique_ptr<BufferBase> pongResource_;
+		UAV pongUAV_;
+
+		uint32_t uavIndices_[2] = {};
+		uint32_t srvPingIndex_ = 0;
+		uint32_t srvPongIndex_ = 0;
+
+		// 波紋シミュレーションのパラメータ初期化
+		RippleParams params_{};
+		RippleInjection injection_{};
+
+	private:
+
+		/// <summary>
+		/// テクスチャUAV（アンオーダードアクセスビュー）を作成します。
+		/// </summary>
+		/// <param name="device">Direct3D 12デバイスへのポインタ。</param>
+		/// <param name="outResource">作成されたバッファリソースの出力パラメータ。</param>
+		/// <param name="outUAV">作成されたUAVの出力パラメータ。</param>
+		/// <param name="uavSlot">UAVのスロットインデックス。</param>
+		/// <param name="width">テクスチャの幅。</param>
+		/// <param name="height">テクスチャの高さ。</param>
+		/// <param name="format">テクスチャのピクセルフォーマット（デフォルトはDXGI_FORMAT_R32G32B32A32_FLOAT）。</param>
+		void CreateTextureUAV(
+			ID3D12Device* device,
+			std::unique_ptr<BufferBase>& outResource,
+			UAV& outUAV,
+			int uavSlot,
+			uint32_t width, uint32_t height,
+			DXGI_FORMAT format = DXGI_FORMAT_R32G32B32A32_FLOAT);
+
+		/// <summary>
+		/// 指定されたリソースに対してUAVバリアを設定します。
+		/// </summary>
+		/// <param name="commandList">バリアを記録するグラフィックスコマンドリスト。</param>
+		/// <param name="resource">バリアを設定する対象のリソース。</param>
+		void UAVBarrier(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource);
+
+		/// <summary>
+		/// リソースの状態遷移バリアを設定します。
+		/// </summary>
+		/// <param name="commandList">バリアを記録するコマンドリスト。</param>
+		/// <param name="resource">状態を遷移するリソース。</param>
+		/// <param name="before">遷移前のリソース状態。</param>
+		/// <param name="after">遷移後のリソース状態。</param>
+		void TransitionBarrier(
+			ID3D12GraphicsCommandList* commandList,
+			ID3D12Resource* resource,
+			D3D12_RESOURCE_STATES before,
+			D3D12_RESOURCE_STATES after);
+	};
+
+}
+
+
+
 
 ============================================================
 File Path: Project/Engine/Graphics/OffScreen/Effect/BoxFilter3x3Effect.cpp
@@ -16126,14 +16755,9 @@ namespace MiiEngine {
 		const std::unordered_map<CSPipelineType, ShaderInfo> kCSShaderTable_ = {
 			{ CSPipelineType::Ocean,    { L"Ocean/Ocean.CS.hlsl",   { L"main" } } },
 			{ CSPipelineType::FFTOcean, { L"Ocean/FFTOcean.CS.hlsl",{
-				L"InitSpectrum",
-				L"UpdateSpectrum",
-				L"BitReverseRows",
-				L"ButterflyIFFT",
-				L"BitReverseCols",
-				L"SaveIFFTResult",
-				L"AssembleDisplacement",
-				L"ComputeNormalFoam",}}},
+				L"InitSpectrum", L"UpdateSpectrum", L"BitReverseRows", L"ButterflyIFFT",
+				L"BitReverseCols", L"SaveIFFTResult", L"AssembleDisplacement", L"ComputeNormalFoam",}}},
+			{ CSPipelineType::Ripples,  { L"Ocean/Ripples.CS.hlsl", {L"SimulateRipple", L"AddRipplePoint"}}},
 		};
 	}
 
@@ -16600,9 +17224,16 @@ namespace MiiEngine {
 			srvRange.NumDescriptors = 3; // t0〜t2
 			srvRange.BaseShaderRegister = 0; // t0から開始
 			srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			// SRV用のRippleMap (t3)
+			D3D12_DESCRIPTOR_RANGE rippleRange = {};
+			rippleRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			rippleRange.NumDescriptors = 1; // t0〜t2
+			rippleRange.BaseShaderRegister = 3; // t0から開始
+			rippleRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
 
 			/// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[4] = {};
+			D3D12_ROOT_PARAMETER rootParameters[5] = {};
 			// パラメータ0: CBV - OceanParams (b0)
 			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
@@ -16621,6 +17252,11 @@ namespace MiiEngine {
 			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
 			rootParameters[3].DescriptorTable.pDescriptorRanges = &srvRange;
 			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+			// パラメータ4: SRV(t3)
+			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[4].DescriptorTable.pDescriptorRanges = &rippleRange;
+			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 			/// RootSignatureの生成
 			D3D12_ROOT_SIGNATURE_DESC desc{};
@@ -16642,6 +17278,61 @@ namespace MiiEngine {
 				return nullptr;
 			}
 
+			// RootSignatureの生成
+			ComPtr<ID3D12RootSignature> rootSignature;
+			hr = device->CreateRootSignature(
+				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+				IID_PPV_ARGS(&rootSignature));
+			assert(SUCCEEDED(hr));
+			return rootSignature;
+		}
+
+		/// ===Riples=== ///
+		ComPtr<ID3D12RootSignature> TypeRipples(ID3D12Device* device) {
+			// UAV用のDescriptorRang
+			D3D12_DESCRIPTOR_RANGE uavRange = {};
+			uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+			uavRange.NumDescriptors = 2; // u0〜u1
+			uavRange.BaseShaderRegister = 0; // u0から開始
+			uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			/// RootParameterの生成
+			D3D12_ROOT_PARAMETER rootParameters[3] = {};
+			// パラメータ0: CBV - RippleParams (b0)
+			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+			rootParameters[0].Descriptor.ShaderRegister = 0;
+			// パラメーター1:CBY - RippleInjection (b1)
+			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+			rootParameters[1].Descriptor.ShaderRegister = 1;
+			// パラメータ2: UAV
+			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &uavRange;
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+			/// RootSignatureの生成
+			D3D12_ROOT_SIGNATURE_DESC desc{};
+			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+			desc.pParameters = rootParameters;
+			desc.NumParameters = _countof(rootParameters);
+			desc.pStaticSamplers = nullptr;
+			desc.NumStaticSamplers = 0;
+
+			/// シリアライズ作成
+			ComPtr<ID3DBlob> signatureBlob;
+			ComPtr<ID3DBlob> errorBlob;
+			HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+			if (FAILED(hr)) {
+				if (errorBlob) {
+					OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				}
+				assert(false);
+				return nullptr;
+			}
+
+			// RootSignatureの生成
 			ComPtr<ID3D12RootSignature> rootSignature;
 			hr = device->CreateRootSignature(
 				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
@@ -16655,6 +17346,7 @@ namespace MiiEngine {
 		const std::unordered_map<CSPipelineType, RootSigGenerator> kRootSignatureTable_ = {
 			{CSPipelineType::Ocean,     TypeOcean},
 			{CSPipelineType::FFTOcean,  TypeFFTOcean},
+			{CSPipelineType::Ripples,	TypeRipples},
 		};
 	}
 
@@ -18188,14 +18880,19 @@ namespace MiiEngine {
 			vsSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 			vsSrvRange.NumDescriptors = 2;
 			vsSrvRange.BaseShaderRegister = 0; // t0, t1
+			// VS用のRipplenSRV
+			D3D12_DESCRIPTOR_RANGE vsRippleSrvRange = {};
+			vsRippleSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			vsRippleSrvRange.NumDescriptors = 1;
+			vsRippleSrvRange.BaseShaderRegister = 2; // t2
 			// PS用のSRV
 			D3D12_DESCRIPTOR_RANGE psSrvRange = {};
 			psSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 			psSrvRange.NumDescriptors = 1;
-			psSrvRange.BaseShaderRegister = 2; // t2
+			psSrvRange.BaseShaderRegister = 3; // t3
 
 			/// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[4] = {};
+			D3D12_ROOT_PARAMETER rootParameters[5] = {};
 			// VS（b0）
 			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 			rootParameters[0].Descriptor.ShaderRegister = 0;
@@ -18209,14 +18906,19 @@ namespace MiiEngine {
 			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange;
 			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			// PSのSRVテクスチャ用（t2）
+			// VSのRipplenSRVテクスチャ用（t2）
 			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
-			rootParameters[3].DescriptorTable.pDescriptorRanges = &psSrvRange;
-			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[3].DescriptorTable.pDescriptorRanges = &vsRippleSrvRange;
+			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// PSのSRVテクスチャ用（t3）
+			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[4].DescriptorTable.pDescriptorRanges = &psSrvRange;
+			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 			/// Samplerの設定
-			D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+			D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
 			staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 			staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -18224,7 +18926,15 @@ namespace MiiEngine {
 			staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 			staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
 			staticSamplers[0].ShaderRegister = 0; // s0
-			staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
+			staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
+			staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+			staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+			staticSamplers[1].ShaderRegister = 1; // s1
+			staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
 
 			/// RootSignatureの生成
 			D3D12_ROOT_SIGNATURE_DESC desc{};
@@ -19148,10 +19858,19 @@ namespace MiiEngine {
 	/// 初期化
 	///-------------------------------------------///
 	void Framework::Initialize(const wchar_t* title) {
+		/// ===ウィンドウサイズの設定=== ///
+#ifdef _DEBUG
+		width_ = 1920;
+		height_ = 1080;
+#else
+		width_ = 1600;
+		height_ = 900;
+#endif // DEBUG
+
 		/// ===初期化=== ///
 		// MiiEngine
 		Engine_ = std::make_unique<Mii>();
-		Engine_->Initialize(title, 1280, 720);
+		Engine_->Initialize(title, width_, height_);
 		// CameraManager
 		cameraManager_ = std::make_unique<CameraManager>();
 		// ParticleManager
@@ -19356,6 +20075,9 @@ namespace MiiEngine {
 		void PostDraw();
 
 	private:
+		int width_;
+		int height_;
+
 		// Mii
 		std::unique_ptr<Mii> Engine_;
 		// CameraManager
@@ -19528,7 +20250,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
-		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Select);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -27669,6 +28391,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -27861,6 +28584,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanGenerator.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -28094,6 +28818,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\OffScreen\BoxFilter3x3.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -28362,6 +29093,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
       <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -28889,6 +29621,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossJumpSmashAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
+    <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -29467,6 +30200,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossJumpSmashAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
+    <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -45686,20 +46420,20 @@ void GroundOcean::Initialize() {
 
 	// FFTオーシャンの初期化
 	fftOcean_ = std::make_unique<MiiEngine::FFTOceanGenerator>();
-	fftOcean_->Initialize(256);
+	fftOcean_->Initialize(1024);
 	fftOcean_->SetTranslate({ 0.0f, 0.0f, 0.0f });
-	fftOcean_->SetScale({ 1000.0f, 1.0f, 1000.0f });
+	fftOcean_->SetSize(1000.0f);
 
 	// アクティブカメラを設定
 	fftOcean_->SetCamera(Service::Camera::GetActiveCamera());
 
 	// OceanParamsの初期設定
 	MiiEngine::OceanParams oceanParams = fftOcean_->GetOceanParams();
-	oceanParams.gridWidth = 2000.0f;
+	oceanParams.gridWidth = 4000.0f;
 	oceanParams.windDirection = { 1.0f, 1.0f };
 	oceanParams.windowSpeed = 9.5f;
-	oceanParams.amplitude = 50.0f;
-	oceanParams.lambda = 0.5f;
+	oceanParams.amplitude = 10.0f;
+	oceanParams.lambda = 0.15f;
 	fftOcean_->SetOceanParams(oceanParams);
 	
 	// Oceanの描画コールバックを設定
