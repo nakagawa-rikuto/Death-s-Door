@@ -28,7 +28,7 @@ cbuffer OceanRenderCB : register(b1)
 /// ================================================================
 /// テクスチャ
 /// ================================================================
-Texture2D<float4> FoamTexture : register(t2); // 泡ノイズテクスチャ
+Texture2D<float4> FoamTexture : register(t3); // 泡ノイズテクスチャ
 SamplerState LinearWrap : register(s0);
 
 /// ================================================================

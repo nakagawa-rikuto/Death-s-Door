@@ -59,6 +59,8 @@ namespace MiiEngine {
 		void SetDisplaceSRVIndex(uint32_t index);
 		// CS側のSRVインデックスを受け取る
 		void SetNormalFoamSRVIndex(uint32_t index);
+		// CS側のSRVインデックスを受け取る
+		void SetRippleSRVIndex(uint32_t index);
 		// 泡テクスチャ名の設定
 		void SetFoamTextureName(const std::string& name);
 
@@ -76,7 +78,8 @@ namespace MiiEngine {
 		// テクスチャ３つ(t0~t1)
 		uint32_t srvDisplaceIndex_ = 0;	  // t0
 		uint32_t srvNormalFoamIndex_ = 0; // t1
-		std::string foamTextureName_;	  // t2
+		uint32_t srvRippleIndex_ = 0;      // t2
+		std::string foamTextureName_;	  // t3
 
 		/// ===カメラ=== ///
 		CameraCommon* camera_ = nullptr;

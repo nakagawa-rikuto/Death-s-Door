@@ -18,7 +18,9 @@ cbuffer TransformCB : register(b0)
 /// ================================================================
 Texture2D<float4> DisplaceMap : register(t0);   // (Dx, height, Dz, 1)
 Texture2D<float4> NormalFoamMap : register(t1); // (nx, ny, nz packed, foam)
+Texture2D<float2> RippleMap : register(t2); // (height, 0)
 SamplerState LinearWrap : register(s0);
+SamplerState LinearClamp : register(s1);
 
 /// ================================================================
 /// 入出力構造体

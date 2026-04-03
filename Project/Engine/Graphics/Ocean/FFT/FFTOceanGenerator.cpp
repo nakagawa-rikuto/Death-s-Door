@@ -7,6 +7,7 @@
 #include "Service/Render.h"
 // C++
 #include <cassert>
+#include <cmath>
 // Math
 #include "Math/MatrixMath.h"
 #ifdef USE_IMGUI
@@ -18,10 +19,18 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	FFTOceanGenerator::~FFTOceanGenerator() {
+		// Unmap
+		if (vertex_ && vertex_->GetBuffer()) {
+			vertex_->GetBuffer()->Unmap(0, nullptr);
+		}
+		if (index_ && index_->GetBuffer()) {
+			index_->GetBuffer()->Unmap(0, nullptr);
+		}
 		vertex_.reset();
 		index_.reset();
 		base_.reset();
 		compute_.reset();
+		ripplenInjections_.clear();
 	}
 
 	///-------------------------------------------/// 
@@ -50,6 +59,7 @@ namespace MiiEngine {
 		// Compute側のSRVインデックスをBaseに渡す
 		base_->SetDisplaceSRVIndex(compute_->GetSRVDisplaceIndex());
 		base_->SetNormalFoamSRVIndex(compute_->GetSRVNormalFoamIndex());
+		base_->SetRippleSRVIndex(compute_->GetRippleSimulator()->GetCurrentSRVIndex());
 		// テクスチャの設定
 		base_->SetFoamTextureName("oceanFFT");
 
@@ -87,8 +97,14 @@ namespace MiiEngine {
 		ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
 		assert(commandList);
 
+		// 波紋
+		FlushRipplenInjections(commandList);
+
 		// コンピュートシェーダーのディスパッチ
 		compute_->Dispatch(commandList);
+
+		// RippleのSRVインデックス（最新）をBaseに渡す
+		base_->SetRippleSRVIndex(compute_->GetRippleSimulator()->GetCurrentSRVIndex());
 
 		// パイプラインのセット
 		Service::Render::SetPSO(commandList, PipelineType::FFTOcean, mode);
@@ -118,13 +134,15 @@ namespace MiiEngine {
 			// --- Transform ---
 			if (ImGui::CollapsingHeader("Transform")) {
 				ImGui::DragFloat3("Translate", &transform_.translate.x, 0.1f);
-				ImGui::DragFloat3("Scale", &transform_.scale.x, 0.1f);
+				float size = base_->GetSize();
+				ImGui::DragFloat("Size", &size, 0.1f);
+				SetSize(size);
 			}
 
 			// --- TransformCB（VS用）---
 			if (ImGui::CollapsingHeader("TransformCB")) {
 				float tileScale = base_->GetTileScale();
-				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 1.0f, 10000.0f);
+				ImGui::DragFloat("タイルスケール", &tileScale, 0.1f, 0.1f, 10.0f);
 				base_->SetTileScale(tileScale);
 			}
 
@@ -148,16 +166,67 @@ namespace MiiEngine {
 			// --- OceanParams（CS用）---
 			if (ImGui::CollapsingHeader("波のパラメータ")) {
 				OceanParams& p = compute_->GetOceanParams();
-				ImGui::DragFloat("グリッド幅", &p.gridWidth, 0.1f, 0.1f, 10000.0f);
-				ImGui::DragFloat("風速", &p.windowSpeed, 0.1f, 0.0f, 30.0f);
+				ImGui::DragFloat("グリッド幅", &p.gridWidth, 0.1f, 0.1f, 50000.0f);
+				ImGui::DragFloat("風速", &p.windowSpeed, 0.1f, 0.0f, 100.0f);
 				ImGui::DragFloat2("風向", &p.windDirection.x, 0.01f, -1.0f, 1.0f);
-				ImGui::DragFloat("振幅", &p.amplitude, 0.0001f, 0.0001f, 0.001f);
-				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 1.5f);
-				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("振幅", &p.amplitude, 0.0001f, 0.0001f, 50.0f);
+				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 30.0f);
+				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 5.0f);
+			}
+
+			/// ===Ripple（波紋）=== ///
+			if (ImGui::CollapsingHeader("波紋の設定")) {
+				RippleSimulator* ripple = compute_->GetRippleSimulator();
+
+				float waveSpeed = ripple->GetWaveSpeed();
+				if (ImGui::DragFloat("伝播速度", &waveSpeed, 0.1f, 0.5f, 100.0f)) {
+					ripple->SetWaveSpeed(waveSpeed);
+				}
+
+				float damping = ripple->GetDamping();
+				if (ImGui::DragFloat("減衰係数", &damping, 0.001f, 0.900f, 0.999f)) {
+					ripple->SetDamping(damping);
+				}
+
+				if (ImGui::DragFloat2("出現位置UV", &ripplePos_.x, 0.1f)) {
+					ripple->SetInjectionUV(ripplePos_);
+				}
+
+				// テスト用: ボタンでグリッド中央に波紋を発生
+				ImGui::Separator();
+				static float testRadius = 5.0f;
+				static float testStrength = 1.0f;
+				ImGui::DragFloat("テスト半径", &testRadius, 0.1f, 0.1f, 150.0f);
+				ImGui::DragFloat("テスト強度", &testStrength, 0.1f, 0.1f, 10.0f);
+				if (ImGui::Button("中央に波紋を発生")) {
+					AddRipple({ripplePos_.x, 0.0f, ripplePos_.y}, testRadius, testStrength);
+					AddRipple({ ripplePos_.x + 30.0f, 0.0f, ripplePos_.y }, testRadius, testStrength);
+				}
 			}
 		}
 		ImGui::End();
 #endif // _DEBUG
+	}
+
+
+	///-------------------------------------------/// 
+	/// 波紋の追加
+	///-------------------------------------------///
+	void FFTOceanGenerator::AddRipple(const Vector3& worldPos, float radius, float strength) {
+
+		float posX = (worldPos.x - transform_.translate.x) / transform_.scale.x;
+		float posZ = (worldPos.z - transform_.translate.z) / transform_.scale.z;
+
+		/*posX = posX + 0.5f;*/
+		posZ = posZ + 0.5f;
+
+		float uvX = posZ;
+		float uvY = posX;
+
+		float rippleRadius = radius / transform_.scale.x;
+
+		// 波紋を追加
+		ripplenInjections_.push_back({ {uvX, uvY}, rippleRadius, strength });
 	}
 
 	///-------------------------------------------/// 
@@ -172,21 +241,24 @@ namespace MiiEngine {
 	/// Setter
 	///-------------------------------------------///
 	// Camera
-	void FFTOceanGenerator::SetCamera(CameraCommon* camera) {base_->SetCamera(camera);}
+	void FFTOceanGenerator::SetCamera(CameraCommon* camera) { base_->SetCamera(camera); }
 	// 座標の設定
-	void FFTOceanGenerator::SetTranslate(const Vector3& translate) {transform_.translate = translate;}
+	void FFTOceanGenerator::SetTranslate(const Vector3& translate) { transform_.translate = translate; }
 	// 回転の設定
-	void FFTOceanGenerator::SetRotate(const Quaternion& rotate) {transform_.rotate = rotate;}
+	void FFTOceanGenerator::SetRotate(const Quaternion& rotate) { transform_.rotate = rotate; }
 	// スケールの設定
-	void FFTOceanGenerator::SetScale(const Vector3& scale) {transform_.scale = scale;}
+	void FFTOceanGenerator::SetScale(const Vector3& scale) { transform_.scale = scale; }
 	// OceanRenderCBの設定
-	void FFTOceanGenerator::SetOceanRenderCB(const OceanRenderCB& data) {base_->SetOceanRenderCB(data);}
+	void FFTOceanGenerator::SetOceanRenderCB(const OceanRenderCB& data) { base_->SetOceanRenderCB(data); }
 	// OceanParamsの設定（CS側）
-	void FFTOceanGenerator::SetOceanParams(const OceanParams& params) {compute_->SetOceanParams(params);}
+	void FFTOceanGenerator::SetOceanParams(const OceanParams& params) { compute_->SetOceanParams(params); }
 	// タイルスケールの設定
-	void FFTOceanGenerator::SetTileScale(float tileScale) {base_->SetTileScale(tileScale);}
+	void FFTOceanGenerator::SetTileScale(float tileScale) { base_->SetTileScale(tileScale); }
 	// サイズの設定
-	void FFTOceanGenerator::SetSize(float size) {base_->SetSize(size);}
+	void FFTOceanGenerator::SetSize(float size) { 
+		base_->SetSize(size); 
+		transform_.scale = { size, 1.0f, size }; // サイズに合わせてスケールも更新
+	}
 
 	///-------------------------------------------/// 
 	/// 頂点バッファの生成
@@ -267,5 +339,23 @@ namespace MiiEngine {
 		// Scale → Rotate → Translate のSRT行列を合成
 		Matrix4x4 worldMatrix = Math::MakeAffineQuaternionMatrix(transform_.scale, transform_.rotate, transform_.translate);
 		base_->SetWorldMatrix(worldMatrix);
+	}
+
+	///-------------------------------------------/// 
+	/// 波紋をGPUへ 
+	///-------------------------------------------///
+	void FFTOceanGenerator::FlushRipplenInjections(ID3D12GraphicsCommandList* commandList) {
+		if (ripplenInjections_.empty()) {
+			return;
+		}
+		// 参照
+		RippleSimulator* ripple = compute_->GetRippleSimulator();
+		// 波紋の追加
+		for (const RippleInjection& r : ripplenInjections_) {
+			ripple->AddRipple(commandList, r.uv, r.radius, r.strength);
+		}
+
+		// 波紋をGPUに送った後はクリア
+		ripplenInjections_.clear();
 	}
 }

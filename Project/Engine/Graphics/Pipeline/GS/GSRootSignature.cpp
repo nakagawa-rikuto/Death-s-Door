@@ -785,14 +785,19 @@ namespace MiiEngine {
 			vsSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 			vsSrvRange.NumDescriptors = 2;
 			vsSrvRange.BaseShaderRegister = 0; // t0, t1
+			// VS用のRipplenSRV
+			D3D12_DESCRIPTOR_RANGE vsRippleSrvRange = {};
+			vsRippleSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			vsRippleSrvRange.NumDescriptors = 1;
+			vsRippleSrvRange.BaseShaderRegister = 2; // t2
 			// PS用のSRV
 			D3D12_DESCRIPTOR_RANGE psSrvRange = {};
 			psSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 			psSrvRange.NumDescriptors = 1;
-			psSrvRange.BaseShaderRegister = 2; // t2
+			psSrvRange.BaseShaderRegister = 3; // t3
 
 			/// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[4] = {};
+			D3D12_ROOT_PARAMETER rootParameters[5] = {};
 			// VS（b0）
 			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 			rootParameters[0].Descriptor.ShaderRegister = 0;
@@ -806,14 +811,19 @@ namespace MiiEngine {
 			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange;
 			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			// PSのSRVテクスチャ用（t2）
+			// VSのRipplenSRVテクスチャ用（t2）
 			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
-			rootParameters[3].DescriptorTable.pDescriptorRanges = &psSrvRange;
-			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[3].DescriptorTable.pDescriptorRanges = &vsRippleSrvRange;
+			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// PSのSRVテクスチャ用（t3）
+			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[4].DescriptorTable.pDescriptorRanges = &psSrvRange;
+			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 			/// Samplerの設定
-			D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+			D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
 			staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 			staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -821,7 +831,15 @@ namespace MiiEngine {
 			staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 			staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
 			staticSamplers[0].ShaderRegister = 0; // s0
-			staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
+			staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
+			staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+			staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+			staticSamplers[1].ShaderRegister = 1; // s1
+			staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
 
 			/// RootSignatureの生成
 			D3D12_ROOT_SIGNATURE_DESC desc{};

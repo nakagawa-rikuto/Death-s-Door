@@ -4,6 +4,7 @@
 #include "Engine/Graphics/Base/UAV.h"
 #include "Engine/Graphics/Pipeline/CS/CSPSOCommon.h"
 #include "Engine/DataInfo/OceanData.h"
+#include "Engine/Graphics/Ocean/Ripples/RippleSimulator.h"
 // c++
 #include <memory>
 #include <d3d12.h>
@@ -59,6 +60,8 @@ namespace MiiEngine {
 		// SRVインデックスの取得
 		uint32_t GetSRVDisplaceIndex() const;
 		uint32_t GetSRVNormalFoamIndex() const;
+		// RippleSimulatorの取得
+		RippleSimulator* GetRippleSimulator() const;
 
 	public: /// ===Setter=== ///
 
@@ -124,6 +127,9 @@ namespace MiiEngine {
 		uint32_t srvDisplaceIndex_ = 0;
 		uint32_t srvNormalFoamIndex_ = 0;
 
+		/// ===RipplesSimulator=== ///
+		std::unique_ptr<RippleSimulator> ripple_;
+
 		/// ===OceanParams初期値=== ///
 		OceanParams params_ = {
 			kDefaultGridSize_,   // gridSize
@@ -135,7 +141,6 @@ namespace MiiEngine {
 			1.0f,                // lambda
 			0.0f                 // foamThreshold
 		};
-
 		OceanParams preParams_;
 
 	private:
@@ -173,6 +178,19 @@ namespace MiiEngine {
 		/// UAVバリア
 		/// </summary>
 		void UAVBarrier(ID3D12GraphicsCommandList* commandList, ID3D12Resource* resource);
+
+		/// <summary>
+		/// リソースの状態遷移バリアを設定します。
+		/// </summary>
+		/// <param name="commandList">バリアを記録するコマンドリスト。</param>
+		/// <param name="resource">状態を遷移するリソース。</param>
+		/// <param name="before">遷移前のリソース状態。</param>
+		/// <param name="after">遷移後のリソース状態。</param>
+		void TransitionBarrier(
+			ID3D12GraphicsCommandList* commandList,
+			ID3D12Resource* resource,
+			D3D12_RESOURCE_STATES before,
+			D3D12_RESOURCE_STATES after);
 	};
 }
 

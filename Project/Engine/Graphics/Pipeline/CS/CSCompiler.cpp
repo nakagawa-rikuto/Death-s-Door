@@ -30,14 +30,9 @@ namespace MiiEngine {
 		const std::unordered_map<CSPipelineType, ShaderInfo> kCSShaderTable_ = {
 			{ CSPipelineType::Ocean,    { L"Ocean/Ocean.CS.hlsl",   { L"main" } } },
 			{ CSPipelineType::FFTOcean, { L"Ocean/FFTOcean.CS.hlsl",{
-				L"InitSpectrum",
-				L"UpdateSpectrum",
-				L"BitReverseRows",
-				L"ButterflyIFFT",
-				L"BitReverseCols",
-				L"SaveIFFTResult",
-				L"AssembleDisplacement",
-				L"ComputeNormalFoam",}}},
+				L"InitSpectrum", L"UpdateSpectrum", L"BitReverseRows", L"ButterflyIFFT",
+				L"BitReverseCols", L"SaveIFFTResult", L"AssembleDisplacement", L"ComputeNormalFoam",}}},
+			{ CSPipelineType::Ripples,  { L"Ocean/Ripples.CS.hlsl", {L"SimulateRipple", L"AddRipplePoint"}}},
 		};
 	}
 

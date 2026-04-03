@@ -58,6 +58,8 @@ namespace MiiEngine {
 		Ocean,
 		// FFTOcean
 		FFTOcean,
+		// Ripples
+		Ripples,
 
 		// 総数(これは最後にしなければいけない)
 		CountOfCSPipelineType,
@@ -95,6 +97,7 @@ namespace MiiEngine {
 		return {
 			CSPipelineType::Ocean,
 			CSPipelineType::FFTOcean,
+			CSPipelineType::Ripples,
 		};
 	}
 }
