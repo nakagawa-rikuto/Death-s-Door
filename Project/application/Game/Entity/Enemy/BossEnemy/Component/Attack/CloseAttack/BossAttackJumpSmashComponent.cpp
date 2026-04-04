@@ -39,6 +39,8 @@ BossAttackJumpSmashComponent::UpdateResult
 BossAttackJumpSmashComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
 	result.isAttacking = (phase_ == LeapPhase::Strike || phase_ == LeapPhase::HoldDown);
+	result.onJump = false;    // 毎フレーム初期化して一瞬だけtrueになるようにする
+	result.onLanding = false; // 毎フレーム初期化して一瞬だけtrueになるようにする
 	result.velocity = {};
 
 	// 非アクティブフェーズ
@@ -179,6 +181,7 @@ void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
 	if (rawT >= 1.0f) {
 		state_.phaseTimer = 0.0f;
 		phase_ = LeapPhase::Leap;
+		result.onJump = true; // 波紋を出すためのトリガー
 	}
 }
 
@@ -202,7 +205,7 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 		horizontalPos.y + arcY,
 		horizontalPos.z
 	};
-	// velcoity
+	// velocity
 	result.velocity = nextPosition - state_.currentPosition;
 
 	// currentPositionを更新更新
@@ -238,6 +241,8 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 		state_.currentPosition = state_.targetPosition;
 		state_.phaseTimer = 0.0f;
 		phase_ = LeapPhase::Strike;
+		result.onLanding = true; // 波紋を出すためのトリガー
+		result.onStrike = true;
 	}
 }
 

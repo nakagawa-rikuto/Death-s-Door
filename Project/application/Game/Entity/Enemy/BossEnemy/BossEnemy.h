@@ -86,7 +86,7 @@ public: /// ===その他関数=== ///
 
 public: /// ===Getter=== ///
 
-	// Weapnの取得
+	// Weaponの取得
 	BossWeapon& GetWeapon() const { return *weapon_; }
 
 	// Componentの取得

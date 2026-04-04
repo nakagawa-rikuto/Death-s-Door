@@ -25,11 +25,5 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-	/// <summary>
-	/// プレイヤーとボスの距離を計算して返す。
-	/// </summary>
-	float CalcDistToPlayer() const;
 };
 

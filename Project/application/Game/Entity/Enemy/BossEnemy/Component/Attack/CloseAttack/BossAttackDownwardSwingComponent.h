@@ -22,7 +22,7 @@ private:
 
 	/// ===状態の構造体=== ///
 	struct DownwardSwingState {
-		Vector3 currentPositino{}; // 現在のワールド座標
+		Vector3 currentPosition{}; // 現在のワールド座標
 		float phaseTimer = 0.0f;   // 現フェーズの経過時間
 	};
 
@@ -76,6 +76,7 @@ public:
 		Vector3 weaponPosition{};       // ローカル座標系での武器位置オフセット
 		bool isAttacking = false;       // 攻撃判定が有効なフレーム
 		bool isFinished = false;        // 攻撃が完全終了したか
+		bool onStrike = false;          // 踏み込み/攻撃開始の瞬間
 	};
 
 public:

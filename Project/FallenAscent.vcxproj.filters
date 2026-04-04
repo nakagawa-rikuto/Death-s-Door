@@ -554,7 +554,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\MoveBossState.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp">
@@ -595,7 +595,6 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossThrustAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
@@ -1125,7 +1124,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\MoveBossState.h">
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h">
@@ -1167,7 +1166,6 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossThrustAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />

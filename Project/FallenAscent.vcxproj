@@ -124,7 +124,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossThrustAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
@@ -293,7 +292,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
     <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\MoveBossState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.cpp" />
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
@@ -309,7 +308,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossThrustAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />
@@ -499,7 +497,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
     <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\MoveBossState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.h" />
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />

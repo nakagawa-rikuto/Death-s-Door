@@ -127,14 +127,14 @@ void GameScene::Update() {
 	player_->PreUpdate(); // Playerの更新前処理
 	enemy_->PreUpdate();  // Enemyの更新前処理
 
+	/// ===Groundの更新=== ///
+	stage_->Update();
+
 	/// ===Stateの管理=== ///
 	if (currentState_) {
 		// 各Stateの更新
 		currentState_->Update();
 	}
-
-	/// ===Groundの更新=== ///
-	stage_->Update();
 }
 
 ///-------------------------------------------/// 

@@ -4,7 +4,7 @@
 // Service
 #include "Service/Particle.h"
 // State
-#include "State/Move/MoveBossState.h"
+#include "State/Move/BossMoveState.h"
 #include "State/HItReaction/BossHitReactionState.h"
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -44,7 +44,7 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	SetComponentConfig();
 
 	// Stateの設定
-	ChangeState(std::make_unique<MoveBossState>());
+	ChangeState(std::make_unique<BossMoveState>());
 }
 
 ///-------------------------------------------/// 
@@ -118,7 +118,7 @@ void BossEnemy::Information() {
 	ImGui::Begin("ボスエネミー");
 	/// ===GameCharacterの情報表示=== ///
 	GameCharacter::Information();
-	/// ===MoveConponentの情報表示=== ///
+	/// ===MoveComponentの情報表示=== ///
 	moveComponent_->Information();
 	/// ===AttackManagerの情報表示=== ///
 	thrustComponent_->Information();
@@ -253,7 +253,7 @@ void BossEnemy::SetComponentConfig() {
 	BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
 		.windUpPitch = -2.0f,
 		.windUpDuration = 1.0f,
-		.strikeForwardPitch = -10.0f,
+		.strikeForwardPitch = -5.0f,
 		.strikeDuration = 0.1f,
 		.holdDownDuration = 0.2f,
 		.recoveryDuration = 0.45f,

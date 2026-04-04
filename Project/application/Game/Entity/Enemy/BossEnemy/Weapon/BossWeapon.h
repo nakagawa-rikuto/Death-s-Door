@@ -49,6 +49,14 @@ public: /// ===衝突処理=== ///
 	/// <param name="collider">衝突した相手の Collider オブジェクトを指すポインター。</param>
 	void OnCollision(MiiEngine::Collider* collider) override;
 
+public: /// ===Getter=== ///
+
+	/// <summary>
+	/// ワールド座標系での平行移動を取得します。
+	/// </summary>
+	/// <returns>ワールド座標系での平行移動を表すVector3への定数参照。</returns>
+	const Vector3& GetWorldTranslate() const { return object3d_->GetWorldTranslate(); }
+
 public: /// ===Setter=== ///
 	// アクティブ状態の設定
 	void SetActive(bool flag);
