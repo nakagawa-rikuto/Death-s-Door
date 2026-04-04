@@ -110,12 +110,6 @@
 └── └── └── └── └── ├── FFTOceanCompute.h
 └── └── └── └── └── ├── FFTOceanGenerator.cpp
 └── └── └── └── └── └── FFTOceanGenerator.h
-└── └── └── └── ├── OceanCommon.cpp
-└── └── └── └── ├── OceanCommon.h
-└── └── └── └── ├── OceanGenerator.cpp
-└── └── └── └── ├── OceanGenerator.h
-└── └── └── └── ├── OceanWaveCompute.cpp
-└── └── └── └── ├── OceanWaveCompute.h
 └── └── └── └── └── Ripples/
 └── └── └── └──     ├── RippleSimulator.cpp
 └── └── └── └──     └── RippleSimulator.h
@@ -416,8 +410,6 @@
 └── └── └── └── └──     └──     └── BossTeleportComponent.h
 └── └── └── └── └──     ├── State/
 └── └── └── └── └──     └── ├── Attack/
-└── └── └── └── └──     └── └── ├── BossAttackState.cpp
-└── └── └── └── └──     └── └── ├── BossAttackState.h
 └── └── └── └── └──     └── └── ├── BossDownwarAttackState.cpp
 └── └── └── └── └──     └── └── ├── BossDownwarAttackState.h
 └── └── └── └── └──     └── └── ├── BossJumpSmashAttackState.cpp
@@ -431,10 +423,10 @@
 └── └── └── └── └──     └── └── ├── BossHitReactionState.cpp
 └── └── └── └── └──     └── └── └── BossHitReactionState.h
 └── └── └── └── └──     └── └── Move/
+└── └── └── └── └──     └──     ├── BossMoveState.cpp
+└── └── └── └── └──     └──     ├── BossMoveState.h
 └── └── └── └── └──     └──     ├── BossTeleportState.cpp
-└── └── └── └── └──     └──     ├── BossTeleportState.h
-└── └── └── └── └──     └──     ├── MoveBossState.cpp
-└── └── └── └── └──     └──     └── MoveBossState.h
+└── └── └── └── └──     └──     └── BossTeleportState.h
 └── └── └── └── └──     └── Weapon/
 └── └── └── └── └──         ├── BossWeapon.cpp
 └── └── └── └── └──         └── BossWeapon.h
@@ -450,6 +442,8 @@
 └── └── └── └──     └── ├── PlayerAttackComponent.h
 └── └── └── └──     └── ├── PlayerAvoidanceComponent.cpp
 └── └── └── └──     └── ├── PlayerAvoidanceComponent.h
+└── └── └── └──     └── ├── PlayerHitReactionComponent.cpp
+└── └── └── └──     └── ├── PlayerHitReactionComponent.h
 └── └── └── └──     └── ├── PlayerMoveComponent.cpp
 └── └── └── └──     └── └── PlayerMoveComponent.h
 └── └── └── └──     ├── Hand/
@@ -465,6 +459,8 @@
 └── └── └── └──     └── ├── Base/
 └── └── └── └──     └── └── ├── PlayerState.cpp
 └── └── └── └──     └── └── └── PlayerState.h
+└── └── └── └──     └── ├── HitReactionState.cpp
+└── └── └── └──     └── ├── HitReactionState.h
 └── └── └── └──     └── ├── MoveState.cpp
 └── └── └── └──     └── ├── MoveState.h
 └── └── └── └──     └── ├── RootState.cpp
@@ -5658,8 +5654,6 @@ namespace MiiEngine {
 		Obj3D,
 		// SkyBox
 		PrimitiveSkyBox,
-		// Ocean
-		Ocean,
 		// FFTOcean
 		FFTOcean,
 		// Particle
@@ -5695,8 +5689,6 @@ namespace MiiEngine {
 	/// CSPipelineType
 	///-------------------------------------------///
 	enum class CSPipelineType {
-		// Ocean
-		Ocean,
 		// FFTOcean
 		FFTOcean,
 		// Ripples
@@ -5707,7 +5699,9 @@ namespace MiiEngine {
 	};
 
 
-	// 列挙型の全値を取得する関数
+	///-------------------------------------------/// 
+	/// 列挙型の全値を取得する関数
+	///-------------------------------------------///
 	constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipelineType)> AllPipelineTypes() {
 		return {
 			// Graphics Pipelines
@@ -5718,7 +5712,6 @@ namespace MiiEngine {
 			PipelineType::PrimitiveSkyBox,
 			PipelineType::Particle ,
 			PipelineType::Skinning3D,
-			PipelineType::Ocean,
 			PipelineType::FFTOcean,
 			PipelineType::Line3D,
 			PipelineType::OffScreen,
@@ -5733,10 +5726,11 @@ namespace MiiEngine {
 		};
 	}
 
-	// 列挙型の全値を取得する関数
+	///-------------------------------------------///
+	/// 列挙型の全値を取得する関数
+	///-------------------------------------------///
 	constexpr std::array<CSPipelineType, static_cast<size_t>(CSPipelineType::CountOfCSPipelineType)> AllCSPipelineTypes() {
 		return {
-			CSPipelineType::Ocean,
 			CSPipelineType::FFTOcean,
 			CSPipelineType::Ripples,
 		};
@@ -10221,7 +10215,7 @@ namespace MiiEngine {
 		outUAV.CreateAsTexture2D(
 			device,
 			outResource->GetBuffer(),
-			DXGI_FORMAT_R32G32B32A32_FLOAT,
+			format,
 			srvManager_->GetCPUDescriptorHandle(uavIndices_[uavSlot])
 		);
 	}
@@ -10337,7 +10331,6 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="commandList">リソース状態の遷移を記録するために使用されるDirect3D 12グラフィックスコマンドリスト。</param>
 		void ResetResourceStatesForNextFrame(ID3D12GraphicsCommandList* commandList);
-
 
 
 	public: /// ===Getter=== ///
@@ -10993,1260 +10986,6 @@ namespace MiiEngine {
 }
 
 ============================================================
-File Path: Project/Engine/Graphics/Ocean/OceanCommon.cpp
-============================================================
-#include "OceanCommon.h"
-// Service
-#include "Service/Render.h"
-#include "Service/Camera.h"
-// camera
-#include "Engine/Camera/Base/CameraCommon.h"
-// Math
-#include "Math/sMath.h"
-#include "Math/MatrixMath.h"
-
-namespace MiiEngine {
-	///-------------------------------------------/// 
-	/// デストラクタ
-	///-------------------------------------------///
-	OceanCommon::~OceanCommon() {
-		material_.reset();
-		wvp_.reset();
-		directionalLight_.reset();
-		camera3D_.reset();
-	}
-
-	///-------------------------------------------/// 
-	/// Getter
-	///-------------------------------------------///
-	const QuaternionTransform& OceanCommon::GetWorldTransform() const { return worldTransform_; }
-	const Vector4& OceanCommon::GetColor() const { return color_; }
-
-	///-------------------------------------------/// 
-	/// Setter
-	///-------------------------------------------///
-	void OceanCommon::SetTranslate(const Vector3& position) { worldTransform_.translate = position; }
-	void OceanCommon::SetRotate(const Quaternion& rotate) { worldTransform_.rotate = rotate; }
-	void OceanCommon::SetScale(const Vector3& scale) { worldTransform_.scale = scale; }
-	void OceanCommon::SetColor(const Vector4& color) { color_ = color; }
-	void OceanCommon::SetLightData(LightInfo light) { light_ = light; }
-
-	///-------------------------------------------/// 
-	/// 初期化
-	///-------------------------------------------///
-	void OceanCommon::Initialize(ID3D12Device* device) {
-		/// ===生成=== ///
-		material_ = std::make_unique<Material3D>();
-		wvp_ = std::make_unique<Transform3D>();
-		//  Camera
-		camera3D_ = std::make_unique<BufferBase>();
-		// Light
-		directionalLight_ = std::make_unique<BufferBase>();
-
-		/// ===worldTransform=== ///
-		worldTransform_ = { { 10.0f, 1.0f, 10.0f }, { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
-		uvTransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-
-		/// ===Material=== ///
-		material_->Create(device, sizeof(MaterialData3D));
-		material_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&materialData_));
-		// Data書き込み
-		materialData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		materialData_->enableLighting = 1;
-		materialData_->shininess = 10.0f;
-		materialData_->uvTransform = Math::MakeIdentity4x4();
-
-		/// ===wvp=== ///
-		wvp_->Create(device, sizeof(TransformationMatrix3D));
-		wvp_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&wvpMatrixData_));
-		// Dataの書き込み
-		wvpMatrixData_->WVP = Math::MakeIdentity4x4();
-		wvpMatrixData_->World = Math::MakeIdentity4x4();
-		wvpMatrixData_->WorldInverseTranspose = Math::Inverse4x4(wvpMatrixData_->World);
-
-		/// ===DirectionalLight=== ///
-		directionalLight_->Create(device, sizeof(DirectionalLight));
-		directionalLight_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData_));
-		// Data書き込み
-		directionalLightData_->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		directionalLightData_->direction = { 0.0f, -1.0f, 0.0f };  // 真上から
-		directionalLightData_->intensity = 1.5f;  // 少し明るく
-
-		/// ===Camera=== ///
-		camera3D_->Create(device, sizeof(CameraForGPU));
-		camera3D_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&cameraData_));
-		// Data書き込み
-		cameraData_->worldPosition = { 0.0f, 4.0f, -10.0f };
-	}
-
-	///-------------------------------------------/// 
-	/// 更新
-	///-------------------------------------------///
-	void OceanCommon::Update() {
-		camera_ = Service::Camera::GetActiveCamera();
-
-		MaterialDataWrite();
-		TransformDataWrite();
-		LightDataWrite();
-		CameraDataWrite();
-	}
-
-	///-------------------------------------------/// 
-	/// 描画準備
-	///-------------------------------------------///
-	void OceanCommon::Bind(ID3D12GraphicsCommandList* commandList) {
-		/// ===コマンドリストに設定=== ///
-		// MaterialBufferの設定
-		commandList->SetGraphicsRootConstantBufferView(0, material_->GetBuffer()->GetGPUVirtualAddress());
-		// wvpMatrixBufferの設定
-		commandList->SetGraphicsRootConstantBufferView(1, wvp_->GetBuffer()->GetGPUVirtualAddress());
-		// DirectionalLightの設定
-		commandList->SetGraphicsRootConstantBufferView(2, directionalLight_->GetBuffer()->GetGPUVirtualAddress());
-		// CameraBufferの設定
-		commandList->SetGraphicsRootConstantBufferView(3, camera3D_->GetBuffer()->GetGPUVirtualAddress());
-	}
-
-	///-------------------------------------------/// 
-	/// MaterialDataの書き込み処理
-	///-------------------------------------------///
-	void OceanCommon::MaterialDataWrite() {
-		// UV変換行列の計算
-		Matrix4x4 uvTransformMatrix = Math::MakeScaleMatrix(uvTransform_.scale);
-		Matrix4x4 uvTransformMatrixMultiply = Multiply(uvTransformMatrix, Math::MakeRotateZMatrix(uvTransform_.rotate.z));
-		uvTransformMatrixMultiply = Multiply(uvTransformMatrixMultiply, Math::MakeTranslateMatrix(uvTransform_.translate));
-
-		// データの書き込み
-		materialData_->color = color_;
-		materialData_->shininess = light_.shininess;
-		materialData_->uvTransform = uvTransformMatrixMultiply;
-	}
-
-	///-------------------------------------------/// 
-	/// Transform情報の書き込み処理
-	///-------------------------------------------///
-	void OceanCommon::TransformDataWrite() {
-		// ワールド行列の計算
-		Matrix4x4 worldMatrix = Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate);
-		Matrix4x4 worldViewProjectionMatrix;
-		// ビュー射影行列の取得と掛け算
-		const Matrix4x4& viewProjectionMatrix = camera_->GetViewProjectionMatrix();
-		worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
-
-		// データの書き込み
-		wvpMatrixData_->WVP = worldViewProjectionMatrix;
-		wvpMatrixData_->World = worldMatrix;
-		wvpMatrixData_->WorldInverseTranspose = Math::Inverse4x4(worldMatrix);
-	}
-
-	///-------------------------------------------/// 
-	/// LightData書き込み処理
-	///-------------------------------------------///
-	void OceanCommon::LightDataWrite() {
-		// 平行光源のデータ書き込み
-		directionalLightData_->color = light_.directional.color;
-		directionalLightData_->direction = light_.directional.direction;
-		directionalLightData_->intensity = light_.directional.intensity;
-	}
-
-	///-------------------------------------------/// 
-	/// CameraData書き込み処理
-	///-------------------------------------------///
-	void OceanCommon::CameraDataWrite() {
-		// カメラのワールド位置を書き込み
-		cameraData_->worldPosition = camera_->GetTranslate();
-	}
-}
-
-
-============================================================
-File Path: Project/Engine/Graphics/Ocean/OceanCommon.h
-============================================================
-#pragma once
-/// ===include=== ///
-#include "Engine/Graphics/3d/Base/Material3D.h"
-#include "Engine/Graphics/3d/Base/Transform3D.h"
-#include "Engine/Graphics/Base/BufferBase.h"
-// Data
-#include "Engine/DataInfo/LightData.h"
-// c++
-#include <memory>
-
-namespace MiiEngine {
-	/// ===前方宣言=== ///
-	class CameraCommon;
-
-	///-------------------------------------------/// 
-	/// OceanCommon
-	///-------------------------------------------///
-	class OceanCommon {
-	public:
-		OceanCommon() = default;
-		~OceanCommon();
-
-		/// <summary>
-		/// 初期化処理
-		/// </summary>
-		/// <param name="device">初期化に使用するID3D12Deviceへのポインター。nullptrではない必要があります。</param>
-		void Initialize(ID3D12Device* device);
-
-		/// <summary>
-		/// 更新処理
-		/// </summary>
-		void Update();
-
-		/// <summary>
-		/// 描画準備処理
-		/// </summary>
-		void Bind(ID3D12GraphicsCommandList* commandList);
-
-	public: /// ===Getter=== ///
-		// Transform情報取得
-		const QuaternionTransform& GetWorldTransform() const;
-		// Color取得
-		const Vector4& GetColor() const;
-
-	public: /// ===Setter=== ///
-		// Transform
-		void SetTranslate(const Vector3& position);
-		void SetRotate(const Quaternion& rotate);
-		void SetScale(const Vector3& scale);
-		// Color
-		void SetColor(const Vector4& color);
-		// Light
-		void SetLightData(LightInfo light);
-	protected:
-
-		/// ===バッファリソース=== ///
-		std::unique_ptr<Material3D> material_;
-		std::unique_ptr<Transform3D> wvp_;
-		// Light
-		std::unique_ptr<BufferBase> directionalLight_;
-		// Camera
-		std::unique_ptr<BufferBase> camera3D_;
-
-		/// ===バッファリソース内のデータを指すポインタ=== ///
-		MaterialData3D* materialData_ = nullptr;
-		TransformationMatrix3D* wvpMatrixData_ = nullptr;
-		// Light
-		DirectionalLight* directionalLightData_ = nullptr;
-		// Camera
-		CameraForGPU* cameraData_ = nullptr;
-
-		/// ===UV=== ///
-		EulerTransform uvTransform_;
-
-		/// ===カメラ=== ///
-		MiiEngine::CameraCommon* camera_ = nullptr;
-
-		/// ===Transform情報=== ///
-		QuaternionTransform worldTransform_;
-		Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-		/// ===Light=== ///
-		LightInfo light_ = {
-			40.0f,
-			{{ 1.0f, 1.0f, 1.0f, 1.0f }, { 0.0f, -1.0f, 0.0f }, 1.0f},
-			{{ 1.0f, 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, 1.0f, 0.0f, 0.0f},
-			{{ 1.0f, 1.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, 0.0f, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f}
-		};
-
-	private:
-
-		/// <summary>
-		/// MaterialDataの書き込み処理
-		/// </summary>
-		void MaterialDataWrite();
-
-		/// <summary>
-		/// Transform情報の書き込み処理
-		/// </summary>
-		void TransformDataWrite();
-
-		/// <summary>
-		/// LightData書き込み処理
-		/// </summary>
-		void LightDataWrite();
-
-		/// <summary>
-		/// CameraData書き込み処理
-		/// </summary>
-		void CameraDataWrite();
-	};
-}
-
-
-
-============================================================
-File Path: Project/Engine/Graphics/Ocean/OceanGenerator.cpp
-============================================================
-#include "OceanGenerator.h"
-// c++
-#include <cassert>
-// Service
-#include "Service/GraphicsResourceGetter.h"
-#include "Service/Render.h"
-#include "Service/DeltaTime.h"
-// Math
-#include "Math/sMath.h"
-#include "Math/MatrixMath.h"
-
-#ifdef USE_IMGUI
-#include <imgui.h>
-#endif
-
-namespace MiiEngine {
-    ///-------------------------------------------/// 
-    /// デストラクタ
-    ///-------------------------------------------///
-    OceanGenerator::~OceanGenerator() {
-        vertex_.reset();
-        index_.reset();
-        material_.reset();
-        wvp_.reset();
-        directionalLight_.reset();
-        camera3D_.reset();
-        oceanColorBuffer_.reset();
-        waveCompute_.reset();
-    }
-
-    ///-------------------------------------------/// 
-    /// Setter
-    ///-------------------------------------------///
-    // 波情報の設定
-    void OceanGenerator::SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed) {
-        if (waveIndex >= 0 && waveIndex < kWaveCount_) {
-            waveInfos_[waveIndex].distance = direction;
-            waveInfos_[waveIndex].amplitude = amplitude;
-            waveInfos_[waveIndex].length = length;
-            waveInfos_[waveIndex].speed = speed;
-        }
-    }
-    // 色情報の設定
-    void OceanGenerator::SetColorInfo(const OceanColorInfo& colorInfo) {
-        colorInfo_ = colorInfo;
-    }
-    // 波紋パラメータの設定
-    void OceanGenerator::SetRippleSpeed(float speed) { rippleSpeed_ = speed; }
-    void OceanGenerator::SetRippleDecay(float decay) { rippleDecay_ = decay; }
-
-    ///-------------------------------------------/// 
-    /// 初期化
-    ///-------------------------------------------///
-    void OceanGenerator::Initialize(int gridSize) {
-        ID3D12Device* device = Service::GraphicsResourceGetter::GetDXDevice();
-
-        /// ===生成=== ///
-        vertex_ = std::make_unique<BufferBase>();
-        index_ = std::make_unique<BufferBase>();
-        material_ = std::make_unique<Material3D>();
-        wvp_ = std::make_unique<Transform3D>();
-        camera3D_ = std::make_unique<BufferBase>();
-        directionalLight_ = std::make_unique<BufferBase>();
-        oceanColorBuffer_ = std::make_unique<BufferBase>();
-        waveCompute_ = std::make_unique<OceanWaveCompute>();
-
-        /// ===グリッドサイズの設定=== ///
-        gridSize_ = gridSize;
-        vertexCount_ = (gridSize_ + 1) * (gridSize_ + 1);
-        indexCount_ = gridSize_ * gridSize_ * 6;
-
-        /// ===worldTransform=== ///
-        worldTransform_ = { { 0.5f, 1.0f, 0.5f }, { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
-        uvTransform_ = { {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-
-        /// ===WaveCompute初期化=== ///
-        waveCompute_->Initialize(device, gridSize_);
-
-        /// ===vertex=== ///
-        // Compute Shaderの出力サイズに合わせる（WaveVertexDataと同じサイズ）
-        vertex_->SetBuffer(waveCompute_->GetOutputBuffer());
-        vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
-        vertexBufferView_.SizeInBytes = sizeof(VertexData3D) * vertexCount_;
-        vertexBufferView_.StrideInBytes = sizeof(VertexData3D);
-        //CreateGridMesh(); // 初期状態（平面）を作成
-
-        vertexBufferView_.BufferLocation = vertex_->GetBuffer()->GetGPUVirtualAddress();
-        vertexBufferView_.SizeInBytes = sizeof(VertexData3D) * vertexCount_;
-        vertexBufferView_.StrideInBytes = sizeof(VertexData3D);
-
-        /// ===index=== ///
-        index_->Create(device, sizeof(uint32_t) * indexCount_);
-        index_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
-
-        int idx = 0;
-        for (int z = 0; z < gridSize_; ++z) {
-            for (int x = 0; x < gridSize_; ++x) {
-                int topLeft = z * (gridSize_ + 1) + x;
-                int topRight = topLeft + 1;
-                int bottomLeft = (z + 1) * (gridSize_ + 1) + x;
-                int bottomRight = bottomLeft + 1;
-
-                indexData_[idx++] = topLeft;
-                indexData_[idx++] = bottomLeft;
-                indexData_[idx++] = topRight;
-                indexData_[idx++] = topRight;
-                indexData_[idx++] = bottomLeft;
-                indexData_[idx++] = bottomRight;
-            }
-        }
-
-        indexBufferView_.BufferLocation = index_->GetBuffer()->GetGPUVirtualAddress();
-        indexBufferView_.SizeInBytes = sizeof(uint32_t) * indexCount_;
-        indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
-
-        /// ===OceanCommon=== ///
-        OceanCommon::Initialize(device);
-
-        /// ===波情報の初期化=== ///
-        InitializeWaveInfos();
-
-        /// ===波紋バッファの初期化=== ///
-        for (int i = 0; i < 8; ++i) {
-            ripples_[i].isActive = false;
-            ripples_[i].position = { 0.0f, 0.0f };
-            ripples_[i].startTime = 0.0f;
-            ripples_[i].intensity = 0.0f;
-            ripples_[i].duration = 3.0f;
-            ripples_[i].maxRadius = 20.0f;
-            ripples_[i].speed = 4.0f;
-            ripples_[i].priority = 0;
-        }
-
-        rippleBuffer_.activeCount = 0;
-        rippleBuffer_.currentTime = 0.0f;
-        rippleBuffer_.rippleSpeed = rippleSpeed_;
-        rippleBuffer_.rippleDecay = rippleDecay_;
-
-        // 波紋データの初期化
-        for (int i = 0; i < 8; ++i) {
-            rippleBuffer_.ripples[i].position = { 0.0f, 0.0f };
-            rippleBuffer_.ripples[i].startTime = 0.0f;
-            rippleBuffer_.ripples[i].intensity = 0.0f;
-            rippleBuffer_.ripples[i].duration = 0.0f;
-            rippleBuffer_.ripples[i].maxRadius = 0.0f;
-            rippleBuffer_.ripples[i].speed = 0.0f;
-            rippleBuffer_.ripples[i].padding = 0.0f;
-        }
-
-        nextPriority_ = 0;
-
-        /// ===OceanColorBuffer=== ///
-        oceanColorBuffer_->Create(device, sizeof(OceanColorInfo));
-        oceanColorBuffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&oceanColorData_));
-        *oceanColorData_ = colorInfo_;
-    }
-
-    ///-------------------------------------------/// 
-    /// 波情報の初期化（12個）
-    ///-------------------------------------------///
-    void OceanGenerator::InitializeWaveInfos() {
-
-        // 最初の3つは従来の波
-        waveInfos_[0] = { { 0.0f, 0.0f, 0.0f }, 1.308f, 10.033f, 2.187f, 0.0f, 0.0f };
-        waveInfos_[1] = { { 0.0f, 0.0f, 0.0f }, 0.056f, 7.369f, 2.320f, 0.0f, 0.0f };
-        waveInfos_[2] = { { 0.0f, 0.0f, 0.0f }, 0.879f, 4.355f, 2.098f, 0.0f, 0.0f };
-    }
-
-    ///-------------------------------------------/// 
-    /// 更新
-    ///-------------------------------------------///
-    void OceanGenerator::Update() {
-        currentTime_ += Service::DeltaTime::GetDeltaTime();
-
-        /// ===時間の更新=== ///
-        for (int i = 0; i < kWaveCount_; ++i) {
-            waveInfos_[i].time = currentTime_;
-        }
-
-        /// ===波紋の更新=== ///
-        UpdateRipples();
-
-        /// ===WorldMatrixの更新=== ///
-        waveCompute_->UpdateWorldMatrix(Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate));
-
-        /// ===Compute Shaderで波を計算=== ///
-        waveCompute_->UpdateWaveInfos(waveInfos_);
-        waveCompute_->UpdateRippleBuffer(rippleBuffer_);
-
-        /// ===データの書き込み=== ///
-        OceanCommon::Update();
-        ColorDataWrite();
-    }
-
-    ///-------------------------------------------/// 
-    /// 描画
-    ///-------------------------------------------///
-    void OceanGenerator::Draw(BlendMode mode) {
-        ID3D12GraphicsCommandList* commandList = Service::GraphicsResourceGetter::GetDXCommandList();
-
-        // Compute PSOとRoot Signatureを設定
-        Service::Render::SetCSPSO(commandList, CSPipelineType::Ocean);
-        // Compute Shaderを実行
-        waveCompute_->Dispatch(commandList);
-        // UAV -> Vertex Bufferへの状態遷移
-        D3D12_RESOURCE_BARRIER barrier = {};
-        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Transition.pResource = vertex_->GetBuffer();
-        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-        commandList->ResourceBarrier(1, &barrier);
-
-        // Graphics PSOを設定
-        Service::Render::SetPSO(commandList, PipelineType::Ocean, mode);
-
-        commandList->IASetVertexBuffers(0, 1, &vertexBufferView_);
-        commandList->IASetIndexBuffer(&indexBufferView_);
-
-        // バッファの設定
-        commandList->SetGraphicsRootConstantBufferView(0, material_->GetBuffer()->GetGPUVirtualAddress());
-        commandList->SetGraphicsRootConstantBufferView(1, wvp_->GetBuffer()->GetGPUVirtualAddress());
-        commandList->SetGraphicsRootConstantBufferView(2, directionalLight_->GetBuffer()->GetGPUVirtualAddress());
-        commandList->SetGraphicsRootConstantBufferView(3, camera3D_->GetBuffer()->GetGPUVirtualAddress());
-        // OceanColorBufferの設定
-        commandList->SetGraphicsRootConstantBufferView(4, oceanColorBuffer_->GetBuffer()->GetGPUVirtualAddress());
-
-        commandList->DrawIndexedInstanced(indexCount_, 1, 0, 0, 0);
-
-        // 描画後、次のフレームのために VERTEX_AND_CONSTANT_BUFFER -> COMMON へ戻す
-        D3D12_RESOURCE_BARRIER barrierToCommon = {};
-        barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrierToCommon.Transition.pResource = vertex_->GetBuffer();
-        barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-        barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
-        barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        commandList->ResourceBarrier(1, &barrierToCommon);
-    }
-
-    ///-------------------------------------------/// 
-    /// ImGui
-    ///-------------------------------------------///
-    void OceanGenerator::ShowImGui() {
-#ifdef USE_IMGUI
-        ImGui::Begin("海洋シェーダー");
-
-        /// ===Transform情報=== ///
-        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::DragFloat3("Translate", &worldTransform_.translate.x, 0.1f);
-            ImGui::DragFloat4("Rotate", &worldTransform_.rotate.x, 0.01f);
-            ImGui::DragFloat3("Scale", &worldTransform_.scale.x, 0.1f);
-        }
-
-        /// ===グリッド情報=== ///
-        if (ImGui::CollapsingHeader("グリッド情報")) {
-            ImGui::Text("グリッドサイズ : %d x %d", gridSize_, gridSize_);
-            ImGui::Text("Vertex数 : %d", vertexCount_);
-            ImGui::Text("Index数 : %d", indexCount_);
-            ImGui::Text("Triangle数 : %d", indexCount_ / 3);
-        }
-
-        /// ===波の情報=== ///
-        if (ImGui::CollapsingHeader("波のパラメータ", ImGuiTreeNodeFlags_DefaultOpen)) {
-            for (int i = 0; i < kWaveCount_; ++i) {
-                ImGui::PushID(i);
-                if (ImGui::TreeNode("波", "波 %d", i)) {
-                    ImGui::Text("波の方向 : (%.2f, %.2f, %.2f)", waveInfos_[i].distance.x, waveInfos_[i].distance.y, waveInfos_[i].distance.z);
-                    ImGui::Text("波の振幅 : %.2f", waveInfos_[i].amplitude);
-                    ImGui::Text("波の波長 : %.2f", waveInfos_[i].length);
-                    ImGui::Text("波の速度 : %.2f", waveInfos_[i].speed);
-
-                    ImGui::Separator();
-
-                    ImGui::DragFloat3("方向", &waveInfos_[i].distance.x, 0.01f, -1.0f, 1.0f);
-                    ImGui::SliderFloat("振幅", &waveInfos_[i].amplitude, 0.0f, 2.0f);
-                    ImGui::SliderFloat("波長", &waveInfos_[i].length, 1.0f, 30.0f);
-                    ImGui::SliderFloat("速度", &waveInfos_[i].speed, 0.5f, 10.0f);
-
-                    ImGui::TreePop();
-                }
-                ImGui::PopID();
-            }
-        }
-
-        /// ===波紋情報=== ///
-        if (ImGui::CollapsingHeader("波紋情報", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::Text("Active Ripples: %d / 8", rippleBuffer_.activeCount);
-
-            ImGui::Text("波紋の速度 : %.2f", rippleSpeed_);
-            ImGui::Text("波紋の減衰 : %.2f", rippleDecay_);
-
-            if (ImGui::SliderFloat("速度", &rippleSpeed_, 1.0f, 10.0f)) {
-                rippleBuffer_.rippleSpeed = rippleSpeed_;
-            }
-            if (ImGui::SliderFloat("減衰", &rippleDecay_, 0.1f, 3.0f)) {
-                rippleBuffer_.rippleDecay = rippleDecay_;
-            }
-            if (ImGui::Button("全ての波紋をクリア")) {
-                ClearRipples();
-            }
-        }
-
-        /// ===色情報=== ///
-        if (ImGui::CollapsingHeader("色")) {
-            ImGui::ColorEdit3("海面の基本色", &colorInfo_.seaBase.x);
-            ImGui::ColorEdit3("浅瀬の色", &colorInfo_.seaShallow.x);
-            ImGui::ColorEdit3("空の色", &colorInfo_.sky.x);
-            ImGui::ColorEdit3("深海の色", &colorInfo_.deepWater.x);
-            ImGui::SliderFloat("基本色の強度", &colorInfo_.baseStrength, 0.0f, 2.0f);
-            ImGui::SliderFloat("水の透明度", &colorInfo_.waterClarity, 0.0f, 1.0f);
-            ImGui::SliderFloat("泡の閾値", &colorInfo_.foamThreshold, 0.0f, 3.0f);
-        }
-
-        /// ===ライト情報=== ///
-        if (ImGui::CollapsingHeader("ライト情報")) {
-            ImGui::Text("光沢度: %.2f", light_.shininess);
-            ImGui::DragFloat("光沢度", &light_.shininess, 0.1f);
-            ImGui::ColorEdit4("ライトの色", &light_.directional.color.x);
-            ImGui::SliderFloat3("方向", &light_.directional.direction.x, -1.0f, 1.0f);
-            ImGui::SliderFloat("強度", &light_.directional.intensity, 0.0f, 5.0f);
-        }
-
-        // テスト機能
-        if (ImGui::CollapsingHeader("テスト")) {
-            static float testIntensity = 1.0f;
-            static float testPosX = 0.0f;
-            static float testPosZ = 0.0f;
-
-            ImGui::SliderFloat("テスト強度", &testIntensity, 0.1f, 10.0f);
-            ImGui::SliderFloat("テスト座標X", &testPosX, -50.0f, 50.0f);
-            ImGui::SliderFloat("テスト座標Z", &testPosZ, -50.0f, 50.0f);
-
-            if (ImGui::Button("波紋の追加")) {
-                AddCircularRipple({ testPosX, 0.0f, testPosZ }, 3.0f, testIntensity);
-            }
-            ImGui::SameLine();
-
-            if (ImGui::Button("ランダムな位置に追加")) {
-                float randX = static_cast<float>(rand() % 100 - 50);
-                float randZ = static_cast<float>(rand() % 100 - 50);
-                float randIntensity = 0.5f + (rand() % 100) / 100.0f * 1.5f;
-                AddCircularRipple({ randX, 0.0f, randZ }, 3.0f, randIntensity);
-            }
-        }
-
-        ImGui::End();
-#endif
-    }
-
-    ///-------------------------------------------/// 
-    /// グリッドメッシュの生成
-    ///-------------------------------------------///
-    void OceanGenerator::CreateGridMesh() {
-        float gridWidth = 100.0f;
-        float gridDepth = 100.0f;
-        float step = gridWidth / gridSize_;
-
-        int vertexIndex = 0;
-        for (int i = 0; i <= gridSize_; i++) {
-            for (int j = 0; j <= gridSize_; j++) {
-                float x = -gridWidth * 0.5f + j * step;
-                float z = -gridDepth * 0.5f + i * step;
-                float u = (float)j / gridSize_;
-                float v = (float)i / gridSize_;
-
-                vertexData_[vertexIndex] = {
-                    {x, 0.0f, z, 1.0f},
-                    {u, v},
-                    {0.0f, 1.0f, 0.0f}
-                };
-                vertexIndex++;
-            }
-        }
-    }
-
-    ///-------------------------------------------/// 
-    /// ColorDataの書き込み
-    ///-------------------------------------------///
-    void OceanGenerator::ColorDataWrite() {
-        *oceanColorData_ = colorInfo_;
-    }
-
-    ///-------------------------------------------/// 
-    /// 波紋の更新
-    ///-------------------------------------------///
-    void OceanGenerator::UpdateRipples() {
-        int activeCount = 0;
-
-        for (int i = 0; i < 8; ++i) {
-            if (ripples_[i].isActive) {
-                float elapsed = currentTime_ - ripples_[i].startTime;
-
-                if (elapsed > ripples_[i].duration) {
-                    ripples_[i].isActive = false;
-                } else {
-                    rippleBuffer_.ripples[activeCount].position = ripples_[i].position;
-                    rippleBuffer_.ripples[activeCount].startTime = ripples_[i].startTime;
-                    rippleBuffer_.ripples[activeCount].intensity = ripples_[i].intensity;
-                    rippleBuffer_.ripples[activeCount].duration = ripples_[i].duration;
-                    rippleBuffer_.ripples[activeCount].maxRadius = ripples_[i].maxRadius;
-                    rippleBuffer_.ripples[activeCount].speed = ripples_[i].speed;
-                    activeCount++;
-                }
-            }
-        }
-
-        rippleBuffer_.activeCount = activeCount;
-        rippleBuffer_.currentTime = currentTime_;
-        rippleBuffer_.rippleSpeed = rippleSpeed_;
-        rippleBuffer_.rippleDecay = rippleDecay_;
-    }
-
-    ///-------------------------------------------/// 
-    /// 波紋の追加
-    ///-------------------------------------------///
-    void OceanGenerator::AddCircularRipple(const Vector3& center, float duration, float intensity, float maxRadius) {
-        int targetSlot = -1;
-
-        for (int i = 0; i < 8; ++i) {
-            if (!ripples_[i].isActive) {
-                targetSlot = i;
-                break;
-            }
-        }
-
-        if (targetSlot == -1) {
-            int lowestPriority = ripples_[0].priority;
-            targetSlot = 0;
-
-            for (int i = 1; i < 8; ++i) {
-                if (ripples_[i].priority < lowestPriority) {
-                    lowestPriority = ripples_[i].priority;
-                    targetSlot = i;
-                }
-            }
-        }
-
-        if (targetSlot >= 0 && targetSlot < 8) {
-            ripples_[targetSlot].position = { center.x, center.z };
-            ripples_[targetSlot].startTime = currentTime_;
-            ripples_[targetSlot].intensity = intensity;
-            ripples_[targetSlot].duration = duration;
-            ripples_[targetSlot].maxRadius = maxRadius;
-            ripples_[targetSlot].speed = maxRadius / duration;
-            ripples_[targetSlot].priority = nextPriority_++;
-            ripples_[targetSlot].isActive = true;
-        }
-    }
-
-    ///-------------------------------------------/// 
-    /// 波紋のクリア
-    ///-------------------------------------------///
-    void OceanGenerator::ClearRipples() {
-        for (int i = 0; i < 8; ++i) {
-            ripples_[i].isActive = false;
-        }
-        rippleBuffer_.activeCount = 0;
-        hitRecords_.clear();
-    }
-}
-
-============================================================
-File Path: Project/Engine/Graphics/Ocean/OceanGenerator.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// buffer
-#include "Engine/Graphics/Base/BufferBase.h"
-// Common
-#include "OceanCommon.h"
-// Wave Compute
-#include "OceanWaveCompute.h"
-// Pipeline
-#include "Engine/DataInfo/PipelineStateObjectType.h"
-// Data
-#include "Engine/DataInfo/OceanData.h"
-// c++
-#include <vector>
-#include <array>
-#include <algorithm>
-
-namespace MiiEngine {
-    ///=====================================================/// 
-    /// OceanGenerator
-    ///=====================================================///
-    class OceanGenerator : public OceanCommon {
-    public:
-        OceanGenerator() = default;
-        ~OceanGenerator();
-
-        /// <summary>
-        /// 初期化処理
-        /// </summary>
-        /// <param name="gridSize">グリッドのサイズ（縦横の分割数）</param>
-        void Initialize(int gridSize);
-
-        /// <summary>
-        /// 更新処理
-        /// </summary>
-        void Update();
-
-        /// <summary>
-        /// 描画処理
-        /// </summary>
-        /// <param name="mode">ブレンドモード</param>
-        void Draw(BlendMode mode = BlendMode::KBlendModeNormal);
-
-        /// <summary>
-        /// ImGui情報の表示
-        /// </summary>
-        void ShowImGui();
-
-        /// <summary>
-        /// 円状に広がる波紋を追加
-        /// </summary>
-        void AddCircularRipple(const Vector3& center, float duration = 3.0f, float intensity = 1.0f, float maxRadius = 20.0f);
-
-        /// <summary>
-        /// すべての波紋をクリア
-        /// </summary>
-        void ClearRipples();
-
-    public: /// ===Setter=== ///
-        // Ocean Wave Parameters（12個の波対応）
-        void SetWaveInfo(int waveIndex, const Vector3& direction, float amplitude, float length, float speed);
-        // Ocean Color Parameters
-        void SetColorInfo(const OceanColorInfo& colorInfo);
-        // Ripple Parameters
-        void SetRippleSpeed(float speed);
-        void SetRippleDecay(float decay);
-
-    private:
-        /// ===バッファリソース=== ///
-        std::unique_ptr<BufferBase> vertex_;
-        std::unique_ptr<BufferBase> index_;
-        std::unique_ptr<BufferBase> oceanColorBuffer_;    // 色情報バッファ
-
-        /// ===Wave Compute=== ///
-        std::unique_ptr<OceanWaveCompute> waveCompute_;
-
-        /// ===バッファリソース内のデータを指すポインタ=== ///
-        VertexData3D* vertexData_ = nullptr;
-        uint32_t* indexData_ = nullptr;
-        OceanColorInfo* oceanColorData_ = nullptr;
-
-        /// ===バッファビュー=== ///
-        D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-        D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
-
-        /// ===グリッド情報=== ///
-        int gridSize_ = 64;
-        int vertexCount_ = 0;
-        int indexCount_ = 0;
-
-        /// ===波情報（12個）=== ///
-        std::array<OceanShaderInfo, kWaveCount_> waveInfos_;
-
-        /// ===波紋管理=== ///
-        std::array<RippleData, 8> ripples_;
-        RippleBufferForGPU rippleBuffer_;
-        float currentTime_ = 0.0f;
-        float rippleSpeed_ = 4.0f;
-        float rippleDecay_ = 1.0f;
-        int nextPriority_ = 0;
-
-        // 衝突検知用
-        struct HitRecord {
-            int objectID;
-            Vector3 lastPosition;
-            bool wasHitting;
-        };
-        std::vector<HitRecord> hitRecords_;
-
-        /// ===Ocean Color情報=== ///
-        OceanColorInfo colorInfo_ = {
-            { 0.1f, 0.4f, 0.6f }, 0.0f,
-            { 0.2f, 0.7f, 0.8f }, 0.0f,
-            { 0.4f, 0.6f, 0.9f }, 0.0f,
-            { 0.0f, 0.05f, 0.2f },
-            1.2f,
-            0.3f,
-            0.4f,
-            0.5f
-        };
-
-    private: /// ===Functions=== ///
-        /// <summary>
-        /// グリッドメッシュの生成（初期状態・平面）
-        /// </summary>
-        void CreateGridMesh();
-
-        /// <summary>
-        /// ColorData書き込み処理
-        /// </summary>
-        void ColorDataWrite();
-
-        /// <summary>
-        /// 波紋の更新処理
-        /// </summary>
-        void UpdateRipples();
-
-        /// <summary>
-        /// 波情報の初期化（12個）
-        /// </summary>
-        void InitializeWaveInfos();
-    };
-}
-
-============================================================
-File Path: Project/Engine/Graphics/Ocean/OceanWaveCompute.cpp
-============================================================
-#include "OceanWaveCompute.h"
-// C++
-#include <cassert>
-// Service
-#include "Service/Locator.h"
-#include "Service/Render.h"
-// SRVManager
-#include "Engine/System/Managers/SRVManager.h"
-// Math
-#include "Math/sMath.h"
-#include "Math/MatrixMath.h"
-
-namespace MiiEngine {
-    ///-------------------------------------------/// 
-    /// デストラクタ
-    ///-------------------------------------------///
-    OceanWaveCompute::~OceanWaveCompute() {
-        waveInfoBuffer_.reset();
-        rippleBuffer_.reset();
-        settingsBuffer_.reset();
-        outputUAV_.reset();
-        outputBuffer_.Reset();
-    }
-
-    ///-------------------------------------------/// 
-    /// Getter
-    ///-------------------------------------------///
-    // UAVのIndex取得
-    uint32_t OceanWaveCompute::GetUAVIndex() const { return uavIndex_; }
-    // SRVのIndex取得
-    uint32_t OceanWaveCompute::GetSRVIndex() const { return srvIndex_; }
-    // 出力バッファリソースの取得
-    ID3D12Resource* OceanWaveCompute::GetOutputBuffer() const { return outputBuffer_.Get(); }
-
-
-    ///-------------------------------------------/// 
-    /// 初期化
-    ///-------------------------------------------///
-    void OceanWaveCompute::Initialize(ID3D12Device* device, int gridSize) {
-        gridSize_ = gridSize;
-        vertexCount_ = (gridSize_ + 1) * (gridSize_ + 1);
-
-        // SRVManagerを取得
-        srvManager_ = Service::Locator::GetSRVManager();
-
-        // === 波情報バッファ（12個の波）StructuredBuffer === //
-        waveInfoBuffer_ = std::make_unique<BufferBase>();
-        waveInfoBuffer_->Create(device, sizeof(OceanShaderInfo) * 12);
-        // マッピング
-        waveInfoBuffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&waveInfoData_));
-
-        // デフォルト値で初期化
-        for (int i = 0; i < kWaveCount_; ++i) {
-            waveInfoData_[i].distance = { 0.0f, 0.0f, 0.0f };
-            waveInfoData_[i].amplitude = 0.0f;
-            waveInfoData_[i].length = 10.0f;
-            waveInfoData_[i].speed = 2.0f;
-            waveInfoData_[i].time = 0.0f;
-            waveInfoData_[i].padding = 0.0f;
-        }
-
-        // === 波紋バッファ（ConstantBuffer） === //
-        rippleBuffer_ = std::make_unique<BufferBase>();
-        rippleBuffer_->Create(device, sizeof(RippleBufferForGPU));
-        // マッピング
-        rippleBuffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&rippleBufferData_));
-
-        // === 設定バッファ（ConstantBuffer） === //
-        settingsBuffer_ = std::make_unique<BufferBase>();
-        settingsBuffer_->Create(device, sizeof(WaveSettings));
-        // マッピング
-        settingsBuffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&settingsData_));
-        // 設定値の初期化
-        settingsData_->gridSize = gridSize_;
-        settingsData_->gridWidth = 100.0f;
-        settingsData_->gridDepth = 100.0f;
-        settingsData_->normalEpsilon = 0.1f;
-        settingsData_->worldMatrix = Math::MakeIdentity4x4();
-        settingsData_->worldOffset = { 0.0f, 0.0f, 0.0f };
-        settingsData_->padding1 = 0.0f;
-
-        // === 出力バッファ（UAV用）=== //
-        CreateUAVBuffer(device);
-
-        // === SRVとUAVの作成 === //
-        CreateViews(device, srvManager_);
-    }
-
-    ///-------------------------------------------/// 
-    /// 波の計算を実行
-    ///-------------------------------------------///
-    void OceanWaveCompute::Dispatch(ID3D12GraphicsCommandList* commandList) {
-        ID3D12DescriptorHeap* descriptorHeaps[] = {
-            srvManager_->GetDescriptorHeap()  // SRVManagerからヒープを取得
-        };
-        commandList->SetDescriptorHeaps(1, descriptorHeaps);
-
-        // COMMON -> UNORDERED_ACCESS への遷移バリア
-        D3D12_RESOURCE_BARRIER barrierToUAV = {};
-        barrierToUAV.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrierToUAV.Transition.pResource = outputBuffer_.Get();
-        barrierToUAV.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-        barrierToUAV.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-        barrierToUAV.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        commandList->ResourceBarrier(1, &barrierToUAV);
-
-        // [0] CBV - 設定バッファ (b0)
-        commandList->SetComputeRootConstantBufferView(0, settingsBuffer_->GetBuffer()->GetGPUVirtualAddress());
-
-        // [1] CBV - 波紋バッファ (b1)
-        commandList->SetComputeRootConstantBufferView(1, rippleBuffer_->GetBuffer()->GetGPUVirtualAddress());
-
-        // [2] DescriptorTable - SRV (t0: 波情報)
-        commandList->SetComputeRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(srvIndex_));
-
-        // [3] DescriptorTable - UAV (u0: 出力バッファ)
-        commandList->SetComputeRootDescriptorTable(3, srvManager_->GetGPUDescriptorHandle(uavIndex_));
-
-        // ディスパッチ（8x8のスレッドグループ）
-        int dispatchX = (gridSize_ + 7) / 8;
-        int dispatchY = (gridSize_ + 7) / 8;
-        commandList->Dispatch(dispatchX, dispatchY, 1);
-
-        // UAVバリア（書き込み完了を保証）
-        D3D12_RESOURCE_BARRIER uavBarrier = {};
-        uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-        uavBarrier.UAV.pResource = outputBuffer_.Get();
-        commandList->ResourceBarrier(1, &uavBarrier);
-    }
-
-    ///-------------------------------------------/// 
-    /// 波情報の更新
-    ///-------------------------------------------///
-    void OceanWaveCompute::UpdateWaveInfos(const std::array<OceanShaderInfo, kWaveCount_>& waveInfos) {
-        for (int i = 0; i < kWaveCount_; ++i) {
-            waveInfoData_[i] = waveInfos[i];
-        }
-    }
-
-    ///-------------------------------------------/// 
-    /// 波紋情報の更新
-    ///-------------------------------------------///
-    void OceanWaveCompute::UpdateRippleBuffer(const RippleBufferForGPU& rippleBuffer) { *rippleBufferData_ = rippleBuffer; }
-
-    ///-------------------------------------------/// 
-    /// ワールド行列の更新
-    ///-------------------------------------------///
-    void OceanWaveCompute::UpdateWorldMatrix(const Matrix4x4& worldMatrix) { settingsData_->worldMatrix = worldMatrix; }
-
-    ///-------------------------------------------/// 
-    /// 計算結果を頂点バッファにコピー
-    ///-------------------------------------------///
-    void OceanWaveCompute::CopyResultsToVertexBuffer(ID3D12GraphicsCommandList* commandList, ID3D12Resource* vertexBuffer) {
-
-        // UNORDERED_ACCESS -> COPY_SOURCE へ遷移
-        D3D12_RESOURCE_BARRIER barrierToCopySource = {};
-        barrierToCopySource.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrierToCopySource.Transition.pResource = outputBuffer_.Get();
-        barrierToCopySource.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-        barrierToCopySource.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
-        barrierToCopySource.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        commandList->ResourceBarrier(1, &barrierToCopySource);
-
-        // コピー実行
-        commandList->CopyResource(vertexBuffer, outputBuffer_.Get());
-
-        // COPY_SOURCE -> COMMON へ戻す
-        D3D12_RESOURCE_BARRIER barrierToCommon = {};
-        barrierToCommon.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrierToCommon.Transition.pResource = outputBuffer_.Get();
-        barrierToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
-        barrierToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
-        barrierToCommon.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        commandList->ResourceBarrier(1, &barrierToCommon);
-    }
-
-    ///-------------------------------------------/// 
-    /// UAV用バッファの作成
-    ///-------------------------------------------///
-    void OceanWaveCompute::CreateUAVBuffer(ID3D12Device* device) {
-        HRESULT hr;
-
-        D3D12_HEAP_PROPERTIES defaultHeapProps = {};
-        defaultHeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-
-        D3D12_RESOURCE_DESC outputResourceDesc = {};
-        outputResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-        outputResourceDesc.Width = sizeof(WaveVertexData) * vertexCount_;
-        outputResourceDesc.Height = 1;
-        outputResourceDesc.DepthOrArraySize = 1;
-        outputResourceDesc.MipLevels = 1;
-        outputResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-        outputResourceDesc.SampleDesc.Count = 1;
-        outputResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-        outputResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-
-        hr = device->CreateCommittedResource(
-            &defaultHeapProps,
-            D3D12_HEAP_FLAG_NONE,
-            &outputResourceDesc,
-            D3D12_RESOURCE_STATE_COMMON,
-            nullptr,
-            IID_PPV_ARGS(&outputBuffer_)
-        );
-        assert(SUCCEEDED(hr));
-    }
-
-    ///-------------------------------------------/// 
-    /// SRVとUAVの作成
-    ///-------------------------------------------///
-    void OceanWaveCompute::CreateViews(ID3D12Device* device, SRVManager* srvManger) {
-
-        // SRVの作成
-        srvIndex_ = srvManger->Allocate();
-        srvManger->CreateSRVForStructuredBuffer(
-            srvIndex_, waveInfoBuffer_->GetBuffer(),
-            kWaveCount_,
-            sizeof(OceanShaderInfo)
-        );
-
-        // UAVの作成
-        uavIndex_ = srvManger->Allocate();
-        outputUAV_ = std::make_unique<UAV>();
-        outputUAV_->Create(
-            device,
-            outputBuffer_.Get(),
-            vertexCount_,  // numElements
-            sizeof(WaveVertexData),  // structureByteStride
-            srvManger->GetCPUDescriptorHandle(uavIndex_)
-        );
-    }
-}
-
-============================================================
-File Path: Project/Engine/Graphics/Ocean/OceanWaveCompute.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// Engine
-#include "Engine/Core/ComPtr.h"
-#include "Engine/Graphics/Base/BufferBase.h"
-#include "Engine/Graphics/Base/UAV.h"
-// Data
-#include "Engine/DataInfo/OceanData.h"
-// c++
-#include <d3d12.h>
-#include <memory>
-#include <array>
-#include <wrl.h>
-
-namespace MiiEngine {
-    /// ===前方宣言=== ///
-    class SRVManager;
-
-    ///=====================================================/// 
-    /// OceanWaveCompute
-    ///=====================================================///
-    class OceanWaveCompute {
-    public:
-        OceanWaveCompute() = default;
-        ~OceanWaveCompute();
-
-        /// <summary>
-        /// 指定したデバイスとグリッドサイズを用いて初期化を行います。
-        /// </summary>
-        /// <param name="device">初期化に使用する ID3D12Device へのポインタ。nullptr であってはなりません。</param>
-        /// <param name="gridSize">初期化するグリッドのサイズを表す整数（要素数や解像度などを指定）。</param>
-        void Initialize(ID3D12Device* device, int gridSize);
-
-        /// <summary>
-        /// 指定したコマンドリスト上でディスパッチ操作を実行します。
-        /// </summary>
-        /// <param name="commandList">ディスパッチを実行する対象の ID3D12GraphicsCommandList へのポインタ。</param>
-        void Dispatch(ID3D12GraphicsCommandList* commandList);
-
-        /// <summary>
-        /// 海面シェーダーで使用する波情報を更新します。
-        /// </summary>
-        /// <param name="waveInfos">12要素の OceanShaderInfo を格納した std::array への const 参照。各要素が個別の波のパラメータを表し、これらを内部状態に適用します。</param>
-        void UpdateWaveInfos(const std::array<OceanShaderInfo, kWaveCount_>& waveInfos);
-
-        /// <summary>
-        /// GPU 用のリップルバッファの内容を更新します。
-        /// </summary>
-        /// <param name="rippleBuffer">更新対象の RippleBufferForGPU 型のオブジェクトへの const 参照。更新に必要なデータを提供します。</param>
-        void UpdateRippleBuffer(const RippleBufferForGPU& rippleBuffer);
-
-        /// <summary>
-        /// 指定されたワールド行列で内部のワールド変換を更新します。
-        /// </summary>
-        /// <param name="worldMatrix">更新に使用する読み取り専用のワールド行列への参照。</param>
-        void UpdateWorldMatrix(const Matrix4x4& worldMatrix);
-
-        /// <summary>
-        /// コマンドリストに対して結果を頂点バッファにコピーするコマンドを記録します。
-        /// </summary>
-        /// <param name="commandList">コピーコマンドを記録するID3D12GraphicsCommandListへのポインタ。</param>
-        /// <param name="vertexBuffer">コピー先の頂点バッファを表すID3D12Resourceへのポインタ。</param>
-        void CopyResultsToVertexBuffer(ID3D12GraphicsCommandList* commandList, ID3D12Resource* vertexBuffer);
-
-    public: /// ===取得=== ///
-        // UAVのIndex取得
-        uint32_t GetUAVIndex() const;
-        // SRVのIndex取得
-        uint32_t GetSRVIndex() const;
-        // 出力バッファリソースの取得
-        ID3D12Resource* GetOutputBuffer() const;
-
-    private:
-        /// ===バッファリソース=== ///
-        std::unique_ptr<BufferBase> waveInfoBuffer_;    // 12個の波情報（StructuredBuffer）
-        std::unique_ptr<BufferBase> rippleBuffer_;      // 波紋バッファ（ConstantBuffer）
-        std::unique_ptr<BufferBase> settingsBuffer_;    // 設定バッファ（ConstantBuffer）
-        std::unique_ptr<UAV> outputUAV_;                // 出力バッファ用UAVラッパー
-        ComPtr<ID3D12Resource> outputBuffer_;           // 出力バッファリソース
-        SRVManager* srvManager_ = nullptr;              // SRV管理クラス
-
-        /// ===設定情報=== ///
-        struct WaveSettings {
-            int gridSize;
-            float gridWidth;
-            float gridDepth;
-            float normalEpsilon;
-            Matrix4x4 worldMatrix;
-            Vector3 worldOffset;
-            float padding1;
-        };
-        WaveSettings* settingsData_ = nullptr;
-
-        /// ===Index=== ///
-        uint32_t uavIndex_ = 0;
-        uint32_t srvIndex_ = 0;
-
-        /// ===波情報=== ///
-        OceanShaderInfo* waveInfoData_ = nullptr;
-        RippleBufferForGPU* rippleBufferData_ = nullptr;
-
-        /// ===グリッド情報=== ///
-        int gridSize_ = 128;
-        int vertexCount_ = 0;
-
-    private:
-
-        /// <summary>
-        /// UAV（Unordered Access View）用のバッファを作成します。
-        /// </summary>
-        /// <param name="device">バッファ作成に使用する ID3D12Device インターフェイスへのポインタ。</param>
-        void CreateUAVBuffer(ID3D12Device* device);
-
-        /// <summary>
-        /// UAVとSRVのビューを作成します。
-        /// </summary>
-        /// <param name="device">ビューを作成するために使用する ID3D12Device へのポインタ。</param>
-        void CreateViews(ID3D12Device* device, SRVManager* srvMangaer);
-    };
-}
-
-============================================================
 File Path: Project/Engine/Graphics/Ocean/Ripples/RippleSimulator.cpp
 ============================================================
 #include "RippleSimulator.h"
@@ -12321,23 +11060,23 @@ namespace MiiEngine {
         uavIndices_[0] = base;
         uavIndices_[1] = base + 1;
         // u0:Ping
-        CreateTextureUAV(device, pingResource_, pingUAV_, 0, gridSize, gridSize);
+        CreateTextureUAV(device, pingResource_, pingUAV_, 0, gridSize, gridSize, DXGI_FORMAT_R32G32_FLOAT);
         // u1:Pong
-        CreateTextureUAV(device, pongResource_, pongUAV_, 1, gridSize, gridSize);
+        CreateTextureUAV(device, pongResource_, pongUAV_, 1, gridSize, gridSize, DXGI_FORMAT_R32G32_FLOAT);
 
         // SRV(t3)
         uint32_t srvBase = srvManager_->AllocateContiguous(2);
         srvPingIndex_ = srvBase;
         srvPongIndex_ = srvBase + 1;
         // 
-        srvManager_->CreateSRVForTexture2D(srvPingIndex_, pingResource_->GetBuffer(), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
-        srvManager_->CreateSRVForTexture2D(srvPongIndex_, pongResource_->GetBuffer(), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
+        srvManager_->CreateSRVForTexture2D(srvPingIndex_, pingResource_->GetBuffer(), DXGI_FORMAT_R32G32_FLOAT, 1);
+        srvManager_->CreateSRVForTexture2D(srvPongIndex_, pongResource_->GetBuffer(), DXGI_FORMAT_R32G32_FLOAT, 1);
 
         // 初期値
         params_.gridSize = gridSize_;
         params_.cellSize = gridWidth_ / static_cast<float>(gridSize_);
-        params_.waveSpeed = 5.0f;
-        params_.damping = 0.990f;
+        params_.waveSpeed = 50.0f;
+        params_.damping = 0.890f;
         params_.pingPong = 0;
     }
 
@@ -12475,7 +11214,7 @@ namespace MiiEngine {
         outUAV.CreateAsTexture2D(
             device,
             outResource->GetBuffer(),
-            DXGI_FORMAT_R32G32B32A32_FLOAT,
+            format,
             srvManager_->GetCPUDescriptorHandle(uavIndices_[uavSlot])
         );
     }
@@ -16752,7 +15491,6 @@ namespace MiiEngine {
 
 		// テーブル本体
 		const std::unordered_map<CSPipelineType, ShaderInfo> kCSShaderTable_ = {
-			{ CSPipelineType::Ocean,    { L"Ocean/Ocean.CS.hlsl",   { L"main" } } },
 			{ CSPipelineType::FFTOcean, { L"Ocean/FFTOcean.CS.hlsl",{
 				L"InitSpectrum", L"UpdateSpectrum", L"BitReverseRows", L"ButterflyIFFT",
 				L"BitReverseCols", L"SaveIFFTResult", L"AssembleDisplacement", L"ComputeNormalFoam",}}},
@@ -17139,76 +15877,6 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	namespace {
 
-		/// ===CSOcean=== ///
-		ComPtr<ID3D12RootSignature> TypeOcean(ID3D12Device* device) {
-			// SRV用のDescriptorRange (t0: 波情報)
-			D3D12_DESCRIPTOR_RANGE srvRange = {};
-			srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			srvRange.NumDescriptors = 1; // t0:WaveInfos
-			srvRange.BaseShaderRegister = 0;
-			srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-			// UAV用のDescriptorRange (u0: 出力頂点)
-			D3D12_DESCRIPTOR_RANGE uavRange = {};
-			uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-			uavRange.NumDescriptors = 1; // u0:OutputVertices
-			uavRange.BaseShaderRegister = 0;
-			uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-			// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[4] = {};
-
-			// [0] CBV - 設定バッファ (b0:WaveSettings)
-			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-			rootParameters[0].Descriptor.ShaderRegister = 0;
-
-			// [1] CBV - 波紋バッファ (b1:RippleBuffer)
-			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-			rootParameters[1].Descriptor.ShaderRegister = 1;
-
-			// [2] SRV - 波情報 (t0:WaveInfos)
-			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-			rootParameters[2].DescriptorTable.pDescriptorRanges = &srvRange;
-			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
-
-			// [3] UAV - 出力バッファ (u0:OutputVertices)
-			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-			rootParameters[3].DescriptorTable.pDescriptorRanges = &uavRange;
-			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
-
-			// RootSignatureの生成
-			D3D12_ROOT_SIGNATURE_DESC desc{};
-			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
-			desc.pParameters = rootParameters;
-			desc.NumParameters = _countof(rootParameters);
-			desc.pStaticSamplers = nullptr;
-			desc.NumStaticSamplers = 0;
-
-			// --- シリアライズ & 作成 ---
-			ComPtr<ID3DBlob> signatureBlob;
-			ComPtr<ID3DBlob> errorBlob;
-			HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-			if (FAILED(hr)) {
-				if (errorBlob) {
-					OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-				}
-				assert(false);
-				return nullptr;
-			}
-
-			ComPtr<ID3D12RootSignature> rootSignature;
-			hr = device->CreateRootSignature(
-				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
-				IID_PPV_ARGS(&rootSignature));
-			assert(SUCCEEDED(hr));
-
-			return rootSignature;
-		}
-
 		/// ===CSFFTOcean=== ///
 		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
 			// UAV用のDescriptorRange (u0〜u7)
@@ -17343,7 +16011,6 @@ namespace MiiEngine {
 		/// ===マップに登録=== ///
 		using RootSigGenerator = std::function<ComPtr<ID3D12RootSignature>(ID3D12Device*)>;
 		const std::unordered_map<CSPipelineType, RootSigGenerator> kRootSignatureTable_ = {
-			{CSPipelineType::Ocean,     TypeOcean},
 			{CSPipelineType::FFTOcean,  TypeFFTOcean},
 			{CSPipelineType::Ripples,	TypeRipples},
 		};
@@ -17572,7 +16239,6 @@ namespace MiiEngine {
 		{ PipelineType::CircularGauge2D, { L"2D/Obj2D.VS.hlsl",				 L"2D/CircularGauge.PS.hlsl"}},
 		{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl"}},
 		{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl"}},
-		{ PipelineType::Ocean,			 { L"Ocean/Ocean.VS.hlsl",           L"Ocean/Ocean.PS.hlsl"}},
 		{ PipelineType::FFTOcean,		 { L"Ocean/FFTOcean.VS.hlsl",        L"Ocean/FFTOcean.PS.hlsl"}},
 		{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl"}},
 		{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl"}},
@@ -17815,10 +16481,6 @@ namespace MiiEngine {
 			{ PipelineType::Obj3D, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 			// SkyBox（深度有効, 書き込みなし, 比較LessEqual）
 			{ PipelineType::PrimitiveSkyBox, CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
-			// Ocean (深度有効、書き込み無し、比較LessEqual)
-			{ PipelineType::Ocean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
-			// FFTOcean (深度有効、書き込み無し、比較LessEqual)
-			{ PipelineType::Ocean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL)},
 			// Particle（深度有効, 書き込みなし, 比較LessEqual）
 			{ PipelineType::Particle, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 			// Skinning 3D（深度有効, 書き込みあり, 比較LessEqual）
@@ -18813,65 +17475,6 @@ namespace MiiEngine {
 			return rootSignature;
 		}
 
-		/// ===Ocean=== ///
-		ComPtr<ID3D12RootSignature> TypeOcean(ID3D12Device* device) {
-			// ルートシグネチャの作成
-			D3D12_ROOT_PARAMETER rootParameters[5] = {};
-
-			// b0: Material (ObjectCommon)
-			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[0].Descriptor.ShaderRegister = 0;
-
-			// b1: Transform (ObjectCommon) & OceanShaderInfo0
-			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			rootParameters[1].Descriptor.ShaderRegister = 1;
-
-			// b2: DirectionalLight (ObjectCommon)
-			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[2].Descriptor.ShaderRegister = 2;
-
-			// b3: Camera (ObjectCommon)
-			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[3].Descriptor.ShaderRegister = 3;
-
-			// b4: OceanColor
-			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[4].Descriptor.ShaderRegister = 4;
-
-			// ルートシグネチャの記述
-			D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-			rootSignatureDesc.NumParameters = _countof(rootParameters);
-			rootSignatureDesc.pParameters = rootParameters;
-			rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-			// シリアライズとルートシグネチャ作成
-			ComPtr<ID3DBlob> signatureBlob;
-			ComPtr<ID3DBlob> errorBlob;
-			HRESULT hr = D3D12SerializeRootSignature(
-				&rootSignatureDesc,
-				D3D_ROOT_SIGNATURE_VERSION_1,
-				&signatureBlob,
-				&errorBlob
-			);
-			assert(SUCCEEDED(hr));
-
-			ComPtr<ID3D12RootSignature> rootSignature;
-			hr = device->CreateRootSignature(
-				0,
-				signatureBlob->GetBufferPointer(),
-				signatureBlob->GetBufferSize(),
-				IID_PPV_ARGS(&rootSignature)
-			);
-			assert(SUCCEEDED(hr));
-
-			return rootSignature;
-		}
-
 		/// ===FFTOcean=== ///
 		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
 			// VS用のSRV
@@ -18972,7 +17575,6 @@ namespace MiiEngine {
 			{ PipelineType::CircularGauge2D,	Type2D },
 			{ PipelineType::Obj3D,				Type3D },
 			{ PipelineType::PrimitiveSkyBox,	Type3D },
-			{ PipelineType::Ocean,				TypeOcean },
 			{ PipelineType::FFTOcean,			TypeFFTOcean },
 			{ PipelineType::Particle,			TypeParticle },
 			{ PipelineType::Skinning3D,			TypeSkinning3D  },
@@ -19172,7 +17774,6 @@ namespace MiiEngine {
 				{ PipelineType::CircularGauge2D,  { inputElementDescs2,      _countof(inputElementDescs2)} },
 				{ PipelineType::Obj3D,        { inputElementDescs3,      _countof(inputElementDescs3)} },
 				{ PipelineType::PrimitiveSkyBox,  { inputElementDescs3,      _countof(inputElementDescs3) } },
-				{ PipelineType::Ocean,		  { inputElementDescs3,      _countof(inputElementDescs3) } },
 				{ PipelineType::FFTOcean,	  { inputElementDescs3,      _countof(inputElementDescs3) } },
 				{ PipelineType::Particle,     { inputElementDescs3,      _countof(inputElementDescs3) } },
 				{ PipelineType::Skinning3D,   { inputElementDescs5,		 _countof(inputElementDescs5) } },
@@ -19269,7 +17870,6 @@ namespace MiiEngine {
 		{ PipelineType::BackGround2D,		D3D12_CULL_MODE_NONE },
 		{ PipelineType::Obj3D,				D3D12_CULL_MODE_BACK },
 		{ PipelineType::PrimitiveSkyBox,    D3D12_CULL_MODE_NONE },
-		{ PipelineType::Ocean,				D3D12_CULL_MODE_BACK },
 		{ PipelineType::FFTOcean,			D3D12_CULL_MODE_BACK },
 		{ PipelineType::Particle,			D3D12_CULL_MODE_NONE },
 		{ PipelineType::Skinning3D,			D3D12_CULL_MODE_BACK },
@@ -28372,7 +26972,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossThrustAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
@@ -28391,6 +26990,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -28523,8 +27124,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
     <ClCompile Include="Engine\Graphics\2d\Base\Object2DCommon.cpp" />
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
-    <ClCompile Include="Engine\Graphics\Ocean\OceanGenerator.cpp" />
-    <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp" />
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
     <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp" />
@@ -28533,7 +27132,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
-    <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
@@ -28542,7 +27140,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
     <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\MoveBossState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.cpp" />
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
@@ -28558,7 +27156,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossThrustAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />
@@ -28584,6 +27181,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -28730,8 +27329,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
     <ClInclude Include="Engine\Graphics\2d\Base\Object2DCommon.h" />
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
-    <ClInclude Include="Engine\Graphics\Ocean\OceanGenerator.h" />
-    <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h" />
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
     <ClInclude Include="Engine\System\Editor\ParticleEditor.h" />
@@ -28740,7 +27337,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
-    <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h" />
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
     <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
@@ -28749,7 +27345,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
     <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\MoveBossState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.h" />
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
@@ -28775,14 +27371,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <FxCompile Include="Resource\Shaders\3D\LIne3D.VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.CS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -28880,18 +27468,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.VS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="Resource\Shaders\Particle\Particle.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -28965,10 +27541,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
     <None Include="Resource\Shaders\OffScreen\Fullscreen.hlsli">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </None>
-    <None Include="Resource\Shaders\Ocean\Ocean.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
@@ -29082,15 +27654,6 @@ File Path: Project/FallenAscent.vcxproj.filters
       <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl">
-      <Filter>Resource\Shaders\Ocean</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.VS.hlsl">
-      <Filter>Resource\Shaders\Ocean</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.CS.hlsl">
-      <Filter>Resource\Shaders\Ocean</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
       <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl" />
@@ -29562,7 +28125,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\MoveBossState.cpp">
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp">
@@ -29595,15 +28158,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp">
       <Filter>Engine\Graphics\Ocean\FFT</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanGenerator.cpp">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
@@ -29612,7 +28166,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossThrustAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
@@ -29622,6 +28175,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -30140,7 +28695,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\MoveBossState.h">
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h">
@@ -30174,15 +28729,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h">
       <Filter>Engine\Graphics\Ocean\FFT</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanGenerator.h">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
@@ -30191,7 +28737,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackShot.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossThrustAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />
@@ -30201,6 +28746,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -30226,9 +28773,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     </None>
     <None Include="Resource\Shaders\2D\Obj2D.hlsli">
       <Filter>Resource\Shaders\2D</Filter>
-    </None>
-    <None Include="Resource\Shaders\Ocean\Ocean.hlsli">
-      <Filter>Resource\Shaders\Ocean</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -38590,7 +37134,7 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/BossEnemy.cpp
 // Service
 #include "Service/Particle.h"
 // State
-#include "State/Move/MoveBossState.h"
+#include "State/Move/BossMoveState.h"
 #include "State/HItReaction/BossHitReactionState.h"
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -38630,7 +37174,7 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	SetComponentConfig();
 
 	// Stateの設定
-	ChangeState(std::make_unique<MoveBossState>());
+	ChangeState(std::make_unique<BossMoveState>());
 }
 
 ///-------------------------------------------/// 
@@ -38704,7 +37248,7 @@ void BossEnemy::Information() {
 	ImGui::Begin("ボスエネミー");
 	/// ===GameCharacterの情報表示=== ///
 	GameCharacter::Information();
-	/// ===MoveConponentの情報表示=== ///
+	/// ===MoveComponentの情報表示=== ///
 	moveComponent_->Information();
 	/// ===AttackManagerの情報表示=== ///
 	thrustComponent_->Information();
@@ -38839,7 +37383,7 @@ void BossEnemy::SetComponentConfig() {
 	BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
 		.windUpPitch = -2.0f,
 		.windUpDuration = 1.0f,
-		.strikeForwardPitch = -10.0f,
+		.strikeForwardPitch = -5.0f,
 		.strikeDuration = 0.1f,
 		.holdDownDuration = 0.2f,
 		.recoveryDuration = 0.45f,
@@ -39015,7 +37559,7 @@ public: /// ===その他関数=== ///
 
 public: /// ===Getter=== ///
 
-	// Weapnの取得
+	// Weaponの取得
 	BossWeapon& GetWeapon() const { return *weapon_; }
 
 	// Componentの取得
@@ -39588,6 +38132,7 @@ void BossAttackDownwardSwingComponent::Initialize(const DownwardSwingConfig& con
 BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
 	result.isAttacking = (phase_ == DownwardSwingPhase::Strike || phase_ == DownwardSwingPhase::HoldDown);
+	result.onStrike = false; // 毎フレーム初期化して一瞬だけtrueになるようにする
 
 	// 非アクティブフェーズ
 	if (phase_ == DownwardSwingPhase::Idle || phase_ == DownwardSwingPhase::Finished) {
@@ -39745,6 +38290,7 @@ void BossAttackDownwardSwingComponent::UpdateStrike(const UpdateContext & contex
 
 	// フェーズ遷移
 	if (rawT >= 1.0f) {
+		result.onStrike = true; // 波紋を出すためのトリガー
 		state_.phaseTimer = 0.0f;
 		if (config_.holdDownDuration > 0.0f) {
 			phase_ = DownwardSwingPhase::HoldDown;
@@ -39839,7 +38385,7 @@ private:
 
 	/// ===状態の構造体=== ///
 	struct DownwardSwingState {
-		Vector3 currentPositino{}; // 現在のワールド座標
+		Vector3 currentPosition{}; // 現在のワールド座標
 		float phaseTimer = 0.0f;   // 現フェーズの経過時間
 	};
 
@@ -39893,6 +38439,7 @@ public:
 		Vector3 weaponPosition{};       // ローカル座標系での武器位置オフセット
 		bool isAttacking = false;       // 攻撃判定が有効なフレーム
 		bool isFinished = false;        // 攻撃が完全終了したか
+		bool onStrike = false;          // 踏み込み/攻撃開始の瞬間
 	};
 
 public:
@@ -40031,6 +38578,8 @@ BossAttackJumpSmashComponent::UpdateResult
 BossAttackJumpSmashComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
 	result.isAttacking = (phase_ == LeapPhase::Strike || phase_ == LeapPhase::HoldDown);
+	result.onJump = false;    // 毎フレーム初期化して一瞬だけtrueになるようにする
+	result.onLanding = false; // 毎フレーム初期化して一瞬だけtrueになるようにする
 	result.velocity = {};
 
 	// 非アクティブフェーズ
@@ -40171,6 +38720,7 @@ void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
 	if (rawT >= 1.0f) {
 		state_.phaseTimer = 0.0f;
 		phase_ = LeapPhase::Leap;
+		result.onJump = true; // 波紋を出すためのトリガー
 	}
 }
 
@@ -40194,7 +38744,7 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 		horizontalPos.y + arcY,
 		horizontalPos.z
 	};
-	// velcoity
+	// velocity
 	result.velocity = nextPosition - state_.currentPosition;
 
 	// currentPositionを更新更新
@@ -40230,6 +38780,8 @@ void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 		state_.currentPosition = state_.targetPosition;
 		state_.phaseTimer = 0.0f;
 		phase_ = LeapPhase::Strike;
+		result.onLanding = true; // 波紋を出すためのトリガー
+		result.onStrike = true;
 	}
 }
 
@@ -40415,6 +38967,9 @@ public:
 		Vector3 weaponPosition{};    // ローカル座標系での武器位置オフセット
 		bool isAttacking = false;    // 攻撃判定が有効なフレーム
 		bool isFinished = false;     // 攻撃が完全終了したか
+		bool onJump = false;         // ジャンプ開始の瞬間
+		bool onLanding = false;      // 着地の瞬間
+		bool onStrike = false;       // 叩きつけ開始の瞬間
 	};
 
 public:
@@ -41871,158 +40426,6 @@ private:
 
 
 ============================================================
-File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/BossAttackState.cpp
-============================================================
-#include "BossAttackState.h"
-// BossEnemy
-#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
-// State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
-
-///-------------------------------------------/// 
-/// 開始時に呼び出す
-///-------------------------------------------///
-void BossAttackState::Enter(BossEnemy* enemy) {
-	boss_ = enemy;
-	// velocityをリセット
-	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-
-	// -----------------------------------------------
-	// Enter時点で即座に攻撃を選択・開始する。
-	// MoveBossState側で IsAnyAttackAvailable() が true に
-	// なってから遷移してくるので、ここでは必ず選択できる。
-	// -----------------------------------------------
-	//const float dist = CalcDistToPlayer();
-	//const Vector3& bossPos = boss_->GetTransform().translate;
-	//const Vector3& playerPos = boss_->GetPlayer()->GetTransform().translate;
-	//const Quaternion& rot = boss_->GetTransform().rotate;
-	//boss_->GetAttackComponent().SelectAndStart(dist, bossPos, playerPos, rot);
-}
-
-///-------------------------------------------/// 
-/// 更新時に呼び出す
-///-------------------------------------------///
-void BossAttackState::Update() {
-	//// コンテキストの準備
-	//BossAttackManager::UpdateContext context{
-	//	.bossRotation = boss_->GetTransform().rotate,
-	//	.bossPosition = boss_->GetTransform().translate,
-	//	.deltaTime = boss_->GetDeltaTime(),
-	//};
-	//// AttackManagerを更新
-	//BossAttackManager::UpdateResult result = boss_->GetAttackComponent().Update(context);
-
-	//// 攻撃中はボスへ結果を反映して終了
-	//if (result.isAttacking) {
-	//	// 回転を反映
-	//	boss_->SetRotate(result.modelRotation);
-
-	//	// 武器のオフセットを反映
-	//	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
-
-	//	// 踏み込みなどの位置デルタを反映
-	//	// （Y方向は物理演算に委ねるため上書きしない）
-	//	if (result.modelPositionDelta.x != 0.0f ||
-	//		result.modelPositionDelta.z != 0.0f) {
-	//		Vector3 vel = result.modelPositionDelta / boss_->GetDeltaTime();
-	//		vel.y = boss_->GetVelocity().y;
-	//		boss_->SetVelocity(vel);
-	//	}
-	//	return;
-	//}
-
-	//// -----------------------------------------------
-	//// 攻撃が完了したフレーム（justFinished == true）の処理。
-	//// 次の攻撃をすぐ打てるか判定し、
-	////   → 打てる : AttackStateのまま次の攻撃を開始（Stateを抜けない）
-	////   → 打てない: MoveBossStateへ戻る
-	//// -----------------------------------------------
-	//if (result.justFinished) {
-	//	// 攻撃完了後に velocityをリセット（踏み込み速度が残らないように）
-	//	boss_->SetVelocity({ 0.0f, boss_->GetVelocity().y, 0.0f });
-
-	//	const float dist = CalcDistToPlayer();
-
-	//	if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
-	//		// 次の攻撃を即座に開始（ChangeState不要・コスト0）
-	//		const Vector3& bossPos = boss_->GetTransform().translate;
-	//		const Vector3& playerPos = boss_->GetPlayer()->GetTransform().translate;
-	//		const Quaternion& rot = boss_->GetTransform().rotate;
-
-	//		boss_->GetAttackComponent().SelectAndStart(dist, bossPos, playerPos, rot);
-	//	} else {
-	//		/// ===Stateの変更=== ///
-	//		boss_->ChangeState(std::make_unique<MoveBossState>());
-	//	}
-	//}
-}
-
-///-------------------------------------------/// 
-/// 終了時に呼び出す
-///-------------------------------------------///
-void BossAttackState::Finalize() {
-	// Componentの状態を確実にリセットしておく
-	//boss_->GetAttackComponent().ForceReset();
-	// 終了処理
-	BossState::Finalize();
-}
-
-///-------------------------------------------/// 
-/// プレイヤーとボスの距離を計算して返す。
-///-------------------------------------------///
-float BossAttackState::CalcDistToPlayer() const {
-	const Vector3 diff =
-		boss_->GetPlayer()->GetTransform().translate -
-		boss_->GetTransform().translate;
-	return Length(diff);
-}
-
-
-
-
-============================================================
-File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/BossAttackState.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
-
-///=====================================================/// 
-/// AttackState
-/// Bossの攻撃状態を表すクラス
-///=====================================================///
-class BossAttackState : public BossState {
-public:
-	~BossAttackState() override = default;
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
-	void Enter(BossEnemy* enemy) override;
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update() override;
-
-	/// <summary>
-	/// 終了処理
-	/// </summary>
-	void Finalize() override;
-
-private:
-	/// <summary>
-	/// プレイヤーとボスの距離を計算して返す。
-	/// </summary>
-	float CalcDistToPlayer() const;
-};
-
-
-
-============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDownwarAttackState.cpp
 ============================================================
 #include "BossDownwarAttackState.h"
@@ -42030,8 +40433,10 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDown
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -42068,10 +40473,15 @@ void BossDownwarAttackState::Update() {
 	// 武器のオフセットを反映
 	boss_->GetWeapon().SetTranslate(result.weaponPosition);
 
+	// 波紋を生成するタイミングの判定
+	if (result.onStrike) {
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 1.5f, 0.15f);
+	}
+
 	if (result.isFinished) {
 
-		// 攻撃終了 → MoveBossStateへ遷移
-		boss_->ChangeState(std::make_unique<MoveBossState>());
+		// BossMoveStateへ遷移
+		boss_->ChangeState(std::make_unique<BossMoveState>());
 		return;
 	}
 }
@@ -42089,12 +40499,6 @@ void BossDownwarAttackState::Finalize() {
 	BossState::Finalize();
 }
 
-///-------------------------------------------/// 
-/// プレイヤーとボスの距離を計算して返す。
-///-------------------------------------------///
-float BossDownwarAttackState::CalcDistToPlayer() const {
-	return 0.0f;
-}
 
 
 ============================================================
@@ -42127,12 +40531,6 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-	/// <summary>
-	/// プレイヤーとボスの距離を計算して返す。
-	/// </summary>
-	float CalcDistToPlayer() const;
 };
 
 
@@ -42145,8 +40543,10 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/BossJump
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -42188,10 +40588,18 @@ void BossJumpSmashAttackState::Update() {
 	// 武器のオフセットを反映
 	boss_->GetWeapon().SetTranslate(result.weaponPosition);
 
+	// 波紋を生成するタイミングの判定
+	if (result.onJump || result.onLanding) {
+		boss_->GetGroundOcean()->AddRipple(boss_->GetTransform().translate, 1.0f, 0.1f);
+	}
+	if (result.onStrike) {
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 1.5f, 0.15f);
+	}
+
 	if (result.isFinished) {
 
-		// 攻撃終了 → MoveBossStateへ遷移
-		boss_->ChangeState(std::make_unique<MoveBossState>());
+		//  BossMoveStateへ遷移
+		boss_->ChangeState(std::make_unique<BossMoveState>());
 		return;
 	}
 }
@@ -42268,8 +40676,10 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/BossThru
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -42301,9 +40711,14 @@ void BossThrustAttackState::Update() {
 	// 武器のオフセットを反映
 	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
 
+	// 波紋を生成するタイミングの判定
+	if (result.isAttacking) {
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 0.01f);
+	}
+
 	if (result.isFinished) {
-		// 攻撃終了 → MoveBossStateへ遷移
-		boss_->ChangeState(std::make_unique<MoveBossState>());
+		// BossMoveStateへ遷移
+		boss_->ChangeState(std::make_unique<BossMoveState>());
 		return;
 	}
 }
@@ -42321,12 +40736,6 @@ void BossThrustAttackState::Finalize() {
 	BossState::Finalize();
 }
 
-///-------------------------------------------/// 
-/// プレイヤーとボスの距離を計算して返す。
-///-------------------------------------------///
-float BossThrustAttackState::CalcDistToPlayer() const {
-	return 0.0f;
-}
 
 
 ============================================================
@@ -42359,12 +40768,6 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-	/// <summary>
-	/// プレイヤーとボスの距離を計算して返す。
-	/// </summary>
-	float CalcDistToPlayer() const;
 };
 
 
@@ -42430,7 +40833,7 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/HItReaction/Bos
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 // Math
 #include <Math/sMath.h>
 // C++
@@ -42480,7 +40883,7 @@ void BossHitReactionState::Update() {
 	float colorTimer = boss_->GetHitReactionComponent().GetColorState().colorTimer;
 
 	if (slowdownTimer <= 0.0f && colorTimer <= 0.0f) {
-		boss_->ChangeState(std::make_unique<MoveBossState>());
+		boss_->ChangeState(std::make_unique<BossMoveState>());
 	}
 }
 
@@ -42521,6 +40924,137 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.cpp
+============================================================
+#include "BossMoveState.h"
+// BossEnemy
+#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
+// State
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossThrustAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDownwarAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossJumpSmashAttackState.h>
+#include "BossTeleportState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void BossMoveState::Enter(BossEnemy* enemy) {
+	boss_ = enemy;
+	// velocityをリセット
+	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
+}
+
+///-------------------------------------------/// 
+/// 更新時に呼び出す
+///-------------------------------------------///
+void BossMoveState::Update() {
+	// プレイヤーとの距離を計算
+	const float dist = CalcDistToPlayer();
+
+	// コンテキストの準備
+	BossMoveComponent::UpdateContext context{
+		.currentPosition = boss_->GetTransform().translate,
+		.currentRotation = boss_->GetTransform().rotate,
+		.playerPosition = boss_->GetPlayer()->GetTransform().translate,
+		.deltaTime = boss_->GetDeltaTime(),
+	};
+	// 移動コンポーネントの更新
+	BossMoveComponent::UpdateResult result = boss_->GetMoveComponent().Update(context);
+
+	// 結果の適用
+	result.velocity.y = boss_->GetVelocity().y;
+	boss_->SetVelocity(result.velocity);
+
+	// 回転の更新
+	boss_->SetRotate(result.rotate);
+
+	// 波紋の生成
+	boss_->GetGroundOcean()->AddRipple(boss_->GetTransform().translate, 1.0f, 0.1f);
+
+	/// ===Stateの変更=== ///
+	// 突き攻撃への遷移条件
+	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+		return;
+		// Downswing攻撃への遷移条件
+	} else if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+		return;
+		// JumpSmash攻撃への遷移条件
+	} else if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
+		float minRange = boss_->GetAttackInfo().jumpSmashMinRange;
+		float maxRange = boss_->GetAttackInfo().jumpSmashMaxRange;
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
+		return;
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void BossMoveState::Finalize() {
+	BossState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// プレイヤーとボスの距離を計算して返す。
+///-------------------------------------------///
+float BossMoveState::CalcDistToPlayer() const {
+	const Vector3 diff =
+		boss_->GetPlayer()->GetTransform().translate -
+		boss_->GetTransform().translate;
+	return Length(diff);
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
+
+///=====================================================/// 
+/// BossMoveState
+/// ボスの移動状態を表すクラス
+///=====================================================///
+class BossMoveState : public BossState {
+public:
+	~BossMoveState() override = default;
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
+	void Enter(BossEnemy* enemy) override;
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// 終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	/// <summary>
+	/// プレイヤーとボスの距離を計算して返す。
+	/// </summary>
+	float CalcDistToPlayer() const;
 };
 
 
@@ -42686,136 +41220,6 @@ private:
 
 
 ============================================================
-File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.cpp
-============================================================
-#include "MoveBossState.h"
-// BossEnemy
-#include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
-// State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossThrustAttackState.h>
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDownwarAttackState.h>
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossJumpSmashAttackState.h>
-#include "BossTeleportState.h"
-
-///-------------------------------------------/// 
-/// 開始時に呼び出す
-///-------------------------------------------///
-void MoveBossState::Enter(BossEnemy* enemy) {
-	boss_ = enemy;
-	// velocityをリセット
-	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-}
-
-///-------------------------------------------/// 
-/// 更新時に呼び出す
-///-------------------------------------------///
-void MoveBossState::Update() {
-	// プレイヤーとの距離を計算
-	const float dist = CalcDistToPlayer();
-
-	// コンテキストの準備
-	BossMoveComponent::UpdateContext context{
-		.currentPosition = boss_->GetTransform().translate,
-		.currentRotation = boss_->GetTransform().rotate,
-		.playerPosition = boss_->GetPlayer()->GetTransform().translate,
-		.deltaTime = boss_->GetDeltaTime(),
-	};
-	// 移動コンポーネントの更新
-	BossMoveComponent::UpdateResult result = boss_->GetMoveComponent().Update(context);
-
-	// 結果の適用
-	result.velocity.y = boss_->GetVelocity().y;
-	boss_->SetVelocity(result.velocity);
-
-	// 回転の更新
-	boss_->SetRotate(result.rotate);
-
-	/// ===Stateの変更=== ///
-	// 突き攻撃への遷移条件
-	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
-		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
-		return;
-		// Downswing攻撃への遷移条件
-	} else if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
-		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-		return;
-		// JumpSmash攻撃への遷移条件
-	} else if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
-		float minRange = boss_->GetAttackInfo().jumpSmashMinRange;
-		float maxRange = boss_->GetAttackInfo().jumpSmashMaxRange;
-		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
-		return;
-	}
-
-	/*if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
-		boss_->ChangeState(std::make_unique<BossAttackState>());
-	}*/
-}
-
-///-------------------------------------------/// 
-/// 終了時に呼び出す
-///-------------------------------------------///
-void MoveBossState::Finalize() {
-	BossState::Finalize();
-}
-
-///-------------------------------------------/// 
-/// プレイヤーとボスの距離を計算して返す。
-///-------------------------------------------///
-float MoveBossState::CalcDistToPlayer() const {
-	const Vector3 diff =
-		boss_->GetPlayer()->GetTransform().translate -
-		boss_->GetTransform().translate;
-	return Length(diff);
-}
-
-
-============================================================
-File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
-
-///=====================================================/// 
-/// MoveState
-/// ボスの移動状態を表すクラス
-///=====================================================///
-class MoveBossState : public BossState {
-public:
-	~MoveBossState() override = default;
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	/// <param name="enemy">状態に入るボスエネミーへのポインタ。</param>
-	void Enter(BossEnemy* enemy) override;
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update() override;
-
-	/// <summary>
-	/// 終了処理
-	/// </summary>
-	void Finalize() override;
-
-private:
-	/// <summary>
-	/// プレイヤーとボスの距離を計算して返す。
-	/// </summary>
-	float CalcDistToPlayer() const;
-};
-
-
-
-============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/Weapon/BossWeapon.cpp
 ============================================================
 #include "BossWeapon.h"
@@ -42958,6 +41362,14 @@ public: /// ===衝突処理=== ///
 	/// </summary>
 	/// <param name="collider">衝突した相手の Collider オブジェクトを指すポインター。</param>
 	void OnCollision(MiiEngine::Collider* collider) override;
+
+public: /// ===Getter=== ///
+
+	/// <summary>
+	/// ワールド座標系での平行移動を取得します。
+	/// </summary>
+	/// <returns>ワールド座標系での平行移動を表すVector3への定数参照。</returns>
+	const Vector3& GetWorldTranslate() const { return object3d_->GetWorldTranslate(); }
 
 public: /// ===Setter=== ///
 	// アクティブ状態の設定
@@ -43524,6 +41936,9 @@ File Path: Project/application/Game/Entity/GameCharacter/GameCharacter.h
 // GameCharacterCollision
 #include "Collision/GameCharacterCollision.h"
 
+/// ===前方宣言=== ///
+class GroundOcean;
+
 ///-------------------------------------------/// 
 /// GameCharacterBase
 ///-------------------------------------------///
@@ -43577,6 +41992,8 @@ public: /// ===Getter=== ///
     float GetDeltaTime() const { return baseInfo_.deltaTime; };
     // HP
     uint32_t GetHP() const { return baseInfo_.HP; }
+    // GroundOcean
+    GroundOcean* GetGroundOcean() const { return groundOcean_; }
    
 public: /// ===Setter=== ///
     // Velocity
@@ -43585,8 +42002,13 @@ public: /// ===Setter=== ///
     void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
 	// HalfSizeY
 	void SetHalfSizeY(const float halfSizeY) { characterHalfSizeY_ = halfSizeY; }
+    // GroundOcean
+    void SetGroundOcean(GroundOcean* ocean) { groundOcean_ = ocean; }
 
 protected:
+    // GroundOcean
+    GroundOcean* groundOcean_ = nullptr;
+
     // Collisionクラス
     std::unique_ptr<MiiEngine::ColliderCollision> collision_;
     std::unique_ptr<GameCharacterCollision> gCollision_;
@@ -44218,6 +42640,115 @@ private:
 
 
 ============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerHitReactionComponent.cpp
+============================================================
+#include "PlayerHitReactionComponent.h"
+// Math
+#include "Math/sMath.h"
+
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void PlayerHitReactionComponent::Initialize(const HitConfig& config) {
+	config_ = config;
+	currentKnockBackDirection_ = { 0.0f, 0.0f, 0.0f };
+}
+
+///-------------------------------------------/// 
+/// ヒットリアクションの開始
+///-------------------------------------------///
+PlayerHitReactionComponent::UpdateResult PlayerHitReactionComponent::Start(const Vector3& knockbackDirection) {
+	// ノックバック方向の正規化（y成分は0にして水平ノックバックのみ）
+	currentKnockBackDirection_ = knockbackDirection;
+	currentKnockBackDirection_.y = 0.0f; // 水平方向のみノックバック
+	if (currentKnockBackDirection_.x != 0.0f || currentKnockBackDirection_.z != 0.0f) {
+		currentKnockBackDirection_ = Normalize(currentKnockBackDirection_);
+	}
+
+	// 更新結果の作成
+	UpdateResult result{};
+	result.velocity = currentKnockBackDirection_ * config_.knockbackSpeed;
+	return result;
+}
+
+///-------------------------------------------/// 
+/// ImGui
+///-------------------------------------------///
+void PlayerHitReactionComponent::Information() {
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("HitReaction")) {
+		ImGui::DragFloat("Knockback Speed", &config_.knockbackSpeed, 0.1f);
+		ImGui::TreePop();
+	}
+#endif
+}
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerHitReactionComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include <Math/Vector3.h>
+
+///=====================================================/// 
+/// PlayerHitReactionComponent（ヒットリアクション）
+///=====================================================///
+class PlayerHitReactionComponent {
+public:
+	struct HitConfig {
+		float knockbackSpeed = 1.5f; // ノックバックの速度
+	};
+
+	/// ===更新結果=== ///
+	struct UpdateResult {
+		Vector3 velocity;		    // 移動ベクトル
+	};
+
+public:
+
+	PlayerHitReactionComponent() = default;
+	~PlayerHitReactionComponent() = default;
+
+	// コピー・ムーブは明示的に制御
+	PlayerHitReactionComponent(const PlayerHitReactionComponent&) = delete;
+	PlayerHitReactionComponent& operator=(const PlayerHitReactionComponent&) = delete;
+
+	/// <summary>
+	/// 初期化を実行します。
+	/// </summary>
+	/// <param name="config">初期化の構成設定。デフォルトではHitConfig{}が使用されます。</param>
+	void Initialize(const HitConfig& config = HitConfig{});
+
+	/// <summary>
+	/// ヒットリアクションを開始します。
+	/// </summary>
+	/// <param name="knockbackDirection">ノックバックの方向。</param>
+	UpdateResult Start(const Vector3& knockbackDirection);
+
+	/// <summary>
+	/// ImGui情報
+	/// </summary>
+	void Information();
+
+public: /// ===Getter=== ///
+	// HitConfig
+	const HitConfig& GetConfig() const { return config_; }
+
+private:
+	/// ===情報=== ///
+	HitConfig config_;
+	Vector3 currentKnockBackDirection_;
+};
+
+
+
+============================================================
 File Path: Project/application/Game/Entity/Player/Component/PlayerMoveComponent.cpp
 ============================================================
 #include "PlayerMoveComponent.h"
@@ -44750,6 +43281,7 @@ File Path: Project/application/Game/Entity/Player/Player.cpp
 #include "Engine/Camera/FollowCamera.h"
 // State
 #include "State/RootState.h"
+#include "State/HitReactionState.h"
 // Service
 #include "Service/Input.h"
 #include "Service/Camera.h"
@@ -44800,6 +43332,21 @@ void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera)
 
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
+
+	/// ===Handの初期化=== ///
+	// 右手
+	rightHand_ = std::make_unique<PlayerHand>();
+	rightHand_->Initialize();
+	rightHand_->SetUpParent(this);
+	// 左手
+	leftHand_ = std::make_unique<PlayerHand>();
+	leftHand_->Initialize();
+	leftHand_->SetUpParent(this);
+
+	/// ===Weaponの初期化=== ///
+	weapon_ = std::make_unique<PlayerWeapon>();
+	weapon_->Initialize();
+	weapon_->SetUpParent(this);
 
 	/// ===パラメータの設定=== ///
 	SettingParamita();
@@ -44943,19 +43490,10 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			Vector3 enemyPos = collider->GetTransform().translate;
 			// プレイヤーから敵への方向ベクトルを計算
 			Vector3 knockbackDirection = transform_.translate - enemyPos;
-			// Y軸は無視(水平方向のみノックバック)
-			knockbackDirection.y = 0.0f;
-			// 正規化
-			if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
-				knockbackDirection = Normalize(knockbackDirection);
-			}
-			// ノックバックの速度を設定(適切な値に調整してください)
-			const float knockbackSpeed = 1.5f;
-			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
-
-			// Stateを Root に変更
-			attackComponent_->CancelAttack(); // 攻撃キャンセル
-			ChangState(std::make_unique<RootState>());
+			// ステートの変更
+			ChangState(std::make_unique<HitReactionState>(knockbackDirection));
+			// 攻撃キャンセル
+			attackComponent_->CancelAttack();
 
 			// ダメージ処理
 			baseInfo_.HP--;
@@ -44969,26 +43507,13 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 /// Paramitaの設定
 ///-------------------------------------------///
 void Player::SettingParamita() {
-	/// ===Handの初期化=== ///
-	// 右手
-	rightHand_ = std::make_unique<PlayerHand>();
-	rightHand_->Initialize();
-	rightHand_->SetUpParent(this);
-	// 左手
-	leftHand_ = std::make_unique<PlayerHand>();
-	leftHand_->Initialize();
-	leftHand_->SetUpParent(this);
-
-	/// ===Weaponの初期化=== ///
-	weapon_ = std::make_unique<PlayerWeapon>();
-	weapon_->Initialize();
-	weapon_->SetUpParent(this);
 
 	/// ===Component=== ///
 	// Componentの生成
 	moveComponent_ = std::make_unique<PlayerMoveComponent>();
 	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
 	attackComponent_ = std::make_unique<PlayerAttackComponent>();
+	hitReactionComponent_ = std::make_unique<PlayerHitReactionComponent>();
 
 	// MoveComponentの初期化
 	PlayerMoveComponent::MoveConfig moveConfig{
@@ -45006,6 +43531,12 @@ void Player::SettingParamita() {
 		.invincibleTime = 0.01f
 	};
 	avoidanceComponent_->Initialize(avoidanceConfig);
+
+	// HitReactionComponentの初期化
+	PlayerHitReactionComponent::HitConfig hitReactionConfig{
+		.knockbackSpeed = 1.5f,
+	};
+	hitReactionComponent_->Initialize(hitReactionConfig);
 
 	// AttackComponentの初期化
 	attackComponent_->Initialize();
@@ -45025,11 +43556,9 @@ void Player::advanceTimer() {
 	// 無敵タイマーを進める
 	if (invincibleInfo_.timer > 0.0f) {
 		invincibleInfo_.timer -= baseInfo_.deltaTime;
-		//color_ = { 1.0f, 0.0f, 0.0f, 0.5f }; // 半透明にする
 		invincibleInfo_.isFlag = true;
 	} else {
 		invincibleInfo_.isFlag = false;
-		//color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
 	}
 
 	// 回避タイマーの更新
@@ -45111,6 +43640,7 @@ File Path: Project/application/Game/Entity/Player/Player.h
 #include "Component/PlayerMoveComponent.h"
 #include "Component/PlayerAvoidanceComponent.h"
 #include "Component/PlayerAttackComponent.h"
+#include "Component/PlayerHitReactionComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Hand
@@ -45183,6 +43713,7 @@ public: /// ===Getter=== ///
 	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
 	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
 	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
+	PlayerHitReactionComponent* GetHitReactionComponent() const { return hitReactionComponent_.get(); };
 
 	// StickState
 	Vector2 GetLeftStickState() const { return stickState_.leftStick; };
@@ -45225,6 +43756,7 @@ private: /// ===変数の宣言=== ///
 	std::unique_ptr<PlayerMoveComponent> moveComponent_;
 	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
 	std::unique_ptr<PlayerAttackComponent> attackComponent_;
+	std::unique_ptr<PlayerHitReactionComponent> hitReactionComponent_;
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
@@ -45278,6 +43810,8 @@ File Path: Project/application/Game/Entity/Player/State/AttackState.cpp
 // Player
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // State
 #include "RootState.h"
 // Math
@@ -45293,13 +43827,8 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 
 	// 攻撃の開始
 	if (player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
-		// 見栄え向上のために少し攻撃方向に進む
-		Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
-		forward.y = 0.0f;
-		if (forward.x != 0.0f || forward.z != 0.0f) {
-			forward = Normalize(forward);
-			player_->SetVelocity(forward * 0.5f);
-		}
+		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
+		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 	}
 }
 
@@ -45325,13 +43854,8 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
 			if (attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
-				// コンボ時も少し前に進む
-				Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
-				forward.y = 0.0f;
-				if (forward.x != 0.0f || forward.z != 0.0f) {
-					forward = Normalize(forward);
-					player_->SetVelocity(forward * 2.5f); // コンボ時は少し強めに踏み込む
-				}
+				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
+				moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 			}
 		}
 	}
@@ -45348,6 +43872,22 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 void AttackState::Finalize() {
 	PlayerState::Finalize();
 }
+
+///-------------------------------------------/// 
+/// 攻撃開始時に前方に移動する処理
+///-------------------------------------------///
+void AttackState::moveForwardOnAttackStart() {
+	// 見栄え向上のために少し攻撃方向に進む
+	Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
+	forward.y = 0.0f;
+	if (forward.x != 0.0f || forward.z != 0.0f) {
+		forward = Normalize(forward);
+		player_->SetVelocity(forward * moveForwardStrength_);
+	}
+	// 波紋を出す
+	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 1.0f, 0.05f);
+}
+
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/State/AttackState.h
@@ -45383,6 +43923,15 @@ public:
 	/// ステートの終了処理
 	/// </summary>
 	void Finalize() override;
+
+private:
+	float moveForwardStrength_ = 0.5f; // 攻撃開始時の前方移動の強さ
+
+private:
+	/// <summary>
+	/// 攻撃開始時に前方に移動します。
+	/// </summary>
+	void moveForwardOnAttackStart();
 };
 
 ============================================================
@@ -45548,6 +44097,116 @@ protected:
 
 
 ============================================================
+File Path: Project/application/Game/Entity/Player/State/HitReactionState.cpp
+============================================================
+#include "HitReactionState.h"
+// Player
+#include <application/Game/Entity/Player/Player.h>
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
+// State
+#include "RootState.h"
+// Collider
+#include "Engine/Collider/ColliderConcept.h"
+// Component
+#include "application/Game/Entity/Player/Component/PlayerHitReactionComponent.h"
+
+///-------------------------------------------/// 
+/// コンストラクタ
+///-------------------------------------------///
+HitReactionState::HitReactionState(const Vector3& direction) {
+	knockbackDirection_ = direction;
+}
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void HitReactionState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
+	// 引数の取得
+	player_ = player;
+	camera_ = camera;
+	
+	// 更新結果の取得
+	auto result = player_->GetHitReactionComponent()->Start(knockbackDirection_);
+	// 結果の反映
+	player_->SetVelocity(result.velocity);
+
+	// 波紋を出す
+	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 0.5f, 0.05f);
+}
+
+///-------------------------------------------/// 
+/// 更新時に呼び出す
+///-------------------------------------------///
+void HitReactionState::Update(Player * player, MiiEngine::CameraCommon * camera) {
+	// 引数の更新
+	player_ = player;
+	camera_ = camera;
+
+	// 減速処理
+	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
+	
+	/// ===Stateの変更=== ///
+	if (std::abs(player_->GetVelocity().x) <= 0.01f && std::abs(player_->GetVelocity().z) <= 0.01f) {
+		
+		// RootStateへ移行
+		player_->ChangState(std::make_unique<RootState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void HitReactionState::Finalize() {
+	PlayerState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/State/HitReactionState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/PlayerState.h"
+// Math
+#include "Math/Vector3.h"
+
+///=====================================================/// 
+/// HitReactionState
+///=====================================================///
+class HitReactionState : public PlayerState {
+public:
+
+	HitReactionState(const Vector3& direction);
+	~HitReactionState() override = default;
+
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="player">処理対象のプレイヤーを指すポインタ。状態遷移時にプレイヤーに対する初期化や設定を行うために使用される。</param>
+	/// <param name="camera">状態で使用するゲームカメラを指すポインタ。表示や視点の初期設定に使用される。</param>
+	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
+
+	/// <summary>
+	/// ステート時の更新処理
+	/// </summary>
+	/// <param name="player">更新対象の Player インスタンスへのポインタ。</param>
+	/// <param name="camera">更新処理に使用する MiiEngine::CameraCommon インスタンスへのポインタ。</param>
+	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+
+	/// <summary>
+	/// ステートの終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	// ノックバックの方向
+	Vector3 knockbackDirection_;
+};
+
+
+
+============================================================
 File Path: Project/application/Game/Entity/Player/State/MoveState.cpp
 ============================================================
 #include "MoveState.h"
@@ -45556,8 +44215,8 @@ File Path: Project/application/Game/Entity/Player/State/MoveState.cpp
 #include "Service/Particle.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-// Camera
-#include "Engine/Camera/Base/CameraCommon.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // State
 #include "RootState.h"
 #include "AvoidanceState.h"
@@ -45573,6 +44232,10 @@ void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
+
+	// タイマーのリセット
+	rippleTimer_ = 0.0f;
+	rippleTime_ = 0.01f;
 
 	// 移動パーティクルの強制停止
 	if (moveParticle_) {
@@ -45594,21 +44257,18 @@ void MoveState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 
 	/// ===スティックの取得=== ///
 	Vector2 leftStick = player_->GetLeftStickState();
+	bool hasInput = std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f;
+	if (hasInput) {
+		// スティックの動きを適用
+		ApplyStickMovement(leftStick);
 
-	/// ===移動処理=== ///
-	PlayerMoveComponent::UpdateContext context{
-		.inputDirection = { leftStick.x, 0.0f, leftStick.y},
-		.currentPosition = player_->GetTransform().translate,
-		.currentRotation = player_->GetTransform().rotate,
-		.deltaTime = player_->GetDeltaTime()
-	};
-	// 更新
-	auto result = player_->GetMoveComponent()->Update(context);
+	} else {
+		// 入力がない場合は減速処理を適用
+		ApplyBraking();
+	}
 
-	// 結果を反映
-	result.velocity.y = player_->GetVelocity().y; // 現在のY軸の速度を維持
-	player_->SetVelocity(result.velocity);
-	player_->SetRotate(result.targetRotation);
+	// 波紋を出す
+	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 0.5f, 0.01f);
 
 	// パーティクルの位置更新
 	if (moveParticle_) {
@@ -45620,27 +44280,20 @@ void MoveState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
 		// 攻撃の準備ができていれば
 		if (!player_->GetAttackComponent()->GetState().isActive) {
-			// パーティクルの停止
-			//StopMoveParticle();
 			// AttackStateへ移行
 			player_->ChangState(std::make_unique<AttackState>());
 		}
-	// RBボタンが押されたら進んでいる突進状態へ
-	} else if (Service::Input::TriggerButton(0, ControllerButtonType::RB)) {
 
 	// Aボタンが押されたら回避状態へ
 	} else if (Service::Input::TriggerButton(0, ControllerButtonType::A)) {
 		// 回避の準備ができていれば
 		if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
-			// パーティクルの停止
-			//StopMoveParticle();
 			// AvoidanceStateへ移行
 			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetMoveComponent()->GetCurrentDirection())));
 		}
+
 	// 移動が無ければ通常状態へ
-	} else if (std::abs(leftStick.x) < 0.1f && std::abs(leftStick.y) < 0.1f) {
-		// パーティクルの停止
-		//StopMoveParticle();
+	} else if (std::abs(player_->GetVelocity().x) <= 0.01f && std::abs(player_->GetVelocity().z) <= 0.01f) {
 		// RootStateへ移行
 		player_->ChangState(std::make_unique<RootState>());
 	}
@@ -45650,6 +44303,7 @@ void MoveState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void MoveState::Finalize() {
+	StopMoveParticle();
 	PlayerState::Finalize();
 }
 
@@ -45663,6 +44317,34 @@ void MoveState::StopMoveParticle() {
 	}
 }
 
+///-------------------------------------------/// 
+/// スティックの動きを適用します。
+///-------------------------------------------///
+void MoveState::ApplyStickMovement(const Vector2& stick) {
+	/// ===移動処理=== ///
+	PlayerMoveComponent::UpdateContext context{
+		.inputDirection = { stick.x, 0.0f, stick.y},
+		.currentPosition = player_->GetTransform().translate,
+		.currentRotation = player_->GetTransform().rotate,
+		.deltaTime = player_->GetDeltaTime()
+	};
+	// 更新
+	auto result = player_->GetMoveComponent()->Update(context);
+
+	// 結果を反映
+	result.velocity.y = player_->GetVelocity().y; // 現在のY軸の速度を維持
+	player_->SetVelocity(result.velocity);
+	player_->SetRotate(result.targetRotation);
+}
+
+///-------------------------------------------/// 
+/// 減速処理
+///-------------------------------------------///
+void MoveState::ApplyBraking() {
+	/// ===減速処理(数値を下げるほどゆっくり止まる)=== ///
+	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
+}
+
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/State/MoveState.h
@@ -45671,7 +44353,7 @@ File Path: Project/application/Game/Entity/Player/State/MoveState.h
 /// ===Include=== ///
 #include "Base/PlayerState.h"
 // Math
-#include "Math/Vector3.h"
+#include "Math/Vector2.h"
 
 /// ===前方宣言=== ///
 namespace MiiEngine {
@@ -45706,7 +44388,12 @@ public:
 	void Finalize() override;	
 
 private:
+	// 移動パーティクル
 	MiiEngine::ParticleGroup* moveParticle_ = nullptr;
+
+	// 移動時に発生する波紋の時間
+	float rippleTimer_ = 0.0f;
+	float rippleTime_ = 0.0f;
 
 private:
 
@@ -45714,6 +44401,17 @@ private:
 	/// パーティクルの停止
 	/// </summary>
 	void StopMoveParticle();
+
+	/// <summary>
+	/// スティックの動きを適用します。
+	/// </summary>
+	/// <param name="stick">スティックの入力を表す2Dベクトル。</param>
+	void ApplyStickMovement(const Vector2& stick);
+
+	/// <summary>
+	/// 減速処理
+	/// </summary>
+	void ApplyBraking();
 };
 
 
@@ -45750,9 +44448,6 @@ void RootState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 
 	/// ===左スティックの取得=== ///
 	StickState leftStick = Service::Input::GetLeftStickState(0);
-
-	/// ===減速処理(数値を下げるほどゆっくり止まる)=== ///
-	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
 
 	/// ===死亡していなければ=== ///
 	if (!player_->GetIsDead()) {
@@ -46480,6 +45175,14 @@ void GroundOcean::ShowImGui() {
 }
 
 ///-------------------------------------------/// 
+/// 波紋の追加
+///-------------------------------------------///
+void GroundOcean::AddRipple(const Vector3& pos, float radius, float strength) {
+	// 波紋の追加
+	fftOcean_->AddRipple(pos, radius, strength);
+}
+
+///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
 void GroundOcean::OnCollision(MiiEngine::Collider* collider) {
@@ -46526,6 +45229,14 @@ public:
 	/// ImGui情報の表示
 	/// </summary>
 	void ShowImGui();
+
+	/// <summary>
+	/// 波紋を追加します。
+	/// </summary>
+	/// <param name="pos">波紋の位置。</param>
+	/// <param name="radius">波紋の半径。</param>
+	/// <param name="strength">波紋の強度。</param>
+	void AddRipple(const Vector3& pos, float radius, float strength);
 
 public: /// ===衝突処理=== ///
 
@@ -46678,7 +45389,7 @@ File Path: Project/application/Game/Object/GameStage.cpp
 ///-------------------------------------------///
 GameStage::~GameStage() {
 	objects_.clear();
-	Oceans_.clear();
+	Oceans_.reset();
 	grounds_.clear();
 }
 
@@ -46697,15 +45408,10 @@ void GameStage::Initialize(const std::string& levelData) {
 void GameStage::Update() {
 
 	// GroundOceanの更新
-	for (const auto& ocean : Oceans_) {
-		if (ocean) {
 #ifdef USE_IMGUI
-			ocean->ShowImGui();
+	Oceans_->ShowImGui();
 #endif // USE_IMGUI
-
-			ocean->Update();
-		}
-	}
+	Oceans_->Update();
 
 	// Groundの更新
 	for (const auto& ground : grounds_) {
@@ -46728,11 +45434,7 @@ void GameStage::Update() {
 void GameStage::Draw(MiiEngine::BlendMode mode) {
 
 	// GroundOceanの更新
-	for (const auto& ocean : Oceans_) {
-		if (ocean) {
-			ocean->Draw();
-		}
-	}
+	Oceans_->Draw();
 
 	// GroundOceanの更新
 	for (const auto& ground : grounds_) {
@@ -46761,10 +45463,9 @@ void GameStage::LoadStageData(const std::string& stageData) {
 		if (stage.classType == LevelData::ClassTypeLevel::Ground) {
 
 			if (stage.fileName == "Ocean") {
-				std::unique_ptr<GroundOcean> ocean = std::make_unique<GroundOcean>();
-				ocean->Initialize();
-				ocean->Update();
-				Oceans_.emplace_back(std::move(ocean));
+				Oceans_ = std::make_unique<GroundOcean>();
+				Oceans_->Initialize();
+				Oceans_->Update();
 			} else {
 				// Object3dの生成
 				std::unique_ptr<Ground> ground = std::make_unique<Ground>();
@@ -46840,10 +45541,14 @@ public:
 	/// <param name="mode">描画に使用するブレンドモード。省略した場合は BlendMode::kBlendModeAdd が使用されます。</param>
 	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal);
 
+public: /// ===Getter=== ///
+	// GroundOceanの取得
+	GroundOcean* GetGroundOcean() const { return Oceans_.get(); }
+
 private:
 	// ステージオブジェクトのリスト
 	std::vector<std::unique_ptr<StageObject>> objects_; 
-	std::vector<std::unique_ptr<GroundOcean>> Oceans_;
+	std::unique_ptr<GroundOcean> Oceans_;
 	std::vector<std::unique_ptr<Ground>> grounds_;
 
 private:
@@ -47969,11 +46674,13 @@ void GameScene::Initialize() {
 	player_ = std::make_unique<Player>();
 	Vector3 translation = { 0.0f, 5.0f, -30.0f };
 	player_->InitGame(translation, camera_.get());
+	player_->SetGroundOcean(stage_->GetGroundOcean());
 
 	/// ===EnemyManagerの生成=== ///
 	enemy_ = std::make_unique<BossEnemy>();
 	enemy_->InitGameScene({ 0.0f, 8.0f, 30.0f });
 	enemy_->SetPlayer(player_.get());
+	enemy_->SetGroundOcean(stage_->GetGroundOcean());
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -48017,12 +46724,12 @@ void GameScene::Update() {
 
 #endif // USE_IMGUI
 
-	/// ===Groundの更新=== ///
-	stage_->Update();
-
 	/// ===EntityのPreUpdate=== ///
 	player_->PreUpdate(); // Playerの更新前処理
 	enemy_->PreUpdate();  // Enemyの更新前処理
+
+	/// ===Groundの更新=== ///
+	stage_->Update();
 
 	/// ===Stateの管理=== ///
 	if (currentState_) {
