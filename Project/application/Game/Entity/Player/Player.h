@@ -6,6 +6,7 @@
 #include "Component/PlayerMoveComponent.h"
 #include "Component/PlayerAvoidanceComponent.h"
 #include "Component/PlayerAttackComponent.h"
+#include "Component/PlayerHitReactionComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Hand
@@ -78,6 +79,7 @@ public: /// ===Getter=== ///
 	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
 	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
 	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
+	PlayerHitReactionComponent* GetHitReactionComponent() const { return hitReactionComponent_.get(); };
 
 	// StickState
 	Vector2 GetLeftStickState() const { return stickState_.leftStick; };
@@ -120,6 +122,7 @@ private: /// ===変数の宣言=== ///
 	std::unique_ptr<PlayerMoveComponent> moveComponent_;
 	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
 	std::unique_ptr<PlayerAttackComponent> attackComponent_;
+	std::unique_ptr<PlayerHitReactionComponent> hitReactionComponent_;
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;

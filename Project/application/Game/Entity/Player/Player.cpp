@@ -3,6 +3,7 @@
 #include "Engine/Camera/FollowCamera.h"
 // State
 #include "State/RootState.h"
+#include "State/HitReactionState.h"
 // Service
 #include "Service/Input.h"
 #include "Service/Camera.h"
@@ -53,6 +54,21 @@ void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera)
 
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
+
+	/// ===Handの初期化=== ///
+	// 右手
+	rightHand_ = std::make_unique<PlayerHand>();
+	rightHand_->Initialize();
+	rightHand_->SetUpParent(this);
+	// 左手
+	leftHand_ = std::make_unique<PlayerHand>();
+	leftHand_->Initialize();
+	leftHand_->SetUpParent(this);
+
+	/// ===Weaponの初期化=== ///
+	weapon_ = std::make_unique<PlayerWeapon>();
+	weapon_->Initialize();
+	weapon_->SetUpParent(this);
 
 	/// ===パラメータの設定=== ///
 	SettingParamita();
@@ -196,19 +212,10 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			Vector3 enemyPos = collider->GetTransform().translate;
 			// プレイヤーから敵への方向ベクトルを計算
 			Vector3 knockbackDirection = transform_.translate - enemyPos;
-			// Y軸は無視(水平方向のみノックバック)
-			knockbackDirection.y = 0.0f;
-			// 正規化
-			if (knockbackDirection.x != 0.0f || knockbackDirection.z != 0.0f) {
-				knockbackDirection = Normalize(knockbackDirection);
-			}
-			// ノックバックの速度を設定(適切な値に調整してください)
-			const float knockbackSpeed = 1.5f;
-			baseInfo_.velocity = knockbackDirection * knockbackSpeed;
-
-			// Stateを Root に変更
-			attackComponent_->CancelAttack(); // 攻撃キャンセル
-			ChangState(std::make_unique<RootState>());
+			// ステートの変更
+			ChangState(std::make_unique<HitReactionState>(knockbackDirection));
+			// 攻撃キャンセル
+			attackComponent_->CancelAttack();
 
 			// ダメージ処理
 			baseInfo_.HP--;
@@ -222,26 +229,13 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 /// Paramitaの設定
 ///-------------------------------------------///
 void Player::SettingParamita() {
-	/// ===Handの初期化=== ///
-	// 右手
-	rightHand_ = std::make_unique<PlayerHand>();
-	rightHand_->Initialize();
-	rightHand_->SetUpParent(this);
-	// 左手
-	leftHand_ = std::make_unique<PlayerHand>();
-	leftHand_->Initialize();
-	leftHand_->SetUpParent(this);
-
-	/// ===Weaponの初期化=== ///
-	weapon_ = std::make_unique<PlayerWeapon>();
-	weapon_->Initialize();
-	weapon_->SetUpParent(this);
 
 	/// ===Component=== ///
 	// Componentの生成
 	moveComponent_ = std::make_unique<PlayerMoveComponent>();
 	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
 	attackComponent_ = std::make_unique<PlayerAttackComponent>();
+	hitReactionComponent_ = std::make_unique<PlayerHitReactionComponent>();
 
 	// MoveComponentの初期化
 	PlayerMoveComponent::MoveConfig moveConfig{
@@ -259,6 +253,12 @@ void Player::SettingParamita() {
 		.invincibleTime = 0.01f
 	};
 	avoidanceComponent_->Initialize(avoidanceConfig);
+
+	// HitReactionComponentの初期化
+	PlayerHitReactionComponent::HitConfig hitReactionConfig{
+		.knockbackSpeed = 1.5f,
+	};
+	hitReactionComponent_->Initialize(hitReactionConfig);
 
 	// AttackComponentの初期化
 	attackComponent_->Initialize();

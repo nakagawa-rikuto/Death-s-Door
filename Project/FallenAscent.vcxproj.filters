@@ -605,6 +605,8 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1175,6 +1177,8 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
