@@ -78,6 +78,9 @@ public:
 		Vector3 weaponPosition{};    // ローカル座標系での武器位置オフセット
 		bool isAttacking = false;    // 攻撃判定が有効なフレーム
 		bool isFinished = false;     // 攻撃が完全終了したか
+		bool onJump = false;         // ジャンプ開始の瞬間
+		bool onLanding = false;      // 着地の瞬間
+		bool onStrike = false;       // 叩きつけ開始の瞬間
 	};
 
 public:

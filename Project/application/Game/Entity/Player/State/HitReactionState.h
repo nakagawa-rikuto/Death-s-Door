@@ -2,20 +2,16 @@
 /// ===Include=== ///
 #include "Base/PlayerState.h"
 // Math
-#include "Math/Vector2.h"
-
-/// ===前方宣言=== ///
-namespace MiiEngine {
-	class ParticleGroup;
-}
+#include "Math/Vector3.h"
 
 ///=====================================================/// 
-/// MoveState
+/// HitReactionState
 ///=====================================================///
-class MoveState : public PlayerState{
+class HitReactionState : public PlayerState {
 public:
 
-	~MoveState() override = default;
+	HitReactionState(const Vector3& direction);
+	~HitReactionState() override = default;
 
 	/// <summary>
 	/// ステートに入った時に呼ばれる処理
@@ -34,32 +30,10 @@ public:
 	/// <summary>
 	/// ステートの終了処理
 	/// </summary>
-	void Finalize() override;	
+	void Finalize() override;
 
 private:
-	// 移動パーティクル
-	MiiEngine::ParticleGroup* moveParticle_ = nullptr;
-
-	// 移動時に発生する波紋の時間
-	float rippleTimer_ = 0.0f;
-	float rippleTime_ = 0.0f;
-
-private:
-
-	/// <summary>
-	/// パーティクルの停止
-	/// </summary>
-	void StopMoveParticle();
-
-	/// <summary>
-	/// スティックの動きを適用します。
-	/// </summary>
-	/// <param name="stick">スティックの入力を表す2Dベクトル。</param>
-	void ApplyStickMovement(const Vector2& stick);
-
-	/// <summary>
-	/// 減速処理
-	/// </summary>
-	void ApplyBraking();
+	// ノックバックの方向
+	Vector3 knockbackDirection_;
 };
 

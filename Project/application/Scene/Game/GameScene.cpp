@@ -73,11 +73,13 @@ void GameScene::Initialize() {
 	player_ = std::make_unique<Player>();
 	Vector3 translation = { 0.0f, 5.0f, -30.0f };
 	player_->InitGame(translation, camera_.get());
+	player_->SetGroundOcean(stage_->GetGroundOcean());
 
 	/// ===EnemyManagerの生成=== ///
 	enemy_ = std::make_unique<BossEnemy>();
 	enemy_->InitGameScene({ 0.0f, 8.0f, 30.0f });
 	enemy_->SetPlayer(player_.get());
+	enemy_->SetGroundOcean(stage_->GetGroundOcean());
 
 	/// ===State=== ///
 	// 初期状態をInitializeStateに設定
@@ -121,12 +123,12 @@ void GameScene::Update() {
 
 #endif // USE_IMGUI
 
-	/// ===Groundの更新=== ///
-	stage_->Update();
-
 	/// ===EntityのPreUpdate=== ///
 	player_->PreUpdate(); // Playerの更新前処理
 	enemy_->PreUpdate();  // Enemyの更新前処理
+
+	/// ===Groundの更新=== ///
+	stage_->Update();
 
 	/// ===Stateの管理=== ///
 	if (currentState_) {

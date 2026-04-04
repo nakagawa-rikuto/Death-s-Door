@@ -1,8 +1,10 @@
-#include "MoveBossState.h"
+#include "BossMoveState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // State
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossThrustAttackState.h>
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDownwarAttackState.h>
@@ -12,7 +14,7 @@
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void MoveBossState::Enter(BossEnemy* enemy) {
+void BossMoveState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
@@ -21,7 +23,7 @@ void MoveBossState::Enter(BossEnemy* enemy) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void MoveBossState::Update() {
+void BossMoveState::Update() {
 	// プレイヤーとの距離を計算
 	const float dist = CalcDistToPlayer();
 
@@ -42,6 +44,9 @@ void MoveBossState::Update() {
 	// 回転の更新
 	boss_->SetRotate(result.rotate);
 
+	// 波紋の生成
+	boss_->GetGroundOcean()->AddRipple(boss_->GetTransform().translate, 1.0f, 0.1f);
+
 	/// ===Stateの変更=== ///
 	// 突き攻撃への遷移条件
 	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
@@ -61,23 +66,19 @@ void MoveBossState::Update() {
 		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
 		return;
 	}
-
-	/*if (boss_->GetAttackComponent().IsAnyAttackAvailable(dist)) {
-		boss_->ChangeState(std::make_unique<BossAttackState>());
-	}*/
 }
 
 ///-------------------------------------------/// 
 /// 終了時に呼び出す
 ///-------------------------------------------///
-void MoveBossState::Finalize() {
+void BossMoveState::Finalize() {
 	BossState::Finalize();
 }
 
 ///-------------------------------------------/// 
 /// プレイヤーとボスの距離を計算して返す。
 ///-------------------------------------------///
-float MoveBossState::CalcDistToPlayer() const {
+float BossMoveState::CalcDistToPlayer() const {
 	const Vector3 diff =
 		boss_->GetPlayer()->GetTransform().translate -
 		boss_->GetTransform().translate;

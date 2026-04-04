@@ -3,8 +3,10 @@
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -36,9 +38,14 @@ void BossThrustAttackState::Update() {
 	// 武器のオフセットを反映
 	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
 
+	// 波紋を生成するタイミングの判定
+	if (result.isAttacking) {
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 0.01f);
+	}
+
 	if (result.isFinished) {
-		// 攻撃終了 → MoveBossStateへ遷移
-		boss_->ChangeState(std::make_unique<MoveBossState>());
+		// BossMoveStateへ遷移
+		boss_->ChangeState(std::make_unique<BossMoveState>());
 		return;
 	}
 }
@@ -56,9 +63,3 @@ void BossThrustAttackState::Finalize() {
 	BossState::Finalize();
 }
 
-///-------------------------------------------/// 
-/// プレイヤーとボスの距離を計算して返す。
-///-------------------------------------------///
-float BossThrustAttackState::CalcDistToPlayer() const {
-	return 0.0f;
-}

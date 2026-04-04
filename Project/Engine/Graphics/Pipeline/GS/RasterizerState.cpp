@@ -11,7 +11,6 @@ namespace MiiEngine {
 		{ PipelineType::BackGround2D,		D3D12_CULL_MODE_NONE },
 		{ PipelineType::Obj3D,				D3D12_CULL_MODE_BACK },
 		{ PipelineType::PrimitiveSkyBox,    D3D12_CULL_MODE_NONE },
-		{ PipelineType::Ocean,				D3D12_CULL_MODE_BACK },
 		{ PipelineType::FFTOcean,			D3D12_CULL_MODE_BACK },
 		{ PipelineType::Particle,			D3D12_CULL_MODE_NONE },
 		{ PipelineType::Skinning3D,			D3D12_CULL_MODE_BACK },

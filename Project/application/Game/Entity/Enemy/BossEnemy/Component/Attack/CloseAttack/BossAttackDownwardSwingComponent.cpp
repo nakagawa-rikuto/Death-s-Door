@@ -37,6 +37,7 @@ void BossAttackDownwardSwingComponent::Initialize(const DownwardSwingConfig& con
 BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
 	result.isAttacking = (phase_ == DownwardSwingPhase::Strike || phase_ == DownwardSwingPhase::HoldDown);
+	result.onStrike = false; // 毎フレーム初期化して一瞬だけtrueになるようにする
 
 	// 非アクティブフェーズ
 	if (phase_ == DownwardSwingPhase::Idle || phase_ == DownwardSwingPhase::Finished) {
@@ -194,6 +195,7 @@ void BossAttackDownwardSwingComponent::UpdateStrike(const UpdateContext & contex
 
 	// フェーズ遷移
 	if (rawT >= 1.0f) {
+		result.onStrike = true; // 波紋を出すためのトリガー
 		state_.phaseTimer = 0.0f;
 		if (config_.holdDownDuration > 0.0f) {
 			phase_ = DownwardSwingPhase::HoldDown;

@@ -17,8 +17,6 @@ namespace MiiEngine {
 		Obj3D,
 		// SkyBox
 		PrimitiveSkyBox,
-		// Ocean
-		Ocean,
 		// FFTOcean
 		FFTOcean,
 		// Particle
@@ -54,8 +52,6 @@ namespace MiiEngine {
 	/// CSPipelineType
 	///-------------------------------------------///
 	enum class CSPipelineType {
-		// Ocean
-		Ocean,
 		// FFTOcean
 		FFTOcean,
 		// Ripples
@@ -66,7 +62,9 @@ namespace MiiEngine {
 	};
 
 
-	// 列挙型の全値を取得する関数
+	///-------------------------------------------/// 
+	/// 列挙型の全値を取得する関数
+	///-------------------------------------------///
 	constexpr std::array<PipelineType, static_cast<size_t>(PipelineType::CountOfPipelineType)> AllPipelineTypes() {
 		return {
 			// Graphics Pipelines
@@ -77,7 +75,6 @@ namespace MiiEngine {
 			PipelineType::PrimitiveSkyBox,
 			PipelineType::Particle ,
 			PipelineType::Skinning3D,
-			PipelineType::Ocean,
 			PipelineType::FFTOcean,
 			PipelineType::Line3D,
 			PipelineType::OffScreen,
@@ -92,10 +89,11 @@ namespace MiiEngine {
 		};
 	}
 
-	// 列挙型の全値を取得する関数
+	///-------------------------------------------///
+	/// 列挙型の全値を取得する関数
+	///-------------------------------------------///
 	constexpr std::array<CSPipelineType, static_cast<size_t>(CSPipelineType::CountOfCSPipelineType)> AllCSPipelineTypes() {
 		return {
-			CSPipelineType::Ocean,
 			CSPipelineType::FFTOcean,
 			CSPipelineType::Ripples,
 		};

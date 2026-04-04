@@ -4,7 +4,7 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Move/MoveBossState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 // Math
 #include <Math/sMath.h>
 // C++
@@ -54,7 +54,7 @@ void BossHitReactionState::Update() {
 	float colorTimer = boss_->GetHitReactionComponent().GetColorState().colorTimer;
 
 	if (slowdownTimer <= 0.0f && colorTimer <= 0.0f) {
-		boss_->ChangeState(std::make_unique<MoveBossState>());
+		boss_->ChangeState(std::make_unique<BossMoveState>());
 	}
 }
 

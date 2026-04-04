@@ -29,4 +29,13 @@ public:
 	/// ステートの終了処理
 	/// </summary>
 	void Finalize() override;
+
+private:
+	float moveForwardStrength_ = 0.5f; // 攻撃開始時の前方移動の強さ
+
+private:
+	/// <summary>
+	/// 攻撃開始時に前方に移動します。
+	/// </summary>
+	void moveForwardOnAttackStart();
 };

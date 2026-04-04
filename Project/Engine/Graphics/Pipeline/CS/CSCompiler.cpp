@@ -28,7 +28,6 @@ namespace MiiEngine {
 
 		// テーブル本体
 		const std::unordered_map<CSPipelineType, ShaderInfo> kCSShaderTable_ = {
-			{ CSPipelineType::Ocean,    { L"Ocean/Ocean.CS.hlsl",   { L"main" } } },
 			{ CSPipelineType::FFTOcean, { L"Ocean/FFTOcean.CS.hlsl",{
 				L"InitSpectrum", L"UpdateSpectrum", L"BitReverseRows", L"ButterflyIFFT",
 				L"BitReverseCols", L"SaveIFFTResult", L"AssembleDisplacement", L"ComputeNormalFoam",}}},

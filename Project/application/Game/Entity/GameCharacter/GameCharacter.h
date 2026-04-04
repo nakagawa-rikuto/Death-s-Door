@@ -7,6 +7,9 @@
 // GameCharacterCollision
 #include "Collision/GameCharacterCollision.h"
 
+/// ===前方宣言=== ///
+class GroundOcean;
+
 ///-------------------------------------------/// 
 /// GameCharacterBase
 ///-------------------------------------------///
@@ -60,6 +63,8 @@ public: /// ===Getter=== ///
     float GetDeltaTime() const { return baseInfo_.deltaTime; };
     // HP
     uint32_t GetHP() const { return baseInfo_.HP; }
+    // GroundOcean
+    GroundOcean* GetGroundOcean() const { return groundOcean_; }
    
 public: /// ===Setter=== ///
     // Velocity
@@ -68,8 +73,13 @@ public: /// ===Setter=== ///
     void SetIsDead(const bool isDead) { baseInfo_.isDead = isDead; };
 	// HalfSizeY
 	void SetHalfSizeY(const float halfSizeY) { characterHalfSizeY_ = halfSizeY; }
+    // GroundOcean
+    void SetGroundOcean(GroundOcean* ocean) { groundOcean_ = ocean; }
 
 protected:
+    // GroundOcean
+    GroundOcean* groundOcean_ = nullptr;
+
     // Collisionクラス
     std::unique_ptr<MiiEngine::ColliderCollision> collision_;
     std::unique_ptr<GameCharacterCollision> gCollision_;

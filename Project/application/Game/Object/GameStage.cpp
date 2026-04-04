@@ -13,7 +13,7 @@
 ///-------------------------------------------///
 GameStage::~GameStage() {
 	objects_.clear();
-	Oceans_.clear();
+	Oceans_.reset();
 	grounds_.clear();
 }
 
@@ -32,15 +32,10 @@ void GameStage::Initialize(const std::string& levelData) {
 void GameStage::Update() {
 
 	// GroundOceanの更新
-	for (const auto& ocean : Oceans_) {
-		if (ocean) {
 #ifdef USE_IMGUI
-			ocean->ShowImGui();
+	Oceans_->ShowImGui();
 #endif // USE_IMGUI
-
-			ocean->Update();
-		}
-	}
+	Oceans_->Update();
 
 	// Groundの更新
 	for (const auto& ground : grounds_) {
@@ -63,11 +58,7 @@ void GameStage::Update() {
 void GameStage::Draw(MiiEngine::BlendMode mode) {
 
 	// GroundOceanの更新
-	for (const auto& ocean : Oceans_) {
-		if (ocean) {
-			ocean->Draw();
-		}
-	}
+	Oceans_->Draw();
 
 	// GroundOceanの更新
 	for (const auto& ground : grounds_) {
@@ -96,10 +87,9 @@ void GameStage::LoadStageData(const std::string& stageData) {
 		if (stage.classType == LevelData::ClassTypeLevel::Ground) {
 
 			if (stage.fileName == "Ocean") {
-				std::unique_ptr<GroundOcean> ocean = std::make_unique<GroundOcean>();
-				ocean->Initialize();
-				ocean->Update();
-				Oceans_.emplace_back(std::move(ocean));
+				Oceans_ = std::make_unique<GroundOcean>();
+				Oceans_->Initialize();
+				Oceans_->Update();
 			} else {
 				// Object3dの生成
 				std::unique_ptr<Ground> ground = std::make_unique<Ground>();

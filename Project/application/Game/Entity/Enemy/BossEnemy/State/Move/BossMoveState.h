@@ -3,12 +3,12 @@
 #include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
 
 ///=====================================================/// 
-/// MoveState
+/// BossMoveState
 /// ボスの移動状態を表すクラス
 ///=====================================================///
-class MoveBossState : public BossState {
+class BossMoveState : public BossState {
 public:
-	~MoveBossState() override = default;
+	~BossMoveState() override = default;
 
 	/// <summary>
 	/// 初期化処理
