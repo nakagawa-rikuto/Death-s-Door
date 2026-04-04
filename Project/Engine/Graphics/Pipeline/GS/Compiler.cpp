@@ -31,7 +31,6 @@ namespace MiiEngine {
 		{ PipelineType::CircularGauge2D, { L"2D/Obj2D.VS.hlsl",				 L"2D/CircularGauge.PS.hlsl"}},
 		{ PipelineType::Obj3D,			 { L"3D/Obj3D.VS.hlsl",				 L"3D/Obj3D.PS.hlsl"}},
 		{ PipelineType::PrimitiveSkyBox, { L"3D/SkyBox.VS.hlsl",             L"3D/SkyBox.PS.hlsl"}},
-		{ PipelineType::Ocean,			 { L"Ocean/Ocean.VS.hlsl",           L"Ocean/Ocean.PS.hlsl"}},
 		{ PipelineType::FFTOcean,		 { L"Ocean/FFTOcean.VS.hlsl",        L"Ocean/FFTOcean.PS.hlsl"}},
 		{ PipelineType::Skinning3D,		 { L"3D/SkinningObj3D.VS.hlsl",      L"3D/SkinningObj3D.PS.hlsl"}},
 		{ PipelineType::Line3D,			 { L"3D/Line3D.VS.hlsl",             L"3D/Line3D.PS.hlsl"}},

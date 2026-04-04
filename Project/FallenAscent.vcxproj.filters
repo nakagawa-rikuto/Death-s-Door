@@ -85,15 +85,6 @@
     <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl">
       <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.VS.hlsl">
-      <Filter>Resource\Shaders\Ocean</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.CS.hlsl">
-      <Filter>Resource\Shaders\Ocean</Filter>
-    </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ocean.PS.hlsl">
-      <Filter>Resource\Shaders\Ocean</Filter>
-    </FxCompile>
     <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
@@ -595,15 +586,6 @@
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp">
       <Filter>Engine\Graphics\Ocean\FFT</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanGenerator.cpp">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanCommon.cpp">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\Ocean\OceanWaveCompute.cpp">
-      <Filter>Engine\Graphics\Ocean</Filter>
     </ClCompile>
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
@@ -1175,15 +1157,6 @@
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h">
       <Filter>Engine\Graphics\Ocean\FFT</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanGenerator.h">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanCommon.h">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\OceanWaveCompute.h">
-      <Filter>Engine\Graphics\Ocean</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
@@ -1227,9 +1200,6 @@
     </None>
     <None Include="Resource\Shaders\2D\Obj2D.hlsli">
       <Filter>Resource\Shaders\2D</Filter>
-    </None>
-    <None Include="Resource\Shaders\Ocean\Ocean.hlsli">
-      <Filter>Resource\Shaders\Ocean</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

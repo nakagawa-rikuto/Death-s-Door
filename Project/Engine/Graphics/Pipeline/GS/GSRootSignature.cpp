@@ -719,65 +719,6 @@ namespace MiiEngine {
 			return rootSignature;
 		}
 
-		/// ===Ocean=== ///
-		ComPtr<ID3D12RootSignature> TypeOcean(ID3D12Device* device) {
-			// ルートシグネチャの作成
-			D3D12_ROOT_PARAMETER rootParameters[5] = {};
-
-			// b0: Material (ObjectCommon)
-			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[0].Descriptor.ShaderRegister = 0;
-
-			// b1: Transform (ObjectCommon) & OceanShaderInfo0
-			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			rootParameters[1].Descriptor.ShaderRegister = 1;
-
-			// b2: DirectionalLight (ObjectCommon)
-			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[2].Descriptor.ShaderRegister = 2;
-
-			// b3: Camera (ObjectCommon)
-			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[3].Descriptor.ShaderRegister = 3;
-
-			// b4: OceanColor
-			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[4].Descriptor.ShaderRegister = 4;
-
-			// ルートシグネチャの記述
-			D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-			rootSignatureDesc.NumParameters = _countof(rootParameters);
-			rootSignatureDesc.pParameters = rootParameters;
-			rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-			// シリアライズとルートシグネチャ作成
-			ComPtr<ID3DBlob> signatureBlob;
-			ComPtr<ID3DBlob> errorBlob;
-			HRESULT hr = D3D12SerializeRootSignature(
-				&rootSignatureDesc,
-				D3D_ROOT_SIGNATURE_VERSION_1,
-				&signatureBlob,
-				&errorBlob
-			);
-			assert(SUCCEEDED(hr));
-
-			ComPtr<ID3D12RootSignature> rootSignature;
-			hr = device->CreateRootSignature(
-				0,
-				signatureBlob->GetBufferPointer(),
-				signatureBlob->GetBufferSize(),
-				IID_PPV_ARGS(&rootSignature)
-			);
-			assert(SUCCEEDED(hr));
-
-			return rootSignature;
-		}
-
 		/// ===FFTOcean=== ///
 		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
 			// VS用のSRV
@@ -878,7 +819,6 @@ namespace MiiEngine {
 			{ PipelineType::CircularGauge2D,	Type2D },
 			{ PipelineType::Obj3D,				Type3D },
 			{ PipelineType::PrimitiveSkyBox,	Type3D },
-			{ PipelineType::Ocean,				TypeOcean },
 			{ PipelineType::FFTOcean,			TypeFFTOcean },
 			{ PipelineType::Particle,			TypeParticle },
 			{ PipelineType::Skinning3D,			TypeSkinning3D  },

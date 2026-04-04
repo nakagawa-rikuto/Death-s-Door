@@ -4,6 +4,8 @@
 // Player
 #include "application/Game/Entity/Player/Player.h"
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // State
 #include "RootState.h"
 // Math
@@ -19,13 +21,8 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 
 	// 攻撃の開始
 	if (player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
-		// 見栄え向上のために少し攻撃方向に進む
-		Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
-		forward.y = 0.0f;
-		if (forward.x != 0.0f || forward.z != 0.0f) {
-			forward = Normalize(forward);
-			player_->SetVelocity(forward * 0.5f);
-		}
+		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
+		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 	}
 }
 
@@ -51,13 +48,8 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
 			if (attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
-				// コンボ時も少し前に進む
-				Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
-				forward.y = 0.0f;
-				if (forward.x != 0.0f || forward.z != 0.0f) {
-					forward = Normalize(forward);
-					player_->SetVelocity(forward * 2.5f); // コンボ時は少し強めに踏み込む
-				}
+				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
+				moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 			}
 		}
 	}
@@ -73,4 +65,19 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 ///-------------------------------------------///
 void AttackState::Finalize() {
 	PlayerState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// 攻撃開始時に前方に移動する処理
+///-------------------------------------------///
+void AttackState::moveForwardOnAttackStart() {
+	// 見栄え向上のために少し攻撃方向に進む
+	Vector3 forward = Math::RotateVector({ 0.0f, 0.0f, 1.0f }, player_->GetTransform().rotate);
+	forward.y = 0.0f;
+	if (forward.x != 0.0f || forward.z != 0.0f) {
+		forward = Normalize(forward);
+		player_->SetVelocity(forward * moveForwardStrength_);
+	}
+	// 波紋を出す
+	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 1.0f, 0.05f);
 }

@@ -28,9 +28,6 @@ void RootState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	/// ===左スティックの取得=== ///
 	StickState leftStick = Service::Input::GetLeftStickState(0);
 
-	/// ===減速処理(数値を下げるほどゆっくり止まる)=== ///
-	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
-
 	/// ===死亡していなければ=== ///
 	if (!player_->GetIsDead()) {
 		/// ===Stateの変更=== ///

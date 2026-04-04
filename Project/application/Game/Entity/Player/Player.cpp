@@ -278,11 +278,9 @@ void Player::advanceTimer() {
 	// 無敵タイマーを進める
 	if (invincibleInfo_.timer > 0.0f) {
 		invincibleInfo_.timer -= baseInfo_.deltaTime;
-		//color_ = { 1.0f, 0.0f, 0.0f, 0.5f }; // 半透明にする
 		invincibleInfo_.isFlag = true;
 	} else {
 		invincibleInfo_.isFlag = false;
-		//color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // 元の色に戻す
 	}
 
 	// 回避タイマーの更新

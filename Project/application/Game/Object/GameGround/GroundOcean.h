@@ -35,6 +35,14 @@ public:
 	/// </summary>
 	void ShowImGui();
 
+	/// <summary>
+	/// 波紋を追加します。
+	/// </summary>
+	/// <param name="pos">波紋の位置。</param>
+	/// <param name="radius">波紋の半径。</param>
+	/// <param name="strength">波紋の強度。</param>
+	void AddRipple(const Vector3& pos, float radius, float strength);
+
 public: /// ===衝突処理=== ///
 
 	/// <summary>

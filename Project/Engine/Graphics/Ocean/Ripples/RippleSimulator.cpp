@@ -70,23 +70,23 @@ namespace MiiEngine {
         uavIndices_[0] = base;
         uavIndices_[1] = base + 1;
         // u0:Ping
-        CreateTextureUAV(device, pingResource_, pingUAV_, 0, gridSize, gridSize);
+        CreateTextureUAV(device, pingResource_, pingUAV_, 0, gridSize, gridSize, DXGI_FORMAT_R32G32_FLOAT);
         // u1:Pong
-        CreateTextureUAV(device, pongResource_, pongUAV_, 1, gridSize, gridSize);
+        CreateTextureUAV(device, pongResource_, pongUAV_, 1, gridSize, gridSize, DXGI_FORMAT_R32G32_FLOAT);
 
         // SRV(t3)
         uint32_t srvBase = srvManager_->AllocateContiguous(2);
         srvPingIndex_ = srvBase;
         srvPongIndex_ = srvBase + 1;
         // 
-        srvManager_->CreateSRVForTexture2D(srvPingIndex_, pingResource_->GetBuffer(), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
-        srvManager_->CreateSRVForTexture2D(srvPongIndex_, pongResource_->GetBuffer(), DXGI_FORMAT_R32G32B32A32_FLOAT, 1);
+        srvManager_->CreateSRVForTexture2D(srvPingIndex_, pingResource_->GetBuffer(), DXGI_FORMAT_R32G32_FLOAT, 1);
+        srvManager_->CreateSRVForTexture2D(srvPongIndex_, pongResource_->GetBuffer(), DXGI_FORMAT_R32G32_FLOAT, 1);
 
         // 初期値
         params_.gridSize = gridSize_;
         params_.cellSize = gridWidth_ / static_cast<float>(gridSize_);
-        params_.waveSpeed = 5.0f;
-        params_.damping = 0.990f;
+        params_.waveSpeed = 50.0f;
+        params_.damping = 0.890f;
         params_.pingPong = 0;
     }
 
@@ -224,7 +224,7 @@ namespace MiiEngine {
         outUAV.CreateAsTexture2D(
             device,
             outResource->GetBuffer(),
-            DXGI_FORMAT_R32G32B32A32_FLOAT,
+            format,
             srvManager_->GetCPUDescriptorHandle(uavIndices_[uavSlot])
         );
     }

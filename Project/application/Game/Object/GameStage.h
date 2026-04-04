@@ -34,10 +34,14 @@ public:
 	/// <param name="mode">描画に使用するブレンドモード。省略した場合は BlendMode::kBlendModeAdd が使用されます。</param>
 	void Draw(MiiEngine::BlendMode mode = MiiEngine::BlendMode::KBlendModeNormal);
 
+public: /// ===Getter=== ///
+	// GroundOceanの取得
+	GroundOcean* GetGroundOcean() const { return Oceans_.get(); }
+
 private:
 	// ステージオブジェクトのリスト
 	std::vector<std::unique_ptr<StageObject>> objects_; 
-	std::vector<std::unique_ptr<GroundOcean>> Oceans_;
+	std::unique_ptr<GroundOcean> Oceans_;
 	std::vector<std::unique_ptr<Ground>> grounds_;
 
 private:

@@ -81,6 +81,14 @@ void GroundOcean::ShowImGui() {
 }
 
 ///-------------------------------------------/// 
+/// 波紋の追加
+///-------------------------------------------///
+void GroundOcean::AddRipple(const Vector3& pos, float radius, float strength) {
+	// 波紋の追加
+	fftOcean_->AddRipple(pos, radius, strength);
+}
+
+///-------------------------------------------/// 
 /// 衝突判定
 ///-------------------------------------------///
 void GroundOcean::OnCollision(MiiEngine::Collider* collider) {

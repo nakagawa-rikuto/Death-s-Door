@@ -49,7 +49,6 @@ namespace MiiEngine {
 		void ResetResourceStatesForNextFrame(ID3D12GraphicsCommandList* commandList);
 
 
-
 	public: /// ===Getter=== ///
 		// 最終変位マップ（SRVとして使用）
 		ID3D12Resource* GetDisplacementMap() const;

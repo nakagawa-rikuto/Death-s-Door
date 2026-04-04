@@ -404,7 +404,7 @@ namespace MiiEngine {
 		outUAV.CreateAsTexture2D(
 			device,
 			outResource->GetBuffer(),
-			DXGI_FORMAT_R32G32B32A32_FLOAT,
+			format,
 			srvManager_->GetCPUDescriptorHandle(uavIndices_[uavSlot])
 		);
 	}

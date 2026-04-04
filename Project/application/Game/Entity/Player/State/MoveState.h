@@ -2,7 +2,7 @@
 /// ===Include=== ///
 #include "Base/PlayerState.h"
 // Math
-#include "Math/Vector3.h"
+#include "Math/Vector2.h"
 
 /// ===前方宣言=== ///
 namespace MiiEngine {
@@ -37,7 +37,12 @@ public:
 	void Finalize() override;	
 
 private:
+	// 移動パーティクル
 	MiiEngine::ParticleGroup* moveParticle_ = nullptr;
+
+	// 移動時に発生する波紋の時間
+	float rippleTimer_ = 0.0f;
+	float rippleTime_ = 0.0f;
 
 private:
 
@@ -45,5 +50,16 @@ private:
 	/// パーティクルの停止
 	/// </summary>
 	void StopMoveParticle();
+
+	/// <summary>
+	/// スティックの動きを適用します。
+	/// </summary>
+	/// <param name="stick">スティックの入力を表す2Dベクトル。</param>
+	void ApplyStickMovement(const Vector2& stick);
+
+	/// <summary>
+	/// 減速処理
+	/// </summary>
+	void ApplyBraking();
 };
 
