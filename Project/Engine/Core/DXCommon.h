@@ -113,6 +113,8 @@ namespace MiiEngine {
 		int32_t GetBackBufferHeight()const;
 		// バックバッファの数を取得
 		size_t GetBackBufferCount()const;
+		// FPSの取得
+		float GetFPS()const;
 		// CPUのディスクリプターハンドルの取得
 		// <param name="descriptorHeap">ディスクリプタヒープへの参照。ID3D12DescriptorHeap の ComPtr。</param>
 		// <param name="descriptorSize">ディスクリプタ 1 つ分のサイズ (バイト単位)。</param>
@@ -166,6 +168,7 @@ namespace MiiEngine {
 
 		/// ===FPS固定=== ///
 		std::chrono::steady_clock::time_point reference_; // 記録時間(FPS固定用)
+		float fps_ = 0.0f; // 現在のFPS
 
 		/// ===viewPort=== ///
 		D3D12_VIEWPORT viewPort_; // ビューポート

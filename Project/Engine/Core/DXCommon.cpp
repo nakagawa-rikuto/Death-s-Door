@@ -583,8 +583,15 @@ namespace MiiEngine {
 			}
 		}
 
+		// スリープ補正後の時間からFPSを計算
+		std::chrono::steady_clock::time_point actualNow = std::chrono::steady_clock::now();
+		std::chrono::microseconds actualElapsed = std::chrono::duration_cast<std::chrono::microseconds>(actualNow - reference_);
+		if (actualElapsed.count() > 0) {
+			fps_ = 1000000.0f / actualElapsed.count();
+		}
+
 		// 現在の時間を記録する
-		reference_ = std::chrono::steady_clock::now();
+		reference_ = actualNow;
 	}
 
 	///-------------------------------------------/// 
@@ -596,6 +603,8 @@ namespace MiiEngine {
 	int32_t DXCommon::GetBackBufferHeight() const { return backBufferHeight_; }
 	// バックバッファの数を取得
 	size_t DXCommon::GetBackBufferCount() const { return swapChainDesc_.BufferCount; }
+	// FPSの取得
+	float DXCommon::GetFPS() const { return fps_; }
 	// DXGFactoryの取得
 	IDXGIFactory7* DXCommon::GetDXGFactory() const { return dxgiFactory_.Get(); }
 	// デバイスの取得
