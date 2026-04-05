@@ -115,8 +115,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\Game\GameScene.cpp" />
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
-    <ClCompile Include="application\Game\Editor\AttackDataSerializer.cpp" />
-    <ClCompile Include="application\Game\Editor\AttackEditor.cpp" />
+    <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp" />
+    <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.cpp" />
@@ -278,7 +278,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Animation\StartAnimation.cpp" />
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
-    <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp" />
+    <ClCompile Include="Engine\System\Editor\Particle\ParticleEditor.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp" />
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
@@ -320,11 +320,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
     <ClInclude Include="Engine\Collider\ColliderConcept.h" />
-    <ClInclude Include="application\Game\Editor\Data\AttackData.h" />
+    <ClInclude Include="Engine\System\Editor\Attack\Data\AttackData.h" />
     <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h" />
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h" />
-    <ClInclude Include="application\Game\Editor\AttackDataSerializer.h" />
-    <ClInclude Include="application\Game\Editor\AttackEditor.h" />
+    <ClInclude Include="Engine\System\Editor\Attack\AttackDataSerializer.h" />
+    <ClInclude Include="Engine\System\Editor\Attack\AttackEditor.h" />
     <ClInclude Include="Engine\DataInfo\CameraData.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSRootSignature.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSPSOCommon.h" />
@@ -483,7 +483,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Animation\StartAnimation.h" />
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
-    <ClInclude Include="Engine\System\Editor\ParticleEditor.h" />
+    <ClInclude Include="Engine\System\Editor\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h" />
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
