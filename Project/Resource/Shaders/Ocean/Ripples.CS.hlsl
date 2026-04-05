@@ -82,11 +82,18 @@ void SimulateRipple(uint3 DTid : SV_DispatchThreadID)
 // Kernel 1: AddRipplePoint
 //   CPU から指定された点に波紋を注入する
 // ----------------------------------------------------------------
-cbuffer RippleInjection : register(b1)
+struct RippleData
 {
-    float2 RippleUV; // 注入位置 UV [0,1]
-    float RippleRadius; // 注入半径（グリッド単位）
-    float RippleStrength; // 注入強度
+    float2 UV;          // 注入位置 UV [0,1]
+    float Radius;       // 注入半径（グリッド単位）
+    float Strength;     // 注入強度
+};
+
+cbuffer RippleInjectionArray : register(b1)
+{
+    uint InjectionCount;
+    float3 Padding;
+    RippleData Injections[32]; // Max 32 ripples per frame
 }
 
 [numthreads(16, 16, 1)]
@@ -97,32 +104,40 @@ void AddRipplePoint(uint3 DTid : SV_DispatchThreadID)
 
     // UV化
     float2 uv = (float2) id / N;
-    
-    // ラップ考慮（UV版）
-    float2 diff = abs(uv - RippleUV);
-    diff = min(diff, 1.0 - diff); // ← ここが修正ポイント
 
-    float dist = length(diff);
+    float totalBump = 0.0;
 
-    if (dist > RippleRadius)
-        return;
-
-    // コサインプロファイル
-    float t = dist / RippleRadius;
-    float bump = RippleStrength * cos(t * 3.14159265 * 0.5);
-    bump = max(bump, 0.0);
-
-    // 加算
-    if (PingPong == 0)
+    for (uint i = 0; i < InjectionCount; ++i)
     {
-        float2 v = RipplePing[id];
-        v.x += bump;
-        RipplePing[id] = v;
+        // ラップ考慮（UV版）
+        float2 diff = abs(uv - Injections[i].UV);
+        diff = min(diff, 1.0 - diff); // ← ここが修正ポイント
+
+        float dist = length(diff);
+
+        if (dist <= Injections[i].Radius)
+        {
+            // コサインプロファイル
+            float t = dist / Injections[i].Radius;
+            float bump = Injections[i].Strength * cos(t * 3.14159265 * 0.5);
+            totalBump += max(bump, 0.0);
+        }
     }
-    else
+
+    if (totalBump > 0.0)
     {
-        float2 v = RipplePong[id];
-        v.x += bump;
-        RipplePong[id] = v;
+        // 加算
+        if (PingPong == 0)
+        {
+            float2 v = RipplePing[id];
+            v.x += totalBump;
+            RipplePing[id] = v;
+        }
+        else
+        {
+            float2 v = RipplePong[id];
+            v.x += totalBump;
+            RipplePong[id] = v;
+        }
     }
 }

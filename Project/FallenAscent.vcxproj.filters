@@ -437,10 +437,10 @@
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
       <Filter>Engine\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Editor\AttackDataSerializer.cpp">
+    <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp">
       <Filter>application\Game\Entity\Player\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Editor\AttackEditor.cpp">
+    <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp">
       <Filter>application\Game\Entity\Player\Editor</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
@@ -458,7 +458,7 @@
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp">
       <Filter>Engine\Graphics\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Editor\ParticleEditor.cpp">
+    <ClCompile Include="Engine\System\Editor\Particle\ParticleEditor.cpp">
       <Filter>Engine\System\Editor</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp">
@@ -998,13 +998,13 @@
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
       <Filter>Engine\Scene\Debug</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Editor\Data\AttackData.h">
+    <ClInclude Include="Engine\System\Editor\Attack\Data\AttackData.h">
       <Filter>application\Game\Entity\Player\Editor\Data</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Editor\AttackDataSerializer.h">
+    <ClInclude Include="Engine\System\Editor\Attack\AttackDataSerializer.h">
       <Filter>application\Game\Entity\Player\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Editor\AttackEditor.h">
+    <ClInclude Include="Engine\System\Editor\Attack\AttackEditor.h">
       <Filter>application\Game\Entity\Player\Editor</Filter>
     </ClInclude>
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h">
@@ -1025,7 +1025,7 @@
     <ClInclude Include="Engine\Graphics\Base\UAV.h">
       <Filter>Engine\Graphics\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Editor\ParticleEditor.h">
+    <ClInclude Include="Engine\System\Editor\Particle\ParticleEditor.h">
       <Filter>Engine\System\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h">

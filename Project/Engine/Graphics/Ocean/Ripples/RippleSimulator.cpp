@@ -60,10 +60,10 @@ namespace MiiEngine {
         paramsData_ = static_cast<RippleParams*>(m);
 
         injectionBuffer_ = std::make_unique<BufferBase>();
-        injectionBuffer_->Create(device, sizeof(RippleInjection));
+        injectionBuffer_->Create(device, sizeof(RippleInjectionArray));
         void* m2 = nullptr;
         injectionBuffer_->GetBuffer()->Map(0, nullptr, &m2);
-        injectionData_ = static_cast<RippleInjection*>(m2);
+        injectionData_ = static_cast<RippleInjectionArray*>(m2);
 
         /// ===UAVインデックス管理=== ///
         uint32_t base = srvManager_->AllocateContiguous(2);
@@ -123,18 +123,20 @@ namespace MiiEngine {
     }
 
     ///-------------------------------------------/// 
-    /// 波紋の発生
+    /// 波紋の発生(複数対応)
     ///-------------------------------------------///
-    void RippleSimulator::AddRipple(ID3D12GraphicsCommandList* commandList, Vector2 uv, float radius, float strength) {
+    void RippleSimulator::AddRipples(ID3D12GraphicsCommandList* commandList, const std::vector<RippleInjection>& ripples) {
+        if (ripples.empty()) return;
 
         /// ===パラメーターの書き込み=== ///
-        // Injection
-        injection_.uv = uv;
-        injection_.radius = radius;
-        injection_.strength = strength;
-        *injectionData_ = injection_;
+        RippleInjectionArray injArray{};
+        injArray.count = (std::min)(static_cast<uint32_t>(ripples.size()), 32u);
+        for (uint32_t i = 0; i < injArray.count; ++i) {
+            injArray.injections[i] = ripples[i];
+        }
+        *injectionData_ = injArray;
 
-        // Params
+        // params
         params_.pingPong = pingPong_; // 現在書き込み対象に注入
         *paramsData_ = params_;
 

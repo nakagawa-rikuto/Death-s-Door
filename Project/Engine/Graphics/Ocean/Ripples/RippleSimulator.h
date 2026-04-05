@@ -40,16 +40,13 @@ namespace MiiEngine {
 		void Simulate(ID3D12GraphicsCommandList* commandList);
 
 		/// <summary>
-		/// 指定UV座標に波紋を注入する
+		/// 指定UV座標に波紋を注入する(複数対応)
 		/// </summary>
-		/// <param name="uv">注入位置 [0,1]</param>
-		/// <param name="radius">波紋の初期半径（グリッドセル単位、例:5.0）</param>
-		/// <param name="strength">波紋の強度（例:1.0）</param>
-		void AddRipple(
+		/// <param name="commandList">コマンドリスト</param>
+		/// <param name="ripples">波紋情報のリスト</param>
+		void AddRipples(
 			ID3D12GraphicsCommandList* commandList,
-			Vector2 uv,
-			float  radius = 5.0f,
-			float  strength = 1.0f);
+			const std::vector<RippleInjection>& ripples);
 
 		/// <summary>
 		/// リソースをシェーダー リソース ビュー (SRV) 状態に遷移します。
@@ -73,7 +70,7 @@ namespace MiiEngine {
 		// 波紋の減衰率を取得
 		float GetDamping() const { return params_.damping; }
 		// 出現位置のUV座標を取得
-		Vector2 GetInjectionUV() const { return injection_.uv; }
+		Vector2 GetInjectionUV() const { return injectionArray_.injections[0].uv; }
 
 
 	public: /// ===Setter=== ///
@@ -82,7 +79,7 @@ namespace MiiEngine {
 		// 波紋の減衰率を設定
 		void SetDamping(float damping) { params_.damping = damping; }
 		// 出現位置のUV座標を設定
-		void SetInjectionUV(const Vector2& uv) { injection_.uv = uv; }
+		void SetInjectionUV(const Vector2& uv) { injectionArray_.injections[0].uv = uv; }
 
 	private:
 		// スレッドグループサイズ
@@ -100,7 +97,7 @@ namespace MiiEngine {
 		RippleParams* paramsData_ = nullptr;
 
 		std::unique_ptr<BufferBase> injectionBuffer_;
-		RippleInjection* injectionData_ = nullptr;
+		RippleInjectionArray* injectionData_ = nullptr;
 
 		// Ping/Pong テクスチ
 		std::unique_ptr<BufferBase> pingResource_;
@@ -114,7 +111,7 @@ namespace MiiEngine {
 
 		// 波紋シミュレーションのパラメータ初期化
 		RippleParams params_{};
-		RippleInjection injection_{};
+		RippleInjectionArray injectionArray_{};
 
 	private:
 

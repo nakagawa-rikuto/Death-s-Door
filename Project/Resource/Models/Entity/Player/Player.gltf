@@ -15,13 +15,13 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"\u7403.001"
+			"name":"\u7acb\u65b9\u4f53"
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"\u30de\u30c6\u30ea\u30a2\u30eb.002",
+			"name":"\u30de\u30c6\u30ea\u30a2\u30eb",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":0
@@ -33,7 +33,7 @@
 	],
 	"meshes":[
 		{
-			"name":"\u7403.001",
+			"name":"\u7acb\u65b9\u4f53",
 			"primitives":[
 				{
 					"attributes":{
@@ -64,61 +64,61 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":4224,
+			"count":580,
 			"max":[
-				2.407217025756836,
-				2.7404890060424805,
-				2.407217502593994
+				1.1178994178771973,
+				1.812506079673767,
+				3.669407367706299
 			],
 			"min":[
-				-2.407217264175415,
-				-1.8036041259765625,
-				-2.407217025756836
+				-1.1178994178771973,
+				-1.078965187072754,
+				-3.669407367706299
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":4224,
+			"count":580,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":4224,
+			"count":580,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":6120,
+			"count":1731,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":50688,
+			"byteLength":6960,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":50688,
-			"byteOffset":50688,
+			"byteLength":6960,
+			"byteOffset":6960,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":33792,
-			"byteOffset":101376,
+			"byteLength":4640,
+			"byteOffset":13920,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":12240,
-			"byteOffset":135168,
+			"byteLength":3462,
+			"byteOffset":18560,
 			"target":34963
 		}
 	],
@@ -130,7 +130,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":147408,
+			"byteLength":22024,
 			"uri":"Player.bin"
 		}
 	]

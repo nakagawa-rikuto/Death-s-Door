@@ -183,4 +183,13 @@ namespace MiiEngine {
         float radius;   // 半径
         float strength; // 強さ
     };
+
+    ///-------------------------------------------///   
+    /// RippleInjectionArray
+    ///-------------------------------------------///
+    struct RippleInjectionArray {
+        uint32_t count;
+        float padding[3];
+        RippleInjection injections[32];
+    };
 }

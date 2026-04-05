@@ -40,7 +40,7 @@ void BossThrustAttackState::Update() {
 
 	// 波紋を生成するタイミングの判定
 	if (result.isAttacking) {
-		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 0.01f);
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 0.1f);
 	}
 
 	if (result.isFinished) {

@@ -141,14 +141,14 @@ void GameScene::Update() {
 /// 描画
 ///-------------------------------------------///
 void GameScene::Draw() {
-	/// ===GameStage=== ///
-	stage_->Draw();
-
 	/// ===Enemy=== ///
 	enemy_->Draw();
 
 	/// ===Player=== ///
 	player_->Draw();
+
+	/// ===GameStage=== ///
+	stage_->Draw();
 
 	/// ===Stateの管理=== ///
 	if (currentState_) {
