@@ -350,9 +350,7 @@ namespace MiiEngine {
 		// 参照
 		RippleSimulator* ripple = compute_->GetRippleSimulator();
 		// 波紋の追加
-		for (const RippleInjection& r : ripplenInjections_) {
-			ripple->AddRipple(commandList, r.uv, r.radius, r.strength);
-		}
+		ripple->AddRipples(commandList, ripplenInjections_);
 
 		// 波紋をGPUに送った後はクリア
 		ripplenInjections_.clear();
