@@ -53,7 +53,7 @@ void BossJumpSmashAttackState::Update() {
 		boss_->GetGroundOcean()->AddRipple(boss_->GetTransform().translate, 1.0f, 0.1f);
 	}
 	if (result.onStrike) {
-		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 1.5f, 0.15f);
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 1.5f, 0.5f);
 	}
 
 	if (result.isFinished) {

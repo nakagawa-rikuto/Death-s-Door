@@ -27,26 +27,6 @@ void BossMoveState::Update() {
 	// プレイヤーとの距離を計算
 	const float dist = CalcDistToPlayer();
 
-	// コンテキストの準備
-	BossMoveComponent::UpdateContext context{
-		.currentPosition = boss_->GetTransform().translate,
-		.currentRotation = boss_->GetTransform().rotate,
-		.playerPosition = boss_->GetPlayer()->GetTransform().translate,
-		.deltaTime = boss_->GetDeltaTime(),
-	};
-	// 移動コンポーネントの更新
-	BossMoveComponent::UpdateResult result = boss_->GetMoveComponent().Update(context);
-
-	// 結果の適用
-	result.velocity.y = boss_->GetVelocity().y;
-	boss_->SetVelocity(result.velocity);
-
-	// 回転の更新
-	boss_->SetRotate(result.rotate);
-
-	// 波紋の生成
-	boss_->GetGroundOcean()->AddRipple(boss_->GetTransform().translate, 1.0f, 0.1f);
-
 	/// ===Stateの変更=== ///
 	// 突き攻撃への遷移条件
 	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
@@ -66,6 +46,26 @@ void BossMoveState::Update() {
 		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
 		return;
 	}
+
+	// コンテキストの準備
+	BossMoveComponent::UpdateContext context{
+		.currentPosition = boss_->GetTransform().translate,
+		.currentRotation = boss_->GetTransform().rotate,
+		.playerPosition = boss_->GetPlayer()->GetTransform().translate,
+		.deltaTime = boss_->GetDeltaTime(),
+	};
+	// 移動コンポーネントの更新
+	BossMoveComponent::UpdateResult result = boss_->GetMoveComponent().Update(context);
+
+	// 結果の適用
+	result.velocity.y = boss_->GetVelocity().y;
+	boss_->SetVelocity(result.velocity);
+
+	// 回転の更新
+	boss_->SetRotate(result.rotate);
+
+	// 波紋の生成
+	boss_->GetGroundOcean()->AddRipple(boss_->GetTransform().translate, 1.0f, 0.1f);
 }
 
 ///-------------------------------------------/// 

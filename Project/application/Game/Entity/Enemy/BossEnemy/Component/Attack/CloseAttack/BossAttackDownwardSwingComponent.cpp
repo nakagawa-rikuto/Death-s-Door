@@ -42,7 +42,7 @@ BossAttackDownwardSwingComponent::UpdateResult BossAttackDownwardSwingComponent:
 	// 非アクティブフェーズ
 	if (phase_ == DownwardSwingPhase::Idle || phase_ == DownwardSwingPhase::Finished) {
 		result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
-		result.rotation = context.baseRotation;
+		result.rotation = context.currentRotation;
 		result.weaponPosition = config_.weaponRestOffset;
 		result.isFinished = (phase_ == DownwardSwingPhase::Finished);
 		return result;
@@ -97,8 +97,6 @@ void BossAttackDownwardSwingComponent::Information() {
 		}
 		if (ImGui::TreeNode("武器オフセット")) {
 			ImGui::DragFloat3("定位置", &config_.weaponRestOffset.x, 0.01f);
-			ImGui::DragFloat3("引き上げ", &config_.weaponWindUpOffset.x, 0.01f);
-			ImGui::DragFloat3("叩きつけ先", &config_.weaponStrikeOffset.x, 0.01f);
 			ImGui::TreePop();
 		}
 
@@ -110,12 +108,13 @@ void BossAttackDownwardSwingComponent::Information() {
 ///-------------------------------------------///
 /// 攻撃開始
 ///-------------------------------------------///
-void BossAttackDownwardSwingComponent::StartAttack() {
+void BossAttackDownwardSwingComponent::StartAttack(const Quaternion& rotation) {
 	// すでにアクティブな場合は無視
 	if (IsActive()) {
 		return;
 	}
 	state_.phaseTimer = 0.0f;
+	state_.baseRotation = rotation;
 	phase_ = DownwardSwingPhase::WindUp;
 }
 
@@ -144,7 +143,7 @@ void BossAttackDownwardSwingComponent::UpdateWindUp(const UpdateContext& context
 	// 回転の補間
 	const float currentAngle = Math::Lerp(0.0f, config_.windUpPitch, t);
 	const Quaternion crouchRot = MakePitchQuaternion(currentAngle);
-	result.rotation = Multiply(context.baseRotation, crouchRot);
+	result.rotation = Multiply(context.currentRotation, crouchRot);
 
 	// 武器
 	result.weaponPosition = config_.weaponRestOffset;
@@ -171,10 +170,10 @@ void BossAttackDownwardSwingComponent::UpdateStrike(const UpdateContext & contex
 	const float endAngle = config_.strikeForwardPitch;
 	const float currentAngle = startAngle + (endAngle - startAngle) * t;
 	const Quaternion strikePitch = MakePitchQuaternion(currentAngle);
-	result.rotation = Multiply(context.baseRotation, strikePitch);
+	result.rotation = Multiply(context.currentRotation, strikePitch);
 
 	// 武器
-	result.weaponPosition = Math::Lerp(config_.weaponWindUpOffset, config_.weaponStrikeOffset, t);
+	result.weaponPosition = config_.weaponRestOffset;
 
 	// 踏み込み
 	const float prevRawT = std::max(0.0f, (state_.phaseTimer - context.deltaTime) / config_.strikeDuration);
@@ -185,7 +184,7 @@ void BossAttackDownwardSwingComponent::UpdateStrike(const UpdateContext & contex
 
 	// baseRotation でローカル前方をワールド空間へ変換
 	const Vector3 localForward = { 0.0f, 0.0f, 1.0f };
-	const Vector3 worldForward = Math::RotateVector(localForward, context.baseRotation);
+	const Vector3 worldForward = Math::RotateVector(localForward, context.currentRotation);
 	// 前方単位ベクトル × 今フレームの移動量
 	result.velocity = Vector3{
 		worldForward.x * deltaStep / context.deltaTime,
@@ -195,7 +194,6 @@ void BossAttackDownwardSwingComponent::UpdateStrike(const UpdateContext & contex
 
 	// フェーズ遷移
 	if (rawT >= 1.0f) {
-		result.onStrike = true; // 波紋を出すためのトリガー
 		state_.phaseTimer = 0.0f;
 		if (config_.holdDownDuration > 0.0f) {
 			phase_ = DownwardSwingPhase::HoldDown;
@@ -214,12 +212,13 @@ void BossAttackDownwardSwingComponent::UpdateHoldDown(const UpdateContext & cont
 
 	// 終了時点の値で固定
 	const Quaternion holdPitch = MakePitchQuaternion(-config_.strikeForwardPitch);
-	result.rotation = Multiply(context.baseRotation, holdPitch);
-	result.weaponPosition = config_.weaponStrikeOffset;
+	result.rotation = Multiply(context.currentRotation, holdPitch);
+	result.weaponPosition = config_.weaponRestOffset;
 	result.velocity = Vector3{ 0.0f, 0.0f, 0.0f }; // 踏み込みは止まる
 
 	// フェーズ遷移
 	if (t >= 1.0f) {
+		result.onStrike = true; // 波紋を出すためのトリガー
 		state_.phaseTimer = 0.0f;
 		phase_ = DownwardSwingPhase::Recovery;
 	}
@@ -233,11 +232,11 @@ void BossAttackDownwardSwingComponent::UpdateRecovery(const UpdateContext& conte
 	const float t = (config_.recoveryDuration > 0.0f) ? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f) : 1.0f;
 
 	// 回転の補間 
-	const Quaternion strikeEndRot = Multiply(context.baseRotation, MakePitchQuaternion(-config_.strikeForwardPitch));
-	result.rotation = Math::SLerp(strikeEndRot, context.baseRotation, t);
+	const Quaternion strikeEndRot = Multiply(context.currentRotation, MakePitchQuaternion(-config_.strikeForwardPitch));
+	result.rotation = Math::SLerp(strikeEndRot, state_.baseRotation, t);
 
 	// 武器
-	result.weaponPosition = Math::Lerp(config_.weaponStrikeOffset, config_.weaponRestOffset, t);
+	result.weaponPosition = config_.weaponRestOffset;
 
 	// Recovery中は移動しない
 	result.velocity = Vector3{ 0.0f, 0.0f, 0.0f };

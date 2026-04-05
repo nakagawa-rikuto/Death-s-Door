@@ -153,7 +153,7 @@ BossAttackManager::AttackType BossAttackManager::SelectAndStart(
 		thrust_->StartAttack();
 		break;
 	case AttackType::DownwardSwing:
-		downswing_->StartAttack();
+		downswing_->StartAttack(bossRotation);
 		break;
 	case AttackType::JumpSmash:
 		jumpSmash_->StartAttack(distToPlayer, bossPosition, playerPosition, bossRotation);
@@ -248,7 +248,7 @@ BossAttackManager::UpdateResult BossAttackManager::UpdateCurrentAttack(
 	case AttackType::DownwardSwing:
 	{
 		BossAttackDownwardSwingComponent::UpdateContext ctx{
-			.baseRotation = context.bossRotation,
+			.currentRotation= context.bossRotation,
 			.deltaTime = context.deltaTime,
 		};
 		auto r = downswing_->Update(ctx);

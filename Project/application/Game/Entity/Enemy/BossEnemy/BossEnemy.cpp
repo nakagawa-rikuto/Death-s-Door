@@ -253,14 +253,12 @@ void BossEnemy::SetComponentConfig() {
 	BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
 		.windUpPitch = -2.0f,
 		.windUpDuration = 1.0f,
-		.strikeForwardPitch = -5.0f,
+		.strikeForwardPitch = -20.0f,
 		.strikeDuration = 0.1f,
 		.holdDownDuration = 0.2f,
 		.recoveryDuration = 0.45f,
 		.strikeStepForward = 0.1f,
 		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
-		.weaponWindUpOffset = { 0.0f,  0.0f,  12.0f },
-		.weaponStrikeOffset = { 0.0f,  0.0f,  12.0f },
 	};
 	// 初期化
 	downswingComponent_->Initialize(downswingConfig);

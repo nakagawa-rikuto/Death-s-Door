@@ -24,6 +24,7 @@ private:
 	struct DownwardSwingState {
 		Vector3 currentPosition{}; // 現在のワールド座標
 		float phaseTimer = 0.0f;   // 現フェーズの経過時間
+		Quaternion baseRotation{};  // 攻撃開始時のBoss基底回転
 	};
 
 public:
@@ -57,15 +58,11 @@ public:
 		// --- 武器オフセット ---
 		// 定位置
 		Vector3 weaponRestOffset = { 0.0f,  0.5f,  0.3f };
-		// タメ時：頭上の少し背中側へ
-		Vector3 weaponWindUpOffset = { 0.0f,  1.4f, -0.4f };
-		// 振り下ろし先：モデル前方下方
-		Vector3 weaponStrikeOffset = { 0.0f, -0.2f,  1.5f };
 	};
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
-		Quaternion baseRotation{};  // 攻撃開始時のBoss基底回転
+		Quaternion currentRotation{};  // 攻撃開始時のBoss基底回転
 		float deltaTime = 0.0f;     // デルタタイム
 	};
 
@@ -108,9 +105,10 @@ public:
 	void Information();
 
 	/// <summary>
-	/// 攻撃を開始する。呼び出した瞬間からWindUpフェーズへ遷移。
+	/// 指定された回転で攻撃を開始します。
 	/// </summary>
-	void StartAttack();
+	/// <param name="rotate">攻撃の回転を表すクォータニオン。</param>
+	void StartAttack(const Quaternion& rotate);
 
 public: /// ===Getter=== ///
 	DownwardSwingPhase GetPhase()  const { return phase_; }

@@ -16,7 +16,7 @@ void BossDownwarAttackState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetDownswingComponent().StartAttack();
+	boss_->GetDownswingComponent().StartAttack(boss_->GetTransform().rotate);
 	// 武器を有効化
 	boss_->GetWeapon().SetActive(true); 
 }
@@ -27,7 +27,7 @@ void BossDownwarAttackState::Enter(BossEnemy* enemy) {
 void BossDownwarAttackState::Update() {
 	// コンテキストの準備
 	BossAttackDownwardSwingComponent::UpdateContext context{
-		.baseRotation = boss_->GetTransform().rotate,
+		.currentRotation = boss_->GetTransform().rotate,
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
@@ -45,11 +45,11 @@ void BossDownwarAttackState::Update() {
 
 	// 波紋を生成するタイミングの判定
 	if (result.onStrike) {
-		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 1.5f, 0.15f);
+		// 波紋を生成するタイミングの判定
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 30.0f);
 	}
 
 	if (result.isFinished) {
-
 		// BossMoveStateへ遷移
 		boss_->ChangeState(std::make_unique<BossMoveState>());
 		return;
