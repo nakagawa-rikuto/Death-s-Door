@@ -91,7 +91,7 @@ void Player::Initialize() {
 	// コライダーに追加
 	Service::Collision::AddCollider(this);
 	// OBBの設定
-	SetHalfSize({ 2.0f, 2.0f, 2.0f });
+	SetHalfSize({ 1.25f, 4.0f, 1.0f });
 	// 地面との衝突処理のために半サイズYをGroundInfoにセット
 	SetHalfSizeY(GetOBB().halfSize.y);
 
