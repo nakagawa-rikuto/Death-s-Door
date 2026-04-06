@@ -28,9 +28,7 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 
 	/// ===GameSceneUI=== ///
 	ui_ = std::make_unique<GameSceneUI>();
-	ui_->Initialize();
-	// GameSceneUIにPlayerを設定
-	ui_->SetPlayer(gameScene_->GetPlayer());
+	ui_->Initialize(gameScene_->GetPlayer(), gameScene_->GetEnemy());
 	ui_->Update();
 
 	/// ===OptionUI=== ///

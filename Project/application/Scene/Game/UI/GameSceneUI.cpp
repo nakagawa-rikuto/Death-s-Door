@@ -1,30 +1,25 @@
 #include "GameSceneUI.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
 // Service
 #include "Service/GraphicsResourceGetter.h"
 
 ///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void GameSceneUI::SetPlayer(Player* player) {
-	// PlayerUI
-	playerUI_->SetPlayer(player);
-}
-
-///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
-void GameSceneUI::Initialize() {
-	// PlayerUIの生成と初期化
-	playerUI_ = std::make_unique<PlayerUI>();
-	playerUI_->Initialize();
-
+void GameSceneUI::Initialize(Player* player, BossEnemy* boss) {
+	
 	/// ===ウィンドウサイズの取得=== ///
 	Vector2 windowSize = {
 		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
 		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
 	};
+
+	/// ===PlayerUI=== ///
+	playerUI_ = std::make_unique<PlayerUI>();
+	playerUI_->Initialize(player, windowSize);
+
+	/// ===BossUi=== ///
+	bossUI_ = std::make_unique<BossUI>();
+	bossUI_->Initialize(boss);
 
 	/// ===OptionSprite=== ///
 	optionMenuSprite_ = std::make_unique<Object2d>();
@@ -38,6 +33,7 @@ void GameSceneUI::Initialize() {
 /// 更新処理
 ///-------------------------------------------///
 void GameSceneUI::Update() {
-	// PlayerUIの更新
+	/// ===UIの更新処理=== ///
 	playerUI_->Update();
+	bossUI_->Update();
 }

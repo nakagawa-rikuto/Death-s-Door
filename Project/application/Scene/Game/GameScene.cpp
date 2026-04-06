@@ -189,7 +189,7 @@ void GameScene::SetUpCamera() {
 	// 追従オフセット設定
 	camera_->SetOffset({ 0.0f, 100.0f, -90.0f });
 	// 追従速度設定
-	camera_->SetFollowSpeed(0.1f);
+	camera_->SetFollowSpeed(1.0f);
 }
 
 ///-------------------------------------------/// 

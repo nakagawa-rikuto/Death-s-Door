@@ -28,6 +28,7 @@ Player::~Player() {
 	avoidanceComponent_.reset();
 	attackComponent_.reset();
 	currentState_.reset();
+
 	object3d_.reset();
 }
 
