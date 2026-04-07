@@ -3,6 +3,7 @@
 #include "application/Scene/Game/GameScene.h"
 // Service
 #include "Service/Camera.h"
+#include "Service/DeltaTime.h"
 // State
 #include "GameSceneInGameState.h"
 
@@ -38,9 +39,18 @@ void GameSceneStartAnimationState::Update() {
 	// Playerの更新
 	gameScene_->GetPlayer()->UpdateAnimation();
 
-	if (startAnimation_->IsCompleted()) {
+	// カメラアニメーションの更新
+	UpdateCameraAnimation();
+
+	if (startAnimation_->IsCompleted() && !isAnimationCompleted_) {
 		// カメラターゲットをPlayerに設定
 		gameScene_->GetPlayer()->SetCameraTargetPlayer();
+		isAnimationCompleted_ = true;
+		timer_ = cameraDuration_;
+	}
+
+	if (isAnimationCompleted_ && timer_ < 0.0f) {
+		// アニメーション完了後、InGameStateに遷移
 		gameScene_->ChangState(std::make_unique<GameSceneInGameState>());
 	}
 }
@@ -59,4 +69,13 @@ void GameSceneStartAnimationState::Draw() {
 void GameSceneStartAnimationState::Finalize() {
 	startAnimation_.reset();
 	GameSceneFadeState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// カメラアニメーションの更新処理
+///-------------------------------------------///
+void GameSceneStartAnimationState::UpdateCameraAnimation() {
+	if (timer_ > 0.0f) {
+		timer_ -= Service::DeltaTime::GetDeltaTime();
+	}
 }
