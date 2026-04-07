@@ -103,6 +103,11 @@ namespace MiiEngine {
 		controller_->Update();
 
 #ifdef USE_IMGUI
+		// FPSの計測・表示
+		ImGui::Begin("System Info");
+		ImGui::Text("FPS: %.1f", dXCommon_->GetFPS());
+		ImGui::End();
+
 		// OffScreenRendererのImGui
 		offScreenRenderer_->DrawImGui();
 #endif // USE_IMGUI

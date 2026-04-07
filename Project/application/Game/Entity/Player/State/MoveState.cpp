@@ -32,7 +32,8 @@ void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 		moveParticle_ = nullptr;
 	}
 	// 移動パーティクルの再生
-	moveParticle_ = Service::Particle::Emit("PlayerWarke", player_->GetTransform().translate);
+	Vector3 particlePosition = player_->GetTransform().translate - Vector3{ 0.0f, player_->GetOBB().halfSize.y, 0.0f };
+	moveParticle_ = Service::Particle::Emit("PlayerMove", particlePosition);
 	moveParticle_->SetEmitterPosition(player_->GetTransform().translate);
 }
 

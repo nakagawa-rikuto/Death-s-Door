@@ -1,7 +1,7 @@
 #include "OptionUI.h"
-// SpriteBaseScale
-#include "application/Game/UI/SpriteBaseScale.h"
 // Service
+#include <Service/GraphicsResourceGetter.h>
+#include <Service/Sprite.h>
 #include "Service/Input.h"
 #include "Service/Audio.h"
 #ifdef USE_IMGUI
@@ -34,7 +34,7 @@ void OptionUI::Initialize() {
 	};
 
 	/// ===基準スケール=== ///
-	scale_ = GetBaseScale();
+	scale_ = Service::Sprite::GetBaseScale();
 
 	// 薄暗いオーバーレイ
 	dimSprite_ = std::make_unique<Object2d>();

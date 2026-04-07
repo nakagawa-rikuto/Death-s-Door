@@ -1,7 +1,7 @@
 #include "TitleUI.h"
-// SpriteBaseScale
-#include "application/Game/UI/SpriteBaseScale.h"
 // Service
+#include <Service/GraphicsResourceGetter.h>
+#include <Service/Sprite.h>
 #include "Service/Input.h"
 #include "Service/DeltaTime.h"
 // Math
@@ -32,7 +32,7 @@ void TitleUI::Initialize() {
 	};
 
 	/// ===基準スケール=== ///
-	Vector2 scale_ = GetBaseScale();
+	Vector2 scale_ = Service::Sprite::GetBaseScale();
 
 	/// ===基準値の設定=== ///
 	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース

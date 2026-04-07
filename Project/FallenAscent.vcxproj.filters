@@ -606,6 +606,8 @@
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
+    <ClCompile Include="application\Game\UI\Game\BossUI.cpp" />
+    <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1112,9 +1114,6 @@
     <ClInclude Include="application\Game\UI\Option\OptionUI.h">
       <Filter>application\Game\UI\Option</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\UI\SpriteBaseScale.h">
-      <Filter>application\Game\UI</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClInclude>
@@ -1177,6 +1176,8 @@
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
     <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
+    <ClInclude Include="application\Game\UI\Game\BossUI.h" />
+    <ClInclude Include="application\Game\UI\HP\HpUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

@@ -192,7 +192,7 @@ void PlayerWeapon::StartAttack(
 		attackParticle_->Stop();
 		attackParticle_ = nullptr;
 	}
-	attackParticle_ = Service::Particle::Emit("WeaponAttack", trajectoryPoints.front().position);
+	attackParticle_ = Service::Particle::Emit("PlayerAttack", trajectoryPoints.front().position);
 	attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 
 	// 初期位置と回転を設定

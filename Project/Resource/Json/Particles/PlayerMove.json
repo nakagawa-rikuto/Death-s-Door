@@ -20,21 +20,21 @@
         },
         "emissionPattern": {
             "particlesPerEmit": 6,
-            "pattern": "Trail",
-            "patternAngle": 45.0,
+            "pattern": "Sphere",
+            "patternAngle": 0.0,
             "patternRadius": 0.25
         },
         "isTrajectoryParticle": true,
         "motion": {
             "billboardRotationSpeed": 3.0,
-            "enableBillboardRotation": true,
-            "enableSwirling": true,
+            "enableBillboardRotation": false,
+            "enableSwirling": false,
             "expansionRate": 0.800000011920929,
-            "followEmitter": true,
-            "followStrength": 0.014999999664723873,
-            "rotationInfluence": 2.299999952316284,
+            "followEmitter": false,
+            "followStrength": 1.0,
+            "rotationInfluence": 1.2000000476837158,
             "swirlingSpeed": 3.0,
-            "useRotationInfluence": true,
+            "useRotationInfluence": false,
             "velocityDamping": 0.949999988079071
         },
         "scaleAnimation": {
@@ -43,51 +43,51 @@
             "startScale": 0.30000001192092896,
             "type": "Bounce"
         },
-        "trailSpacing": 0.0010000000474974513
+        "trailSpacing": 0.00800000037997961
     },
     "appearance": {
         "endColor": [
-            1.0,
-            0.37974679470062256,
             0.0,
+            1.0,
+            0.7843137383460999,
             1.0
         ],
         "endScale": [
-            0.5,
-            0.5,
-            0.5
+            1.0,
+            1.0,
+            1.0
         ],
         "startColor": [
+            0.0,
+            0.5822784900665283,
             1.0,
-            0.0,
-            0.0,
             1.0
         ],
         "startScaleMax": [
-            1.0,
-            1.0,
-            1.0
+            2.0,
+            2.0,
+            2.0
         ],
         "startScaleMin": [
-            1.0,
-            1.0,
-            1.0
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
         ],
-        "texturePath": "Fire",
+        "texturePath": "circle",
         "useColorGradient": true,
-        "useScaleAnimation": false
+        "useScaleAnimation": true
     },
     "emission": {
         "burstCount": 0,
-        "emissionRate": 35.29999923706055,
-        "frequency": 0.05000000074505806,
+        "emissionRate": 50.0,
+        "frequency": 0.20999999344348907,
         "isBurst": false,
         "lifetimeMax": 0.800000011920929,
         "lifetimeMin": 0.4000000059604645
     },
-    "maxInstance": 250,
-    "modelName": "triangle",
-    "name": "WeaponAttack",
+    "maxInstance": 200,
+    "modelName": "plane",
+    "name": "PlayerMove",
     "physics": {
         "acceleration": [
             0.0,
@@ -95,36 +95,47 @@
             0.0
         ],
         "explosionRange": [
-            1.0,
-            1.0,
-            1.0
+            0.0,
+            0.0,
+            0.0
         ],
-        "gravity": 0.0,
-        "upwardForce": 0.0,
+        "gravity": -10.0,
+        "upwardForce": 5.0,
         "useRandomVelocity": true,
         "velocityMax": [
-            0.0,
-            2.0,
-            0.0
+            10.0,
+            1.0,
+            10.0
         ],
         "velocityMin": [
-            0.0,
+            -10.0,
             1.0,
-            0.0
+            -10.0
         ]
     },
     "rotation": {
-        "enableRotation": true,
-        "randomRotation": true,
+        "enableRotation": false,
+        "initialRotationMax": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "initialRotationMin": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "randomInitialRotation": false,
+        "randomRotation": false,
         "rotationSpeedMax": [
-            3.5,
+            0.0,
             0.0,
             0.0
         ],
         "rotationSpeedMin": [
             0.0,
             0.0,
-            -4.699999809265137
+            0.0
         ]
     },
     "shape": "None"

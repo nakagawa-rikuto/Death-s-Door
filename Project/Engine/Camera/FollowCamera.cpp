@@ -296,28 +296,28 @@ namespace MiiEngine {
 	/// 上からの見下ろしカメラの追従処理
 	///-------------------------------------------///
 	void FollowCamera::FollowTopDown() {
-		const float deadzone = 0.1f;
-		const float radius = 15.0f; // 回転半径（お好みで）
+		//const float deadzone = 0.1f;
+		//const float radius = 15.0f; // 回転半径（お好みで）
 
 		Vector3 desiredPosition = *targetPos_ + offset_; // デフォルト位置（追従対象の真上）
 
 		// スティック入力がある場合はカメラを円運動させる
-		if (fabsf(stickValue_.x) > deadzone || fabsf(stickValue_.y) > deadzone) {
-			// 入力ベクトルの正規化（方向ベクトル）
-			Vector2 norm = Normalize(stickValue_);
+		//if (fabsf(stickValue_.x) > deadzone || fabsf(stickValue_.y) > deadzone) {
+		//	// 入力ベクトルの正規化（方向ベクトル）
+		//	Vector2 norm = Normalize(stickValue_);
 
-			// 円上の位置を計算
-			Vector3 offsetCircle = {
-				norm.x * radius,
-				offset_.y,           // Y（高さ）は固定
-				norm.y * radius
-			};
+		//	// 円上の位置を計算
+		//	Vector3 offsetCircle = {
+		//		norm.x * radius,
+		//		offset_.y,           // Y（高さ）は固定
+		//		norm.y * radius
+		//	};
 
-			Vector3 translate = offset_ + *targetPos_;
-			translate.y = 1.0f;
+		//	Vector3 translate = offset_ + *targetPos_;
+		//	translate.y = 1.0f;
 
-			desiredPosition = translate + offsetCircle;
-		}
+		//	desiredPosition = translate + offsetCircle;
+		//}
 
 		// カメラの位置を補間で滑らかに移動
 		transform_.translate = Math::Lerp(transform_.translate, desiredPosition, followSpeed_);

@@ -46,7 +46,7 @@ namespace MiiEngine {
 
 		/// ===カメラ制御=== ///
 		Vector3 cameraPosition_ = { 0.0f, 5.0f, -10.0f };
-		Vector3 cameraRotation_ = { 0.3f, 0.0f, 0.0f };
+		Quaternion cameraRotation_ = { 0.3f, 0.0f, 0.0f };
 		float cameraSpeed_ = 0.1f;
 		float cameraRotationSpeed_ = 0.02f;
 
@@ -71,10 +71,5 @@ namespace MiiEngine {
 		/// カメラコントロールウィンドウの描画
 		/// </summary>
 		void RenderCameraControl();
-
-		/// <summary>
-		/// カメラの更新
-		/// </summary>
-		void UpdateCamera();
 	};
 }
