@@ -40,4 +40,14 @@ private:
 	// StartAnimation
 	std::unique_ptr<StartAnimation> startAnimation_;
 
+	bool isAnimationCompleted_ = false;
+	float timer_ = 0.0f;
+	float cameraDuration_ = 0.8f; // アニメーションの全体の長さ
+
+private:
+
+	/// <summary>
+	/// カメラアニメーションを更新します。
+	/// </summary>
+	void UpdateCameraAnimation();
 };

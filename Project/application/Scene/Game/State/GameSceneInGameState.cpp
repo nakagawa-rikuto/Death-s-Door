@@ -35,6 +35,8 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 	optionUI_ = std::make_unique<OptionUI>();
 	optionUI_->Initialize();
 	isOptionActive_ = false;
+
+	gameScene_->GetCamera()->SetFollowSpeed(1.0f);
 }
 
 ///-------------------------------------------/// 
