@@ -485,12 +485,16 @@
 └── └── └── └──     └── StageObject.h
 └── └── └── └── UI/
 └── └── └──     ├── Game/
+└── └── └──     └── ├── BossUI.cpp
+└── └── └──     └── ├── BossUI.h
 └── └── └──     └── ├── PlayerUI.cpp
 └── └── └──     └── └── PlayerUI.h
-└── └── └──     ├── Option/
-└── └── └──     └── ├── OptionUI.cpp
-└── └── └──     └── └── OptionUI.h
-└── └── └──     └── SpriteBaseScale.h
+└── └── └──     ├── HP/
+└── └── └──     └── ├── HpUI.cpp
+└── └── └──     └── └── HpUI.h
+└── └── └──     └── Option/
+└── └── └──         ├── OptionUI.cpp
+└── └── └──         └── OptionUI.h
 └── └── └── Scene/
 └── └──     ├── Clear/
 └── └──     └── ├── ClearScene.cpp
@@ -1190,28 +1194,28 @@ namespace MiiEngine {
 	/// 上からの見下ろしカメラの追従処理
 	///-------------------------------------------///
 	void FollowCamera::FollowTopDown() {
-		const float deadzone = 0.1f;
-		const float radius = 15.0f; // 回転半径（お好みで）
+		//const float deadzone = 0.1f;
+		//const float radius = 15.0f; // 回転半径（お好みで）
 
 		Vector3 desiredPosition = *targetPos_ + offset_; // デフォルト位置（追従対象の真上）
 
 		// スティック入力がある場合はカメラを円運動させる
-		if (fabsf(stickValue_.x) > deadzone || fabsf(stickValue_.y) > deadzone) {
-			// 入力ベクトルの正規化（方向ベクトル）
-			Vector2 norm = Normalize(stickValue_);
+		//if (fabsf(stickValue_.x) > deadzone || fabsf(stickValue_.y) > deadzone) {
+		//	// 入力ベクトルの正規化（方向ベクトル）
+		//	Vector2 norm = Normalize(stickValue_);
 
-			// 円上の位置を計算
-			Vector3 offsetCircle = {
-				norm.x * radius,
-				offset_.y,           // Y（高さ）は固定
-				norm.y * radius
-			};
+		//	// 円上の位置を計算
+		//	Vector3 offsetCircle = {
+		//		norm.x * radius,
+		//		offset_.y,           // Y（高さ）は固定
+		//		norm.y * radius
+		//	};
 
-			Vector3 translate = offset_ + *targetPos_;
-			translate.y = 1.0f;
+		//	Vector3 translate = offset_ + *targetPos_;
+		//	translate.y = 1.0f;
 
-			desiredPosition = translate + offsetCircle;
-		}
+		//	desiredPosition = translate + offsetCircle;
+		//}
 
 		// カメラの位置を補間で滑らかに移動
 		transform_.translate = Math::Lerp(transform_.translate, desiredPosition, followSpeed_);
@@ -3333,8 +3337,15 @@ namespace MiiEngine {
 			}
 		}
 
+		// スリープ補正後の時間からFPSを計算
+		std::chrono::steady_clock::time_point actualNow = std::chrono::steady_clock::now();
+		std::chrono::microseconds actualElapsed = std::chrono::duration_cast<std::chrono::microseconds>(actualNow - reference_);
+		if (actualElapsed.count() > 0) {
+			fps_ = 1000000.0f / actualElapsed.count();
+		}
+
 		// 現在の時間を記録する
-		reference_ = std::chrono::steady_clock::now();
+		reference_ = actualNow;
 	}
 
 	///-------------------------------------------/// 
@@ -3346,6 +3357,8 @@ namespace MiiEngine {
 	int32_t DXCommon::GetBackBufferHeight() const { return backBufferHeight_; }
 	// バックバッファの数を取得
 	size_t DXCommon::GetBackBufferCount() const { return swapChainDesc_.BufferCount; }
+	// FPSの取得
+	float DXCommon::GetFPS() const { return fps_; }
 	// DXGFactoryの取得
 	IDXGIFactory7* DXCommon::GetDXGFactory() const { return dxgiFactory_.Get(); }
 	// デバイスの取得
@@ -3505,6 +3518,8 @@ namespace MiiEngine {
 		int32_t GetBackBufferHeight()const;
 		// バックバッファの数を取得
 		size_t GetBackBufferCount()const;
+		// FPSの取得
+		float GetFPS()const;
 		// CPUのディスクリプターハンドルの取得
 		// <param name="descriptorHeap">ディスクリプタヒープへの参照。ID3D12DescriptorHeap の ComPtr。</param>
 		// <param name="descriptorSize">ディスクリプタ 1 つ分のサイズ (バイト単位)。</param>
@@ -3558,6 +3573,7 @@ namespace MiiEngine {
 
 		/// ===FPS固定=== ///
 		std::chrono::steady_clock::time_point reference_; // 記録時間(FPS固定用)
+		float fps_ = 0.0f; // 現在のFPS
 
 		/// ===viewPort=== ///
 		D3D12_VIEWPORT viewPort_; // ビューポート
@@ -3839,6 +3855,11 @@ namespace MiiEngine {
 		controller_->Update();
 
 #ifdef USE_IMGUI
+		// FPSの計測・表示
+		ImGui::Begin("System Info");
+		ImGui::Text("FPS: %.1f", dXCommon_->GetFPS());
+		ImGui::End();
+
 		// OffScreenRendererのImGui
 		offScreenRenderer_->DrawImGui();
 #endif // USE_IMGUI
@@ -18064,6 +18085,11 @@ namespace MiiEngine {
 		// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 		IScene::Initialize();
 
+		cameraPosition_ = { 0.0f, 45.0f, -50.0f };
+		cameraRotation_ = { 0.343f, 0.0f, 0.0f, 0.939f };
+		defaultCamera_->SetTranslate(cameraPosition_);
+		defaultCamera_->SetRotate(cameraRotation_);
+
 		/// ===エディターの初期化=== ///
 		particleEditor_ = std::make_unique<ParticleEditor>();
 		particleEditor_->Initialize();
@@ -18082,9 +18108,6 @@ namespace MiiEngine {
 	/// 更新
 	///-------------------------------------------///
 	void ParticleEditorScene::Update() {
-		/// ===カメラの更新=== ///
-		//UpdateCamera();
-
 		/// ===エディターの更新=== ///
 		if (particleEditor_) {
 			particleEditor_->Update();
@@ -18094,6 +18117,7 @@ namespace MiiEngine {
 #ifdef USE_IMGUI
 	//RenderMenuBar();
 		defaultCamera_->ImGuiUpdate();
+		defaultCamera_->DebugUpdate();
 
 		// エディターメインウィンドウ
 		particleEditor_->Render();
@@ -18115,7 +18139,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ParticleEditorScene::Draw() {
 		/// ===グリッドの描画=== ///
-		line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
+		line_->DrawGrid({ 0.0f, -10.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 		/// ===エディタープレビューの描画=== ///
 		if (particleEditor_) {
@@ -18318,56 +18342,6 @@ namespace MiiEngine {
 		ImGui::End();
 #endif // USE_IMGUI
 	}
-
-	///-------------------------------------------/// 
-	/// カメラの更新
-	///-------------------------------------------///
-	void ParticleEditorScene::UpdateCamera() {
-		// TODO: 入力処理の実装
-		// Input::IsPress()などを使用してカメラを操作
-
-		/*
-		// WASD移動
-		if (Input::IsPress(Key::W)) {
-			cameraPosition_.z += cameraSpeed_;
-		}
-		if (Input::IsPress(Key::S)) {
-			cameraPosition_.z -= cameraSpeed_;
-		}
-		if (Input::IsPress(Key::A)) {
-			cameraPosition_.x -= cameraSpeed_;
-		}
-		if (Input::IsPress(Key::D)) {
-			cameraPosition_.x += cameraSpeed_;
-		}
-
-		// QE上下移動
-		if (Input::IsPress(Key::Q)) {
-			cameraPosition_.y -= cameraSpeed_;
-		}
-		if (Input::IsPress(Key::E)) {
-			cameraPosition_.y += cameraSpeed_;
-		}
-
-		// 矢印キーで回転
-		if (Input::IsPress(Key::Up)) {
-			cameraRotation_.x += cameraRotationSpeed_;
-		}
-		if (Input::IsPress(Key::Down)) {
-			cameraRotation_.x -= cameraRotationSpeed_;
-		}
-		if (Input::IsPress(Key::Left)) {
-			cameraRotation_.y -= cameraRotationSpeed_;
-		}
-		if (Input::IsPress(Key::Right)) {
-			cameraRotation_.y += cameraRotationSpeed_;
-		}
-
-		// カメラに反映
-		camera_->SetTranslate(cameraPosition_);
-		camera_->SetRotate(cameraRotation_);
-		*/
-	}
 }
 
 ============================================================
@@ -18421,7 +18395,7 @@ namespace MiiEngine {
 
 		/// ===カメラ制御=== ///
 		Vector3 cameraPosition_ = { 0.0f, 5.0f, -10.0f };
-		Vector3 cameraRotation_ = { 0.3f, 0.0f, 0.0f };
+		Quaternion cameraRotation_ = { 0.3f, 0.0f, 0.0f };
 		float cameraSpeed_ = 0.1f;
 		float cameraRotationSpeed_ = 0.02f;
 
@@ -18446,11 +18420,6 @@ namespace MiiEngine {
 		/// カメラコントロールウィンドウの描画
 		/// </summary>
 		void RenderCameraControl();
-
-		/// <summary>
-		/// カメラの更新
-		/// </summary>
-		void UpdateCamera();
 	};
 }
 
@@ -28733,6 +28702,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\Game\GameScene.cpp" />
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp" />
+    <ClCompile Include="application\Game\UI\Game\BossUI.cpp" />
     <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp" />
     <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
@@ -28762,6 +28732,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
+    <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -28918,7 +28889,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h" />
-    <ClInclude Include="application\Game\UI\SpriteBaseScale.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackThrustComponent.h" />
@@ -28934,6 +28904,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\BossJumpSmashAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
+    <ClInclude Include="application\Game\UI\Game\BossUI.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h" />
@@ -28953,6 +28924,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
     <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
+    <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -29947,6 +29919,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
+    <ClCompile Include="application\Game\UI\Game\BossUI.cpp" />
+    <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -30453,9 +30427,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\UI\Option\OptionUI.h">
       <Filter>application\Game\UI\Option</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\UI\SpriteBaseScale.h">
-      <Filter>application\Game\UI</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h">
       <Filter>application\Game\Entity\Player\Hand</Filter>
     </ClInclude>
@@ -30518,6 +30489,8 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
     <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
+    <ClInclude Include="application\Game\UI\Game\BossUI.h" />
+    <ClInclude Include="application\Game\UI\HP\HpUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -35011,8 +34984,14 @@ File Path: Project/Service/Sprite.cpp
 ============================================================
 #include "Sprite.h"
 #include "Engine/System/Managers/SpriteManager.h"
+// CameraCommon
+#include "Engine/Camera/Base/CameraCommon.h"
 // Locator
 #include "Locator.h"
+#include "GraphicsResourceGetter.h"
+#include "Camera.h"
+// Math
+#include <Math/MatrixMath.h>
 
 namespace Service {
 	///-------------------------------------------/// 
@@ -35035,6 +35014,42 @@ namespace Service {
 	void Sprite::RemoveSprite(MiiEngine::SpriteCommon* sprite) {
 		Locator::GetSpriteManager()->RemoveSprite(sprite);
 	}
+
+	///-------------------------------------------/// 
+	/// 基準スケールの取得 
+	///-------------------------------------------///
+	Vector2 Sprite::GetBaseScale() {
+		// 基準解像度
+		constexpr float BASE_WIDTH = 1920.0f;
+		constexpr float BASE_HEIGHT = 1080.0f;
+
+		// ウィンドウサイズの取得
+		Vector2 windowSize = {
+			static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
+			static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
+		};
+		// スケール計算
+		Vector2 scale = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
+		return scale;
+	}
+
+
+	///-------------------------------------------/// 
+	/// ワールド座標をスクリーン座標に変換		
+	///-------------------------------------------///
+	Vector2 Sprite::WorldToScreen(const Vector3& worldPos) {
+		MiiEngine::CameraCommon* camera = Service::Camera::GetActiveCamera();
+		Vector3 playerPos = worldPos;
+		Matrix4x4 viewProj = camera->GetViewProjectionMatrix();
+		float width = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth());
+		float height = static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
+
+		Vector3 screenPos3d = Math::TransformCoordinates(playerPos, viewProj);
+		float screenX = (screenPos3d.x + 1.0f) * 0.5f * width;
+		float screenY = (1.0f - screenPos3d.y) * 0.5f * height;
+
+		return Vector2{ screenX, screenY };
+	}
 }
 
 
@@ -35042,6 +35057,10 @@ namespace Service {
 File Path: Project/Service/Sprite.h
 ============================================================
 #pragma once
+/// ===Include=== ///
+#include <Math/Vector2.h>
+#include <Math/Vector3.h>
+
 /// ===前方宣言=== ///
 namespace MiiEngine {
 	class SpriteCommon;
@@ -35070,6 +35089,19 @@ namespace Service {
 		/// </summary>
 		/// <param name="sprite">削除するスプライトへのポインタ。</param>
 		static void RemoveSprite(MiiEngine::SpriteCommon* sprite);
+
+		/// <summary>
+		/// 基本スケールを取得します。
+		/// </summary>
+		/// <returns>基本スケールのベクトル。</returns>
+		static Vector2 GetBaseScale();
+
+		/// <summary>
+		/// ワールド座標をスクリーン座標に変換します。
+		/// </summary>
+		/// <param name="worldPos">変換するワールド座標。</param>
+		/// <returns>変換されたスクリーン座標。</returns>
+		static Vector2 WorldToScreen(const Vector3& worldPos);
 	};
 
 }
@@ -37296,7 +37328,7 @@ void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 
 				// HPを減少
 				baseInfo_.HP--;
-				hitParticle_ = Service::Particle::Emit("Game", transform_.translate);
+				hitParticle_ = Service::Particle::Emit("EnemyHitEffect", transform_.translate);
 
 				// 無敵時間のセット
 				SetInvincibleTime();
@@ -37421,20 +37453,6 @@ void BossEnemy::SetComponentConfig() {
 	};
 	// 初期化
 	jumpSmashComponent_->Initialize(jumpSmashConfig);
-
-	/*BossAttackManager::Config attackConfig{
-		.thrustRange = 4.0f,
-		.downswingRange = 6.0f,
-		.jumpSmashRange = 14.0f,
-		.thrustCooldown = 3.0f,
-		.downswingCooldown = 4.0f,
-		.jumpSmashCooldown = 6.0f,
-		.thrustConfig = thrustConfig,
-		.downswingConfig = downswingConfig,
-		.jumpSmashConfig = jumpSmashConfig,
-	};*/
-	// 初期化
-	//attackManager_->Initialize(attackConfig);
 }
 
 
@@ -37457,7 +37475,7 @@ void BossEnemy::advanceTimer() {
 
 	if (baseInfo_.isDead) {
 		// パーティクルの発生
-		deathParticle_ = Service::Particle::Emit("nakagawa", transform_.translate);
+		deathParticle_ = Service::Particle::Emit("EnemyDeathParticle", transform_.translate);
 		isTentativeDeath_ = true;
 		if (hitParticle_ != nullptr) {
 			hitParticle_->Stop();
@@ -41143,7 +41161,8 @@ void BossTeleportState::Update() {
 
 	// パーティクルのスポーン
 	if (result.shouldSpawnParticleAtCurrent || result.shouldSpawnParticleAtNext) {
-		//teleportParticle_ = Service::Particle::Emit("BossEnemyTeleport", boss_->GetTransform().translate);
+		//Vector3 particlePosition = boss_->GetTransform().translate - Vector3{ 0.0f, boss_->GetOBB().halfSize.y, 0.0f };
+		//teleportParticle_ = Service::Particle::Emit("EnemyTeleportParticle", boss_->GetTransform().translate + boss_->GetOBB().halfSize);
 	}
 
 	/// ===Stateの変更=== ///
@@ -41231,6 +41250,7 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/Weapon/BossWeapon.cpp
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Service
 #include "Service/Collision.h"
+#include "Service/Particle.h"
 
 ///-------------------------------------------/// 
 ///	デストラクタ
@@ -41261,6 +41281,11 @@ void BossWeapon::Initialize() {
 ///-------------------------------------------///
 void BossWeapon::Update() {
 	if (!isActive_)return;
+
+	// Particleの軌道更新
+	if (attackParticle_) {
+		attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
+	}
 
 	OBBCollider::Update();
 }
@@ -41304,10 +41329,17 @@ void BossWeapon::SetActive(bool flag) {
 
 	if (isActive_) {
 		Service::Collision::AddCollider(this);
+		attackParticle_ = Service::Particle::Emit("EnemyAttack", object3d_->GetWorldTranslate());
+		attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 		object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	}
 	else {
 		Service::Collision::RemoveCollider(this);
+		if (attackParticle_) {
+			// パーティクルの削除
+			attackParticle_->Stop();
+			attackParticle_ = nullptr;
+		}
 		object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f });
 	}
 }
@@ -41323,6 +41355,9 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/Weapon/BossWeapon.h
 
 /// ===前方宣言=== ///
 class BossEnemy;
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
 /// BossWeapon
@@ -41384,6 +41419,8 @@ private: /// ===メンバ変数=== ///
 	BossEnemy* bossEnemy_ = nullptr;
 	// Colliderのアクティブ
 	bool isActive_ = false;
+	// ParticleGroup
+	MiiEngine::ParticleGroup* attackParticle_ = nullptr;
 };
 
 
@@ -43290,6 +43327,7 @@ File Path: Project/application/Game/Entity/Player/Player.cpp
 #include "Service/Input.h"
 #include "Service/Camera.h"
 #include "Service/Collision.h"
+#include "Service/Particle.h"
 // C++
 #include <algorithm>
 // Math
@@ -43310,6 +43348,7 @@ Player::~Player() {
 	avoidanceComponent_.reset();
 	attackComponent_.reset();
 	currentState_.reset();
+
 	object3d_.reset();
 }
 
@@ -43500,6 +43539,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			attackComponent_->CancelAttack();
 
 			// ダメージ処理
+			Service::Particle::Emit("PlayerHitEffect1", transform_.translate);
 			baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvincibleTime(0.5f);
@@ -44247,7 +44287,8 @@ void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 		moveParticle_ = nullptr;
 	}
 	// 移動パーティクルの再生
-	moveParticle_ = Service::Particle::Emit("PlayerWarke", player_->GetTransform().translate);
+	Vector3 particlePosition = player_->GetTransform().translate - Vector3{ 0.0f, player_->GetOBB().halfSize.y, 0.0f };
+	moveParticle_ = Service::Particle::Emit("PlayerMove", particlePosition);
 	moveParticle_->SetEmitterPosition(player_->GetTransform().translate);
 }
 
@@ -44722,7 +44763,7 @@ void PlayerWeapon::StartAttack(
 		attackParticle_->Stop();
 		attackParticle_ = nullptr;
 	}
-	attackParticle_ = Service::Particle::Emit("WeaponAttack", trajectoryPoints.front().position);
+	attackParticle_ = Service::Particle::Emit("PlayerAttack", trajectoryPoints.front().position);
 	attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 
 	// 初期位置と回転を設定
@@ -45679,13 +45720,105 @@ public: /// ===OnCollision=== ///
 
 
 ============================================================
+File Path: Project/application/Game/UI/Game/BossUI.cpp
+============================================================
+#include "BossUI.h"
+// BossEnemy
+#include <application/Game/Entity/Enemy/BossEnemy/BossEnemy.h>
+// Service
+#include <Service/GraphicsResourceGetter.h>
+#include <Service/Sprite.h>
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+BossUI::~BossUI() {
+	hpUI_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void BossUI::Initialize(BossEnemy * boss) {
+	// ボスの取得
+	boss_ = boss;
+
+	/// ===HPUI=== ///
+	// 位置とサイズの設定
+	Vector2 hpUIPosition = { 50.0f, 50.0f };
+	Vector2 hpUISize = { 900.0f, 80.0f };
+	//　生成
+	hpUI_ = std::make_unique<HpUI>();
+	float maxHp = static_cast<float>(boss_->GetHP());
+	hpUI_->Initialize(hpUIPosition, hpUISize, maxHp);
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void BossUI::Update() {
+	// HPUIの更新
+	float currentHp = static_cast<float>(boss_->GetHP());
+	hpUI_->Update(boss_->GetDeltaTime(), currentHp);
+}
+
+
+============================================================
+File Path: Project/application/Game/UI/Game/BossUI.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include <application/Drawing/2d/Object2d.h>
+#include <application/Game/UI/HP/HpUI.h>
+
+/// ===前方宣言=== ///
+class BossEnemy;
+
+///=====================================================/// 
+/// ボスUI
+///=====================================================///
+class BossUI {
+public:
+
+	BossUI() = default;
+	~BossUI();
+
+	/// <summary>
+	/// 初期化処理
+	/// </summary>
+	/// <param name="boss">初期化するボスエネミーへのポインタ。</param>
+	void Initialize(BossEnemy* boss);
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void Update();
+
+private:
+	// ボスエネミーへのポインタ
+	BossEnemy* boss_;
+
+	/// ===Object2D=== ///
+	// HPUI
+	std::unique_ptr<HpUI> hpUI_;
+};
+
+
+
+============================================================
 File Path: Project/application/Game/UI/Game/PlayerUI.cpp
 ============================================================
 #include "PlayerUI.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-// SpriteBaseScale 
-#include "application/Game/UI/SpriteBaseScale.h"
+// Service
+#include <Service/GraphicsResourceGetter.h>
+#include <Service/Sprite.h>
+#include <Service/Camera.h>
+#include <Engine/Camera/Base/CameraCommon.h>
+// Math
+#include <Math/MatrixMath.h>
+#include <Math/Matrix4x4.h>
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -45699,93 +45832,39 @@ PlayerUI::~PlayerUI() {
 	aButton_.reset();
 	leftStick_.reset();
 	rightStick_.reset();
+	hpUI_.reset();
 }
 
 ///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
-void PlayerUI::Initialize() {
-	// windowサイズの取得
-	Vector2 windowSize = {
-		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
-	};
+void PlayerUI::Initialize(Player* player, const Vector2& windowSize) {
+	// Playerの保存
+	player_ = player;
 	
 	/// ===基準スケール=== ///
-	scale_ = GetBaseScale();
+	scale_ = Service::Sprite::GetBaseScale();
 
-	/// ===位置=== ///
-	// 基準点
-	Vector2 point = {
-		windowSize.x * (3.0f / 4.0f) - (20.0f * scale_.x),
-		windowSize.y * (7.0f / 8.0f)
-	};
-	// 間隔
-	float spaceX = (windowSize.x - point.x) / 8.0f + (2.0f * scale_.x);
-	// コントローラーUIのY座標
-	float controllerPosY = point.y + (90.0f * scale_.y);
-
-	// 移動UIの初期化
-	moveUI_ = std::make_shared<Object2d>();
-	moveUI_->Initialize("MoveUI");
-	moveUI_->SetPosition({ point.x + spaceX, point.y });
-	moveUIPos_ = moveUI_->GetPosition();
-	moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	moveUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	moveUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	// 左スティックUIの初期化
-	leftStick_ = std::make_shared<Object2d>();
-	leftStick_->Initialize("leftStick");
-	leftStick_->SetPosition({ moveUI_->GetPosition().x, controllerPosY });
-	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
-
-	// カメラUIの初期化
-	cameraUI_ = std::make_shared<Object2d>();
-	cameraUI_->Initialize("CameraUI");
-	cameraUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
-	cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	cameraUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	cameraUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	// 右スティックUI初期化
-	rightStick_ = std::make_shared<Object2d>();
-	rightStick_->Initialize("rightStick");
-	rightStick_->SetPosition({ cameraUI_->GetPosition().x, controllerPosY });
-	rightStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	rightStick_->SetAnchorPoint({ 0.5f, 0.5f });
-
-	// 攻撃UIの初期化
-	attackUI_ = std::make_shared<Object2d>();
-	attackUI_->Initialize("AttackUI");
-	attackUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
-	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	// XボタンUIの初期化
-	xButton_ = std::make_shared<Object2d>();
-	xButton_->Initialize("xButton");
-	xButton_->SetPosition({ attackUI_->GetPosition().x,  controllerPosY });
-	xButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
-
-	// 回避UIの初期化
-	avoidanceUI_ = std::make_shared<Object2d>();
-	avoidanceUI_->Initialize("AvoidanceUI");
-	avoidanceUI_->SetPosition({ point.x + (spaceX * 7.0f), point.y });
-	avoidanceUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	avoidanceUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	// AボタンUIの初期化
-	aButton_ = std::make_shared<Object2d>();
-	aButton_->Initialize("aButton");
-	aButton_->SetPosition({ avoidanceUI_->GetPosition().x, controllerPosY });
-	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
-	aButton_->Update();
+	// コントローラーUIのセットアップ
+	SetUpControllerUI(windowSize);
 
 	// UIの位置の保存
 	moveUIPos_ = moveUI_->GetPosition();
 	cameraUIPos_ = cameraUI_->GetPosition();
+
+	/// ===HPUI=== ///
+	hpUI_ = std::make_unique<HpUI>();
+	// HPUIの初期化
+	float maxHp = static_cast<float>(player_->GetHP());
+	// HPUIのオフセットの設定
+	hpUIOffset_ = { -50.0f, -150.0f };
+	hpUIOffset_ *= scale_;
+	// HPUIの位置の設定
+	hpUIPos_ = Service::Sprite::WorldToScreen(player_->GetTransform().translate);
+	// HPUIのサイズの設定
+	Vector2 hpUISize = { 100.0f, 10.0f };
+	hpUISize *= scale_;
+	hpUI_->Initialize(hpUIPos_ + hpUIOffset_, hpUISize, maxHp);
 }
 
 ///-------------------------------------------/// 
@@ -45806,6 +45885,94 @@ void PlayerUI::Update() {
 
 	// 色の更新処理
 	ColorUpdate();
+
+	// HPUIの更新処理
+	float currentHp = static_cast<float>(player_->GetHP());
+	// 座標返還後の座標を保存してHPUIに渡す
+	hpUIPos_ = Service::Sprite::WorldToScreen(player_->GetTransform().translate);
+	hpUI_->SetPosition(hpUIPos_ + hpUIOffset_);
+	hpUI_->Update(player_->GetDeltaTime(), currentHp);
+}
+
+///-------------------------------------------/// 
+/// コントローラーUIのセットアップ
+///-------------------------------------------///
+void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
+
+	/// ===object2dの生成=== ///
+	moveUI_ = std::make_unique<Object2d>();
+	leftStick_ = std::make_unique<Object2d>();
+	cameraUI_ = std::make_unique<Object2d>();
+	rightStick_ = std::make_unique<Object2d>();
+	attackUI_ = std::make_unique<Object2d>();
+	xButton_ = std::make_unique<Object2d>();
+	avoidanceUI_ = std::make_unique<Object2d>();
+	aButton_ = std::make_unique<Object2d>();
+
+	/// ===基準の設定=== ///
+	// 基準点
+	Vector2 point = {
+		windowSize.x * (3.0f / 4.0f) - (20.0f * scale_.x),
+		windowSize.y * (7.0f / 8.0f)
+	};
+	// 基準の間隔
+	float spaceX = (windowSize.x - point.x) / 8.0f + (2.0f * scale_.x);
+	// コントローラーUIのY座標
+	float controllerPosY = point.y + (90.0f * scale_.y);
+
+	// 移動UIの初期化
+	moveUI_->Initialize("MoveUI");
+	moveUI_->SetPosition({ point.x + spaceX, point.y });
+	moveUIPos_ = moveUI_->GetPosition();
+	moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
+	moveUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	moveUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+	// 左スティックUIの初期化
+	leftStick_->Initialize("leftStick");
+	leftStick_->SetPosition({ moveUI_->GetPosition().x, controllerPosY });
+	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
+	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
+
+	// カメラUIの初期化
+	cameraUI_->Initialize("CameraUI");
+	cameraUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
+	cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
+	cameraUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	cameraUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+	// 右スティックUI初期化
+	rightStick_->Initialize("rightStick");
+	rightStick_->SetPosition({ cameraUI_->GetPosition().x, controllerPosY });
+	rightStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
+	rightStick_->SetAnchorPoint({ 0.5f, 0.5f });
+
+	// 攻撃UIの初期化
+	attackUI_->Initialize("AttackUI");
+	attackUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
+	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
+	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+	// XボタンUIの初期化
+	xButton_->Initialize("xButton");
+	xButton_->SetPosition({ attackUI_->GetPosition().x,  controllerPosY });
+	xButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
+	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
+
+	// 回避UIの初期化
+	avoidanceUI_->Initialize("AvoidanceUI");
+	avoidanceUI_->SetPosition({ point.x + (spaceX * 7.0f), point.y });
+	avoidanceUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
+	avoidanceUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+
+	// AボタンUIの初期化
+	aButton_->Initialize("aButton");
+	aButton_->SetPosition({ avoidanceUI_->GetPosition().x, controllerPosY });
+	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
+	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
+	aButton_->Update();
 }
 
 ///-------------------------------------------/// 
@@ -45874,6 +46041,7 @@ File Path: Project/application/Game/UI/Game/PlayerUI.h
 #pragma once
 /// ===Include=== ///
 #include "application/Drawing/2d/Object2d.h"
+#include <application/Game/UI/HP/HpUI.h>
 
 /// ===前方宣言=== ///
 class Player;
@@ -45888,18 +46056,16 @@ public:
 	~PlayerUI();
 
 	/// <summary>
-	/// 初期化処理
+	/// プレイヤーとウィンドウサイズを使用して初期化します。
 	/// </summary>
-	void Initialize();
+	/// <param name="player">初期化するプレイヤーへのポインター。</param>
+	/// <param name="windowSize">ウィンドウのサイズ。</param>
+	void Initialize(Player* player, const Vector2& windowSize);
 
 	/// <summary>
 	/// 更新処理
 	/// </summary>
 	void Update();
-
-public: /// ===Setter=== ///
-	// Playerのセット
-	void SetPlayer(Player* player) { player_ = player; }
 
 private:
 	// Player
@@ -45907,19 +46073,23 @@ private:
 
 	/// ===Object2d=== ///
 	// アクション
-	std::shared_ptr<Object2d> moveUI_;      // 移動UI
-	std::shared_ptr<Object2d> cameraUI_;    // カメラUI
-	std::shared_ptr<Object2d> attackUI_;    // 攻撃UI
-	std::shared_ptr<Object2d> avoidanceUI_; // 回避UI
+	std::unique_ptr<Object2d> moveUI_;      // 移動UI
+	std::unique_ptr<Object2d> cameraUI_;    // カメラUI
+	std::unique_ptr<Object2d> attackUI_;    // 攻撃UI
+	std::unique_ptr<Object2d> avoidanceUI_; // 回避UI
 	// コントローラー
-	std::shared_ptr<Object2d> xButton_;	  // X
-	std::shared_ptr<Object2d> aButton_;	  // A
-	std::shared_ptr<Object2d> leftStick_;	  // 左スティック
-	std::shared_ptr<Object2d> rightStick_;  // 右スティック
+	std::unique_ptr<Object2d> xButton_;		// X
+	std::unique_ptr<Object2d> aButton_;		// A
+	std::unique_ptr<Object2d> leftStick_;	// 左スティック
+	std::unique_ptr<Object2d> rightStick_;  // 右スティック
+	// HPUI
+	std::unique_ptr<HpUI> hpUI_;			// HPUI
 
 	/// ===位置=== ///
 	Vector2 moveUIPos_ = { 100.0f, 500.0f };      // 移動UI位置
 	Vector2 cameraUIPos_ = { 300.0f, 500.0f };    // カメラUI位置
+	Vector2 hpUIPos_ = { 0.0f, 0.0f };			  // HPUI位置
+	Vector2 hpUIOffset_ = { 0.0f, 0.0f };			  // HPUIのオフセット
 
 	/// ===Color=== ///
 	Vector4 activeColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };   // アクティブカラー
@@ -45937,6 +46107,12 @@ private:
 private:
 
 	/// <summary>
+	/// コントローラーUIをセットアップします。
+	/// </summary>
+	/// <param name="windowSize">ウィンドウのサイズ。</param>
+	void SetUpControllerUI(const Vector2& windowSize);
+
+	/// <summary>
 	/// スプライトの更新処理
 	/// </summary>
 	void SpriteUpdate();
@@ -45950,12 +46126,228 @@ private:
 
 
 ============================================================
+File Path: Project/application/Game/UI/HP/HpUI.cpp
+============================================================
+#include "HpUI.h"
+// Service
+#include <Service/Sprite.h>
+// Math
+#include <algorithm>
+#include <cmath>
+
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+HpUI::~HpUI() {
+	hpBackground_.reset();
+	hpDamage_.reset();
+	hpBar_.reset();
+	hpFrame_.reset();
+}
+
+///-------------------------------------------/// 
+/// 初期化処理
+///-------------------------------------------///
+void HpUI::Initialize(const Vector2& position, const Vector2& size, float maxHP) {
+	position_ = position;
+	size_ = size;
+
+	/// ===基準スケールの取得=== ///
+	scale_ = Service::Sprite::GetBaseScale();
+
+	/// ===枠=== ///
+	hpFrame_ = std::make_unique<Object2d>();
+	hpFrame_->Initialize("White");
+	hpFrame_->SetPosition(position_);
+	hpFrame_->SetSize(size_);
+	hpFrame_->SetAnchorPoint({ 0.0f, 0.0f });
+
+	/// ===背景（黒）=== ///
+	// HPがゼロになったときに見える黒背景
+	hpBackground_ = std::make_unique<Object2d>();
+	hpBackground_->Initialize("White");  // 単色スプライト
+	hpBackground_->SetPosition(position_);
+	hpBackground_->SetSize(size_);
+	hpBackground_->SetAnchorPoint({ 0.0f, 0.0f });
+	hpBackground_->SetColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+
+	/// ===ダメージ遅延バー（赤）=== ///
+	// ダメージを受けた後、一定時間赤く表示される
+	hpDamage_ = std::make_unique<Object2d>();
+	hpDamage_->Initialize("White");
+	hpDamage_->SetPosition(position_);
+	hpDamage_->SetSize(size_);
+	hpDamage_->SetAnchorPoint({ 0.0f, 0.0f });
+	hpDamage_->SetColor({ 0.9f, 0.15f, 0.15f, 1.0f });
+
+	/// ===現在HPバー（緑）=== ///
+	// 実際の現在HPをリアルタイムで表示する
+	hpBar_ = std::make_unique<Object2d>();
+	hpBar_->Initialize("White");
+	hpBar_->SetPosition(position_);
+	hpBar_->SetSize(size_);
+	hpBar_->SetAnchorPoint({ 0.0f, 0.0f });
+	hpBar_->SetColor({ 0.1f, 0.85f, 0.2f, 1.0f });
+
+	
+
+	/// ===初期状態（HP満タン）=== ///
+	displayHP_ = 1.0f;
+	damageHP_ = 1.0f;
+	previousHP_ = 1.0f;
+	maxHP_ = maxHP;
+	isDamageVisible_ = false;
+	damageTimer_ = 0.0f;
+
+	UpdateSprites();
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void HpUI::Update(float deltaTime, float currentHP) {
+
+	/// ===HP割合の計算=== ///
+	const float ratio = (maxHP_ > 0.0f) ? std::clamp(currentHP / maxHP_, 0.0f, 1.0f) : 0.0f;
+
+	/// ===ダメージ検出=== ///
+	// 前フレームよりHPが下がっていればダメージとみなす
+	if (ratio < previousHP_) {
+		// 赤バーはダメージ前の値のまま保持し、タイマーをリセット
+		damageHP_ = previousHP_;
+		damageTimer_ = 0.0f;
+		isDamageVisible_ = true;
+	}
+	previousHP_ = ratio;
+
+	/// ===現在HPを即時反映=== ///
+	displayHP_ = ratio;
+
+	/// ===ダメージ遅延処理=== ///
+	if (isDamageVisible_) {
+		damageTimer_ += deltaTime;
+
+		if (damageTimer_ >= damageDelay_) {
+			// 待機時間が終わったら赤バーを現在HPまで一気に減らす
+			damageHP_ -= damageDecreaseSpeed_ * deltaTime;
+			damageHP_ = (std::max)(damageHP_, displayHP_);
+
+			// 現在HPに追いついたら非表示にする
+			if (damageHP_ <= displayHP_ + 0.001f) {
+				damageHP_ = displayHP_;
+				isDamageVisible_ = false;
+			}
+		}
+	}
+
+	/// ===スプライトへ反映=== ///
+	UpdateSprites();
+}
+
+///-------------------------------------------/// 
+/// スプライトの位置・サイズを更新する
+///-------------------------------------------///
+void HpUI::UpdateSprites() {
+	/// ===背景は常にフルサイズ=== ///
+	hpBackground_->SetSize(size_);
+	hpBackground_->Update();
+
+	/// ===赤バー（ダメージ遅延）=== ///
+	// damageHP_ 割合分だけ横幅を設定する
+	Vector2 damageSize = { size_.x * damageHP_, size_.y };
+	hpDamage_->SetSize(damageSize);
+	hpDamage_->Update();
+
+	/// ===緑バー（現在HP）=== ///
+	// displayHP_ 割合分だけ横幅を設定する
+	Vector2 barSize = { size_.x * displayHP_, size_.y };
+	hpBar_->SetSize(barSize);
+	hpBar_->Update();
+
+	/// ===枠は常にフルサイズ=== ///
+	hpFrame_->SetSize(size_);
+	hpFrame_->Update();
+}
+
+============================================================
+File Path: Project/application/Game/UI/HP/HpUI.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "application/Drawing/2d/Object2d.h"
+
+///=====================================================/// 
+/// HPUI
+///=====================================================///
+class HpUI {
+public:
+
+	HpUI() = default;
+	~HpUI();
+
+	/// <summary>
+	/// 位置とサイズで初期化します。
+	/// </summary>
+	/// <param name="position">初期位置。</param>
+	/// <param name="size">サイズ。</param>
+	/// <param name="maxHP">最大ヒットポイント。</param>
+	void Initialize(const Vector2& position, const Vector2& size, float maxHp);
+
+	/// <summary>
+	/// 現在のHPと最大HPに基づいて更新します。
+	/// </summary>
+	/// <param name="deltaTIme">デルタタイム（秒）。</param>
+	/// <param name="currentHP">現在のヒットポイント。</param>
+	void Update(float deltaTime, float currentHP);
+
+	/// <summary>
+	/// 位置を設定します。
+	/// </summary>
+	/// <param name="position">設定する位置</param>
+	void SetPosition(const Vector2& position) { position_ = position; }
+
+private:
+	/// ===Sprite=== ///
+	std::unique_ptr<Object2d> hpBackground_;	// HPバーの背景（黒）
+	std::unique_ptr<Object2d> hpDamage_;		// ダメージ遅延表示（赤）
+	std::unique_ptr<Object2d> hpBar_;			// 現在HP表示（緑）
+	std::unique_ptr<Object2d> hpFrame_;			// HPバーの枠
+
+	/// ===位置・サイズ=== ///
+	Vector2 position_ = {};						// HPバーの基準位置
+	Vector2 size_ = {};							// HPバーの全体サイズ
+
+	/// ===HP管理=== ///
+	float displayHP_ = 1.0f;					// 現在表示するHP割合（緑バー）
+	float damageHP_ = 1.0f;						// ダメージ遅延表示のHP割合（赤バー）
+	float previousHP_ = 1.0f;					// 前フレームのHP割合
+	float maxHP_ = 100.0f;						// 最大HP
+
+	/// ===ダメージ遅延アニメーション=== ///
+	float damageTimer_ = 0.0f;					// ダメージ後の経過時間
+	float damageDelay_ = 1.2f;					// 赤バーが消え始めるまでの待機時間（秒）
+	float damageDecreaseSpeed_ = 3.0f;			// 赤バーの減少速度（割合 / 秒）
+	bool isDamageVisible_ = false;				// 赤バー表示中かどうか
+
+	/// ===スケール=== ///
+	Vector2 scale_ = { 1.0f, 1.0f };			// 参照スケール倍率
+
+private:
+	/// <summary>
+	/// スプライトの位置・サイズを更新します。
+	/// </summary>
+	void UpdateSprites();
+};
+
+
+
+============================================================
 File Path: Project/application/Game/UI/Option/OptionUI.cpp
 ============================================================
 #include "OptionUI.h"
-// SpriteBaseScale
-#include "application/Game/UI/SpriteBaseScale.h"
 // Service
+#include <Service/GraphicsResourceGetter.h>
+#include <Service/Sprite.h>
 #include "Service/Input.h"
 #include "Service/Audio.h"
 #ifdef USE_IMGUI
@@ -45988,7 +46380,7 @@ void OptionUI::Initialize() {
 	};
 
 	/// ===基準スケール=== ///
-	scale_ = GetBaseScale();
+	scale_ = Service::Sprite::GetBaseScale();
 
 	// 薄暗いオーバーレイ
 	dimSprite_ = std::make_unique<Object2d>();
@@ -46234,36 +46626,6 @@ private:
 
 
 ============================================================
-File Path: Project/application/Game/UI/SpriteBaseScale.h
-============================================================
-#pragma once
-/// ===Include=== ///
-// Vector2
-#include "Math/Vector2.h"
-// Service
-#include "Service/GraphicsResourceGetter.h"
-
-///-------------------------------------------/// 
-/// 基準スケールの取得
-///-------------------------------------------///
-inline Vector2 GetBaseScale() {
-	// 基準解像度
-	constexpr float BASE_WIDTH = 1920.0f;
-	constexpr float BASE_HEIGHT = 1080.0f;
-	// ウィンドウサイズの取得
-	Vector2 windowSize = {
-		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
-		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
-	};
-	// スケール計算
-	Vector2 scale = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
-	return scale;
-}
-
-
-
-
-============================================================
 File Path: Project/application/Scene/Clear/ClearScene.cpp
 ============================================================
 #include "ClearScene.h"
@@ -46383,7 +46745,7 @@ void AttackEditorScene::Initialize() {
     IScene::Initialize();
 
 	// パーティクルの定義を読み込み
-    Service::Particle::LoadParticleDefinition("WeaponAttack.json");
+    Service::Particle::LoadParticleDefinition("PlayerAttack.json");
 
     /// ===カメラ=== ///
     camera_ = std::make_unique<MiiEngine::FollowCamera>();
@@ -46794,24 +47156,23 @@ void GameScene::SetUpCamera() {
 	// 追従オフセット設定
 	camera_->SetOffset({ 0.0f, 100.0f, -90.0f });
 	// 追従速度設定
-	camera_->SetFollowSpeed(0.1f);
+	camera_->SetFollowSpeed(1.0f);
 }
 
 ///-------------------------------------------/// 
 /// パーティクルの読み込み
 ///-------------------------------------------///
 void GameScene::LoadParticle() {
-	Service::Particle::LoadParticleDefinition("Game.json");
-	Service::Particle::LoadParticleDefinition("WeaponAttack.json");
-	Service::Particle::LoadParticleDefinition("nakagawa.json");
-	Service::Particle::LoadParticleDefinition("PlayerWarke.json");
+	// Player
+	Service::Particle::LoadParticleDefinition("PlayerMove.json");
+	Service::Particle::LoadParticleDefinition("PlayerAttack.json");
+	Service::Particle::LoadParticleDefinition("PlayerHitEffect1.json");
+
+	// Boss
 	Service::Particle::LoadParticleDefinition("EnemyAttack.json");
-	Service::Particle::LoadParticleDefinition("EnemyPrePareAttack.json");
-	Service::Particle::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
-	Service::Particle::LoadParticleDefinition("CloseEnemyAttack.json");
-	Service::Particle::LoadParticleDefinition("LongEnemyAttack.json");
-	Service::Particle::LoadParticleDefinition("MobEnemySpawn.json");
-	Service::Particle::LoadParticleDefinition("MobEnemyTeleport.json");
+	Service::Particle::LoadParticleDefinition("EnemyHitEffect.json");
+	Service::Particle::LoadParticleDefinition("EnemyTeleportParticle.json");
+	Service::Particle::LoadParticleDefinition("EnemyDeathParticle.json");
 }
 
 
@@ -47335,9 +47696,7 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 
 	/// ===GameSceneUI=== ///
 	ui_ = std::make_unique<GameSceneUI>();
-	ui_->Initialize();
-	// GameSceneUIにPlayerを設定
-	ui_->SetPlayer(gameScene_->GetPlayer());
+	ui_->Initialize(gameScene_->GetPlayer(), gameScene_->GetEnemy());
 	ui_->Update();
 
 	/// ===OptionUI=== ///
@@ -47670,32 +48029,27 @@ private:
 File Path: Project/application/Scene/Game/UI/GameSceneUI.cpp
 ============================================================
 #include "GameSceneUI.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
 // Service
 #include "Service/GraphicsResourceGetter.h"
 
 ///-------------------------------------------/// 
-/// Setter
-///-------------------------------------------///
-void GameSceneUI::SetPlayer(Player* player) {
-	// PlayerUI
-	playerUI_->SetPlayer(player);
-}
-
-///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
-void GameSceneUI::Initialize() {
-	// PlayerUIの生成と初期化
-	playerUI_ = std::make_unique<PlayerUI>();
-	playerUI_->Initialize();
-
+void GameSceneUI::Initialize(Player* player, BossEnemy* boss) {
+	
 	/// ===ウィンドウサイズの取得=== ///
 	Vector2 windowSize = {
 		static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth()),
 		static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight())
 	};
+
+	/// ===PlayerUI=== ///
+	playerUI_ = std::make_unique<PlayerUI>();
+	playerUI_->Initialize(player, windowSize);
+
+	/// ===BossUi=== ///
+	bossUI_ = std::make_unique<BossUI>();
+	bossUI_->Initialize(boss);
 
 	/// ===OptionSprite=== ///
 	optionMenuSprite_ = std::make_unique<Object2d>();
@@ -47709,8 +48063,9 @@ void GameSceneUI::Initialize() {
 /// 更新処理
 ///-------------------------------------------///
 void GameSceneUI::Update() {
-	// PlayerUIの更新
+	/// ===UIの更新処理=== ///
 	playerUI_->Update();
+	bossUI_->Update();
 }
 
 ============================================================
@@ -47719,9 +48074,11 @@ File Path: Project/application/Scene/Game/UI/GameSceneUI.h
 #pragma once
 /// ===Include=== ///
 #include "application/Game/UI/Game/PlayerUI.h"
+#include "application/Game/UI/Game/BossUI.h"
 
 /// ===前方宣言=== ///
 class Player;
+class BossEnemy;
 
 ///=====================================================/// 
 /// GameSceneUI
@@ -47735,22 +48092,22 @@ public:
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
-	void Initialize();
+	/// <param name="player">初期化するプレイヤーへのポインタ。</param>
+	/// <param name="boss">初期化するボスエネミーへのポインタ。</param>
+	void Initialize(Player* player, BossEnemy* boss);
 
 	/// <summary>
 	/// 更新処理
 	/// </summary>
 	void Update();
 
-public: /// ===Setter=== ///
-	// Playerのセット
-	void SetPlayer(Player* player);
-
 private:
 
 	/// ===Class=== ///
 	// PlayerUI
 	std::unique_ptr<PlayerUI> playerUI_;
+	// BossUI
+	std::unique_ptr<BossUI> bossUI_;
 
 	/// ===Object2d=== ///
 	std::unique_ptr<Object2d> optionMenuSprite_;
@@ -48393,9 +48750,9 @@ private:/// ===プライベート関数=== ///
 File Path: Project/application/Scene/Title/UI/TitleUI.cpp
 ============================================================
 #include "TitleUI.h"
-// SpriteBaseScale
-#include "application/Game/UI/SpriteBaseScale.h"
 // Service
+#include <Service/GraphicsResourceGetter.h>
+#include <Service/Sprite.h>
 #include "Service/Input.h"
 #include "Service/DeltaTime.h"
 // Math
@@ -48426,7 +48783,7 @@ void TitleUI::Initialize() {
 	};
 
 	/// ===基準スケール=== ///
-	Vector2 scale_ = GetBaseScale();
+	Vector2 scale_ = Service::Sprite::GetBaseScale();
 
 	/// ===基準値の設定=== ///
 	spaceY_ = windowSize.y / 12.0f; // メニュー項目間の垂直スペース
