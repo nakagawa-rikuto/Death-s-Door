@@ -5,52 +5,52 @@
             "colorBlendCurve": 1.0,
             "oscillateColor": false,
             "primaryColor": [
-                0.30000001192092896,
-                0.30000001192092896,
-                0.30000001192092896,
-                0.800000011920929
+                0.20000000298023224,
+                0.800000011920929,
+                1.0,
+                1.0
             ],
             "secondaryColor": [
-                0.6000000238418579,
-                0.6000000238418579,
-                0.6000000238418579,
-                0.20000000298023224
+                1.0,
+                0.8999999761581421,
+                0.30000001192092896,
+                1.0
             ],
-            "useGradient": true
+            "useGradient": false
         },
         "emissionPattern": {
-            "particlesPerEmit": 3,
-            "pattern": "Cone",
-            "patternAngle": 30.0,
-            "patternRadius": 0.5
+            "particlesPerEmit": 5,
+            "pattern": "Sphere",
+            "patternAngle": 0.0,
+            "patternRadius": 0.25
         },
         "isTrajectoryParticle": false,
         "motion": {
             "billboardRotationSpeed": 3.0,
             "enableBillboardRotation": false,
-            "enableSwirling": true,
-            "expansionRate": 5.0,
+            "enableSwirling": false,
+            "expansionRate": 0.800000011920929,
             "followEmitter": false,
             "followStrength": 1.0,
-            "rotationInfluence": 5.0,
-            "swirlingSpeed": 5.599999904632568,
+            "rotationInfluence": 1.2000000476837158,
+            "swirlingSpeed": 3.0,
             "useRotationInfluence": false,
-            "velocityDamping": 0.9800000190734863
+            "velocityDamping": 0.949999988079071
         },
         "scaleAnimation": {
-            "endScale": 3.0,
+            "endScale": 0.10000000149011612,
             "maxScale": 1.5,
-            "startScale": 0.5,
-            "type": "Linear"
+            "startScale": 0.30000001192092896,
+            "type": "Bounce"
         },
         "trailSpacing": 0.00800000037997961
     },
     "appearance": {
         "endColor": [
-            0.9662446975708008,
-            0.5667005181312561,
-            0.5667005181312561,
-            1.0
+            1.0,
+            0.0,
+            0.0,
+            0.0
         ],
         "endScale": [
             0.5,
@@ -59,8 +59,8 @@
         ],
         "startColor": [
             1.0,
-            0.9151310324668884,
-            0.04219406843185425,
+            0.8860759735107422,
+            0.0,
             1.0
         ],
         "startScaleMax": [
@@ -78,16 +78,16 @@
         "useScaleAnimation": false
     },
     "emission": {
-        "burstCount": 0,
-        "emissionRate": 50.0,
+        "burstCount": 1,
+        "emissionRate": 10.0,
         "frequency": 0.5,
-        "isBurst": false,
-        "lifetimeMax": 3.0,
-        "lifetimeMin": 2.0
+        "isBurst": true,
+        "lifetimeMax": 0.4000000059604645,
+        "lifetimeMin": 0.4000000059604645
     },
-    "maxInstance": 200,
-    "modelName": "sphere",
-    "name": "EnemyPrePareAttack",
+    "maxInstance": 100,
+    "modelName": "plane",
+    "name": "EnemyHitEffect",
     "physics": {
         "acceleration": [
             0.0,
@@ -95,22 +95,22 @@
             0.0
         ],
         "explosionRange": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "gravity": 0.0,
+        "upwardForce": 0.0,
+        "useRandomVelocity": false,
+        "velocityMax": [
             1.0,
-            1.0,
+            5.0,
             1.0
         ],
-        "gravity": 1.600000023841858,
-        "upwardForce": 2.0,
-        "useRandomVelocity": true,
-        "velocityMax": [
-            2.9000000953674316,
-            4.199999809265137,
-            2.799999952316284
-        ],
         "velocityMin": [
-            -2.700000047683716,
             0.0,
-            -2.799999952316284
+            0.0,
+            0.0
         ]
     },
     "rotation": {
@@ -126,17 +126,17 @@
             0.0
         ],
         "randomInitialRotation": false,
-        "randomRotation": true,
+        "randomRotation": false,
         "rotationSpeedMax": [
-            2.5,
-            1.399999976158142,
-            1.5
+            0.0,
+            0.0,
+            0.0
         ],
         "rotationSpeedMin": [
-            -1.5,
-            -1.7000000476837158,
-            -1.0
+            0.0,
+            0.0,
+            0.0
         ]
     },
-    "shape": "None"
+    "shape": "Circle"
 }

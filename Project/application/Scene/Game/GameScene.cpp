@@ -196,15 +196,14 @@ void GameScene::SetUpCamera() {
 /// パーティクルの読み込み
 ///-------------------------------------------///
 void GameScene::LoadParticle() {
-	Service::Particle::LoadParticleDefinition("Game.json");
-	Service::Particle::LoadParticleDefinition("WeaponAttack.json");
-	Service::Particle::LoadParticleDefinition("nakagawa.json");
-	Service::Particle::LoadParticleDefinition("PlayerWarke.json");
+	// Player
+	Service::Particle::LoadParticleDefinition("PlayerMove.json");
+	Service::Particle::LoadParticleDefinition("PlayerAttack.json");
+	Service::Particle::LoadParticleDefinition("PlayerHitEffect1.json");
+
+	// Boss
 	Service::Particle::LoadParticleDefinition("EnemyAttack.json");
-	Service::Particle::LoadParticleDefinition("EnemyPrePareAttack.json");
-	Service::Particle::LoadParticleDefinition("EnemyPrePareAttackCharge.json");
-	Service::Particle::LoadParticleDefinition("CloseEnemyAttack.json");
-	Service::Particle::LoadParticleDefinition("LongEnemyAttack.json");
-	Service::Particle::LoadParticleDefinition("MobEnemySpawn.json");
-	Service::Particle::LoadParticleDefinition("MobEnemyTeleport.json");
+	Service::Particle::LoadParticleDefinition("EnemyHitEffect.json");
+	Service::Particle::LoadParticleDefinition("EnemyTeleportParticle.json");
+	Service::Particle::LoadParticleDefinition("EnemyDeathParticle.json");
 }

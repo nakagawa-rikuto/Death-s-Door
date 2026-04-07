@@ -75,7 +75,8 @@ void BossTeleportState::Update() {
 
 	// パーティクルのスポーン
 	if (result.shouldSpawnParticleAtCurrent || result.shouldSpawnParticleAtNext) {
-		//teleportParticle_ = Service::Particle::Emit("BossEnemyTeleport", boss_->GetTransform().translate);
+		//Vector3 particlePosition = boss_->GetTransform().translate - Vector3{ 0.0f, boss_->GetOBB().halfSize.y, 0.0f };
+		//teleportParticle_ = Service::Particle::Emit("EnemyTeleportParticle", boss_->GetTransform().translate + boss_->GetOBB().halfSize);
 	}
 
 	/// ===Stateの変更=== ///

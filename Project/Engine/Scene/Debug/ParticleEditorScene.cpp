@@ -26,6 +26,11 @@ namespace MiiEngine {
 		// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 		IScene::Initialize();
 
+		cameraPosition_ = { 0.0f, 45.0f, -50.0f };
+		cameraRotation_ = { 0.343f, 0.0f, 0.0f, 0.939f };
+		defaultCamera_->SetTranslate(cameraPosition_);
+		defaultCamera_->SetRotate(cameraRotation_);
+
 		/// ===エディターの初期化=== ///
 		particleEditor_ = std::make_unique<ParticleEditor>();
 		particleEditor_->Initialize();
@@ -44,9 +49,6 @@ namespace MiiEngine {
 	/// 更新
 	///-------------------------------------------///
 	void ParticleEditorScene::Update() {
-		/// ===カメラの更新=== ///
-		//UpdateCamera();
-
 		/// ===エディターの更新=== ///
 		if (particleEditor_) {
 			particleEditor_->Update();
@@ -56,6 +58,7 @@ namespace MiiEngine {
 #ifdef USE_IMGUI
 	//RenderMenuBar();
 		defaultCamera_->ImGuiUpdate();
+		defaultCamera_->DebugUpdate();
 
 		// エディターメインウィンドウ
 		particleEditor_->Render();
@@ -77,7 +80,7 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ParticleEditorScene::Draw() {
 		/// ===グリッドの描画=== ///
-		line_->DrawGrid({ 0.0f, 0.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
+		line_->DrawGrid({ 0.0f, -10.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 		/// ===エディタープレビューの描画=== ///
 		if (particleEditor_) {
@@ -279,55 +282,5 @@ namespace MiiEngine {
 
 		ImGui::End();
 #endif // USE_IMGUI
-	}
-
-	///-------------------------------------------/// 
-	/// カメラの更新
-	///-------------------------------------------///
-	void ParticleEditorScene::UpdateCamera() {
-		// TODO: 入力処理の実装
-		// Input::IsPress()などを使用してカメラを操作
-
-		/*
-		// WASD移動
-		if (Input::IsPress(Key::W)) {
-			cameraPosition_.z += cameraSpeed_;
-		}
-		if (Input::IsPress(Key::S)) {
-			cameraPosition_.z -= cameraSpeed_;
-		}
-		if (Input::IsPress(Key::A)) {
-			cameraPosition_.x -= cameraSpeed_;
-		}
-		if (Input::IsPress(Key::D)) {
-			cameraPosition_.x += cameraSpeed_;
-		}
-
-		// QE上下移動
-		if (Input::IsPress(Key::Q)) {
-			cameraPosition_.y -= cameraSpeed_;
-		}
-		if (Input::IsPress(Key::E)) {
-			cameraPosition_.y += cameraSpeed_;
-		}
-
-		// 矢印キーで回転
-		if (Input::IsPress(Key::Up)) {
-			cameraRotation_.x += cameraRotationSpeed_;
-		}
-		if (Input::IsPress(Key::Down)) {
-			cameraRotation_.x -= cameraRotationSpeed_;
-		}
-		if (Input::IsPress(Key::Left)) {
-			cameraRotation_.y -= cameraRotationSpeed_;
-		}
-		if (Input::IsPress(Key::Right)) {
-			cameraRotation_.y += cameraRotationSpeed_;
-		}
-
-		// カメラに反映
-		camera_->SetTranslate(cameraPosition_);
-		camera_->SetRotate(cameraRotation_);
-		*/
 	}
 }

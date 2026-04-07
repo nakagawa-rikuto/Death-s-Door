@@ -35,7 +35,7 @@ void AttackEditorScene::Initialize() {
     IScene::Initialize();
 
 	// パーティクルの定義を読み込み
-    Service::Particle::LoadParticleDefinition("WeaponAttack.json");
+    Service::Particle::LoadParticleDefinition("PlayerAttack.json");
 
     /// ===カメラ=== ///
     camera_ = std::make_unique<MiiEngine::FollowCamera>();

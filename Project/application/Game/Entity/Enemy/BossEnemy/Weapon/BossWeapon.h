@@ -5,6 +5,9 @@
 
 /// ===前方宣言=== ///
 class BossEnemy;
+namespace MiiEngine {
+	class ParticleGroup;
+}
 
 ///=====================================================/// 
 /// BossWeapon
@@ -66,5 +69,7 @@ private: /// ===メンバ変数=== ///
 	BossEnemy* bossEnemy_ = nullptr;
 	// Colliderのアクティブ
 	bool isActive_ = false;
+	// ParticleGroup
+	MiiEngine::ParticleGroup* attackParticle_ = nullptr;
 };
 

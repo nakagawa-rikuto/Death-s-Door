@@ -157,7 +157,7 @@ void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 
 				// HPを減少
 				baseInfo_.HP--;
-				hitParticle_ = Service::Particle::Emit("Game", transform_.translate);
+				hitParticle_ = Service::Particle::Emit("EnemyHitEffect", transform_.translate);
 
 				// 無敵時間のセット
 				SetInvincibleTime();
@@ -282,20 +282,6 @@ void BossEnemy::SetComponentConfig() {
 	};
 	// 初期化
 	jumpSmashComponent_->Initialize(jumpSmashConfig);
-
-	/*BossAttackManager::Config attackConfig{
-		.thrustRange = 4.0f,
-		.downswingRange = 6.0f,
-		.jumpSmashRange = 14.0f,
-		.thrustCooldown = 3.0f,
-		.downswingCooldown = 4.0f,
-		.jumpSmashCooldown = 6.0f,
-		.thrustConfig = thrustConfig,
-		.downswingConfig = downswingConfig,
-		.jumpSmashConfig = jumpSmashConfig,
-	};*/
-	// 初期化
-	//attackManager_->Initialize(attackConfig);
 }
 
 
@@ -318,7 +304,7 @@ void BossEnemy::advanceTimer() {
 
 	if (baseInfo_.isDead) {
 		// パーティクルの発生
-		deathParticle_ = Service::Particle::Emit("nakagawa", transform_.translate);
+		deathParticle_ = Service::Particle::Emit("EnemyDeathParticle", transform_.translate);
 		isTentativeDeath_ = true;
 		if (hitParticle_ != nullptr) {
 			hitParticle_->Stop();

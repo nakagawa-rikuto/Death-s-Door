@@ -3,7 +3,7 @@
         "clearOnStop": true,
         "colorGradient": {
             "colorBlendCurve": 1.0,
-            "oscillateColor": false,
+            "oscillateColor": true,
             "primaryColor": [
                 0.20000000298023224,
                 0.800000011920929,
@@ -16,10 +16,10 @@
                 0.30000001192092896,
                 1.0
             ],
-            "useGradient": false
+            "useGradient": true
         },
         "emissionPattern": {
-            "particlesPerEmit": 5,
+            "particlesPerEmit": 6,
             "pattern": "Sphere",
             "patternAngle": 0.0,
             "patternRadius": 0.25
@@ -27,12 +27,12 @@
         "isTrajectoryParticle": true,
         "motion": {
             "billboardRotationSpeed": 3.0,
-            "enableBillboardRotation": true,
+            "enableBillboardRotation": false,
             "enableSwirling": false,
             "expansionRate": 0.800000011920929,
-            "followEmitter": true,
-            "followStrength": 0.382999986410141,
-            "rotationInfluence": 1.2000000476837158,
+            "followEmitter": false,
+            "followStrength": 1.0,
+            "rotationInfluence": 0.0,
             "swirlingSpeed": 3.0,
             "useRotationInfluence": false,
             "velocityDamping": 0.949999988079071
@@ -47,47 +47,47 @@
     },
     "appearance": {
         "endColor": [
-            0.1764705926179886,
-            0.0470588244497776,
-            0.4431372582912445,
-            0.8039215803146362
+            0.0,
+            1.0,
+            0.7843137383460999,
+            1.0
         ],
         "endScale": [
-            0.5,
-            0.5,
-            0.5
-        ],
-        "startColor": [
-            0.3797469139099121,
-            0.0,
+            1.0,
             1.0,
             1.0
         ],
+        "startColor": [
+            1.0,
+            0.6582278609275818,
+            0.0,
+            1.0
+        ],
         "startScaleMax": [
-            0.800000011920929,
-            0.800000011920929,
-            0.800000011920929
+            4.0,
+            4.0,
+            4.0
         ],
         "startScaleMin": [
-            0.5,
-            0.5,
-            0.5
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
         ],
-        "texturePath": "Spark",
+        "texturePath": "circle",
         "useColorGradient": true,
         "useScaleAnimation": true
     },
     "emission": {
         "burstCount": 0,
-        "emissionRate": 10.0,
-        "frequency": 0.5,
+        "emissionRate": 50.0,
+        "frequency": 0.20999999344348907,
         "isBurst": false,
-        "lifetimeMax": 1.0,
-        "lifetimeMin": 0.20000000298023224
+        "lifetimeMax": 0.800000011920929,
+        "lifetimeMin": 0.4000000059604645
     },
-    "maxInstance": 100,
+    "maxInstance": 200,
     "modelName": "plane",
-    "name": "LongEnemyAttack",
+    "name": "PlayerAttack",
     "physics": {
         "acceleration": [
             0.0,
@@ -95,22 +95,22 @@
             0.0
         ],
         "explosionRange": [
-            0.5,
-            0.5,
-            0.5
+            0.0,
+            0.0,
+            0.0
         ],
-        "gravity": 0.0,
-        "upwardForce": 0.0,
+        "gravity": -10.0,
+        "upwardForce": 5.0,
         "useRandomVelocity": true,
         "velocityMax": [
+            10.0,
             1.0,
-            2.0,
-            1.0
+            10.0
         ],
         "velocityMin": [
-            -1.0,
+            -10.0,
             1.0,
-            -1.0
+            -10.0
         ]
     },
     "rotation": {

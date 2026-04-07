@@ -26,14 +26,14 @@
         },
         "isTrajectoryParticle": false,
         "motion": {
-            "billboardRotationSpeed": 0.0,
+            "billboardRotationSpeed": 3.0,
             "enableBillboardRotation": false,
-            "enableSwirling": true,
+            "enableSwirling": false,
             "expansionRate": 0.800000011920929,
             "followEmitter": false,
             "followStrength": 1.0,
             "rotationInfluence": 1.2000000476837158,
-            "swirlingSpeed": 2.0,
+            "swirlingSpeed": 3.0,
             "useRotationInfluence": false,
             "velocityDamping": 0.949999988079071
         },
@@ -47,9 +47,9 @@
     },
     "appearance": {
         "endColor": [
-            0.35934412479400635,
-            0.9789029359817505,
-            0.7357849478721619,
+            0.0,
+            0.025316476821899414,
+            1.0,
             0.0
         ],
         "endScale": [
@@ -58,36 +58,36 @@
             0.5
         ],
         "startColor": [
-            0.15691931545734406,
-            0.9535865187644958,
-            0.4997886121273041,
+            0.0,
+            0.12658238410949707,
+            1.0,
             1.0
         ],
         "startScaleMax": [
-            1.0,
-            1.0,
-            1.0
+            3.0,
+            3.0,
+            3.0
         ],
         "startScaleMin": [
-            1.0,
-            1.0,
-            1.0
+            0.30000001192092896,
+            0.30000001192092896,
+            0.30000001192092896
         ],
-        "texturePath": "circle2",
+        "texturePath": "Spark",
         "useColorGradient": true,
         "useScaleAnimation": true
     },
     "emission": {
-        "burstCount": 50,
+        "burstCount": 200,
         "emissionRate": 10.0,
         "frequency": 0.5,
         "isBurst": true,
-        "lifetimeMax": 0.5,
-        "lifetimeMin": 0.5
+        "lifetimeMax": 1.5,
+        "lifetimeMin": 1.0
     },
-    "maxInstance": 50,
+    "maxInstance": 200,
     "modelName": "plane",
-    "name": "MobEnemyTeleport",
+    "name": "EnemyDeathParticle",
     "physics": {
         "acceleration": [
             0.0,
@@ -95,22 +95,22 @@
             0.0
         ],
         "explosionRange": [
-            1.0,
-            1.0,
-            1.0
+            2.0,
+            2.0,
+            2.0
         ],
-        "gravity": 1.2000000476837158,
+        "gravity": -1.0,
         "upwardForce": 0.0,
         "useRandomVelocity": true,
         "velocityMax": [
-            10.0,
             8.0,
-            10.0
+            2.0,
+            8.0
         ],
         "velocityMin": [
-            -10.0,
-            1.0,
-            -10.0
+            -8.0,
+            -2.0,
+            -8.0
         ]
     },
     "rotation": {

@@ -8,6 +8,7 @@
 #include "Service/Input.h"
 #include "Service/Camera.h"
 #include "Service/Collision.h"
+#include "Service/Particle.h"
 // C++
 #include <algorithm>
 // Math
@@ -219,6 +220,7 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			attackComponent_->CancelAttack();
 
 			// ダメージ処理
+			Service::Particle::Emit("PlayerHitEffect1", transform_.translate);
 			baseInfo_.HP--;
 			// 無敵状態にする
 			SetInvincibleTime(0.5f);
