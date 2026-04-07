@@ -47156,7 +47156,7 @@ void GameScene::SetUpCamera() {
 	// 追従オフセット設定
 	camera_->SetOffset({ 0.0f, 100.0f, -90.0f });
 	// 追従速度設定
-	camera_->SetFollowSpeed(1.0f);
+	camera_->SetFollowSpeed(0.1f);
 }
 
 ///-------------------------------------------/// 
@@ -47703,6 +47703,8 @@ void GameSceneInGameState::Enter(GameScene* gameScene) {
 	optionUI_ = std::make_unique<OptionUI>();
 	optionUI_->Initialize();
 	isOptionActive_ = false;
+
+	gameScene_->GetCamera()->SetFollowSpeed(1.0f);
 }
 
 ///-------------------------------------------/// 
@@ -47919,6 +47921,7 @@ File Path: Project/application/Scene/Game/State/GameSceneStartAnimationState.cpp
 #include "application/Scene/Game/GameScene.h"
 // Service
 #include "Service/Camera.h"
+#include "Service/DeltaTime.h"
 // State
 #include "GameSceneInGameState.h"
 
@@ -47954,9 +47957,18 @@ void GameSceneStartAnimationState::Update() {
 	// Playerの更新
 	gameScene_->GetPlayer()->UpdateAnimation();
 
-	if (startAnimation_->IsCompleted()) {
+	// カメラアニメーションの更新
+	UpdateCameraAnimation();
+
+	if (startAnimation_->IsCompleted() && !isAnimationCompleted_) {
 		// カメラターゲットをPlayerに設定
 		gameScene_->GetPlayer()->SetCameraTargetPlayer();
+		isAnimationCompleted_ = true;
+		timer_ = cameraDuration_;
+	}
+
+	if (isAnimationCompleted_ && timer_ < 0.0f) {
+		// アニメーション完了後、InGameStateに遷移
 		gameScene_->ChangState(std::make_unique<GameSceneInGameState>());
 	}
 }
@@ -47975,6 +47987,15 @@ void GameSceneStartAnimationState::Draw() {
 void GameSceneStartAnimationState::Finalize() {
 	startAnimation_.reset();
 	GameSceneFadeState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// カメラアニメーションの更新処理
+///-------------------------------------------///
+void GameSceneStartAnimationState::UpdateCameraAnimation() {
+	if (timer_ > 0.0f) {
+		timer_ -= Service::DeltaTime::GetDeltaTime();
+	}
 }
 
 
@@ -48023,6 +48044,16 @@ private:
 	// StartAnimation
 	std::unique_ptr<StartAnimation> startAnimation_;
 
+	bool isAnimationCompleted_ = false;
+	float timer_ = 0.0f;
+	float cameraDuration_ = 0.8f; // アニメーションの全体の長さ
+
+private:
+
+	/// <summary>
+	/// カメラアニメーションを更新します。
+	/// </summary>
+	void UpdateCameraAnimation();
 };
 
 ============================================================
