@@ -3,12 +3,12 @@
 #include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
 
 ///=====================================================/// 
-/// ThrustAttackState
+/// BossRotateAttackState
 /// 突き攻撃の状態を表すクラス
 ///=====================================================///
-class BossThrustAttackState : public BossState {
+class BossRotateAttackState : public BossState {
 public:
-	~BossThrustAttackState() override = default;
+	~BossRotateAttackState() override = default;
 
 	/// <summary>
 	/// 初期化処理

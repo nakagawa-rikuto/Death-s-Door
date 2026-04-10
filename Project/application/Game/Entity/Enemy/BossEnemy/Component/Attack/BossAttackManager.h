@@ -3,7 +3,7 @@
 // AttackComponent
 #include "CloseAttack/BossAttackDownwardSwingComponent.h"
 #include "CloseAttack/BossAttackJumpSmashComponent.h"
-#include "CloseAttack/BossAttackThrustComponent.h"
+#include "CloseAttack/BossAttackRotateComponent.h"
 // C++
 #include <memory>
 
@@ -35,7 +35,7 @@ public:
 		float jumpSmashCooldown = 6.0f;
 
 		// 各攻撃コンポーネントのConfig
-		BossAttackThrustComponent::ThrustConfig thrustConfig{};
+		BossAttackRotateComponent::RotateConfig thrustConfig{};
 		BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{};
 		BossAttackJumpSmashComponent::JumpSmashConfig jumpSmashConfig{};
 	};
@@ -120,7 +120,7 @@ public: /// ===Getter=== ///
 	const Config& GetConfig() const { return config_; }
 
 	// 各コンポーネントへの参照（BossEnemyでImGui表示に使用）
-	BossAttackThrustComponent& GetThrustComponent() { return *thrust_; }
+	BossAttackRotateComponent& GetThrustComponent() { return *thrust_; }
 	BossAttackDownwardSwingComponent& GetDownswingComponent() { return *downswing_; }
 	BossAttackJumpSmashComponent& GetJumpSmashComponent() { return *jumpSmash_; }
 
@@ -144,7 +144,7 @@ private:
 	Cooldowns cooldowns_{};
 
 	/// ===攻撃コンポーネント=== ///
-	std::unique_ptr<BossAttackThrustComponent> thrust_{};
+	std::unique_ptr<BossAttackRotateComponent> thrust_{};
 	std::unique_ptr<BossAttackDownwardSwingComponent> downswing_{};
 	std::unique_ptr<BossAttackJumpSmashComponent> jumpSmash_{};
 

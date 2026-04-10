@@ -6,7 +6,7 @@
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossThrustAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossRotateAttackState.h>
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDownwarAttackState.h>
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossJumpSmashAttackState.h>
 #include "BossTeleportState.h"
@@ -31,7 +31,7 @@ void BossMoveState::Update() {
 	// 突き攻撃への遷移条件
 	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
 		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
 		return;
 		// Downswing攻撃への遷移条件
 	} else if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {

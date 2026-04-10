@@ -234,8 +234,8 @@ void BossEnemy::SetComponentConfig() {
 
 	/// ===AttackComponentの生成=== ///
 	// Thrust
-	thrustComponent_ = std::make_unique<BossAttackThrustComponent>();
-	BossAttackThrustComponent::ThrustConfig thrustConfig{
+	thrustComponent_ = std::make_unique<BossAttackRotateComponent>();
+	BossAttackRotateComponent::RotateConfig thrustConfig{
 		.windUpAngle = 30.0f,
 		.windUpDuration = 0.25f,
 		.strikeAngle = -15.0f,

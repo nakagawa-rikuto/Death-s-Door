@@ -34,7 +34,7 @@ void BossAttackManager::Initialize(const Config& config) {
 	cooldowns_ = Cooldowns{};
 
 	// 各コンポーネントの生成と初期化
-	thrust_ = std::make_unique<BossAttackThrustComponent>();
+	thrust_ = std::make_unique<BossAttackRotateComponent>();
 	thrust_->Initialize(config_.thrustConfig);
 
 	downswing_ = std::make_unique<BossAttackDownwardSwingComponent>();
@@ -226,7 +226,7 @@ BossAttackManager::UpdateResult BossAttackManager::UpdateCurrentAttack(
 		// -----------------------------------------------
 	case AttackType::Thrust:
 	{
-		BossAttackThrustComponent::UpdateContext ctx{
+		BossAttackRotateComponent::UpdateContext ctx{
 			.baseRotation = context.bossRotation,
 			.deltaTime = context.deltaTime,
 		};

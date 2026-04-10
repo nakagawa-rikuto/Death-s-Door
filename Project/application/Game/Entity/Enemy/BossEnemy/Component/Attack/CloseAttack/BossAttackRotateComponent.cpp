@@ -1,4 +1,4 @@
-#include "BossAttackThrustComponent.h"
+#include "BossAttackRotateComponent.h"
 // C++
 #include <cassert>
 #include <algorithm>
@@ -13,7 +13,7 @@
 ///-------------------------------------------///
 /// 設定の適用
 ///-------------------------------------------///
-void BossAttackThrustComponent::ApplyConfig(const ThrustConfig& newConfig) {
+void BossAttackRotateComponent::ApplyConfig(const RotateConfig& newConfig) {
 	assert(newConfig.windUpDuration > 0.0f && "windUpDuration must be > 0");
 	assert(newConfig.strikeDuration > 0.0f && "strikeDuration must be > 0");
 	assert(newConfig.recoveryDuration > 0.0f && "recoveryDuration must be > 0");
@@ -24,25 +24,25 @@ void BossAttackThrustComponent::ApplyConfig(const ThrustConfig& newConfig) {
 ///-------------------------------------------///
 /// 初期化処理
 ///-------------------------------------------///
-void BossAttackThrustComponent::Initialize(const ThrustConfig& config) {
+void BossAttackRotateComponent::Initialize(const RotateConfig& config) {
 	config_ = config;
-	state_ = ThrustState{};
-	phase_ = ThrustPhase::Idle;
+	state_ = RotateState{};
+	phase_ = RotatePhase::Idle;
 }
 
 ///-------------------------------------------///
 /// 更新処理
 ///-------------------------------------------///
-BossAttackThrustComponent::UpdateResult BossAttackThrustComponent::Update(const UpdateContext& context) {
+BossAttackRotateComponent::UpdateResult BossAttackRotateComponent::Update(const UpdateContext& context) {
 	UpdateResult result;
-	result.isAttacking = (phase_ == ThrustPhase::Strike || phase_ == ThrustPhase::Recovery);
+	result.isAttacking = (phase_ == RotatePhase::Strike || phase_ == RotatePhase::Recovery);
 
 	// 非アクティブフェーズ：基底回転そのまま、武器は定位置
-	if (phase_ == ThrustPhase::Idle || phase_ == ThrustPhase::Finished) {
+	if (phase_ == RotatePhase::Idle || phase_ == RotatePhase::Finished) {
 		// 非アクティブ：基底回転そのまま、武器は定位置
 		result.modelRotation = context.baseRotation;
 		result.weaponLocalOffset = config_.weaponRestOffset;
-		result.isFinished = (phase_ == ThrustPhase::Finished);
+		result.isFinished = (phase_ == RotatePhase::Finished);
 		return result;
 	}
 
@@ -57,15 +57,15 @@ BossAttackThrustComponent::UpdateResult BossAttackThrustComponent::Update(const 
 ///-------------------------------------------///
 /// リセット
 ///-------------------------------------------///
-void BossAttackThrustComponent::Reset() {
-	state_ = ThrustState{};
-	phase_ = ThrustPhase::Idle;
+void BossAttackRotateComponent::Reset() {
+	state_ = RotateState{};
+	phase_ = RotatePhase::Idle;
 }
 
 ///-------------------------------------------///
 /// ImGui情報の表示
 ///-------------------------------------------///
-void BossAttackThrustComponent::Information() {
+void BossAttackRotateComponent::Information() {
 #ifdef USE_IMGUI
 	if (ImGui::TreeNode("突き攻撃情報")) {
 		// 現在フェーズ
@@ -104,23 +104,23 @@ void BossAttackThrustComponent::Information() {
 ///-------------------------------------------///
 /// 攻撃開始
 ///-------------------------------------------///
-void BossAttackThrustComponent::StartAttack() {
+void BossAttackRotateComponent::StartAttack() {
 	// すでにアクティブな場合は無視
 	if (IsActive()) {
 		return;
 	}
 	state_.phaseTimer = 0.0f;
-	phase_ = ThrustPhase::WindUp;
+	phase_ = RotatePhase::WindUp;
 }
 
 ///-------------------------------------------/// 
 /// 攻撃の更新を実行
 ///-------------------------------------------///
-void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, UpdateResult& result) {
+void BossAttackRotateComponent::UpdateAttack(const UpdateContext& context, UpdateResult& result) {
 	// -----------------------------------------------
 	// WindUp（予備動作）
 	// -----------------------------------------------
-	if (phase_ == ThrustPhase::WindUp) {
+	if (phase_ == RotatePhase::WindUp) {
 		// t
 		const float t = (config_.windUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f) : 1.0f;
 
@@ -138,13 +138,13 @@ void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, Updat
 		// フェーズ遷移
 		if (t >= 1.0f) {
 			state_.phaseTimer = 0.0f;
-			phase_ = ThrustPhase::Strike;
+			phase_ = RotatePhase::Strike;
 		}
 	}
 	// -----------------------------------------------
 	// Strike（突き）
 	// -----------------------------------------------
-	else if (phase_ == ThrustPhase::Strike) {
+	else if (phase_ == RotatePhase::Strike) {
 		// t
 		const float t = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
 
@@ -165,13 +165,13 @@ void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, Updat
 		// フェーズ遷移
 		if (t >= 1.0f) {
 			state_.phaseTimer = 0.0f;
-			phase_ = ThrustPhase::Recovery;
+			phase_ = RotatePhase::Recovery;
 		}
 	}
 	// -----------------------------------------------
 	// Recovery（戻り）
 	// -----------------------------------------------
-	else if (phase_ == ThrustPhase::Recovery) {
+	else if (phase_ == RotatePhase::Recovery) {
 		// t
 		const float t = (config_.recoveryDuration > 0.0f) ? std::min(state_.phaseTimer / config_.recoveryDuration, 1.0f) : 1.0f;
 
@@ -189,7 +189,7 @@ void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, Updat
 
 		// フェーズ遷移
 		if (t >= 1.0f) {
-			phase_ = ThrustPhase::Finished;
+			phase_ = RotatePhase::Finished;
 			result.isFinished = true;
 		}
 	}
@@ -198,7 +198,7 @@ void BossAttackThrustComponent::UpdateAttack(const UpdateContext& context, Updat
 ///-------------------------------------------///
 /// Y軸周りに angleDeg 度回転するクォータニオンを生成
 ///-------------------------------------------///
-Quaternion BossAttackThrustComponent::MakeYawQuaternion(float angleDeg) const {
+Quaternion BossAttackRotateComponent::MakeYawQuaternion(float angleDeg) const {
 	const float kDegToRad = Math::Pi() / 180.0f;
 	const float halfRad = angleDeg * kDegToRad * 0.5f;
 	return Quaternion{
@@ -212,7 +212,7 @@ Quaternion BossAttackThrustComponent::MakeYawQuaternion(float angleDeg) const {
 ///-------------------------------------------///
 /// Vector3 の線形補間
 ///-------------------------------------------///
-Vector3 BossAttackThrustComponent::LerpVector3(const Vector3& a, const Vector3& b, float t) const {
+Vector3 BossAttackRotateComponent::LerpVector3(const Vector3& a, const Vector3& b, float t) const {
 	const float ct = std::clamp(t, 0.0f, 1.0f);
 	return Vector3{
 		a.x + (b.x - a.x) * ct,

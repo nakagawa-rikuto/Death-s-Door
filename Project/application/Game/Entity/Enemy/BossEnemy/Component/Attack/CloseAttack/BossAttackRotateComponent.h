@@ -4,13 +4,13 @@
 #include <Math/Quaternion.h>
 
 ///=====================================================/// 
-/// Thrust
-/// 突き攻撃
+/// Rotate
+/// （回転）攻撃コンポーネント
 ///=====================================================///
-class BossAttackThrustComponent {
-public:
+class BossAttackRotateComponent {
+private:
 	/// ===フェーズ定義=== ///
-	enum class ThrustPhase {
+	enum class RotatePhase {
 		Idle,       // 非アクティブ（待機）
 		WindUp,     // 予備動作（体をひねってタメる）
 		Strike,     // 攻撃（切り返して武器を突き出す）
@@ -19,12 +19,12 @@ public:
 	};
 
 	/// ====状態の構造体== ///
-	struct ThrustState {
+	struct RotateState {
 		float phaseTimer = 0.0f;   // 現フェーズの経過時間
 	};
 public:
 	/// ===設定パラメータの構造体=== ///
-	struct ThrustConfig {
+	struct RotateConfig {
 		// --- WindUp（予備動作）---
 		float windUpAngle = 30.0f;  // タメ時にY軸回転させる角度（度）
 		float windUpDuration = 0.25f;  // タメにかける時間（秒）
@@ -61,16 +61,16 @@ public:
 
 public:
 
-	BossAttackThrustComponent() = default;
-	~BossAttackThrustComponent() = default;
+	BossAttackRotateComponent() = default;
+	~BossAttackRotateComponent() = default;
 
-	BossAttackThrustComponent(const BossAttackThrustComponent&) = delete;
-	BossAttackThrustComponent& operator=(const BossAttackThrustComponent&) = delete;
+	BossAttackRotateComponent(const BossAttackRotateComponent&) = delete;
+	BossAttackRotateComponent& operator=(const BossAttackRotateComponent&) = delete;
 
 	/// <summary>
 	/// 初期化（コンポーネント生成時に一度だけ呼ぶ）
 	/// </summary>
-	void Initialize(const ThrustConfig& config = ThrustConfig{});
+	void Initialize(const RotateConfig& config = RotateConfig{});
 
 	/// <summary>
 	/// 更新処理。毎フレーム呼び出す。
@@ -93,21 +93,21 @@ public:
 	void StartAttack();
 
 public: /// ===Getter=== ///
-	ThrustPhase GetPhase()  const { return phase_; }
-	bool IsActive()  const { return phase_ != ThrustPhase::Idle && phase_ != ThrustPhase::Finished; }
-	bool IsFinished()const { return phase_ == ThrustPhase::Finished; }
-	const ThrustConfig& GetConfig() const { return config_; }
+	RotatePhase GetPhase()  const { return phase_; }
+	bool IsActive()  const { return phase_ != RotatePhase::Idle && phase_ != RotatePhase::Finished; }
+	bool IsFinished()const { return phase_ == RotatePhase::Finished; }
+	const RotateConfig& GetConfig() const { return config_; }
 
 #ifdef USE_IMGUI
 public: /// ===Setter=== ///
-	void ApplyConfig(const ThrustConfig& newConfig);
+	void ApplyConfig(const RotateConfig& newConfig);
 #endif // USE_IMGUI
 
 private:
 	/// ===情報=== ///
-	ThrustConfig config_{};
-	ThrustState  state_{};
-	ThrustPhase  phase_ = ThrustPhase::Idle;
+	RotateConfig config_{};
+	RotateState  state_{};
+	RotatePhase  phase_ = RotatePhase::Idle;
 
 private:
 

@@ -1,4 +1,4 @@
-#include "BossThrustAttackState.h"
+#include "BossRotateAttackState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
@@ -11,7 +11,7 @@
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Enter(BossEnemy* enemy) {
+void BossRotateAttackState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
@@ -23,14 +23,14 @@ void BossThrustAttackState::Enter(BossEnemy* enemy) {
 ///-------------------------------------------///  
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Update() {
+void BossRotateAttackState::Update() {
 	// コンテキストの準備
-	BossAttackThrustComponent::UpdateContext context{
+	BossAttackRotateComponent::UpdateContext context{
 		.baseRotation = boss_->GetTransform().rotate,
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
-	BossAttackThrustComponent::UpdateResult result = boss_->GetThrustComponent().Update(context);
+	BossAttackRotateComponent::UpdateResult result = boss_->GetThrustComponent().Update(context);
 
 	// 結果の反映
 	boss_->SetRotate(result.modelRotation);
@@ -53,7 +53,7 @@ void BossThrustAttackState::Update() {
 ///-------------------------------------------/// 
 /// 終了時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Finalize() {
+void BossRotateAttackState::Finalize() {
 	// タイマーリセット
 	boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown);
 
