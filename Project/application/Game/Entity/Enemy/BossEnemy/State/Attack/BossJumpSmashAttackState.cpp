@@ -56,8 +56,8 @@ void BossJumpSmashAttackState::Update() {
 		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 1.5f, 0.5f);
 	}
 
+	// 攻撃終了の判定
 	if (result.isFinished) {
-
 		//  BossMoveStateへ遷移
 		boss_->ChangeState(std::make_unique<BossMoveState>());
 		return;
@@ -69,7 +69,7 @@ void BossJumpSmashAttackState::Update() {
 ///-------------------------------------------///
 void BossJumpSmashAttackState::Finalize() {
 	// タイマーリセット
-	boss_->SetJumpSmashTimer(boss_->GetAttackInfo().jumpSmashCooldown);
+	boss_->GetAttackManager().StartJumpSmashCooldown();
 
 	// 武器を無効化
 	boss_->GetWeapon().SetActive(false);
@@ -81,8 +81,6 @@ void BossJumpSmashAttackState::Finalize() {
 /// プレイヤーとボスの距離を計算して返す。
 ///-------------------------------------------///
 float BossJumpSmashAttackState::CalcDistToPlayer() const {
-	const Vector3 diff =
-		boss_->GetPlayer()->GetTransform().translate -
-		boss_->GetTransform().translate;
+	const Vector3 diff = boss_->GetPlayer()->GetTransform().translate - boss_->GetTransform().translate;
 	return Length(diff);
 }

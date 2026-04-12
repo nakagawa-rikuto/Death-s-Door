@@ -16,7 +16,7 @@ void BossRotateAttackState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetThrustComponent().StartAttack();
+	boss_->GetRotateComponent().StartAttack();
 	boss_->GetWeapon().SetActive(true); // 武器を有効化
 }
 
@@ -30,7 +30,7 @@ void BossRotateAttackState::Update() {
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
-	BossAttackRotateComponent::UpdateResult result = boss_->GetThrustComponent().Update(context);
+	BossAttackRotateComponent::UpdateResult result = boss_->GetRotateComponent().Update(context);
 
 	// 結果の反映
 	boss_->SetRotate(result.modelRotation);
@@ -55,7 +55,7 @@ void BossRotateAttackState::Update() {
 ///-------------------------------------------///
 void BossRotateAttackState::Finalize() {
 	// タイマーリセット
-	boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown);
+	boss_->GetAttackManager().StartRotateCooldown();
 
 	// 武器を無効化
 	boss_->GetWeapon().SetActive(false);

@@ -20,10 +20,7 @@ BossEnemy::~BossEnemy() {
 	currentState_.reset();
 	/// ===Componentの解放=== ///
 	moveComponent_.reset();
-	//attackManager_.reset();
-	thrustComponent_.reset();
-	downswingComponent_.reset();
-	jumpSmashComponent_.reset();
+	attackManager_.reset();
 	hitReactionComponent_.reset();
 	/// ===Object3Dの解放=== ///
 	object3d_.reset();
@@ -121,10 +118,7 @@ void BossEnemy::Information() {
 	/// ===MoveComponentの情報表示=== ///
 	moveComponent_->Information();
 	/// ===AttackManagerの情報表示=== ///
-	thrustComponent_->Information();
-	downswingComponent_->Information();
-	jumpSmashComponent_->Information();
-	//attackManager_->Information();
+	attackManager_->Information();
 	/// ===HitReactionComponentの情報表示=== ///
 	hitReactionComponent_->Information();
 	ImGui::End();
@@ -187,19 +181,19 @@ void BossEnemy::ChangeState(std::unique_ptr<BossState> nextState) {
 ///-------------------------------------------///
 void BossEnemy::SetComponentConfig() {
 
-	attackInfo_.thrustTimer = 0.0f;
-	attackInfo_.thrustRange = 14.0f;
-	attackInfo_.thrustCooldown = 2.5f;
+	/// ===AttackManagerの生成=== ///
+	attackManager_ = std::make_unique<BossAttackManager>();
+	BossAttackManager::Config attackConfig{};
 
-	attackInfo_.downswingTimer = 0.0f;
-	attackInfo_.downswingRange = 20.0f;
-	attackInfo_.downswingCooldown = 4.0f;
+	attackConfig.rotateRange = 14.0f;
+	attackConfig.rotateCooldown = 2.5f;
 
-	attackInfo_.jumpSmashCooldown = 8.0f;
-	attackInfo_.jumpSmashTimer = attackInfo_.jumpSmashCooldown;
-	attackInfo_.jumpSmashMinRange = 30.0f;
-	attackInfo_.jumpSmashMaxRange = 50.0f;
-	
+	attackConfig.downswingRange = 20.0f;
+	attackConfig.downswingCooldown = 4.0f;
+
+	attackConfig.jumpSmashCooldown = 8.0f;
+	attackConfig.jumpSmashMinRange = 30.0f;
+	attackConfig.jumpSmashMaxRange = 50.0f;
 
 	/// ===MoveComponentの生成=== ///
 	moveComponent_ = std::make_unique<BossMoveComponent>();
@@ -234,8 +228,7 @@ void BossEnemy::SetComponentConfig() {
 
 	/// ===AttackComponentの生成=== ///
 	// Thrust
-	thrustComponent_ = std::make_unique<BossAttackRotateComponent>();
-	BossAttackRotateComponent::RotateConfig thrustConfig{
+	attackConfig.rotateConfig = BossAttackRotateComponent::RotateConfig{
 		.windUpAngle = 30.0f,
 		.windUpDuration = 0.25f,
 		.strikeAngle = -15.0f,
@@ -245,12 +238,9 @@ void BossEnemy::SetComponentConfig() {
 		.weaponWindUpOffset = { 0.0f,  0.0f, 12.0f },
 		.weaponStrikeOffset = { 0.0f,  0.0f, 12.0f },
 	};
-	// 初期化
-	thrustComponent_->Initialize(thrustConfig);
 
 	// DownSwing
-	downswingComponent_ = std::make_unique<BossAttackDownwardSwingComponent>();
-	BossAttackDownwardSwingComponent::DownwardSwingConfig downswingConfig{
+	attackConfig.downswingConfig = BossAttackDownwardSwingComponent::DownwardSwingConfig{
 		.windUpPitch = -2.0f,
 		.windUpDuration = 1.0f,
 		.strikeForwardPitch = -20.0f,
@@ -260,14 +250,11 @@ void BossEnemy::SetComponentConfig() {
 		.strikeStepForward = 0.1f,
 		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
 	};
-	// 初期化
-	downswingComponent_->Initialize(downswingConfig);
 
 	// JumpSmash
-	jumpSmashComponent_ = std::make_unique<BossAttackJumpSmashComponent>();
-	BossAttackJumpSmashComponent::JumpSmashConfig jumpSmashConfig{
-		.minDistance = attackInfo_.jumpSmashMinRange,
-		.maxDistance = attackInfo_.jumpSmashMaxRange,
+	attackConfig.jumpSmashConfig = BossAttackJumpSmashComponent::JumpSmashConfig{
+		.minDistance = attackConfig.jumpSmashMinRange,
+		.maxDistance = attackConfig.jumpSmashMaxRange,
 		.leapWindUpCrouchPitch = 5.0f,
 		.leapWindUpDuration = 0.1f,
 		.leapDuration = 0.6f,
@@ -280,8 +267,9 @@ void BossEnemy::SetComponentConfig() {
 		.recoveryDuration = 0.45f,
 		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
 	};
-	// 初期化
-	jumpSmashComponent_->Initialize(jumpSmashConfig);
+
+	// AttackManagerの初期化
+	attackManager_->Initialize(attackConfig);
 }
 
 
@@ -291,16 +279,7 @@ void BossEnemy::SetComponentConfig() {
 void BossEnemy::advanceTimer() {
 
 	// 攻撃のクールタイマーを進める
-	if (attackInfo_.thrustTimer > 0.0f) {
-		attackInfo_.thrustTimer -= baseInfo_.deltaTime;
-	}
-	if (attackInfo_.downswingTimer > 0.0f) {
-		attackInfo_.downswingTimer -= baseInfo_.deltaTime;
-	}
-	if (attackInfo_.jumpSmashTimer > 0.0f) {
-		attackInfo_.jumpSmashTimer -= baseInfo_.deltaTime;
-	}
-	
+	attackManager_->UpdateTimers(baseInfo_.deltaTime);
 
 	if (baseInfo_.isDead) {
 		// パーティクルの発生

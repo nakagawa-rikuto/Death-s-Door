@@ -61,7 +61,7 @@ void BossDownwarAttackState::Update() {
 ///-------------------------------------------///
 void BossDownwarAttackState::Finalize() {
 	// タイマーリセット
-	boss_->SetDownSwingTimer(boss_->GetAttackInfo().downswingCooldown);
+	boss_->GetAttackManager().StartDownswingCooldown();
 
 	// 武器を無効化
 	boss_->GetWeapon().SetActive(false);
