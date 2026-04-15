@@ -78,7 +78,10 @@ void BossEnemy::Initialize() {
 ///-------------------------------------------///
 void BossEnemy::Update() {
 	// 死亡している場合は更新しない
-	if (isTentativeDeath_) return;
+	if (baseInfo_.isDead) {
+		DeathUpdate();
+		return;
+	}
 
 	/// ===Timerの更新=== ///
 	advanceTimer();
@@ -281,15 +284,8 @@ void BossEnemy::advanceTimer() {
 	// 攻撃のクールタイマーを進める
 	attackManager_->UpdateTimers(baseInfo_.deltaTime);
 
-	if (baseInfo_.isDead) {
-		// パーティクルの発生
-		deathParticle_ = Service::Particle::Emit("EnemyDeathParticle", transform_.translate);
-		isTentativeDeath_ = true;
-		if (hitParticle_ != nullptr) {
-			hitParticle_->Stop();
-			hitParticle_ = nullptr;
-		}
-	} else {
+	// 死んでなければ
+	if (!baseInfo_.isDead) {
 		// 無敵タイマーを進める
 		if (invincibleInfo_.timer > 0.0f) {
 			invincibleInfo_.timer -= baseInfo_.deltaTime;
@@ -298,5 +294,31 @@ void BossEnemy::advanceTimer() {
 			invincibleInfo_.isInvincible = false;
 			invincibleInfo_.timer = 0.0f;
 		}
+	}
+}
+
+///-------------------------------------------/// 
+///	死亡時の処理
+///-------------------------------------------///
+void BossEnemy::DeathUpdate() {
+
+	if (!isTentativeDeath_) {
+		// ヒットパーティクルを止める
+		if (hitParticle_) {
+			hitParticle_->Stop();
+			hitParticle_ = nullptr;
+		}
+		// パーティクルの発生
+		deathParticle_ = Service::Particle::Emit("EnemyDeathParticle", transform_.translate);
+
+		// フラグを立てる
+		isTentativeDeath_ = true;
+		
+		// 速度を0にする
+		baseInfo_.velocity = {0.0f, 0.0f, 0.0f};
+		// 透明度を下げる
+		color_ = { 1.0f, 1.0f, 1.0f, 0.0f };
+		// コライダーを消す
+		SetColliderActive(false);
 	}
 }

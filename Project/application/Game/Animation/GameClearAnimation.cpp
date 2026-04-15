@@ -1,6 +1,8 @@
 #include "GameClearAnimation.h"
 // Entity
 #include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include "application/Game/Object/GameGround/GroundOcean.h"
 // Camera
 #include "Engine/Camera/FollowCamera.h"
 // Service
@@ -9,7 +11,6 @@
 #include "Math/sMath.h"
 #include "Math/EasingMath.h"
 #include "Math/MatrixMath.h"
-
 
 ///-------------------------------------------/// 
 /// 初期化
@@ -42,28 +43,49 @@ void GameClearAnimation::Initialize(Player* player, MiiEngine::FollowCamera* cam
 	// 終了時の回転も現在の回転を維持
 	cameraInfo_.targetRotation = { 0.0f, -0.98f, 0.2f, 0.0f };
 
-	/// ===ジャンプの初期設定=== ///
-	smallJumpInfo_.timer = 0.0f;
-	smallJumpInfo_.count = 0;
-	smallJumpInfo_.basePlayerPosition = player_->GetTransform().translate;
+	/// ===プレイヤー前進の初期設定=== ///
+	advanceInfo_.timer = 0.0f;
+	{
+		// プレイヤーが向いている方向（Y成分を除いた水平方向）を取得
+		Vector3 forward = cameraInfo_.playerForward;
+		forward.y = 0.0f;
 
-	/// ===最終ジャンプの初期設定=== ///
-	finalJumpInfo_.timer = 0.0f;
+		// 水平成分で正規化
+		float len = sqrtf(forward.x * forward.x + forward.z * forward.z);
+		if (len > 0.0f) {
+			forward.x /= len;
+			forward.z /= len;
+		}
+
+		// プレイヤーの向きにY軸固定オフセット角を加算して前進方向を決定
+		// kDirectionOffsetRad を変えることで方向を調整できる
+		float offsetRad = PlayerAdvanceInfo::kDirectionOffsetRad;
+		float cosA = cosf(offsetRad);
+		float sinA = sinf(offsetRad);
+		advanceInfo_.direction = {
+			forward.x * cosA - forward.z * sinA,  // X成分をY軸回転
+			0.0f,
+			forward.x * sinA + forward.z * cosA   // Z成分をY軸回転
+		};
+	}
+
+	/// ===カメラターゲット用の固定位置を登録=== ///
+	// 初期化時のプレイヤー位置を固定値として保存し、以降カメラはこの位置を追跡する
+	fixedCameraTargetPosition_ = player_->GetTransform().translate;
 
 	/// ===カメラの設定=== ///
-	// カメラ
 	auto followCamera = dynamic_cast<MiiEngine::FollowCamera*>(camera_);
 	// 回転可能型に設定
 	followCamera->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
-	// カメラのターゲットを設定
-	followCamera->SetTarget(&smallJumpInfo_.basePlayerPosition, &playerRotation);
+	// カメラのターゲットを固定位置に設定（プレイヤーではなく固定値のアドレスを渡す）
+	followCamera->SetTarget(&fixedCameraTargetPosition_, &playerRotation);
 	// 初期オフセットを設定
 	followCamera->SetOrbitingOffset(startOffset);
 
 	/// ===Playerの設定=== ///
-	player_->SetGravity(-9.8f); 
+	player_->SetGravity(-9.8f);
 	// 初期速度をリセット
-	player_->SetVelocity({ 0.0f, 0.0f, 0.0f }); 
+	player_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 
 	/// ===初期フェーズを設定=== ///
 	currentPhase_ = ClearAnimationPhase::CameraRotation;
@@ -81,8 +103,8 @@ void GameClearAnimation::Update() {
 	case ClearAnimationPhase::CameraRotation:
 		UpdateCameraRotation();
 		break;
-	case ClearAnimationPhase::FinalJump:
-		UpdateFinalJump();
+	case ClearAnimationPhase::PlayerAdvance:
+		UpdatePlayerAdvance();
 		break;
 	case ClearAnimationPhase::Completed:
 		// 完了後は何もしない
@@ -98,7 +120,7 @@ void GameClearAnimation::Draw() {}
 ///-------------------------------------------/// 
 /// 完了フラグの取得
 ///-------------------------------------------///
-bool GameClearAnimation::IsCompleted() const {return currentPhase_ == ClearAnimationPhase::Completed;}
+bool GameClearAnimation::IsCompleted() const { return currentPhase_ == ClearAnimationPhase::Completed; }
 
 ///-------------------------------------------/// 
 /// カメラ回転フェーズの更新
@@ -136,62 +158,42 @@ void GameClearAnimation::UpdateCameraRotation() {
 	Quaternion currentRotation = Math::SLerp(cameraInfo_.startRotation, cameraInfo_.targetRotation, easedT);
 	camera_->SetRotate(currentRotation);
 
-	// プレイヤーの小ジャンプ更新
-	//UpdatePlayerSmallJump();
-
-	// 回転完了で最終ジャンプフェーズへ
+	// 回転完了でプレイヤー前進フェーズへ
 	if (cameraInfo_.timer >= cameraInfo_.duration) {
-		currentPhase_ = ClearAnimationPhase::FinalJump;
-		finalJumpInfo_.timer = 0.0f;
+		currentPhase_ = ClearAnimationPhase::PlayerAdvance;
+		advanceInfo_.timer = 0.0f;
+		// 前進開始時にプレイヤーの重力を無効化
+		player_->SetGravity(0.0f);
+		player_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	}
 }
 
 ///-------------------------------------------/// 
-/// プレイヤーの小ジャンプ処理
+/// プレイヤー前進フェーズの更新
 ///-------------------------------------------///
-void GameClearAnimation::UpdatePlayerSmallJump() {
-	// ジャンプタイマーを進める
-	smallJumpInfo_.timer += deltaTime_;
-
-	// ジャンプ間隔ごとに新しいジャンプ開始
-	if (smallJumpInfo_.timer >= smallJumpInfo_.interval) {
-		smallJumpInfo_.timer = 0.0f;
-		smallJumpInfo_.count++;
-	}
-
-	// 現在のジャンプ進行度を計算
-	float localT = smallJumpInfo_.timer / smallJumpInfo_.interval;
-	localT = (std::min)(localT, 1.0f);
-
-	// 放物線を描くジャンプ
-	float jumpProgress = -1.0f * smallJumpInfo_.height * (localT - 0.5f) * (localT - 0.5f) + smallJumpInfo_.height;
-
-	// プレイヤーのVelocityを更新
-	Vector3 playerCurrentVelocity = player_->GetVelocity();
-	playerCurrentVelocity.y += jumpProgress * deltaTime_;
-	player_->SetVelocity(playerCurrentVelocity);
-}
-
-///-------------------------------------------/// 
-/// 最終ジャンプフェーズの更新
-///-------------------------------------------///
-void GameClearAnimation::UpdateFinalJump() {
+void GameClearAnimation::UpdatePlayerAdvance() {
 	// タイマーを進める
-	finalJumpInfo_.timer += deltaTime_;
+	advanceInfo_.timer += deltaTime_;
 
 	// 進行度を計算(0.0 ~ 1.0)
-	float t = finalJumpInfo_.timer / finalJumpInfo_.duration;
+	float t = advanceInfo_.timer / advanceInfo_.duration;
 
 	if (t <= 1.0f) {
-		// 大きな放物線を描くジャンプ
-		float jumpProgress = -4.0f * finalJumpInfo_.height * (t - 0.5f) * (t - 0.5f) + finalJumpInfo_.height;
+		// EaseInOutで滑らかに加減速
+		float easedT = Easing::EaseInOutCubic(t);
 
-		// プレイヤーのVelocityを更新
-		Vector3 playerCurrentVelocity = player_->GetVelocity();
-		playerCurrentVelocity.y += jumpProgress * deltaTime_;
-		player_->SetVelocity(playerCurrentVelocity);
+		// 速度にイージングを適用
+		float speedScale = sinf(easedT * Math::Pi());
+		Vector3 velocity = {
+			advanceInfo_.direction.x * advanceInfo_.speed * speedScale,
+			0.0f,
+			advanceInfo_.direction.z * advanceInfo_.speed * speedScale
+		};
+		player_->SetVelocity(velocity);
+		player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 0.5f, 0.01f);
 	} else {
-		// ジャンプ完了
+		// 前進完了：速度を止めてアニメーション終了
+		player_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 		currentPhase_ = ClearAnimationPhase::Completed;
 	}
 }

@@ -109,5 +109,10 @@ private:
 	/// タイマーを進める
 	/// </summary>
 	void advanceTimer();
+
+	/// <summary>
+	/// 死亡時の処理
+	/// </summary>
+	void DeathUpdate();
 };
 
