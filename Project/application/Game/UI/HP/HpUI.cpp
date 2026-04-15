@@ -83,31 +83,39 @@ void HpUI::Update(float deltaTime, float currentHP) {
 	/// ===ダメージ検出=== ///
 	// 前フレームよりHPが下がっていればダメージとみなす
 	if (ratio < previousHP_) {
-		// 赤バーはダメージ前の値のまま保持し、タイマーをリセット
-		damageHP_ = previousHP_;
+		// 赤バーは現在表示されている緑バー（displayHP_）の位置で保持し、タイマーをリセット
+		if (!isDamageVisible_) {
+			damageHP_ = displayHP_;
+		}
 		damageTimer_ = 0.0f;
 		isDamageVisible_ = true;
 	}
 	previousHP_ = ratio;
 
-	/// ===現在HPを即時反映=== ///
-	displayHP_ = ratio;
+	/// ===現在HPをイージングでスムーズに反映=== ///
+	float easeT = easingSpeed_ * deltaTime;
+	if (easeT > 1.0f) { easeT = 1.0f; }
+	displayHP_ += (ratio - displayHP_) * easeT;
 
 	/// ===ダメージ遅延処理=== ///
 	if (isDamageVisible_) {
 		damageTimer_ += deltaTime;
 
 		if (damageTimer_ >= damageDelay_) {
-			// 待機時間が終わったら赤バーを現在HPまで一気に減らす
-			damageHP_ -= damageDecreaseSpeed_ * deltaTime;
-			damageHP_ = (std::max)(damageHP_, displayHP_);
+			// 一定時間が経つと赤バーがイージングで速く緑バーに追いつく
+			float redEaseT = redEasingSpeed_ * deltaTime;
+			if (redEaseT > 1.0f) { redEaseT = 1.0f; }
+			damageHP_ += (displayHP_ - damageHP_) * redEaseT;
 
-			// 現在HPに追いついたら非表示にする
-			if (damageHP_ <= displayHP_ + 0.001f) {
+			// 十分に近づいたら完全に合わせて非表示にする
+			if (damageHP_ - displayHP_ <= 0.001f) {
 				damageHP_ = displayHP_;
 				isDamageVisible_ = false;
 			}
 		}
+	} else {
+		// ダメージ非表示時は赤バーも緑バーに追従させる
+		damageHP_ = displayHP_;
 	}
 
 	/// ===スプライトへ反映=== ///

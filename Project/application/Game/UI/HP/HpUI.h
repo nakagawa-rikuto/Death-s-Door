@@ -52,7 +52,8 @@ private:
 	/// ===ダメージ遅延アニメーション=== ///
 	float damageTimer_ = 0.0f;					// ダメージ後の経過時間
 	float damageDelay_ = 1.2f;					// 赤バーが消え始めるまでの待機時間（秒）
-	float damageDecreaseSpeed_ = 3.0f;			// 赤バーの減少速度（割合 / 秒）
+	float easingSpeed_ = 5.0f;					// 緑バーの減少速度（イージング）
+	float redEasingSpeed_ = 15.0f;				// 赤バーの減少速度（イージング、速め）
 	bool isDamageVisible_ = false;				// 赤バー表示中かどうか
 
 	/// ===スケール=== ///
