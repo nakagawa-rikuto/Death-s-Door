@@ -11,7 +11,7 @@ namespace MiiEngine {
 /// ===アニメーションフェーズ=== ///
 enum class ClearAnimationPhase {
 	CameraRotation,  // カメラ回転フェーズ
-	FinalJump,       // 最終ジャンプフェーズ
+	PlayerAdvance,   // プレイヤー前進フェーズ
 	Completed        // 完了
 };
 
@@ -48,7 +48,7 @@ public:
 
 private:
 	/// ===メンバ変数=== ///
-	Player* player_ = nullptr;      // プレイヤーへの参照
+	Player* player_ = nullptr;                   // プレイヤーへの参照
 	MiiEngine::FollowCamera* camera_ = nullptr;  // カメラへの参照
 
 	// 現在のフェーズ
@@ -68,23 +68,18 @@ private:
 	};
 	CameraRotationInfo cameraInfo_;
 
-	/// ===プレイヤージャンプ用=== ///
-	struct PlayerSmallJumpInfo {
-		float timer = 0.0f;           // ジャンプタイマー
-		float interval = 0.5f;        // ジャンプの間隔
-		Vector3 basePlayerPosition;   // プレイヤーの基準位置
-		float height = 2.0f;          // 小ジャンプの高さ
-		int count = 0;                // ジャンプ回数
+	/// ===プレイヤー前進用=== ///
+	struct PlayerAdvanceInfo {
+		float timer = 0.0f;                          // 前進タイマー
+		float duration = 1.5f;                       // 前進時間
+		float speed = 5.0f;                          // 前進速度
+		Vector3 direction;                           // 前進方向（プレイヤーの向き＋固定オフセット）
+		static constexpr float kDirectionOffsetRad = 0.0f; // プレイヤー回転に加算する固定オフセット角度（ラジアン）
 	};
-	PlayerSmallJumpInfo smallJumpInfo_;
+	PlayerAdvanceInfo advanceInfo_;
 
-	/// ===最終ジャンプ用=== ///
-	struct FinalJumpInfo {
-		float timer = 0.0f;      // 最終ジャンプタイマー
-		float duration = 1.0f;   // 最終ジャンプ時間
-		float height = 7.0f;     // 最終ジャンプの高さ
-	};
-	FinalJumpInfo finalJumpInfo_;
+	// カメラターゲット用の固定位置（初期化時に登録し、以降変更しない）
+	Vector3 fixedCameraTargetPosition_;
 
 	float deltaTime_ = 0.0f; // deltaTime
 
@@ -95,12 +90,7 @@ private:
 	void UpdateCameraRotation();
 
 	/// <summary>
-	/// 最終ジャンプフェーズの更新
+	/// プレイヤー前進フェーズの更新
 	/// </summary>
-	void UpdateFinalJump();
-
-	/// <summary>
-	/// プレイヤーの小ジャンプ処理
-	/// </summary>
-	void UpdatePlayerSmallJump();
+	void UpdatePlayerAdvance();
 };

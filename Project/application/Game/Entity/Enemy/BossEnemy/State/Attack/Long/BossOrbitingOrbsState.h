@@ -3,12 +3,11 @@
 #include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
 
 ///=====================================================/// 
-/// ThrustAttackState
-/// 突き攻撃の状態を表すクラス
+/// BossOrbitingOrbsState
 ///=====================================================///
-class BossThrustAttackState : public BossState {
+class BossOrbitingOrbsState : public BossState  {
 public:
-	~BossThrustAttackState() override = default;
+	~BossOrbitingOrbsState() override = default;
 
 	/// <summary>
 	/// 初期化処理
@@ -25,5 +24,12 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
+
+private:
+	// 弱い参照でBossEnemyを持つ
+	BossEnemy* boss_;
+
+	bool hasOrbited_ = false;
+
 };
 

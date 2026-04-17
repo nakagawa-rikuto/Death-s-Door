@@ -1,4 +1,4 @@
-#include "BossThrustAttackState.h"
+#include "BossDownwarAttackState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
@@ -11,36 +11,42 @@
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Enter(BossEnemy* enemy) {
+void BossDownwarAttackState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetThrustComponent().StartAttack();
-	boss_->GetWeapon().SetActive(true); // 武器を有効化
+	boss_->GetDownswingComponent().StartAttack(boss_->GetTransform().rotate);
+	// 武器を有効化
+	boss_->GetWeapon().SetActive(true); 
 }
 
 ///-------------------------------------------///  
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Update() {
+void BossDownwarAttackState::Update() {
 	// コンテキストの準備
-	BossAttackThrustComponent::UpdateContext context{
-		.baseRotation = boss_->GetTransform().rotate,
+	BossAttackDownwardSwingComponent::UpdateContext context{
+		.currentRotation = boss_->GetTransform().rotate,
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
-	BossAttackThrustComponent::UpdateResult result = boss_->GetThrustComponent().Update(context);
+	BossAttackDownwardSwingComponent::UpdateResult result = boss_->GetDownswingComponent().Update(context);
 
-	// 結果の反映
-	boss_->SetRotate(result.modelRotation);
+	/// ===結果の反映=== ///
+	// 速度の反映
+	boss_->SetVelocity(result.velocity);
+
+	// 回転の反映
+	boss_->SetRotate(result.rotation);
 
 	// 武器のオフセットを反映
-	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
+	boss_->GetWeapon().SetTranslate(result.weaponPosition);
 
 	// 波紋を生成するタイミングの判定
-	if (result.isAttacking) {
-		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 0.1f);
+	if (result.onStrike) {
+		// 波紋を生成するタイミングの判定
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 30.0f);
 	}
 
 	if (result.isFinished) {
@@ -53,9 +59,9 @@ void BossThrustAttackState::Update() {
 ///-------------------------------------------/// 
 /// 終了時に呼び出す
 ///-------------------------------------------///
-void BossThrustAttackState::Finalize() {
+void BossDownwarAttackState::Finalize() {
 	// タイマーリセット
-	boss_->SetThrustTimer(boss_->GetAttackInfo().thrustCooldown);
+	boss_->GetAttackManager().StartDownswingCooldown();
 
 	// 武器を無効化
 	boss_->GetWeapon().SetActive(false);

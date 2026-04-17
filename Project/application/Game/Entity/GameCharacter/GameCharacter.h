@@ -65,6 +65,8 @@ public: /// ===Getter=== ///
     uint32_t GetHP() const { return baseInfo_.HP; }
     // GroundOcean
     GroundOcean* GetGroundOcean() const { return groundOcean_; }
+    // GroundInfo
+	float GetGroundYPos() const { return groundInfo_.currentGroundYPos; }
    
 public: /// ===Setter=== ///
     // Velocity

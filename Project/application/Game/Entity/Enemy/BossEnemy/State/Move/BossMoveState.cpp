@@ -6,9 +6,9 @@
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossThrustAttackState.h>
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDownwarAttackState.h>
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossJumpSmashAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossRotateAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossDownwarAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossJumpSmashAttackState.h>
 #include "BossTeleportState.h"
 
 ///-------------------------------------------/// 
@@ -29,20 +29,20 @@ void BossMoveState::Update() {
 
 	/// ===Stateの変更=== ///
 	// 突き攻撃への遷移条件
-	if (dist <= boss_->GetAttackInfo().thrustRange && boss_->GetAttackInfo().thrustTimer <= 0.0f) {
+	if (boss_->GetAttackManager().CanRotate(dist)) {
 		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossThrustAttackState>());
+		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
 		return;
 		// Downswing攻撃への遷移条件
-	} else if (dist <= boss_->GetAttackInfo().downswingRange && boss_->GetAttackInfo().downswingTimer <= 0.0f) {
-		// 突き攻撃へ遷移
+	} else if (boss_->GetAttackManager().CanDownswing(dist)) {
+		// Downswing攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
 		return;
 		// JumpSmash攻撃への遷移条件
-	} else if (boss_->GetAttackInfo().jumpSmashMinRange <= dist && dist <= boss_->GetAttackInfo().jumpSmashMaxRange && boss_->GetAttackInfo().jumpSmashTimer <= 0.0f) {
-		float minRange = boss_->GetAttackInfo().jumpSmashMinRange;
-		float maxRange = boss_->GetAttackInfo().jumpSmashMaxRange;
-		// 突き攻撃へ遷移
+	} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
+		float minRange = boss_->GetAttackManager().GetConfig().jumpSmashMinRange;
+		float maxRange = boss_->GetAttackManager().GetConfig().jumpSmashMaxRange;
+		// テレポートへ遷移
 		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
 		return;
 	}
