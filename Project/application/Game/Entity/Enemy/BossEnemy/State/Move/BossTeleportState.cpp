@@ -6,7 +6,7 @@
 // Service
 #include <Service/Particle.h>
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossJumpSmashAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossJumpSmashAttackState.h>
 
 ///-------------------------------------------/// 
 /// コンストラクタ

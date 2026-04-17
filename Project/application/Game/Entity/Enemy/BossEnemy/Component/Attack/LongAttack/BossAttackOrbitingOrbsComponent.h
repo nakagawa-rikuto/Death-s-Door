@@ -38,15 +38,13 @@ public:
         float lifetime = 5.0f;   // 公転を続ける時間（秒）
 
         // --- 弾の初期位相オフセット ---
-        // 弾 i の初期角度 = initialPhaseOffsetDeg * i
-        // デフォルト 120° → 3発が等間隔
         float initialPhaseOffsetDeg = 120.0f;
     };
 
     /// ===更新コンテキスト（毎フレーム渡す）=== ///
     struct UpdateContext {
-        Vector3   bossPosition{};  // ボスのワールド座標（公転中心）
-        float     deltaTime = 0.0f;
+        Vector3 bossPosition{};  // ボスのワールド座標（公転中心）
+        float deltaTime = 0.0f;
     };
 
     /// ===1発分の弾情報=== ///

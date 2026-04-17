@@ -6,9 +6,9 @@
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossRotateAttackState.h>
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossDownwarAttackState.h>
-#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/BossJumpSmashAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossRotateAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossDownwarAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossJumpSmashAttackState.h>
 #include "BossTeleportState.h"
 
 ///-------------------------------------------/// 

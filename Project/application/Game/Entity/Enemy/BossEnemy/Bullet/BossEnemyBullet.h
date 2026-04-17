@@ -60,6 +60,8 @@ public: /// ===Getter=== ///
 public: /// ===Setter=== ///
 	// 方向ベクトルの設定
 	void SetVelocity(const Vector3& velocity) { info_.velocity = velocity; };
+	// 生存フラグの設定
+	void SetAlive(bool isAlive) { info_.isAlive = isAlive; };
 
 private: /// ===変数=== ///
 

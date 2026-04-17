@@ -11,6 +11,8 @@
 #include "Component/Move/BossTeleportComponent.h"
 #include "Component/Attack/BossAttackManager.h"
 #include "Component/HitReaction/BossHitReactionComponent.h"
+// C++
+#include <vector>
 
 
 ///=====================================================/// 
@@ -77,6 +79,8 @@ public: /// ===Getter=== ///
 	BossAttackRotateComponent& GetRotateComponent() const { return attackManager_->GetRotateComponent(); }
 	BossAttackDownwardSwingComponent& GetDownswingComponent() const { return attackManager_->GetDownswingComponent(); }
 	BossAttackJumpSmashComponent& GetJumpSmashComponent() const { return attackManager_->GetJumpSmashComponent(); }
+	BossAttackOrbitingOrbsComponent& GetOrbitingOrbsComponent() const { return attackManager_->GetOrbitingOrbsComponent(); }
+	BossAttackParabolicShotComponent& GetParabolicShotComponent() const { return attackManager_->GetParabolicShotComponent(); }
 	BossAttackManager& GetAttackManager() const { return *attackManager_; }
 
 	BossHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; }

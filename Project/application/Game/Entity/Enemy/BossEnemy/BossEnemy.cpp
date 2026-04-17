@@ -22,6 +22,8 @@ BossEnemy::~BossEnemy() {
 	moveComponent_.reset();
 	attackManager_.reset();
 	hitReactionComponent_.reset();
+	/// ==Weapon==== ///
+	weapon_.reset();
 	/// ===Object3Dの解放=== ///
 	object3d_.reset();
 }
@@ -65,7 +67,7 @@ void BossEnemy::Initialize() {
 	weapon_ = std::make_unique<BossWeapon>();
 	weapon_->Initialize();
 	weapon_->SetUpParent(this);
-	
+
 	// 無敵時間
 	invincibleInfo_.time = 0.5f;
 
@@ -85,6 +87,9 @@ void BossEnemy::Update() {
 
 	/// ===Timerの更新=== ///
 	advanceTimer();
+
+	/// ===AttackManagerの更新=== ///
+	//attackManager_->Update(transform_.translate, baseInfo_.deltaTime);
 
 	/// ===Stateの更新=== ///
 	if (currentState_) {
@@ -184,20 +189,6 @@ void BossEnemy::ChangeState(std::unique_ptr<BossState> nextState) {
 ///-------------------------------------------///
 void BossEnemy::SetComponentConfig() {
 
-	/// ===AttackManagerの生成=== ///
-	attackManager_ = std::make_unique<BossAttackManager>();
-	BossAttackManager::Config attackConfig{};
-
-	attackConfig.rotateRange = 14.0f;
-	attackConfig.rotateCooldown = 2.5f;
-
-	attackConfig.downswingRange = 20.0f;
-	attackConfig.downswingCooldown = 4.0f;
-
-	attackConfig.jumpSmashCooldown = 8.0f;
-	attackConfig.jumpSmashMinRange = 30.0f;
-	attackConfig.jumpSmashMaxRange = 50.0f;
-
 	/// ===MoveComponentの生成=== ///
 	moveComponent_ = std::make_unique<BossMoveComponent>();
 	BossMoveComponent::MoveConfig moveConfig{
@@ -215,6 +206,8 @@ void BossEnemy::SetComponentConfig() {
 		.warpDuration = 0.4f,
 		.spinInDuration = 0.6f,
 	};
+	// 初期化
+	teleportComponent_->Initialize(teleportConfig);
 
 	/// ===HitReactionComponentの生成=== ///
 	hitReactionComponent_ = std::make_unique<BossHitReactionComponent>();
@@ -229,8 +222,28 @@ void BossEnemy::SetComponentConfig() {
 	// 初期化
 	hitReactionComponent_->Initialize(hitReactionConfig);
 
+	/// ===AttackManagerの生成=== ///
+	attackManager_ = std::make_unique<BossAttackManager>();
+	BossAttackManager::Config attackConfig{};
+	// Rotate
+	attackConfig.rotateRange = 14.0f;
+	attackConfig.rotateCooldown = 2.5f;
+	// DownSwing
+	attackConfig.downswingRange = 20.0f;
+	attackConfig.downswingCooldown = 4.0f;
+	// JumpSmash
+	attackConfig.jumpSmashCooldown = 8.0f;
+	attackConfig.jumpSmashMinRange = 30.0f;
+	attackConfig.jumpSmashMaxRange = 50.0f;
+	// OrbitingOrbs
+	attackConfig.orbitingOrbsRange = 40.0f;
+	attackConfig.orbitingOrbsCooldown = 6.0f;
+	// ParabolicShot
+	attackConfig.parabolicShotRange = 35.0f;
+	attackConfig.parabolicShotCooldown = 5.0f;
+
 	/// ===AttackComponentの生成=== ///
-	// Thrust
+	// Rotate
 	attackConfig.rotateConfig = BossAttackRotateComponent::RotateConfig{
 		.windUpAngle = 30.0f,
 		.windUpDuration = 0.25f,
@@ -271,6 +284,24 @@ void BossEnemy::SetComponentConfig() {
 		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
 	};
 
+	// OrbitingOrbs
+	attackConfig.orbitingOrbsConfig = BossAttackOrbitingOrbsComponent::OrbitConfig{
+		.orbitRadius = 3.0f,
+		.orbitSpeedDeg = 120.0f,
+		.orbitHeight = 0.0f,
+		.lifetime = 5.0f,
+		.initialPhaseOffsetDeg = 120.0f,
+	};
+
+	// ParabolicShot
+	attackConfig.parabolicShotConfig = BossAttackParabolicShotComponent::ParabolicConfig{
+		.launchAngleDeg = 45.0f,
+		.gravity = 9.8f,
+		.lifetime = 5.0f,
+		.enableGroundHit = true,
+		.maxHorizontalSpeed = 30.0f,
+	};
+
 	// AttackManagerの初期化
 	attackManager_->Initialize(attackConfig);
 }
@@ -280,9 +311,6 @@ void BossEnemy::SetComponentConfig() {
 /// 時間を進める
 ///-------------------------------------------///
 void BossEnemy::advanceTimer() {
-
-	// 攻撃のクールタイマーを進める
-	attackManager_->UpdateTimers(baseInfo_.deltaTime);
 
 	// 死んでなければ
 	if (!baseInfo_.isDead) {

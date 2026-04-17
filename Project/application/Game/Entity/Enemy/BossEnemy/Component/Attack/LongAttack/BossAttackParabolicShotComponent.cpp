@@ -52,7 +52,7 @@ BossAttackParabolicShotComponent::UpdateResult BossAttackParabolicShotComponent:
     // 着弾判定（地面 Y 以下）
     // -----------------------------------------------
     const bool hitGround = config_.enableGroundHit &&
-        (context.bulletPosition.y <= config_.groundY) &&
+        (context.bulletPosition.y <= state_.groundY) &&
         (state_.velocity.y < 0.0f); // 下降中のみ
 
     // -----------------------------------------------
@@ -97,7 +97,7 @@ void BossAttackParabolicShotComponent::Information() {
         ImGui::DragFloat("水平速度上限", &config_.maxHorizontalSpeed, 0.5f, 1.0f, 100.0f);
         ImGui::Checkbox("地面着弾判定を有効化", &config_.enableGroundHit);
         if (config_.enableGroundHit) {
-            ImGui::DragFloat("地面 Y 座標", &config_.groundY, 0.1f, -50.0f, 50.0f);
+            ImGui::DragFloat("地面 Y 座標", &state_.groundY, 0.1f, -50.0f, 50.0f);
         }
 
         ImGui::TreePop();
@@ -116,7 +116,7 @@ void BossAttackParabolicShotComponent::StartAttack(const Vector3 & bossPosition,
     // 初速計算
     state_.velocity = CalcInitialVelocity(bossPosition, targetPosition);
     initialSpeed_ = Length(state_.velocity);
-	config_.groundY = groundPosY;
+	state_.groundY = groundPosY;
 
     // 生存タイマーセット
     state_.lifeTimer = config_.lifetime;

@@ -22,6 +22,7 @@ private:
 	struct ParabolicState {
 		Vector3 velocity{};		// 現在の速度ベクトル
 		float lifeTimer = 0.0f; // 生存時間タイマー
+		float groundY = 0.0f;   // 地面のY座標
 	};
 
 public:
@@ -34,23 +35,21 @@ public:
 		float lifetime = 5.0f;   // 弾の最大生存時間（秒）
 
 		// --- 着弾判定 ---
-		// 弾がターゲットの高さ（Y座標）を下回ったら着弾とみなす
-		bool  enableGroundHit = true;   // 地面（Y<=groundY）で Finished にする
-		float groundY = 0.0f;   // 地面のY座標
+		bool  enableGroundHit = true;   // 地面
 
 		// --- 水平速度の上限 ---
-		float maxHorizontalSpeed = 20.0f; // 水平初速の上限（Units/秒）
+		float maxHorizontalSpeed = 20.0f; // 水平初速の上限
 	};
 
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
-		Vector3 bulletPosition{}; // 現在の弾のワールド座標（BossEnemyBullet から取得）
+		Vector3 bulletPosition{}; // 現在の弾のワールド座標
 		float deltaTime = 0.0f;
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
-		Vector3 velocity{};      // 正規化された移動方向 → SetDirection() へ渡す
+		Vector3 velocity{};      // 正規化された移動方向 
 		bool isFlying = false;
 		bool isFinished = false;
 	};
