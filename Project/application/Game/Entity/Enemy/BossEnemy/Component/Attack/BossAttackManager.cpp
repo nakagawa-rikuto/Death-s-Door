@@ -49,9 +49,11 @@ void BossAttackManager::Initialize(const Config& config) {
 	// OrbitingBulletの生成
 	for (auto& b : orbitingBullets_) {
 		b = std::make_unique<BossEnemyBullet>();
+		b->Initialize();
 	}
 	// ParabolicBulletの生成
 	parabolicShotBullet_ = std::make_unique<BossEnemyBullet>();
+	parabolicShotBullet_->Initialize();
 }
 
 ///-------------------------------------------/// 
@@ -101,8 +103,14 @@ void BossAttackManager::Update(const Vector3& bossPosition, float deltaTime) {
 	}
 
 	/// ===弾の更新=== ///
-	for (auto& b : orbitingBullets_) { if (b) b->Update(); }
-	if (parabolicShotBullet_) parabolicShotBullet_->Update();
+	for (auto& b : orbitingBullets_) { 
+		if (b && b->GetIsAlive()) {
+			b->Update(); 
+		}
+	}
+	if (parabolicShotBullet_ && parabolicShotBullet_->GetIsAlive()) {
+		parabolicShotBullet_->Update();
+	}
 }
 
 

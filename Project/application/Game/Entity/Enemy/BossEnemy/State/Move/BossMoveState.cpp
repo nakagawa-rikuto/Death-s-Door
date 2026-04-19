@@ -9,6 +9,8 @@
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossRotateAttackState.h>
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossDownwarAttackState.h>
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossJumpSmashAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Long/BossOrbitingOrbsState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Long/BossParabolicShotState.h>
 #include "BossTeleportState.h"
 
 ///-------------------------------------------/// 
@@ -28,22 +30,7 @@ void BossMoveState::Update() {
 	const float dist = CalcDistToPlayer();
 
 	/// ===Stateの変更=== ///
-	// 突き攻撃への遷移条件
-	if (boss_->GetAttackManager().CanRotate(dist)) {
-		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
-		return;
-		// Downswing攻撃への遷移条件
-	} else if (boss_->GetAttackManager().CanDownswing(dist)) {
-		// Downswing攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-		return;
-		// JumpSmash攻撃への遷移条件
-	} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
-		float minRange = boss_->GetAttackManager().GetConfig().jumpSmashMinRange;
-		float maxRange = boss_->GetAttackManager().GetConfig().jumpSmashMaxRange;
-		// テレポートへ遷移
-		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
+	if (ChangeStateIfNeeded(dist)) {
 		return;
 	}
 
@@ -83,4 +70,41 @@ float BossMoveState::CalcDistToPlayer() const {
 		boss_->GetPlayer()->GetTransform().translate -
 		boss_->GetTransform().translate;
 	return Length(diff);
+}
+
+///-------------------------------------------/// 
+/// Stateの変更が必要か判定して、必要なら変更する。
+///-------------------------------------------///
+bool BossMoveState::ChangeStateIfNeeded(float dist) {
+
+	// 突き攻撃への遷移条件
+	if (boss_->GetAttackManager().CanRotate(dist)) {
+		// 突き攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
+		return true;
+		// Downswing攻撃への遷移条件
+	} else if (boss_->GetAttackManager().CanDownswing(dist)) {
+		// Downswing攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+		return true;
+		// OrbitingOrbs攻撃への遷移条件
+
+	} else if (boss_->GetAttackManager().CanOrbitIngOrbs(dist)) {
+		// OrbitingOrbs攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
+		return true;
+	} else if (boss_->GetAttackManager().CanParabolicShot(dist)) {
+		// ParabolicShot攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+		return true;
+	} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
+		// JumpSmash攻撃への遷移条件
+		float minRange = boss_->GetAttackManager().GetConfig().jumpSmashMinRange;
+		float maxRange = boss_->GetAttackManager().GetConfig().jumpSmashMaxRange;
+		// テレポートへ遷移
+		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
+		return true;
+	}
+
+	return false;
 }

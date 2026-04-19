@@ -89,7 +89,7 @@ void BossEnemy::Update() {
 	advanceTimer();
 
 	/// ===AttackManagerの更新=== ///
-	//attackManager_->Update(transform_.translate, baseInfo_.deltaTime);
+	attackManager_->Update(transform_.translate, baseInfo_.deltaTime);
 
 	/// ===Stateの更新=== ///
 	if (currentState_) {

@@ -70,7 +70,7 @@ private: /// ===変数=== ///
 		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // ベクトル
 
 		float lifeTime = 3.0f; // 生存時間
-		bool isAlive = true; // 生存フラグ
+		bool isAlive = false; // 生存フラグ
 	};
 	BaseInfo info_;
 
