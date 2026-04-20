@@ -45,7 +45,7 @@ public:
 public:
 
 	BossAttackManager() = default;
-	~BossAttackManager() = default;
+	~BossAttackManager();
 
 	BossAttackManager(const BossAttackManager&) = delete;
 	BossAttackManager& operator=(const BossAttackManager&) = delete;
@@ -58,7 +58,7 @@ public:
 	/// <summary>
 	/// 更新処理
 	/// </summary>
-	void Update(const Vector3& bossPosition, float deltaTime);
+	void Update(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime);
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -81,7 +81,7 @@ public: /// ===攻撃の開始=== ///
 	// OrbitingOrbs
 	void StartOrbitingOrbs(const Vector3& bossPos);
 	// ParabolicShot
-	void StartParabolicShot(const Vector3& bossPos, const Vector3& playerPos, float groundY);
+	void StartParabolicShot(const Vector3& bossPos, float groundY);
 
 public: /// ===クールダウン設定=== ///
 
@@ -93,12 +93,22 @@ public: /// ===クールダウン設定=== ///
 
 public: /// ===Getter=== ///
 
+	// クールダウンの取得
 	float GetRotateCooldown() const { return cooldowns_.rotate; }
 	float GetDownswingCooldown() const { return cooldowns_.downswing; }
 	float GetJumpSmashCooldown() const { return cooldowns_.jumpSmash; }
 	float GetOrbitingOrbsCooldown() const { return cooldowns_.orbitingOrbs; }
 	float GetParabolicShotCooldown() const { return cooldowns_.parabolicShot; }
+	
+	// ParabolicShotの弾の位置を取得
+	Vector3 GetParabolicShotPosition() const { 
+		if (!parabolicShotBullets_.empty()) {
+			return parabolicShotBullets_.back()->GetTransform().translate;
+		}
+		return Vector3{};
+	}
 
+	// Configの取得
 	const Config& GetConfig() const { return config_; }
 
 	// 各コンポーネントへの参照（BossEnemyでImGui表示や各Stateでの使用）
@@ -139,7 +149,7 @@ private:
 	std::array<std::unique_ptr<BossEnemyBullet>, BossAttackOrbitingOrbsComponent::kOrbCount> orbitingBullets_{};
 
 	// 放物線ショットの弾の管理
-	std::unique_ptr<BossEnemyBullet> parabolicShotBullet_{};
+	std::vector<std::unique_ptr<BossEnemyBullet>> parabolicShotBullets_{};
 
 private:
 	/// <summary>

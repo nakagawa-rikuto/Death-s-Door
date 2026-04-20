@@ -3,6 +3,8 @@
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
 // AttackManager
 #include "application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackManager.h"
 // State
@@ -18,7 +20,6 @@ void BossParabolicShotState::Enter(BossEnemy* enemy) {
 	// 攻撃開始
 	boss_->GetAttackManager().StartParabolicShot(
 		boss_->GetTransform().translate,
-		boss_->GetPlayer()->GetTransform().translate,
 		boss_->GetGroundYPos());
 }
 
@@ -26,9 +27,18 @@ void BossParabolicShotState::Enter(BossEnemy* enemy) {
 /// 更新時に呼び出す
 ///-------------------------------------------///
 void BossParabolicShotState::Update() {
-	// 次の状態へ遷移
-	boss_->ChangeState(std::make_unique<BossMoveState>());
-	return;
+
+	/// ===Stateの移動=== ///
+	if (boss_->GetParabolicShotComponent().IsHitGround()) {
+		// 波紋の生成
+		boss_->GetGroundOcean()->AddRipple(boss_->GetParabolicShotComponent().GetHitPosition(), 1.0f, 1.0f);
+
+		// 次の状態へ遷移
+		boss_->ChangeState(std::make_unique<BossMoveState>());
+		return;
+	}
+
+	
 }
 
 ///-------------------------------------------/// 

@@ -14,6 +14,7 @@ private:
 	/// ===フェーズ定義=== ///
 	enum class ParabolicPhase {
 		Idle,       // 待機フェーズ
+		Trembling,  // 震えるフェーズ
 		Flying,     // 飛行フェーズ
 		Finished    // 終了フェーズ
 	};
@@ -23,6 +24,7 @@ private:
 		Vector3 velocity{};		// 現在の速度ベクトル
 		float lifeTimer = 0.0f; // 生存時間タイマー
 		float groundY = 0.0f;   // 地面のY座標
+		float trembleTimer = 0.0f; // 震えるタイマー
 	};
 
 public:
@@ -34,6 +36,10 @@ public:
 		float gravity = 9.8f;   // 重力加速度（Units/秒²）
 		float lifetime = 5.0f;   // 弾の最大生存時間（秒）
 
+		// --- 震えパラメータ ---
+		float trembleDuration = 1.0f;    // 震える時間（秒）
+		float trembleAmplitude = 0.5f;   // 震えの振幅
+
 		// --- 着弾判定 ---
 		bool  enableGroundHit = true;   // 地面
 
@@ -44,12 +50,16 @@ public:
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
 		Vector3 bulletPosition{}; // 現在の弾のワールド座標
+		Vector3 bossPosition{};   // ボスの位置
+		Vector3 targetPosition{}; // ターゲットの位置
 		float deltaTime = 0.0f;
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
 		Vector3 velocity{};      // 正規化された移動方向 
+		Vector3 position{};      // 震え中の位置
+		bool isTrembling = false;
 		bool isFlying = false;
 		bool isFinished = false;
 	};
@@ -85,14 +95,14 @@ public:
 	/// <summary>
 	/// 攻撃の開始処理
 	/// </summary>
-	/// <param name="bossPosition">弾の発射位置</param>
-	/// <param name="targetPosition">着弾点のワールド座標</param>
 	/// <param name="groundPosY">地面のY座標</param>
-	void StartAttack(const Vector3& bossPosition, const Vector3& targetPosition, float groundPosY);
+	void StartAttack(float groundPosY);
 
 public: /// ===Getter=== ///
 	bool IsActive() const { return phase_ != ParabolicPhase::Idle; }
 	bool isFinished() const { return phase_ == ParabolicPhase::Finished; }
+	bool IsHitGround() const { return isHitGround_; }
+	const Vector3& GetHitPosition() const { return hitPosition_; }
 	const ParabolicState& GetState() const { return state_; }
 
 private:
@@ -101,15 +111,17 @@ private:
 	ParabolicState state_;   // 攻撃の状態
 	ParabolicPhase phase_ = ParabolicPhase::Idle; // 攻撃のフェーズ
 	float initialSpeed_ = 0.0f; // 発射時の初速（Units/秒）
+	bool isHitGround_ = false; // 地面に到達したかのフラグ
+	Vector3 hitPosition_{}; // 着弾位置
 
 private:
 
 	/// <summary>
 	/// 発射初速ベクトルを計算する。
 	/// </summary>
-	/// <param name="from">`	</param>
-	/// <param name="to"></param>
-	/// <returns></returns>
+	/// <param name="from">発射元の位置</param>
+	/// <param name="to">ターゲットの位置</param>
+	/// <returns>初速ベクトル</returns>
 	Vector3 CalcInitialVelocity(const Vector3& from, const Vector3& to) const;
 };
 

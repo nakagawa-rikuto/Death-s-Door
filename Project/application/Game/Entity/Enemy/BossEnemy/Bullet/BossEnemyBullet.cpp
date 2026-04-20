@@ -9,6 +9,12 @@
 ///-------------------------------------------///
 BossEnemyBullet::~BossEnemyBullet() {
 	object3d_.reset();
+	Service::Collision::RemoveCollider(this);
+	// パーティクルの停止
+	if (bulletParticle_) {
+		bulletParticle_->Stop();
+		bulletParticle_ = nullptr;
+	}
 }
 
 ///-------------------------------------------/// 
