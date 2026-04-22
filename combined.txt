@@ -37192,6 +37192,7 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/BossEnemy.cpp
 // State
 #include "State/Move/BossMoveState.h"
 #include "State/HItReaction/BossHitReactionState.h"
+// ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
@@ -37275,7 +37276,7 @@ void BossEnemy::Update() {
 	advanceTimer();
 
 	/// ===AttackManagerの更新=== ///
-	//attackManager_->Update(transform_.translate, baseInfo_.deltaTime);
+	attackManager_->Update(transform_.translate, player_->GetTransform().translate, baseInfo_.deltaTime);
 
 	/// ===Stateの更新=== ///
 	if (currentState_) {
@@ -37476,16 +37477,16 @@ void BossEnemy::SetComponentConfig() {
 		.orbitSpeedDeg = 120.0f,
 		.orbitHeight = 0.0f,
 		.lifetime = 5.0f,
-		.initialPhaseOffsetDeg = 120.0f,
+		.initialAngleDeg = 120.0f,
 	};
 
 	// ParabolicShot
 	attackConfig.parabolicShotConfig = BossAttackParabolicShotComponent::ParabolicConfig{
-		.launchAngleDeg = 45.0f,
+		.launchAngleDeg = 80.0f,
 		.gravity = 9.8f,
 		.lifetime = 5.0f,
 		.enableGroundHit = true,
-		.maxHorizontalSpeed = 30.0f,
+		.maxHorizontalSpeed = 0.6f,
 	};
 
 	// AttackManagerの初期化
@@ -37679,6 +37680,12 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/Bullet/BossEnemyBulle
 ///-------------------------------------------///
 BossEnemyBullet::~BossEnemyBullet() {
 	object3d_.reset();
+	Service::Collision::RemoveCollider(this);
+	// パーティクルの停止
+	if (bulletParticle_) {
+		bulletParticle_->Stop();
+		bulletParticle_ = nullptr;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -37687,7 +37694,7 @@ BossEnemyBullet::~BossEnemyBullet() {
 void BossEnemyBullet::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(std::make_unique<MiiEngine::Model>(), "BossEnemyBullet", MiiEngine::LightType::None);
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "sphere", MiiEngine::LightType::None);
 
 	// SphereColliderの初期化
 	SphereCollider::Initialize();
@@ -37740,9 +37747,6 @@ void BossEnemyBullet::Information() {
 /// 生成
 ///-------------------------------------------///
 void BossEnemyBullet::Create(const Vector3 & translate, float lifeTim) {
-	// 初期化
-	Initialize();
-
 	// 位置の設定
 	transform_.translate = translate;
 
@@ -37757,7 +37761,7 @@ void BossEnemyBullet::Create(const Vector3 & translate, float lifeTim) {
 		bulletParticle_ = nullptr;
 	}
 	// パーティクルの再生
-	bulletParticle_ = Service::Particle::Emit("BossEnemyAttack", transform_.translate);
+	bulletParticle_ = Service::Particle::Emit("EnemyAttack", transform_.translate);
 	bulletParticle_->SetEmitterPosition(transform_.translate);
 }
 
@@ -37864,7 +37868,7 @@ private: /// ===変数=== ///
 		Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // ベクトル
 
 		float lifeTime = 3.0f; // 生存時間
-		bool isAlive = true; // 生存フラグ
+		bool isAlive = false; // 生存フラグ
 	};
 	BaseInfo info_;
 
@@ -37917,6 +37921,23 @@ void BossAttackManager::ApplyConfig(const Config& newConfig) {
 }
 #endif // USE_IMGUI
 
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+BossAttackManager::~BossAttackManager() {
+	// Componentの解放
+	rotate_.reset();
+	downswing_.reset();
+	jumpSmash_.reset();
+	orbitingOrbs_.reset();
+	parabolicShot_.reset();
+	// Bulletの解放
+	for (auto& b : orbitingBullets_) {
+		b.reset();
+	}
+	parabolicShotBullets_.clear();
+}
+
 ///-------------------------------------------///
 /// 初期化処理
 ///-------------------------------------------///
@@ -37943,15 +37964,14 @@ void BossAttackManager::Initialize(const Config& config) {
 	// OrbitingBulletの生成
 	for (auto& b : orbitingBullets_) {
 		b = std::make_unique<BossEnemyBullet>();
+		b->Initialize();
 	}
-	// ParabolicBulletの生成
-	parabolicShotBullet_ = std::make_unique<BossEnemyBullet>();
 }
 
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void BossAttackManager::Update(const Vector3& bossPosition, float deltaTime) {
+void BossAttackManager::Update(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime) {
 
 	/// ===Timer=== ///
 	UpdateTimers(deltaTime);
@@ -37977,26 +37997,53 @@ void BossAttackManager::Update(const Vector3& bossPosition, float deltaTime) {
 	}
 
 	/// ===Parabolic Shot=== ///
-	if (parabolicShot_->IsActive()) {
+	if (parabolicShot_->IsActive() && !parabolicShotBullets_.empty()) {
+		auto& currentBullet = parabolicShotBullets_.back();
 		// コンテキストの作成と更新の実行
 		BossAttackParabolicShotComponent::UpdateContext context{
-			.bulletPosition = parabolicShotBullet_->GetTransform().translate,
+			.bulletPosition = currentBullet->GetTransform().translate,
+			.bossPosition = bossPosition,
+			.targetPosition = playerPosition,
 			.deltaTime = deltaTime
 		};
 		BossAttackParabolicShotComponent::UpdateResult result = parabolicShot_->Update(context);
 
 		if (result.isFlying) {
 			// 弾の位置を更新
-			parabolicShotBullet_->SetVelocity(result.velocity);
+			currentBullet->SetVelocity(result.velocity);
+		} else if (result.isTrembling) {
+			currentBullet->SetTranslate(result.position);
 		}
+
+		// 地面に到達していれば弾を非アクティブにする
+		if (parabolicShot_->IsHitGround()) {
+			currentBullet->SetAlive(false);
+		}
+
 		if (result.isFinished) {
+			currentBullet->SetAlive(false); // 生存時間切れなどの場合にも念のため消去
 			parabolicShot_->Reset();
 		}
 	}
 
-	/// ===弾の更新=== ///
-	for (auto& b : orbitingBullets_) { if (b) b->Update(); }
-	if (parabolicShotBullet_) parabolicShotBullet_->Update();
+	/// ===弾の更新と削除=== ///
+	for (auto& b : orbitingBullets_) { 
+		if (b && b->GetIsAlive()) {
+			b->Update(); 
+		}
+	}
+
+	// ParabolicShotの弾の更新
+	for (auto& b : parabolicShotBullets_) {
+		if (b->GetIsAlive()) {
+			b->Update();
+		}
+	}
+	// 非アクティブになった弾を削除する
+	parabolicShotBullets_.erase(
+		std::remove_if(parabolicShotBullets_.begin(), parabolicShotBullets_.end(),
+			[](const std::unique_ptr<BossEnemyBullet>& b) { return !b->GetIsAlive(); }),
+		parabolicShotBullets_.end());
 }
 
 
@@ -38076,11 +38123,19 @@ void BossAttackManager::StartOrbitingOrbs(const Vector3& bossPos) {
 ///-------------------------------------------/// 
 /// 放物線ショット攻撃の開始
 ///-------------------------------------------///
-void BossAttackManager::StartParabolicShot(const Vector3 & bossPos, const Vector3 & playerPos, float groundY) {
+void BossAttackManager::StartParabolicShot(const Vector3 & bossPos, float groundY) {
 	// 攻撃開始
-	parabolicShot_->StartAttack(bossPos, playerPos, groundY);
-	// 初期位置を設定して弾を生成
-	parabolicShotBullet_->Create(bossPos, config_.parabolicShotConfig.lifetime);
+	parabolicShot_->StartAttack(groundY);
+
+	// 弾を生成して初期化・配置
+	auto bullet = std::make_unique<BossEnemyBullet>();
+	bullet->Initialize();
+	float totalLifetime = config_.parabolicShotConfig.lifetime + config_.parabolicShotConfig.trembleDuration;
+	bullet->Create(bossPos, totalLifetime);
+
+	// リストに追加
+	parabolicShotBullets_.push_back(std::move(bullet));
+
 	// クールダウン開始
 	StartParabolicShotCooldown();
 }
@@ -38146,7 +38201,7 @@ public:
 public:
 
 	BossAttackManager() = default;
-	~BossAttackManager() = default;
+	~BossAttackManager();
 
 	BossAttackManager(const BossAttackManager&) = delete;
 	BossAttackManager& operator=(const BossAttackManager&) = delete;
@@ -38159,7 +38214,7 @@ public:
 	/// <summary>
 	/// 更新処理
 	/// </summary>
-	void Update(const Vector3& bossPosition, float deltaTime);
+	void Update(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime);
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -38182,7 +38237,7 @@ public: /// ===攻撃の開始=== ///
 	// OrbitingOrbs
 	void StartOrbitingOrbs(const Vector3& bossPos);
 	// ParabolicShot
-	void StartParabolicShot(const Vector3& bossPos, const Vector3& playerPos, float groundY);
+	void StartParabolicShot(const Vector3& bossPos, float groundY);
 
 public: /// ===クールダウン設定=== ///
 
@@ -38194,12 +38249,22 @@ public: /// ===クールダウン設定=== ///
 
 public: /// ===Getter=== ///
 
+	// クールダウンの取得
 	float GetRotateCooldown() const { return cooldowns_.rotate; }
 	float GetDownswingCooldown() const { return cooldowns_.downswing; }
 	float GetJumpSmashCooldown() const { return cooldowns_.jumpSmash; }
 	float GetOrbitingOrbsCooldown() const { return cooldowns_.orbitingOrbs; }
 	float GetParabolicShotCooldown() const { return cooldowns_.parabolicShot; }
+	
+	// ParabolicShotの弾の位置を取得
+	Vector3 GetParabolicShotPosition() const { 
+		if (!parabolicShotBullets_.empty()) {
+			return parabolicShotBullets_.back()->GetTransform().translate;
+		}
+		return Vector3{};
+	}
 
+	// Configの取得
 	const Config& GetConfig() const { return config_; }
 
 	// 各コンポーネントへの参照（BossEnemyでImGui表示や各Stateでの使用）
@@ -38240,7 +38305,7 @@ private:
 	std::array<std::unique_ptr<BossEnemyBullet>, BossAttackOrbitingOrbsComponent::kOrbCount> orbitingBullets_{};
 
 	// 放物線ショットの弾の管理
-	std::unique_ptr<BossEnemyBullet> parabolicShotBullet_{};
+	std::vector<std::unique_ptr<BossEnemyBullet>> parabolicShotBullets_{};
 
 private:
 	/// <summary>
@@ -39618,6 +39683,9 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/Long
 namespace {
     const float kDegToRad = Math::Pi() / 180.0f;
     const float kTwoPi = Math::Pi() * 2.0f;
+    // 弾どうしの均等間隔（ラジアン）。kOrbCount が変わっても自動追従する。
+    const float kOrbSpacingRad =
+        kTwoPi / static_cast<float>(BossAttackOrbitingOrbsComponent::kOrbCount);
 } // namespace
 
 ///-------------------------------------------///
@@ -39659,14 +39727,14 @@ BossAttackOrbitingOrbsComponent::Update(const UpdateContext& context) {
         const Vector3 currentPos = CalcOrbitPosition(context.bossPosition, angleRad);
 
         // 次フレームの向き（現在位置 → 次位置 の差分）
-        const Vector3 dir = CalcOrbitDirection(context.bossPosition, angleRad, context.deltaTime);
+        const Vector3 dir = CalcOrbitDirection(context.bossPosition, currentPos, angleRad, context.deltaTime);
 
         result.bullets[i].position = currentPos;
         result.bullets[i].direction = dir;
     }
 
     // -----------------------------------------------
-    // 生存時間チェック → Finished 遷移
+    // Finished 遷移
     // -----------------------------------------------
     if (state_.lifeTimer <= 0.0f) {
         phase_ = OrbitPhase::Finished;
@@ -39714,7 +39782,7 @@ void BossAttackOrbitingOrbsComponent::Information() {
         ImGui::DragFloat("公転速度 (度/秒)", &config_.orbitSpeedDeg, 1.0f, 10.0f, 720.0f);
         ImGui::DragFloat("高さオフセット", &config_.orbitHeight, 0.05f, -5.0f, 5.0f);
         ImGui::DragFloat("生存時間 (秒)", &config_.lifetime, 0.1f, 0.5f, 30.0f);
-        ImGui::DragFloat("初期位相オフセット(度)", &config_.initialPhaseOffsetDeg, 1.0f, 0.0f, 180.0f);
+        ImGui::DragFloat("初期角度オフセット(度)", &config_.initialAngleDeg, 1.0f, 0.0f, 180.0f);
 
         ImGui::TreePop();
     }
@@ -39736,21 +39804,23 @@ void BossAttackOrbitingOrbsComponent::ApplyConfig(const OrbitConfig& newConfig) 
 /// 弾 index の現在の公転角度（ラジアン）を返す
 ///-------------------------------------------///
 float BossAttackOrbitingOrbsComponent::CalcOrbitAngleRad(int index) const {
-    // 基準角度（経過時間 × 角速度）
+    // 全弾共通の基準角
     const float baseAngle = state_.orbitTimer * config_.orbitSpeedDeg * kDegToRad;
 
-    // 各弾の位相オフセット
-    const float phaseOffset = static_cast<float>(index) * config_.initialPhaseOffsetDeg * kDegToRad;
+    // 弾ごとの等間隔オフセット
+    const float evenSpacing = static_cast<float>(index) * kOrbSpacingRad;
 
-    return baseAngle + phaseOffset;
+    // 全体の初期スタート角
+    const float initialAngle = config_.initialAngleDeg * kDegToRad;
+
+    return baseAngle + evenSpacing + initialAngle;
 }
 
 ///-------------------------------------------///
 /// 公転角度 → ワールド座標
 ///-------------------------------------------///
 Vector3 BossAttackOrbitingOrbsComponent::CalcOrbitPosition(
-    const Vector3& center, float angleRad) const
-{
+    const Vector3& center, float angleRad) const {
     return Vector3{
         center.x + config_.orbitRadius * std::cos(angleRad),
         center.y + config_.orbitHeight,
@@ -39764,33 +39834,26 @@ Vector3 BossAttackOrbitingOrbsComponent::CalcOrbitPosition(
 /// 「1フレーム後の位置 - 現在位置」を正規化して向きだけを返す。
 ///-------------------------------------------///
 Vector3 BossAttackOrbitingOrbsComponent::CalcOrbitDirection(
-    const Vector3& center, float angleRad, float deltaTime) const
-{
-    // 次フレームの角度
-    const float nextAngleRad = angleRad + config_.orbitSpeedDeg * kDegToRad * deltaTime;
+    const Vector3& center, 
+    const Vector3& currentPos, 
+    float angleRad, 
+    float deltaTime) const {
 
-    const Vector3 currentPos = CalcOrbitPosition(center, angleRad);
+    // 次フレームの角度と位置
+    const float   nextAngleRad = angleRad + config_.orbitSpeedDeg * kDegToRad * deltaTime;
     const Vector3 nextPos = CalcOrbitPosition(center, nextAngleRad);
-
+	// 差分ベクトル
     Vector3 dir = {
         nextPos.x - currentPos.x,
         nextPos.y - currentPos.y,
         nextPos.z - currentPos.z
     };
 
-    // 正規化（長さがほぼ0なら前向きにフォールバック）
-    const float len = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
-    if (len > 1e-6f) {
-        dir.x /= len;
-        dir.y /= len;
-        dir.z /= len;
-    } else {
-        dir = { 0.0f, 0.0f, 1.0f };
-    }
+    // 正規化
+	dir = Normalize(dir);
 
     return dir;
 }
-
 
 ============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/LongAttack/BossAttackOrbitingOrbsComponent.h
@@ -39807,7 +39870,7 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/Long
 ///=====================================================///
 class BossAttackOrbitingOrbsComponent {
 public:
-    static constexpr int kOrbCount = 3; // 公転弾数（変更可）
+    static constexpr int kOrbCount = 3; // 公転弾数
 
 private:
     /// ===フェーズ定義=== ///
@@ -39835,7 +39898,7 @@ public:
         float lifetime = 5.0f;   // 公転を続ける時間（秒）
 
         // --- 弾の初期位相オフセット ---
-        float initialPhaseOffsetDeg = 120.0f;
+        float initialAngleDeg = 0.0f;
     };
 
     /// ===更新コンテキスト（毎フレーム渡す）=== ///
@@ -39909,17 +39972,24 @@ private:
     /// <summary>
     /// 弾 index の公転角度（ラジアン）を計算する。
     /// </summary>
+    /// <param name="index">弾のインデックス</param>
     float CalcOrbitAngleRad(int index) const;
 
     /// <summary>
     /// 公転角度からワールド座標を計算する。
     /// </summary>
+    /// <param name="center">公転中心の座標</param>
+    /// <param name="angleRad">現在の公転角度（ラジアン）</param>
     Vector3 CalcOrbitPosition(const Vector3& center, float angleRad) const;
 
     /// <summary>
     /// 次フレームの向きを現在位置と次位置の差分から計算する。
     /// </summary>
-    Vector3 CalcOrbitDirection(const Vector3& center, float angleRad, float deltaTime) const;
+    /// <param name="center">公転中心の座標</param>
+    /// <param name="currentPos">現在の弾の座標</param>
+    /// <param name="angleRad">現在の公転角度（ラジアン）</param>
+    /// <param name="deltaTime">前フレームからの経過時間（秒）</param>
+    Vector3 CalcOrbitDirection(const Vector3& center, const Vector3& currentPos, float angleRad, float deltaTime) const;
 };
 
 
@@ -39932,6 +40002,7 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/Component/Attack/Long
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <cstdlib>
 // Math
 #include <Math/sMath.h>
 // ImGui
@@ -39947,6 +40018,7 @@ void BossAttackParabolicShotComponent::Initialize(const ParabolicConfig& config)
 	state_ = ParabolicState{};
 	phase_ = ParabolicPhase::Idle;
 	initialSpeed_ = 0.0f;
+	hitPosition_ = Vector3{};
 }
 
 ///-------------------------------------------/// 
@@ -39954,12 +40026,36 @@ void BossAttackParabolicShotComponent::Initialize(const ParabolicConfig& config)
 ///-------------------------------------------///
 BossAttackParabolicShotComponent::UpdateResult BossAttackParabolicShotComponent::Update(const UpdateContext & context) {
     UpdateResult result;
+    result.isTrembling = (phase_ == ParabolicPhase::Trembling);
     result.isFlying = (phase_ == ParabolicPhase::Flying);
     result.isFinished = (phase_ == ParabolicPhase::Finished);
+
 
     // 非アクティブ時は何もしない
     if (phase_ == ParabolicPhase::Idle || phase_ == ParabolicPhase::Finished) {
         return result;
+    }
+
+    if (phase_ == ParabolicPhase::Trembling) {
+        state_.trembleTimer -= context.deltaTime;
+        
+        if (state_.trembleTimer <= 0.0f) {
+            // 震え終了、飛行開始
+            state_.velocity = CalcInitialVelocity(context.bossPosition, context.targetPosition);
+            initialSpeed_ = Length(state_.velocity);
+            state_.lifeTimer = config_.lifetime;
+            
+            phase_ = ParabolicPhase::Flying;
+            result.isTrembling = false;
+            result.isFlying = true;
+        } else {
+            // 震え位置の計算
+            float randX = ((rand() % 100) / 100.0f - 0.5f) * config_.trembleAmplitude;
+            float randY = ((rand() % 100) / 100.0f - 0.5f) * config_.trembleAmplitude;
+            float randZ = ((rand() % 100) / 100.0f - 0.5f) * config_.trembleAmplitude;
+            result.position = context.bossPosition + Vector3{randX, randY, randZ};
+            return result;
+        }
     }
 
     // -----------------------------------------------
@@ -39984,9 +40080,15 @@ BossAttackParabolicShotComponent::UpdateResult BossAttackParabolicShotComponent:
         (context.bulletPosition.y <= state_.groundY) &&
         (state_.velocity.y < 0.0f); // 下降中のみ
 
+    if (hitGround) {
+        hitPosition_ = context.bulletPosition;
+        hitPosition_.y = state_.groundY;
+    }
+
     // -----------------------------------------------
     // 終了条件チェック
     // -----------------------------------------------
+    isHitGround_ = hitGround;
     if (state_.lifeTimer <= 0.0f || hitGround) {
         phase_ = ParabolicPhase::Finished;
         result.isFlying = false;
@@ -40011,9 +40113,10 @@ void BossAttackParabolicShotComponent::Reset() {
 void BossAttackParabolicShotComponent::Information() {
 #ifdef USE_IMGUI
     if (ImGui::TreeNode("放物線弾攻撃情報")) {
-        const char* phaseNames[] = { "Idle", "Flying", "Finished" };
+        const char* phaseNames[] = { "Idle", "Trembling", "Flying", "Finished" };
         ImGui::Text("フェーズ: %s", phaseNames[static_cast<int>(phase_)]);
         ImGui::Text("残り生存時間: %.3f", state_.lifeTimer);
+        ImGui::Text("残り震え時間: %.3f", state_.trembleTimer);
         ImGui::Text("現在速度ベクトル: (%.2f, %.2f, %.2f)",
             state_.velocity.x, state_.velocity.y, state_.velocity.z);
         ImGui::Text("初速の大きさ: %.3f", initialSpeed_);
@@ -40023,6 +40126,8 @@ void BossAttackParabolicShotComponent::Information() {
         ImGui::DragFloat("仰角 (度)", &config_.launchAngleDeg, 0.5f, 5.0f, 85.0f);
         ImGui::DragFloat("重力加速度", &config_.gravity, 0.1f, 0.0f, 50.0f);
         ImGui::DragFloat("生存時間 (秒)", &config_.lifetime, 0.1f, 0.5f, 30.0f);
+        ImGui::DragFloat("震える時間 (秒)", &config_.trembleDuration, 0.05f, 0.0f, 5.0f);
+        ImGui::DragFloat("震えの振幅", &config_.trembleAmplitude, 0.05f, 0.0f, 5.0f);
         ImGui::DragFloat("水平速度上限", &config_.maxHorizontalSpeed, 0.5f, 1.0f, 100.0f);
         ImGui::Checkbox("地面着弾判定を有効化", &config_.enableGroundHit);
         if (config_.enableGroundHit) {
@@ -40037,20 +40142,16 @@ void BossAttackParabolicShotComponent::Information() {
 ///-------------------------------------------/// 
 /// 攻撃の開始
 ///-------------------------------------------///
-void BossAttackParabolicShotComponent::StartAttack(const Vector3 & bossPosition, const Vector3 & targetPosition, float groundPosY) {
+void BossAttackParabolicShotComponent::StartAttack(float groundPosY) {
     if (IsActive()) {
         return;
     }
 
-    // 初速計算
-    state_.velocity = CalcInitialVelocity(bossPosition, targetPosition);
-    initialSpeed_ = Length(state_.velocity);
-	state_.groundY = groundPosY;
+    state_.groundY = groundPosY;
+    state_.trembleTimer = config_.trembleDuration;
 
-    // 生存タイマーセット
-    state_.lifeTimer = config_.lifetime;
-
-    phase_ = ParabolicPhase::Flying;
+    phase_ = ParabolicPhase::Trembling;
+    isHitGround_ = false;
 }
 
 ///-------------------------------------------///  
@@ -40123,6 +40224,7 @@ private:
 	/// ===フェーズ定義=== ///
 	enum class ParabolicPhase {
 		Idle,       // 待機フェーズ
+		Trembling,  // 震えるフェーズ
 		Flying,     // 飛行フェーズ
 		Finished    // 終了フェーズ
 	};
@@ -40132,6 +40234,7 @@ private:
 		Vector3 velocity{};		// 現在の速度ベクトル
 		float lifeTimer = 0.0f; // 生存時間タイマー
 		float groundY = 0.0f;   // 地面のY座標
+		float trembleTimer = 0.0f; // 震えるタイマー
 	};
 
 public:
@@ -40143,6 +40246,10 @@ public:
 		float gravity = 9.8f;   // 重力加速度（Units/秒²）
 		float lifetime = 5.0f;   // 弾の最大生存時間（秒）
 
+		// --- 震えパラメータ ---
+		float trembleDuration = 1.0f;    // 震える時間（秒）
+		float trembleAmplitude = 0.5f;   // 震えの振幅
+
 		// --- 着弾判定 ---
 		bool  enableGroundHit = true;   // 地面
 
@@ -40153,12 +40260,16 @@ public:
 	/// ===更新用コンテキスト=== ///
 	struct UpdateContext {
 		Vector3 bulletPosition{}; // 現在の弾のワールド座標
+		Vector3 bossPosition{};   // ボスの位置
+		Vector3 targetPosition{}; // ターゲットの位置
 		float deltaTime = 0.0f;
 	};
 
 	/// ===更新結果=== ///
 	struct UpdateResult {
 		Vector3 velocity{};      // 正規化された移動方向 
+		Vector3 position{};      // 震え中の位置
+		bool isTrembling = false;
 		bool isFlying = false;
 		bool isFinished = false;
 	};
@@ -40194,14 +40305,14 @@ public:
 	/// <summary>
 	/// 攻撃の開始処理
 	/// </summary>
-	/// <param name="bossPosition">弾の発射位置</param>
-	/// <param name="targetPosition">着弾点のワールド座標</param>
 	/// <param name="groundPosY">地面のY座標</param>
-	void StartAttack(const Vector3& bossPosition, const Vector3& targetPosition, float groundPosY);
+	void StartAttack(float groundPosY);
 
 public: /// ===Getter=== ///
 	bool IsActive() const { return phase_ != ParabolicPhase::Idle; }
 	bool isFinished() const { return phase_ == ParabolicPhase::Finished; }
+	bool IsHitGround() const { return isHitGround_; }
+	const Vector3& GetHitPosition() const { return hitPosition_; }
 	const ParabolicState& GetState() const { return state_; }
 
 private:
@@ -40210,15 +40321,17 @@ private:
 	ParabolicState state_;   // 攻撃の状態
 	ParabolicPhase phase_ = ParabolicPhase::Idle; // 攻撃のフェーズ
 	float initialSpeed_ = 0.0f; // 発射時の初速（Units/秒）
+	bool isHitGround_ = false; // 地面に到達したかのフラグ
+	Vector3 hitPosition_{}; // 着弾位置
 
 private:
 
 	/// <summary>
 	/// 発射初速ベクトルを計算する。
 	/// </summary>
-	/// <param name="from">`	</param>
-	/// <param name="to"></param>
-	/// <returns></returns>
+	/// <param name="from">発射元の位置</param>
+	/// <param name="to">ターゲットの位置</param>
+	/// <returns>初速ベクトル</returns>
 	Vector3 CalcInitialVelocity(const Vector3& from, const Vector3& to) const;
 };
 
@@ -41520,6 +41633,8 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/Long/Bos
 #include "BossOrbitingOrbsState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// AttackManager
+#include "application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackManager.h"
 // State
 #include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
@@ -41531,27 +41646,16 @@ void BossOrbitingOrbsState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetOrbitingOrbsComponent().StartAttack();
+	boss_->GetAttackManager().StartOrbitingOrbs(boss_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
 void BossOrbitingOrbsState::Update() {
-	BossAttackOrbitingOrbsComponent::UpdateContext context{
-		.bossPosition = boss_->GetTransform().translate,
-		.deltaTime = boss_->GetDeltaTime(),
-	};
-	// AttackComponentを更新
-	BossAttackOrbitingOrbsComponent::UpdateResult result = boss_->GetOrbitingOrbsComponent().Update(context);
-
-	/// ===結果の反映=== ///
-	// 攻撃終了判定
-	if (result.isFinished) {
-		// 次の状態へ遷移
-		boss_->ChangeState(std::make_unique<BossMoveState>());
-		return;
-	}
+	// 次の状態へ遷移
+	boss_->ChangeState(std::make_unique<BossMoveState>());
+	return;
 }
 
 ///-------------------------------------------/// 
@@ -41612,6 +41716,10 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/Long/Bos
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// GroundOcean
+#include <application/Game/Object/GameGround/GroundOcean.h>
+// AttackManager
+#include "application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackManager.h"
 // State
 #include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
@@ -41623,9 +41731,8 @@ void BossParabolicShotState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetParabolicShotComponent().StartAttack(
+	boss_->GetAttackManager().StartParabolicShot(
 		boss_->GetTransform().translate,
-		boss_->GetPlayer()->GetTransform().translate,
 		boss_->GetGroundYPos());
 }
 
@@ -41633,25 +41740,18 @@ void BossParabolicShotState::Enter(BossEnemy* enemy) {
 /// 更新時に呼び出す
 ///-------------------------------------------///
 void BossParabolicShotState::Update() {
-	// コンテキストの準備
-	BossAttackParabolicShotComponent::UpdateContext context{
-		.bulletPosition = boss_->GetParabolicShotComponent().IsActive() ? boss_->GetParabolicShotComponent().GetState().velocity : Vector3{ 0.0f, 0.0f, 0.0f },
-		.deltaTime = boss_->GetDeltaTime(),
-	};
-	// AttackComponentを更新
-	BossAttackParabolicShotComponent::UpdateResult result = boss_->GetParabolicShotComponent().Update(context);
 
-	/// ===結果を反映=== ///
-	// 速度の反映
+	/// ===Stateの移動=== ///
+	if (boss_->GetParabolicShotComponent().IsHitGround()) {
+		// 波紋の生成
+		boss_->GetGroundOcean()->AddRipple(boss_->GetParabolicShotComponent().GetHitPosition(), 1.0f, 1.0f);
 
-
-
-	// 攻撃終了の判定
-	if (result.isFinished) {
 		// 次の状態へ遷移
 		boss_->ChangeState(std::make_unique<BossMoveState>());
 		return;
 	}
+
+	
 }
 
 ///-------------------------------------------/// 
@@ -41865,6 +41965,8 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveSt
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossRotateAttackState.h>
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossDownwarAttackState.h>
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/BossJumpSmashAttackState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Long/BossOrbitingOrbsState.h>
+#include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Long/BossParabolicShotState.h>
 #include "BossTeleportState.h"
 
 ///-------------------------------------------/// 
@@ -41884,22 +41986,7 @@ void BossMoveState::Update() {
 	const float dist = CalcDistToPlayer();
 
 	/// ===Stateの変更=== ///
-	// 突き攻撃への遷移条件
-	if (boss_->GetAttackManager().CanRotate(dist)) {
-		// 突き攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
-		return;
-		// Downswing攻撃への遷移条件
-	} else if (boss_->GetAttackManager().CanDownswing(dist)) {
-		// Downswing攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-		return;
-		// JumpSmash攻撃への遷移条件
-	} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
-		float minRange = boss_->GetAttackManager().GetConfig().jumpSmashMinRange;
-		float maxRange = boss_->GetAttackManager().GetConfig().jumpSmashMaxRange;
-		// テレポートへ遷移
-		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
+	if (ChangeStateIfNeeded(dist)) {
 		return;
 	}
 
@@ -41941,6 +42028,46 @@ float BossMoveState::CalcDistToPlayer() const {
 	return Length(diff);
 }
 
+///-------------------------------------------/// 
+/// Stateの変更が必要か判定して、必要なら変更する。
+///-------------------------------------------///
+bool BossMoveState::ChangeStateIfNeeded(float dist) {
+
+	if (boss_->GetAttackManager().CanParabolicShot(dist)) {
+		// ParabolicShot攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+		return true;
+	}
+
+	/// ===遷移状態の判定=== ///
+	//if (boss_->GetAttackManager().CanRotate(dist)) {
+	//	// Rotate攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossRotateAttackState>());
+	//	return true;
+	//} else if (boss_->GetAttackManager().CanDownswing(dist)) {
+	//	// Downswing攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+	//	return true;
+	//} else if (boss_->GetAttackManager().CanParabolicShot(dist)) {
+	//	// ParabolicShot攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+	//	return true;
+	//} else if (boss_->GetAttackManager().CanOrbitIngOrbs(dist)) {
+	//	// OrbitingOrbs攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
+	//	return true;
+	//} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
+	//	// JumpSmash攻撃への遷移条件
+	//	float minRange = boss_->GetAttackManager().GetConfig().jumpSmashMinRange;
+	//	float maxRange = boss_->GetAttackManager().GetConfig().jumpSmashMaxRange;
+	//	// テレポートへ遷移
+	//	boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
+	//	return true;
+	//}
+
+	return false;
+}
+
 
 ============================================================
 File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h
@@ -41978,6 +42105,13 @@ private:
 	/// プレイヤーとボスの距離を計算して返す。
 	/// </summary>
 	float CalcDistToPlayer() const;
+
+	/// <summary>
+	/// Stateの変更が必要か判定して、必要なら変更する。
+	/// </summary>
+	/// <param name="dist">プレイヤーとの距離。</param>
+	/// <returns>状態を変更した場合はtrueを返す。</returns>
+	bool ChangeStateIfNeeded(float dist);
 };
 
 
