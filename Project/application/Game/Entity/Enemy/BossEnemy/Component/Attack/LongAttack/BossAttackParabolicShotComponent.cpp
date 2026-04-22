@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <cstdlib>
 // Math
 #include <Math/sMath.h>
 // ImGui
@@ -18,6 +19,7 @@ void BossAttackParabolicShotComponent::Initialize(const ParabolicConfig& config)
 	state_ = ParabolicState{};
 	phase_ = ParabolicPhase::Idle;
 	initialSpeed_ = 0.0f;
+	hitPosition_ = Vector3{};
 }
 
 ///-------------------------------------------/// 
@@ -25,12 +27,36 @@ void BossAttackParabolicShotComponent::Initialize(const ParabolicConfig& config)
 ///-------------------------------------------///
 BossAttackParabolicShotComponent::UpdateResult BossAttackParabolicShotComponent::Update(const UpdateContext & context) {
     UpdateResult result;
+    result.isTrembling = (phase_ == ParabolicPhase::Trembling);
     result.isFlying = (phase_ == ParabolicPhase::Flying);
     result.isFinished = (phase_ == ParabolicPhase::Finished);
+
 
     // 非アクティブ時は何もしない
     if (phase_ == ParabolicPhase::Idle || phase_ == ParabolicPhase::Finished) {
         return result;
+    }
+
+    if (phase_ == ParabolicPhase::Trembling) {
+        state_.trembleTimer -= context.deltaTime;
+        
+        if (state_.trembleTimer <= 0.0f) {
+            // 震え終了、飛行開始
+            state_.velocity = CalcInitialVelocity(context.bossPosition, context.targetPosition);
+            initialSpeed_ = Length(state_.velocity);
+            state_.lifeTimer = config_.lifetime;
+            
+            phase_ = ParabolicPhase::Flying;
+            result.isTrembling = false;
+            result.isFlying = true;
+        } else {
+            // 震え位置の計算
+            float randX = ((rand() % 100) / 100.0f - 0.5f) * config_.trembleAmplitude;
+            float randY = ((rand() % 100) / 100.0f - 0.5f) * config_.trembleAmplitude;
+            float randZ = ((rand() % 100) / 100.0f - 0.5f) * config_.trembleAmplitude;
+            result.position = context.bossPosition + Vector3{randX, randY, randZ};
+            return result;
+        }
     }
 
     // -----------------------------------------------
@@ -55,9 +81,15 @@ BossAttackParabolicShotComponent::UpdateResult BossAttackParabolicShotComponent:
         (context.bulletPosition.y <= state_.groundY) &&
         (state_.velocity.y < 0.0f); // 下降中のみ
 
+    if (hitGround) {
+        hitPosition_ = context.bulletPosition;
+        hitPosition_.y = state_.groundY;
+    }
+
     // -----------------------------------------------
     // 終了条件チェック
     // -----------------------------------------------
+    isHitGround_ = hitGround;
     if (state_.lifeTimer <= 0.0f || hitGround) {
         phase_ = ParabolicPhase::Finished;
         result.isFlying = false;
@@ -82,9 +114,10 @@ void BossAttackParabolicShotComponent::Reset() {
 void BossAttackParabolicShotComponent::Information() {
 #ifdef USE_IMGUI
     if (ImGui::TreeNode("放物線弾攻撃情報")) {
-        const char* phaseNames[] = { "Idle", "Flying", "Finished" };
+        const char* phaseNames[] = { "Idle", "Trembling", "Flying", "Finished" };
         ImGui::Text("フェーズ: %s", phaseNames[static_cast<int>(phase_)]);
         ImGui::Text("残り生存時間: %.3f", state_.lifeTimer);
+        ImGui::Text("残り震え時間: %.3f", state_.trembleTimer);
         ImGui::Text("現在速度ベクトル: (%.2f, %.2f, %.2f)",
             state_.velocity.x, state_.velocity.y, state_.velocity.z);
         ImGui::Text("初速の大きさ: %.3f", initialSpeed_);
@@ -94,6 +127,8 @@ void BossAttackParabolicShotComponent::Information() {
         ImGui::DragFloat("仰角 (度)", &config_.launchAngleDeg, 0.5f, 5.0f, 85.0f);
         ImGui::DragFloat("重力加速度", &config_.gravity, 0.1f, 0.0f, 50.0f);
         ImGui::DragFloat("生存時間 (秒)", &config_.lifetime, 0.1f, 0.5f, 30.0f);
+        ImGui::DragFloat("震える時間 (秒)", &config_.trembleDuration, 0.05f, 0.0f, 5.0f);
+        ImGui::DragFloat("震えの振幅", &config_.trembleAmplitude, 0.05f, 0.0f, 5.0f);
         ImGui::DragFloat("水平速度上限", &config_.maxHorizontalSpeed, 0.5f, 1.0f, 100.0f);
         ImGui::Checkbox("地面着弾判定を有効化", &config_.enableGroundHit);
         if (config_.enableGroundHit) {
@@ -108,20 +143,16 @@ void BossAttackParabolicShotComponent::Information() {
 ///-------------------------------------------/// 
 /// 攻撃の開始
 ///-------------------------------------------///
-void BossAttackParabolicShotComponent::StartAttack(const Vector3 & bossPosition, const Vector3 & targetPosition, float groundPosY) {
+void BossAttackParabolicShotComponent::StartAttack(float groundPosY) {
     if (IsActive()) {
         return;
     }
 
-    // 初速計算
-    state_.velocity = CalcInitialVelocity(bossPosition, targetPosition);
-    initialSpeed_ = Length(state_.velocity);
-	state_.groundY = groundPosY;
+    state_.groundY = groundPosY;
+    state_.trembleTimer = config_.trembleDuration;
 
-    // 生存タイマーセット
-    state_.lifeTimer = config_.lifetime;
-
-    phase_ = ParabolicPhase::Flying;
+    phase_ = ParabolicPhase::Trembling;
+    isHitGround_ = false;
 }
 
 ///-------------------------------------------///  

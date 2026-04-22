@@ -23,6 +23,23 @@ void BossAttackManager::ApplyConfig(const Config& newConfig) {
 }
 #endif // USE_IMGUI
 
+///-------------------------------------------/// 
+/// デストラクタ
+///-------------------------------------------///
+BossAttackManager::~BossAttackManager() {
+	// Componentの解放
+	rotate_.reset();
+	downswing_.reset();
+	jumpSmash_.reset();
+	orbitingOrbs_.reset();
+	parabolicShot_.reset();
+	// Bulletの解放
+	for (auto& b : orbitingBullets_) {
+		b.reset();
+	}
+	parabolicShotBullets_.clear();
+}
+
 ///-------------------------------------------///
 /// 初期化処理
 ///-------------------------------------------///
@@ -49,15 +66,14 @@ void BossAttackManager::Initialize(const Config& config) {
 	// OrbitingBulletの生成
 	for (auto& b : orbitingBullets_) {
 		b = std::make_unique<BossEnemyBullet>();
+		b->Initialize();
 	}
-	// ParabolicBulletの生成
-	parabolicShotBullet_ = std::make_unique<BossEnemyBullet>();
 }
 
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void BossAttackManager::Update(const Vector3& bossPosition, float deltaTime) {
+void BossAttackManager::Update(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime) {
 
 	/// ===Timer=== ///
 	UpdateTimers(deltaTime);
@@ -83,26 +99,53 @@ void BossAttackManager::Update(const Vector3& bossPosition, float deltaTime) {
 	}
 
 	/// ===Parabolic Shot=== ///
-	if (parabolicShot_->IsActive()) {
+	if (parabolicShot_->IsActive() && !parabolicShotBullets_.empty()) {
+		auto& currentBullet = parabolicShotBullets_.back();
 		// コンテキストの作成と更新の実行
 		BossAttackParabolicShotComponent::UpdateContext context{
-			.bulletPosition = parabolicShotBullet_->GetTransform().translate,
+			.bulletPosition = currentBullet->GetTransform().translate,
+			.bossPosition = bossPosition,
+			.targetPosition = playerPosition,
 			.deltaTime = deltaTime
 		};
 		BossAttackParabolicShotComponent::UpdateResult result = parabolicShot_->Update(context);
 
 		if (result.isFlying) {
 			// 弾の位置を更新
-			parabolicShotBullet_->SetVelocity(result.velocity);
+			currentBullet->SetVelocity(result.velocity);
+		} else if (result.isTrembling) {
+			currentBullet->SetTranslate(result.position);
 		}
+
+		// 地面に到達していれば弾を非アクティブにする
+		if (parabolicShot_->IsHitGround()) {
+			currentBullet->SetAlive(false);
+		}
+
 		if (result.isFinished) {
+			currentBullet->SetAlive(false); // 生存時間切れなどの場合にも念のため消去
 			parabolicShot_->Reset();
 		}
 	}
 
-	/// ===弾の更新=== ///
-	for (auto& b : orbitingBullets_) { if (b) b->Update(); }
-	if (parabolicShotBullet_) parabolicShotBullet_->Update();
+	/// ===弾の更新と削除=== ///
+	for (auto& b : orbitingBullets_) { 
+		if (b && b->GetIsAlive()) {
+			b->Update(); 
+		}
+	}
+
+	// ParabolicShotの弾の更新
+	for (auto& b : parabolicShotBullets_) {
+		if (b->GetIsAlive()) {
+			b->Update();
+		}
+	}
+	// 非アクティブになった弾を削除する
+	parabolicShotBullets_.erase(
+		std::remove_if(parabolicShotBullets_.begin(), parabolicShotBullets_.end(),
+			[](const std::unique_ptr<BossEnemyBullet>& b) { return !b->GetIsAlive(); }),
+		parabolicShotBullets_.end());
 }
 
 
@@ -182,11 +225,19 @@ void BossAttackManager::StartOrbitingOrbs(const Vector3& bossPos) {
 ///-------------------------------------------/// 
 /// 放物線ショット攻撃の開始
 ///-------------------------------------------///
-void BossAttackManager::StartParabolicShot(const Vector3 & bossPos, const Vector3 & playerPos, float groundY) {
+void BossAttackManager::StartParabolicShot(const Vector3 & bossPos, float groundY) {
 	// 攻撃開始
-	parabolicShot_->StartAttack(bossPos, playerPos, groundY);
-	// 初期位置を設定して弾を生成
-	parabolicShotBullet_->Create(bossPos, config_.parabolicShotConfig.lifetime);
+	parabolicShot_->StartAttack(groundY);
+
+	// 弾を生成して初期化・配置
+	auto bullet = std::make_unique<BossEnemyBullet>();
+	bullet->Initialize();
+	float totalLifetime = config_.parabolicShotConfig.lifetime + config_.parabolicShotConfig.trembleDuration;
+	bullet->Create(bossPos, totalLifetime);
+
+	// リストに追加
+	parabolicShotBullets_.push_back(std::move(bullet));
+
 	// クールダウン開始
 	StartParabolicShotCooldown();
 }

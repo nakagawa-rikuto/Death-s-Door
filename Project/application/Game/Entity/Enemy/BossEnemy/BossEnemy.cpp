@@ -6,6 +6,7 @@
 // State
 #include "State/Move/BossMoveState.h"
 #include "State/HItReaction/BossHitReactionState.h"
+// ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
@@ -89,7 +90,7 @@ void BossEnemy::Update() {
 	advanceTimer();
 
 	/// ===AttackManagerの更新=== ///
-	//attackManager_->Update(transform_.translate, baseInfo_.deltaTime);
+	attackManager_->Update(transform_.translate, player_->GetTransform().translate, baseInfo_.deltaTime);
 
 	/// ===Stateの更新=== ///
 	if (currentState_) {
@@ -290,16 +291,16 @@ void BossEnemy::SetComponentConfig() {
 		.orbitSpeedDeg = 120.0f,
 		.orbitHeight = 0.0f,
 		.lifetime = 5.0f,
-		.initialPhaseOffsetDeg = 120.0f,
+		.initialAngleDeg = 120.0f,
 	};
 
 	// ParabolicShot
 	attackConfig.parabolicShotConfig = BossAttackParabolicShotComponent::ParabolicConfig{
-		.launchAngleDeg = 45.0f,
+		.launchAngleDeg = 80.0f,
 		.gravity = 9.8f,
 		.lifetime = 5.0f,
 		.enableGroundHit = true,
-		.maxHorizontalSpeed = 30.0f,
+		.maxHorizontalSpeed = 0.6f,
 	};
 
 	// AttackManagerの初期化

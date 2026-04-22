@@ -1,6 +1,8 @@
 #include "BossOrbitingOrbsState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// AttackManager
+#include "application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackManager.h"
 // State
 #include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
@@ -12,27 +14,16 @@ void BossOrbitingOrbsState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetOrbitingOrbsComponent().StartAttack();
+	boss_->GetAttackManager().StartOrbitingOrbs(boss_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
 void BossOrbitingOrbsState::Update() {
-	BossAttackOrbitingOrbsComponent::UpdateContext context{
-		.bossPosition = boss_->GetTransform().translate,
-		.deltaTime = boss_->GetDeltaTime(),
-	};
-	// AttackComponentを更新
-	BossAttackOrbitingOrbsComponent::UpdateResult result = boss_->GetOrbitingOrbsComponent().Update(context);
-
-	/// ===結果の反映=== ///
-	// 攻撃終了判定
-	if (result.isFinished) {
-		// 次の状態へ遷移
-		boss_->ChangeState(std::make_unique<BossMoveState>());
-		return;
-	}
+	// 次の状態へ遷移
+	boss_->ChangeState(std::make_unique<BossMoveState>());
+	return;
 }
 
 ///-------------------------------------------/// 

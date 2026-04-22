@@ -10,7 +10,7 @@
 ///=====================================================///
 class BossAttackOrbitingOrbsComponent {
 public:
-    static constexpr int kOrbCount = 3; // 公転弾数（変更可）
+    static constexpr int kOrbCount = 3; // 公転弾数
 
 private:
     /// ===フェーズ定義=== ///
@@ -38,7 +38,7 @@ public:
         float lifetime = 5.0f;   // 公転を続ける時間（秒）
 
         // --- 弾の初期位相オフセット ---
-        float initialPhaseOffsetDeg = 120.0f;
+        float initialAngleDeg = 0.0f;
     };
 
     /// ===更新コンテキスト（毎フレーム渡す）=== ///
@@ -112,16 +112,23 @@ private:
     /// <summary>
     /// 弾 index の公転角度（ラジアン）を計算する。
     /// </summary>
+    /// <param name="index">弾のインデックス</param>
     float CalcOrbitAngleRad(int index) const;
 
     /// <summary>
     /// 公転角度からワールド座標を計算する。
     /// </summary>
+    /// <param name="center">公転中心の座標</param>
+    /// <param name="angleRad">現在の公転角度（ラジアン）</param>
     Vector3 CalcOrbitPosition(const Vector3& center, float angleRad) const;
 
     /// <summary>
     /// 次フレームの向きを現在位置と次位置の差分から計算する。
     /// </summary>
-    Vector3 CalcOrbitDirection(const Vector3& center, float angleRad, float deltaTime) const;
+    /// <param name="center">公転中心の座標</param>
+    /// <param name="currentPos">現在の弾の座標</param>
+    /// <param name="angleRad">現在の公転角度（ラジアン）</param>
+    /// <param name="deltaTime">前フレームからの経過時間（秒）</param>
+    Vector3 CalcOrbitDirection(const Vector3& center, const Vector3& currentPos, float angleRad, float deltaTime) const;
 };
 

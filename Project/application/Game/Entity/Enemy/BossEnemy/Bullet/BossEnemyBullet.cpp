@@ -9,6 +9,12 @@
 ///-------------------------------------------///
 BossEnemyBullet::~BossEnemyBullet() {
 	object3d_.reset();
+	Service::Collision::RemoveCollider(this);
+	// パーティクルの停止
+	if (bulletParticle_) {
+		bulletParticle_->Stop();
+		bulletParticle_ = nullptr;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -17,7 +23,7 @@ BossEnemyBullet::~BossEnemyBullet() {
 void BossEnemyBullet::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(std::make_unique<MiiEngine::Model>(), "BossEnemyBullet", MiiEngine::LightType::None);
+	object3d_->Init(std::make_unique<MiiEngine::Model>(), "sphere", MiiEngine::LightType::None);
 
 	// SphereColliderの初期化
 	SphereCollider::Initialize();
@@ -70,9 +76,6 @@ void BossEnemyBullet::Information() {
 /// 生成
 ///-------------------------------------------///
 void BossEnemyBullet::Create(const Vector3 & translate, float lifeTim) {
-	// 初期化
-	Initialize();
-
 	// 位置の設定
 	transform_.translate = translate;
 
@@ -87,7 +90,7 @@ void BossEnemyBullet::Create(const Vector3 & translate, float lifeTim) {
 		bulletParticle_ = nullptr;
 	}
 	// パーティクルの再生
-	bulletParticle_ = Service::Particle::Emit("BossEnemyAttack", transform_.translate);
+	bulletParticle_ = Service::Particle::Emit("EnemyAttack", transform_.translate);
 	bulletParticle_->SetEmitterPosition(transform_.translate);
 }
 
