@@ -1,5 +1,4 @@
 #include "Quaternion.h"
-
 #include "Math/sMath.h"
 
 ///-------------------------------------------/// 

@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "Vector3.h"
+#include "Vector4.h"
 #include "Quaternion.h"
 #include "Matrix4x4.h"
 
@@ -173,6 +174,15 @@ namespace Math {
 	Quaternion Lerp(const Quaternion& start, const Quaternion& end, float t);
 
 	/// <summary>
+	/// 2つのVector4を線形補間する関数
+	/// </summary>
+	/// <param name="start">補間の開始となるベクトル（入力）。</param>
+	/// <param name="end">補間の終了となるベクトル（入力）。</param>
+	/// <param name="t">補間係数。0.0でstart、1.0でendを表す。通常は0.0〜1.0の範囲で使用する。</param>
+	/// <returns>指定した補間係数に基づいて得られる補間済みのベクトル。</returns>
+	Vector4 Lerp(const Vector4& start, const Vector4& end, float t);
+
+	/// <summary>
 	/// 2つのベクトル間を球面線形補間（SLerp）で補間
 	/// </summary>
 	/// <param name="start">補間の開始ベクトル（参照）。</param>
@@ -189,6 +199,15 @@ namespace Math {
 	/// <param name="t">補間係数。通常は 0.0（start）から 1.0（end）の範囲で指定します。範囲外の値は外挿となる場合があります。</param>
 	/// <returns>指定した係数に対応する補間後のクォータニオン。通常は正規化されたクォータニオンが返されます。</returns>
 	Quaternion SLerp(const Quaternion& start, const Quaternion& end, float t);
+
+	/// <summary>
+	/// 2つのVector4を球面線形補間（SLerp）する関数
+	/// </summary>
+	/// <param name="start">補間の開始となるベクトル（入力）。</param>
+	/// <param name="end">補間の終了となるベクトル（入力）。</param>
+	/// <param name="t">補間係数。0.0でstart、1.0でendを表す。通常は0.0〜1.0の範囲で使用する。</param>
+	/// <returns>指定した補間係数に基づいて得られる補間済みのベクトル。</returns>
+	Vector4 SLerp(const Vector4& start, const Vector4& end, float t);
 #pragma endregion
 }
 

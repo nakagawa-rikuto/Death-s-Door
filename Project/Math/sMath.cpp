@@ -268,6 +268,17 @@ Quaternion Math::Lerp(const Quaternion& start, const Quaternion& end, float t) {
 
     return result;
 }
+// Vector4
+Vector4 Math::Lerp(const Vector4& start, const Vector4& end, float t) {
+    Vector4 result = {};
+
+    result.x = (1.0f - t) * start.x + t * end.x;
+    result.y = (1.0f - t) * start.y + t * end.y;
+    result.z = (1.0f - t) * start.z + t * end.z;
+    result.w = (1.0f - t) * start.w + t * end.w;
+
+    return result;
+}
 
 ///-------------------------------------------/// 
 /// SLerp関数
@@ -311,5 +322,28 @@ Quaternion Math::SLerp(const Quaternion& start, const Quaternion& end, float t) 
     float theta = theta_0 * t;  // 補間後の角度
 
     Quaternion q3 = Normalize(q2Modified - start * dot); // 直交成分
+    return start * cosf(theta) + q3 * sinf(theta);
+}
+// Vector4
+Vector4 Math::SLerp(const Vector4& start, const Vector4& end, float t) {
+    Vector4 q2Modified = end;
+    float dot = Dot(start, end);
+
+    // 逆方向補間を防ぐために符号を反転
+    if (dot < 0.0f) {
+        q2Modified = Vector4(-q2Modified.x, -q2Modified.y, -q2Modified.z, -q2Modified.w);
+        dot = -dot;
+    }
+
+    // Vector4補間
+    if (dot > 0.9995f) {
+        // 角度が小さい場合は Lerp で近似
+        return Normalize(start + (q2Modified - start) * t);
+    }
+
+    float theta_0 = acosf(dot); // 初期角度
+    float theta = theta_0 * t;  // 補間後の角度
+
+    Vector4 q3 = Normalize(q2Modified - start * dot); // 直交成分
     return start * cosf(theta) + q3 * sinf(theta);
 }

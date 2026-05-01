@@ -611,6 +611,8 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
+    <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1184,6 +1186,8 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
+    <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
