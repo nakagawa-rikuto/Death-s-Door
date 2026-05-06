@@ -11503,9 +11503,9 @@ namespace MiiEngine {
 		buffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&data_));
 
 		// 初期値の設定
-		data_->threshold = 0.8f;
+		data_->threshold = 0.3f;
 		data_->brightness = { 0.2125f, 0.7154f, 0.0721f };
-		data_->intensity = 1.0f;
+		data_->intensity = 0.3f;
 
 		// ★ outputTexture から SRV/RTVマネージャーとサイズを取得して、内部テクスチャを作る
 		uint32_t width = outputTexture->GetWidth();   
@@ -19486,7 +19486,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
-		sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -23599,11 +23599,13 @@ namespace MiiEngine {
 	void ParticleEditor::RecordHistory() {
 		historyManager_->PushState(currentDefinition_);
 	}
-
+#ifdef USE_IMGUI
 	///-------------------------------------------/// 
 	/// 履歴管理付きドラッグフロートUI
 	///-------------------------------------------///
 	bool ParticleEditor::DragFloatWithHistory(const char* label, float* v, float v_speed, float v_min, float v_max) {
+
+		v_max;
 		bool changed = ImGui::DragFloat(label, v, v_speed, v_min, v_max);
 
 		// ドラッグが終わった瞬間に履歴を保存
@@ -23626,7 +23628,9 @@ namespace MiiEngine {
 		}
 
 		return changed; // ドラッグ中かどうかを返す
+
 	}
+#endif // USE_IMGUI
 }
 
 ============================================================
@@ -23855,7 +23859,7 @@ namespace MiiEngine {
 		/// 履歴管理
 		/// </summary>
 		void RecordHistory();
-
+#ifdef USE_IMGUI
 		/// <summary>
 		/// 履歴用のドラッグフロートUI(float)
 		/// </summary>
@@ -23865,6 +23869,7 @@ namespace MiiEngine {
 		/// 履歴用のドラッグフロートUI(Vector3)
 		/// </summary>
 		bool DragFloat3WithHistory(const char* label, Vector3* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f);
+#endif // USE_IMGUI
 	};
 }
 
@@ -30064,6 +30069,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\OffScreen\BoxFilter3x3.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -30105,6 +30111,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\OffScreen\LuminanceBasedOutline.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -49920,8 +49927,7 @@ void GameSceneInitializeState::Enter(GameScene* gameScene) {
 	/// ===Transition=== ///
 	float fadeInDuration = 2.0f;
 	sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration); // フェードイン開始
-
-	// Bloomエフェクトの追加
+	// Bloomエフェクトの設定
 	Service::PostEffect::AddEffect(MiiEngine::OffScreenType::Bloom);
 }
 
@@ -49935,7 +49941,10 @@ void GameSceneInitializeState::Update() {
 	gameScene_->GetPlayer()->UpdateAnimation();
 
 	if (sceneManager_->GetTransitionFinished()) {
+		// ShatterGlassエフェクトの削除
 		Service::PostEffect::RemoveEffect(MiiEngine::OffScreenType::ShatterGlass);
+		// Bloomエフェクトの設定
+		Service::PostEffect::AddEffect(MiiEngine::OffScreenType::Bloom);
 		// InGame状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneStartAnimationState>());
 	}
