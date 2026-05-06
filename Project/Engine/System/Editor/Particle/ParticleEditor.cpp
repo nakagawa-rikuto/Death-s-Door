@@ -37,6 +37,9 @@ namespace MiiEngine {
 
 		// デフォルトの定義を設定
 		currentDefinition_ = ParticleDefinition();
+		historyManager_ = std::make_unique<ParticleHistory>();
+		historyManager_->ClearHistory();
+		historyManager_->PushState(currentDefinition_); // 初期状態を履歴に追加
 	}
 
 	///-------------------------------------------/// 
@@ -44,6 +47,32 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void ParticleEditor::Update() {
 		if (!isVisible_) return;
+
+#ifdef USE_IMGUI
+		// エディターウィンドウがフォーカスされている時だけUndo/Redoを受け付ける（誤爆防止）
+		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
+			// Ctrl + Z (Undo)
+			if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z, false)) {
+				if (historyManager_->CanUndo()) {
+					currentDefinition_ = historyManager_->Undo();
+					// 定義が巻き戻ったのでプレビューにも反映する
+					if (previewParticle_) {
+						previewParticle_->SetDefinition(currentDefinition_);
+					}
+				}
+			}
+			// Ctrl + Y (Redo)
+			if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Y, false)) {
+				if (historyManager_->CanRedo()) {
+					currentDefinition_ = historyManager_->Redo();
+					if (previewParticle_) {
+						previewParticle_->SetDefinition(currentDefinition_);
+					}
+				}
+			}
+		}
+#endif // USE_IMGUI
+
 
 		// プレビューパーティクルの更新
 		if (isPlaying_ && previewParticle_) {
@@ -210,6 +239,9 @@ namespace MiiEngine {
 				PlayPreview();
 			}
 
+			historyManager_->ClearHistory();
+			historyManager_->PushState(currentDefinition_); // 読み込んだ状態を履歴に追加
+
 		} catch (const std::exception& e) {
 			// エラーハンドリング
 			e;
@@ -312,6 +344,18 @@ namespace MiiEngine {
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("編集")) {
+				if (ImGui::MenuItem("元に戻す (Undo)", "Ctrl+Z", false, historyManager_->CanUndo())) {
+					currentDefinition_ = historyManager_->Undo();
+					if (previewParticle_) previewParticle_->SetDefinition(currentDefinition_);
+				}
+				if (ImGui::MenuItem("やり直す (Redo)", "Ctrl+Y", false, historyManager_->CanRedo())) {
+					currentDefinition_ = historyManager_->Redo();
+					if (previewParticle_) previewParticle_->SetDefinition(currentDefinition_);
+				}
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMenuBar();
 		}
 #endif // USE_IMGUI
@@ -389,9 +433,9 @@ namespace MiiEngine {
 		bool positionChanged = false;
 
 		/// ===XYZ個別スライダー=== ///
-		positionChanged |= ImGui::DragFloat("発生位置 X", &previewPosition_.x, 0.1f, -100.0f, 100.0f);
-		positionChanged |= ImGui::DragFloat("発生位置 Y", &previewPosition_.y, 0.1f, -100.0f, 100.0f);
-		positionChanged |= ImGui::DragFloat("発生位置 Z", &previewPosition_.z, 0.1f, -100.0f, 100.0f);
+		positionChanged |= DragFloatWithHistory("発生位置 X", &previewPosition_.x, 0.1f, -100.0f, 100.0f);
+		positionChanged |= DragFloatWithHistory("発生位置 Y", &previewPosition_.y, 0.1f, -100.0f, 100.0f);
+		positionChanged |= DragFloatWithHistory("発生位置 Z", &previewPosition_.z, 0.1f, -100.0f, 100.0f);
 
 		/// ===まとめてリセット=== ///
 		if (ImGui::Button("位置をリセット", ImVec2(150, 25))) {
@@ -432,10 +476,10 @@ namespace MiiEngine {
 		/// ===速度の設定=== ///
 		if (currentDefinition_.physics.useRandomVelocity) {
 			ImGui::Text("速度範囲");
-			velocityChanged |= ImGui::DragFloat3("最小速度", &currentDefinition_.physics.velocityMin.x, 0.1f, -100.0f, 100.0f);
-			velocityChanged |= ImGui::DragFloat3("最大速度", &currentDefinition_.physics.velocityMax.x, 0.1f, -100.0f, 100.0f);
+			velocityChanged |= DragFloat3WithHistory("最小速度", &currentDefinition_.physics.velocityMin, 0.1f, -100.0f, 100.0f);
+			velocityChanged |= DragFloat3WithHistory("最大速度", &currentDefinition_.physics.velocityMax, 0.1f, -100.0f, 100.0f);
 		} else {
-			velocityChanged |= ImGui::DragFloat3("初期速度", &currentDefinition_.physics.velocityMin.x, 0.1f, -100.0f, 100.0f);
+			velocityChanged |= DragFloat3WithHistory("初期速度", &currentDefinition_.physics.velocityMin, 0.1f, -100.0f, 100.0f);
 		}
 
 		// 速度変更時にプレビューに適用
@@ -452,7 +496,7 @@ namespace MiiEngine {
 
 		/// ===加速度の設定=== ///
 		ImGui::Text("加速度");
-		if (ImGui::DragFloat3("加速度ベクトル", &currentDefinition_.physics.acceleration.x, 0.1f, -50.0f, 50.0f)) {
+		if (DragFloat3WithHistory("加速度ベクトル", &currentDefinition_.physics.acceleration, 0.1f, -50.0f, 50.0f)) {
 			if (previewParticle_) {
 				previewParticle_->SetParameter(ParticleParameter::AccelerationX, currentDefinition_.physics.acceleration.x);
 				previewParticle_->SetParameter(ParticleParameter::AccelerationY, currentDefinition_.physics.acceleration.y);
@@ -463,14 +507,14 @@ namespace MiiEngine {
 		ImGui::Spacing();
 
 		/// ===重力の設定=== ///
-		if (ImGui::DragFloat("重力", &currentDefinition_.physics.gravity, 0.1f, -50.0f, 50.0f)) {
+		if (DragFloatWithHistory("重力", &currentDefinition_.physics.gravity, 0.1f, -50.0f, 50.0f)) {
 			if (previewParticle_) {
 				previewParticle_->SetParameter(ParticleParameter::Gravity, currentDefinition_.physics.gravity);
 			}
 		}
 		ImGui::TextDisabled("Y軸方向の加速度");
 
-		if (ImGui::DragFloat("上方向の初期加速", &currentDefinition_.physics.upwardForce, 0.1f, 0.0f, 50.0f)) {
+		if (DragFloatWithHistory("上方向の初期加速", &currentDefinition_.physics.upwardForce, 0.1f, 0.0f, 50.0f)) {
 			if (previewParticle_) {
 				previewParticle_->SetParameter(ParticleParameter::UpwardForce, currentDefinition_.physics.upwardForce);
 			}
@@ -503,6 +547,10 @@ namespace MiiEngine {
 				previewParticle_->SetParameter(ParticleParameter::StartColorA, currentDefinition_.appearance.startColor.w);
 			}
 		}
+		// ドラッグが終わった瞬間に履歴を保存
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			RecordHistory();
+		}
 		if (currentDefinition_.appearance.useColorGradient) {
 			if (ImGui::ColorEdit4("終了色", &currentDefinition_.appearance.endColor.x)) {
 				if (previewParticle_) {
@@ -511,6 +559,10 @@ namespace MiiEngine {
 					previewParticle_->SetParameter(ParticleParameter::EndColorB, currentDefinition_.appearance.endColor.z);
 					previewParticle_->SetParameter(ParticleParameter::EndColorA, currentDefinition_.appearance.endColor.w);
 				}
+			}
+			// ドラッグが終わった瞬間に履歴を保存
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				RecordHistory();
 			}
 			ImGui::TextDisabled("寿命に応じて開始色→終了色へ変化");
 		}
@@ -527,10 +579,10 @@ namespace MiiEngine {
 
 		ImGui::Text("開始スケール範囲");
 		bool scaleChanged = false;
-		scaleChanged |= ImGui::DragFloat3("最小スケール", &currentDefinition_.appearance.startScaleMin.x, 0.01f, 0.0f, 10.0f);
-		scaleChanged |= ImGui::DragFloat3("最大スケール", &currentDefinition_.appearance.startScaleMax.x, 0.01f, 0.0f, 10.0f);
+		scaleChanged |= DragFloat3WithHistory("最小スケール", &currentDefinition_.appearance.startScaleMin, 0.01f, 0.0f, 10.0f);
+		scaleChanged |= DragFloat3WithHistory("最大スケール", &currentDefinition_.appearance.startScaleMax, 0.01f, 0.0f, 10.0f);
 		if (currentDefinition_.appearance.useScaleAnimation) {
-			scaleChanged |= ImGui::DragFloat3("終了スケール", &currentDefinition_.appearance.endScale.x, 0.01f, 0.0f, 10.0f);
+			scaleChanged |= DragFloat3WithHistory("終了スケール", &currentDefinition_.appearance.endScale, 0.01f, 0.0f, 10.0f);
 			ImGui::TextDisabled("寿命に応じて縮小・拡大します");
 		}
 		if (scaleChanged && previewParticle_) {
@@ -601,11 +653,11 @@ namespace MiiEngine {
 			bool initialRotationChanged = false;
 			if (currentDefinition_.rotation.randomInitialRotation) {
 				ImGui::Text("初期回転範囲（ラジアン）");
-				initialRotationChanged |= ImGui::DragFloat3("最小初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
-				initialRotationChanged |= ImGui::DragFloat3("最大初期回転", &currentDefinition_.rotation.initialRotationMax.x, 0.01f, -6.28f, 6.28f);
+				initialRotationChanged |= DragFloat3WithHistory("最小初期回転", &currentDefinition_.rotation.initialRotationMin, 0.01f, -6.28f, 6.28f);
+				initialRotationChanged |= DragFloat3WithHistory("最大初期回転", &currentDefinition_.rotation.initialRotationMax, 0.01f, -6.28f, 6.28f);
 			} else {
 				ImGui::Text("固定初期回転（ラジアン）");
-				initialRotationChanged |= ImGui::DragFloat3("初期回転", &currentDefinition_.rotation.initialRotationMin.x, 0.01f, -6.28f, 6.28f);
+				initialRotationChanged |= DragFloat3WithHistory("初期回転", &currentDefinition_.rotation.initialRotationMin, 0.01f, -6.28f, 6.28f);
 			}
 
 			if (initialRotationChanged && previewParticle_) {
@@ -631,11 +683,11 @@ namespace MiiEngine {
 
 			if (currentDefinition_.rotation.randomRotation) {
 				ImGui::Text("回転速度範囲（ラジアン/秒)");
-				rotationChanged |= ImGui::DragFloat3("最小回転速度", &currentDefinition_.rotation.rotationSpeedMin.x, 0.1f, -10.0f, 10.0f);
-				rotationChanged |= ImGui::DragFloat3("最大回転速度", &currentDefinition_.rotation.rotationSpeedMax.x, 0.1f, -10.0f, 10.0f);
+				rotationChanged |= DragFloat3WithHistory("最小回転速度", &currentDefinition_.rotation.rotationSpeedMin, 0.1f, -10.0f, 10.0f);
+				rotationChanged |= DragFloat3WithHistory("最大回転速度", &currentDefinition_.rotation.rotationSpeedMax, 0.1f, -10.0f, 10.0f);
 			} else {
 				ImGui::Text("固定回転速度（ラジアン/秒)");
-				rotationChanged |= ImGui::DragFloat3("回転速度", &currentDefinition_.rotation.rotationSpeedMin.x, 0.1f, -10.0f, 10.0f);
+				rotationChanged |= DragFloat3WithHistory("回転速度", &currentDefinition_.rotation.rotationSpeedMin, 0.1f, -10.0f, 10.0f);
 			}
 
 			if (rotationChanged && previewParticle_) {
@@ -662,8 +714,8 @@ namespace MiiEngine {
 		/// ===寿命の設定=== ///
 		ImGui::Text("パーティクル寿命 (秒)");
 		bool lifetimeChanged = false;
-		lifetimeChanged |= ImGui::DragFloat("最小寿命", &currentDefinition_.emission.lifetimeMin, 0.1f, 0.1f, 100.0f);
-		lifetimeChanged |= ImGui::DragFloat("最大寿命", &currentDefinition_.emission.lifetimeMax, 0.1f, 0.1f, 100.0f);
+		lifetimeChanged |= DragFloatWithHistory("最小寿命", &currentDefinition_.emission.lifetimeMin, 0.1f, 0.1f, 100.0f);
+		lifetimeChanged |= DragFloatWithHistory("最大寿命", &currentDefinition_.emission.lifetimeMax, 0.1f, 0.1f, 100.0f);
 		ImGui::TextDisabled("各パーティクルの寿命はこの範囲でランダム");
 
 		if (lifetimeChanged && previewParticle_) {
@@ -677,9 +729,9 @@ namespace MiiEngine {
 		/// ===発生範囲の設定=== ///
 		ImGui::Text("発生範囲");
 		bool rangeChanged = false;
-		rangeChanged |= ImGui::DragFloat("X軸範囲", &currentDefinition_.physics.explosionRange.x, 0.1f, 0.0f, 20.0f);
-		rangeChanged |= ImGui::DragFloat("Y軸範囲", &currentDefinition_.physics.explosionRange.y, 0.1f, 0.0f, 20.0f);
-		rangeChanged |= ImGui::DragFloat("Z軸範囲", &currentDefinition_.physics.explosionRange.z, 0.1f, 0.0f, 20.0f);
+		rangeChanged |= DragFloatWithHistory("X軸範囲", &currentDefinition_.physics.explosionRange.x, 0.1f, 0.0f, 20.0f);
+		rangeChanged |= DragFloatWithHistory("Y軸範囲", &currentDefinition_.physics.explosionRange.y, 0.1f, 0.0f, 20.0f);
+		rangeChanged |= DragFloatWithHistory("Z軸範囲", &currentDefinition_.physics.explosionRange.z, 0.1f, 0.0f, 20.0f);
 		ImGui::TextDisabled("各軸方向の発生範囲（±指定値の範囲内）");
 
 		if (rangeChanged && previewParticle_) {
@@ -718,10 +770,10 @@ namespace MiiEngine {
 		} else {
 			// 連続発生モード設定
 			bool emissionChanged = false;
-			emissionChanged |= ImGui::DragFloat("発生レート（個/秒）", &currentDefinition_.emission.emissionRate, 0.1f, 0.1f, 1000.0f);
+			emissionChanged |= DragFloatWithHistory("発生レート（個/秒）", &currentDefinition_.emission.emissionRate, 0.1f, 0.1f, 1000.0f);
 			ImGui::TextDisabled("1秒あたりに発生するパーティクル数");
 
-			emissionChanged |= ImGui::DragFloat("発生頻度（秒）", &currentDefinition_.emission.frequency, 0.01f, 0.01f, 10.0f);
+			emissionChanged |= DragFloatWithHistory("発生頻度（秒）", &currentDefinition_.emission.frequency, 0.01f, 0.01f, 10.0f);
 			ImGui::TextDisabled("パーティクルを発生させる間隔");
 
 			if (emissionChanged && previewParticle_) {
@@ -738,6 +790,8 @@ namespace MiiEngine {
 		ImGui::TextDisabled("1回の発生で生成される粒子数");
 		ImGui::Spacing();
 		ImGui::Separator();
+
+
 #endif // USE_IMGUI
 	}
 
@@ -765,7 +819,7 @@ namespace MiiEngine {
 			ImGui::Indent();
 
 			// 軌跡間隔設定
-			if (ImGui::DragFloat("軌跡間隔 (秒)", &currentDefinition_.advanced.trailSpacing, 0.001f, 0.001f, 0.1f, "%.3f")) {
+			if (DragFloatWithHistory("軌跡間隔 (秒)", &currentDefinition_.advanced.trailSpacing, 0.001f, 0.001f, 0.1f)) {
 				if (previewParticle_) {
 					previewParticle_->SetDefinition(currentDefinition_);
 				}
@@ -786,10 +840,10 @@ namespace MiiEngine {
 			if (trajectoryPreviewMode_) {
 				ImGui::Spacing();
 				ImGui::Text("軌跡経路設定");
-				ImGui::DragFloat3("開始位置", &trajectoryStartPos_.x, 0.1f, -20.0f, 20.0f);
-				ImGui::DragFloat3("終了位置", &trajectoryEndPos_.x, 0.1f, -20.0f, 20.0f);
-				ImGui::DragFloat("移動速度", &trajectorySpeed_, 0.1f, 0.1f, 5.0f);
-				ImGui::DragFloat3("基本回転", &trajectoryRotation_.x, 0.1f, -6.28f, 6.28f);
+				DragFloat3WithHistory("開始位置", &trajectoryStartPos_, 0.1f, -20.0f, 20.0f);
+				DragFloat3WithHistory("終了位置", &trajectoryEndPos_, 0.1f, -20.0f, 20.0f);
+				DragFloatWithHistory("移動速度", &trajectorySpeed_, 0.1f, 0.1f, 5.0f);
+				DragFloat3WithHistory("基本回転", &trajectoryRotation_, 0.1f, -6.28f, 6.28f);
 
 				ImGui::Spacing();
 
@@ -823,13 +877,13 @@ namespace MiiEngine {
 		if (motion.enableSwirling) {
 			ImGui::Indent();
 			// 渦巻き速度
-			if (ImGui::DragFloat("渦巻き速度", &motion.swirlingSpeed, 0.1f, 0.0f, 20.0f)) {
+			if (DragFloatWithHistory("渦巻き速度", &motion.swirlingSpeed, 0.1f, 0.0f, 20.0f)) {
 				if (previewParticle_) {
 					previewParticle_->SetDefinition(currentDefinition_);
 				}
 			}
 			// 拡散速度
-			if (ImGui::DragFloat("拡散速度", &motion.expansionRate, 0.1f, 0.0f, 5.0f)) {
+			if (DragFloatWithHistory("拡散速度", &motion.expansionRate, 0.1f, 0.0f, 5.0f)) {
 				if (previewParticle_) {
 					previewParticle_->SetDefinition(currentDefinition_);
 				}
@@ -870,7 +924,7 @@ namespace MiiEngine {
 		if (motion.useRotationInfluence) {
 			ImGui::Indent();
 			// 回転影響係数
-			if (ImGui::DragFloat("回転影響係数", &motion.rotationInfluence, 0.1f, 0.0f, 5.0f)) {
+			if (DragFloatWithHistory("回転影響係数", &motion.rotationInfluence, 0.1f, 0.0f, 5.0f)) {
 				if (previewParticle_) {
 					previewParticle_->SetDefinition(currentDefinition_);
 				}
@@ -894,7 +948,7 @@ namespace MiiEngine {
 		if (motion.enableBillboardRotation) {
 			ImGui::Indent();
 			// 回転速度
-			if (ImGui::DragFloat("回転速度", &motion.billboardRotationSpeed, 0.1f, 0.0f, 10.0f)) {
+			if (DragFloatWithHistory("回転速度", &motion.billboardRotationSpeed, 0.1f, 0.0f, 10.0f)) {
 				if (previewParticle_) {
 					previewParticle_->SetDefinition(currentDefinition_);
 				}
@@ -1229,5 +1283,40 @@ namespace MiiEngine {
 			CreatePreviewParticle();
 			PlayPreview();
 		}
+	}
+
+	///-------------------------------------------/// 
+	/// 履歴管理
+	///-------------------------------------------///
+	void ParticleEditor::RecordHistory() {
+		historyManager_->PushState(currentDefinition_);
+	}
+
+	///-------------------------------------------/// 
+	/// 履歴管理付きドラッグフロートUI
+	///-------------------------------------------///
+	bool ParticleEditor::DragFloatWithHistory(const char* label, float* v, float v_speed, float v_min, float v_max) {
+		bool changed = ImGui::DragFloat(label, v, v_speed, v_min, v_max);
+
+		// ドラッグが終わった瞬間に履歴を保存
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			RecordHistory();
+		}
+
+		return changed; // ドラッグ中かどうかを返す
+	}
+
+	///-------------------------------------------/// 
+	/// 履歴管理付きドラッグフロートUI(Vector3)
+	///-------------------------------------------///
+	bool ParticleEditor::DragFloat3WithHistory(const char* label, Vector3* v, float v_speed, float v_min, float v_max) {
+		bool changed = ImGui::DragFloat3(label, &v->x, v_speed, v_min, v_max);
+
+		// ドラッグが終わった瞬間に履歴を保存
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			RecordHistory();
+		}
+
+		return changed; // ドラッグ中かどうかを返す
 	}
 }

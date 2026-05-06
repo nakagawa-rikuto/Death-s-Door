@@ -22,8 +22,30 @@ namespace Service {
 	///-------------------------------------------///
 	// OffScreenTypeの設定
 	void PostEffect::SetOffScreenType(MiiEngine::OffScreenType type) {
-		return Locator::GetOffScreenRenderer()->SetType(type);
+		Locator::GetOffScreenRenderer()->SetType(type);
 	}
+
+	///-------------------------------------------/// 
+	/// エフェクトのリストをクリアする
+	///-------------------------------------------///
+	void PostEffect::ClearEffects() {
+		Locator::GetOffScreenRenderer()->ClearEffects();
+	}
+
+	///-------------------------------------------/// 
+	/// エフェクトを追加する
+	///-------------------------------------------///
+	void PostEffect::AddEffect(MiiEngine::OffScreenType type) {
+		Locator::GetOffScreenRenderer()->AddEffect(type);
+	}
+
+	///-------------------------------------------/// 
+	/// エフェクトの削除
+	///-------------------------------------------///
+	void PostEffect::RemoveEffect(MiiEngine::OffScreenType type) {
+		Locator::GetOffScreenRenderer()->RemoveEffect(type);
+	}
+
 	// Dissolve
 	void PostEffect::SetDissolveData(MiiEngine::DissolveData data) {
 		if (auto dissolve = dynamic_cast<MiiEngine::DissolveEffect*>(Locator::GetOffScreenRenderer()->GetRenderPass(MiiEngine::OffScreenType::Dissolve))) {

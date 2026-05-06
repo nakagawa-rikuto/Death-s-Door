@@ -56,6 +56,23 @@ namespace MiiEngine {
 		/// <param name="swapChainRTV">SwapChain の RTV ハンドル</param>
 		void CopyToSwapChain(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE swapChainRTV);
 
+		/// <summary>
+		/// エフェクトリストをクリア
+		/// </summary>
+		void ClearEffects();
+
+		/// <summary>
+		/// エフェクトリストを追加
+		/// </summary>
+		/// <param name="type">追加するエフェクトタイプ</param>
+		void AddEffect(OffScreenType type);
+
+		/// <summary>
+		/// 特定のエフェクトをリストから削除
+		/// </summary>
+		/// <param name="type">削除するエフェクトタイプ</param>
+		void RemoveEffect(OffScreenType type);
+
 #ifdef USE_IMGUI
 		void DrawImGui();
 #endif
@@ -87,7 +104,7 @@ namespace MiiEngine {
 		// シーン描画用のRenderTexture
 		std::shared_ptr<RenderTexture> sceneTexture_;
 		// エフェクト適用後のRenderTexture
-		std::shared_ptr<RenderTexture> effectTexture_;
+		std::shared_ptr<RenderTexture> pingPongTextures_[2];
 
 		// RenderPassコンテナ
 		std::unordered_map<OffScreenType, std::unique_ptr<RenderPass>> renderPass_;
@@ -95,7 +112,14 @@ namespace MiiEngine {
 		RenderPass* activePass_ = nullptr;
 
 		// Pipelineのタイプ
-		OffScreenType type_ = OffScreenType::CopyImage;
+		std::vector<OffScreenType> activeEffects_;
+
+	private:
+		/// <summary>
+		/// 最終結果のテクスチャを取得
+		/// </summary>
+		/// <returns>最終結果のRenderTextureへの共有ポインタ</returns>
+		std::shared_ptr<RenderTexture> GetFinalResultTexture() const;
 	};
 }
 

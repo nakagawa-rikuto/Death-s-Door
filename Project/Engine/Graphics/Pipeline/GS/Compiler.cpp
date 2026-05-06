@@ -44,6 +44,8 @@ namespace MiiEngine {
 		{ PipelineType::RadiusBlur,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/RadialBlur.PS.hlsl"}},
 		{ PipelineType::OutLine,		 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/LuminanceBasedOutline.PS.hlsl"}},
 		{ PipelineType::ShatterGlass,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/ShatterGlass.PS.hlsl"}},	
+		{ PipelineType::HighLuminance,	 { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/HighLuminance.PS.hlsl"}},
+		{ PipelineType::BloomComposite,  { L"OffScreen/Fullscreen.VS.hlsl",  L"OffScreen/BloomComposite.PS.hlsl"}},
 		};
 	}
 

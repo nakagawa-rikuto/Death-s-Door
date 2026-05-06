@@ -30,6 +30,23 @@ namespace Service {
 		static void SetOffScreenType(MiiEngine::OffScreenType type);
 
 		/// <summary>
+		/// エフェクトのリストをクリアする
+		/// </summary>
+		static void ClearEffects();
+
+		/// <summary>
+		/// エフェクトを追加する
+		/// </summary>
+		/// <param name="type">追加するエフェクトの種類</param>
+		static void AddEffect(MiiEngine::OffScreenType type);
+
+		/// <summary>
+		/// エフェクトの削除
+		/// </summary>
+		/// <param name="type"></param>
+		static void RemoveEffect(MiiEngine::OffScreenType type);
+
+		/// <summary>
 		/// DissolveDataの設定
 		/// </summary>
 		/// <param name="data">設定する DissolveData 型のデータ。値渡しで受け取られ、コピーされます。</param>
@@ -52,6 +69,8 @@ namespace Service {
 		/// </summary>
 		/// <param name="data">設定する ShatterGlassData の値。値渡しされ、内部状態がこの値で更新される。</param>
 		static void SetShatterGlassData(MiiEngine::ShatterGlassData data);
+
+		
 	};
 }
 

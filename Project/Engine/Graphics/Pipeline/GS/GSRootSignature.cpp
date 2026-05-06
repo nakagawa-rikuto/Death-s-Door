@@ -389,6 +389,164 @@ namespace MiiEngine {
 			return rootSignature;
 		}
 
+		/// ===SkyBox=== ///
+		ComPtr<ID3D12RootSignature> TypeSkyBox(ID3D12Device* device) {
+			// DescriptorRangeの生成				
+			// t0用
+			D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
+			descriptorRange0.BaseShaderRegister = 0; // t0
+			descriptorRange0.NumDescriptors = 1; // 数は1つ
+			descriptorRange0.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
+			descriptorRange0.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
+
+			// RootParameterの生成
+			D3D12_ROOT_PARAMETER rootParameters[9] = {};
+			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使用
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使用
+			rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0を使用
+
+			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使用
+			rootParameters[1].Descriptor.ShaderRegister = 0; // レジスタ番号0を使用
+
+			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使用
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange0; // Tableの中身の配列を指定
+			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1; // Tableで利用する数
+
+			// Samplerの設定
+			D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+			staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+			staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+			staticSamplers[0].ShaderRegister = 0; // S0
+			staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+
+			// RootSignatureの生成
+			D3D12_ROOT_SIGNATURE_DESC desc{};
+			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+			desc.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
+			desc.NumParameters = _countof(rootParameters); // 配列の高さ
+			desc.pStaticSamplers = staticSamplers;
+			desc.NumStaticSamplers = _countof(staticSamplers);
+
+			// --- シリアライズ & 作成 ---
+			ComPtr<ID3DBlob> signatureBlob;
+			ComPtr<ID3DBlob> errorBlob;
+			HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+			if (FAILED(hr)) {
+				if (errorBlob) {
+					OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				}
+				assert(false);
+				return nullptr;
+			}
+
+			ComPtr<ID3D12RootSignature> rootSignature;
+			hr = device->CreateRootSignature(
+				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+				IID_PPV_ARGS(&rootSignature));
+			assert(SUCCEEDED(hr));
+
+			return rootSignature;
+		}
+
+		/// ===FFTOcean=== ///
+		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
+			// VS用のSRV
+			D3D12_DESCRIPTOR_RANGE vsSrvRange = {};
+			vsSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			vsSrvRange.NumDescriptors = 2;
+			vsSrvRange.BaseShaderRegister = 0; // t0, t1
+			// VS用のRipplenSRV
+			D3D12_DESCRIPTOR_RANGE vsRippleSrvRange = {};
+			vsRippleSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			vsRippleSrvRange.NumDescriptors = 1;
+			vsRippleSrvRange.BaseShaderRegister = 2; // t2
+			// PS用のSRV
+			D3D12_DESCRIPTOR_RANGE psSrvRange = {};
+			psSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			psSrvRange.NumDescriptors = 1;
+			psSrvRange.BaseShaderRegister = 3; // t3
+
+			/// RootParameterの生成
+			D3D12_ROOT_PARAMETER rootParameters[5] = {};
+			// VS（b0）
+			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[0].Descriptor.ShaderRegister = 0;
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// PS（b1）
+			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+			rootParameters[1].Descriptor.ShaderRegister = 1;
+			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			// VSのSRVテクスチャ用（t0,t1）
+			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange;
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// VSのRipplenSRVテクスチャ用（t2）
+			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[3].DescriptorTable.pDescriptorRanges = &vsRippleSrvRange;
+			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			// PSのSRVテクスチャ用（t3）
+			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
+			rootParameters[4].DescriptorTable.pDescriptorRanges = &psSrvRange;
+			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+			/// Samplerの設定
+			D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
+			staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+			staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+			staticSamplers[0].ShaderRegister = 0; // s0
+			staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
+			staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+			staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+			staticSamplers[1].ShaderRegister = 1; // s1
+			staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
+
+			/// RootSignatureの生成
+			D3D12_ROOT_SIGNATURE_DESC desc{};
+			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+			desc.pParameters = rootParameters;
+			desc.NumParameters = _countof(rootParameters);
+			desc.pStaticSamplers = staticSamplers;
+			desc.NumStaticSamplers = _countof(staticSamplers);
+
+			/// シリアライズ & 作成
+			ComPtr<ID3DBlob> signatureBlob;
+			ComPtr<ID3DBlob> errorBlob;
+			HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+			if (FAILED(hr)) {
+				if (errorBlob) {
+					OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+				}
+				assert(false);
+				return nullptr;
+			}
+
+			ComPtr<ID3D12RootSignature> rootSignature;
+			hr = device->CreateRootSignature(
+				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+				IID_PPV_ARGS(&rootSignature));
+			assert(SUCCEEDED(hr));
+
+			return rootSignature;
+		}
+
 		/// ===OffScreen=== ///
 		ComPtr<ID3D12RootSignature> TypeOffScreen(ID3D12Device* device) {
 			// DescriptorRangeの生成
@@ -653,48 +811,45 @@ namespace MiiEngine {
 			return rootSignature;
 		}
 
-		/// ===SkyBox=== ///
-		ComPtr<ID3D12RootSignature> TypeSkyBox(ID3D12Device* device) {
-			// DescriptorRangeの生成				
-			// t0用
-			D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
-			descriptorRange0.BaseShaderRegister = 0; // t0
-			descriptorRange0.NumDescriptors = 1; // 数は1つ
-			descriptorRange0.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
-			descriptorRange0.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // Offsetを自動計算
+		/// ===OffScreen(HighLuminance)=== ///
+		ComPtr<ID3D12RootSignature> TypeOffScreenHighLuminance(ID3D12Device* device) {
+			// DescriptorRangeの生成 (t0用)
+			D3D12_DESCRIPTOR_RANGE descriptorRange = {};
+			descriptorRange.BaseShaderRegister = 0; // t0
+			descriptorRange.NumDescriptors = 1; // 数は1つ
+			descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
+			descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 			// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[9] = {};
-			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使用
-			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使用
-			rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号0を使用
+			D3D12_ROOT_PARAMETER rootParameters[2]{};
 
+			// [0] テクスチャ (t0)
+			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange;
+			rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
+
+			// [1] 定数バッファ (b0)
 			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使用
-			rootParameters[1].Descriptor.ShaderRegister = 0; // レジスタ番号0を使用
-
-			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使用
-			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange0; // Tableの中身の配列を指定
-			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1; // Tableで利用する数
+			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[1].Descriptor.ShaderRegister = 0; // b0
 
 			// Samplerの設定
-			D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+			D3D12_STATIC_SAMPLER_DESC staticSamplers[1]{};
 			staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 			staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 			staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
-			staticSamplers[0].ShaderRegister = 0; // S0
+			staticSamplers[0].ShaderRegister = 0;
 			staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
 
 			// RootSignatureの生成
 			D3D12_ROOT_SIGNATURE_DESC desc{};
 			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-			desc.pParameters = rootParameters; // ルートパラメータ配列へのポインタ
-			desc.NumParameters = _countof(rootParameters); // 配列の高さ
+			desc.pParameters = rootParameters;
+			desc.NumParameters = _countof(rootParameters);
 			desc.pStaticSamplers = staticSamplers;
 			desc.NumStaticSamplers = _countof(staticSamplers);
 
@@ -703,68 +858,56 @@ namespace MiiEngine {
 			ComPtr<ID3DBlob> errorBlob;
 			HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 			if (FAILED(hr)) {
-				if (errorBlob) {
-					OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-				}
+				if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
 				assert(false);
 				return nullptr;
 			}
 
 			ComPtr<ID3D12RootSignature> rootSignature;
-			hr = device->CreateRootSignature(
-				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
-				IID_PPV_ARGS(&rootSignature));
+			hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 			assert(SUCCEEDED(hr));
 
 			return rootSignature;
 		}
 
-		/// ===FFTOcean=== ///
-		ComPtr<ID3D12RootSignature> TypeFFTOcean(ID3D12Device* device) {
-			// VS用のSRV
-			D3D12_DESCRIPTOR_RANGE vsSrvRange = {};
-			vsSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			vsSrvRange.NumDescriptors = 2;
-			vsSrvRange.BaseShaderRegister = 0; // t0, t1
-			// VS用のRipplenSRV
-			D3D12_DESCRIPTOR_RANGE vsRippleSrvRange = {};
-			vsRippleSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			vsRippleSrvRange.NumDescriptors = 1;
-			vsRippleSrvRange.BaseShaderRegister = 2; // t2
-			// PS用のSRV
-			D3D12_DESCRIPTOR_RANGE psSrvRange = {};
-			psSrvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-			psSrvRange.NumDescriptors = 1;
-			psSrvRange.BaseShaderRegister = 3; // t3
+		/// ===OffScreen(BloomComposite)=== ///
+		ComPtr<ID3D12RootSignature> TypeOffScreenBloomComposite(ID3D12Device* device) {
+			// DescriptorRangeの生成 (t0：メインシーン画像用)
+			D3D12_DESCRIPTOR_RANGE descriptorRange0 = {};
+			descriptorRange0.BaseShaderRegister = 0; // t0
+			descriptorRange0.NumDescriptors = 1;
+			descriptorRange0.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			descriptorRange0.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-			/// RootParameterの生成
-			D3D12_ROOT_PARAMETER rootParameters[5] = {};
-			// VS（b0）
-			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[0].Descriptor.ShaderRegister = 0;
-			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			// PS（b1）
+			// DescriptorRangeの生成 (t1：ブラー画像用)
+			D3D12_DESCRIPTOR_RANGE descriptorRange1 = {};
+			descriptorRange1.BaseShaderRegister = 1; // t1
+			descriptorRange1.NumDescriptors = 1;
+			descriptorRange1.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			descriptorRange1.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			// RootParameterの生成 (全部で3つ)
+			D3D12_ROOT_PARAMETER rootParameters[3]{};
+
+			// [0] メインシーンテクスチャ (t0)
+			rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange0;
+			rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
+
+			// [1] 定数バッファ (b0: BloomData)
 			rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-			rootParameters[1].Descriptor.ShaderRegister = 1;
 			rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-			// VSのSRVテクスチャ用（t0,t1）
-			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
-			rootParameters[2].DescriptorTable.pDescriptorRanges = &vsSrvRange;
-			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			// VSのRipplenSRVテクスチャ用（t2）
-			rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[3].DescriptorTable.NumDescriptorRanges = 1;
-			rootParameters[3].DescriptorTable.pDescriptorRanges = &vsRippleSrvRange;
-			rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-			// PSのSRVテクスチャ用（t3）
-			rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-			rootParameters[4].DescriptorTable.NumDescriptorRanges = 1;
-			rootParameters[4].DescriptorTable.pDescriptorRanges = &psSrvRange;
-			rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[1].Descriptor.ShaderRegister = 0; // b0
 
-			/// Samplerの設定
-			D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
+			// [2] ブラーテクスチャ (t1)
+			rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange1;
+			rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
+
+			// Samplerの設定
+			D3D12_STATIC_SAMPLER_DESC staticSamplers[1]{};
 			staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 			staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -772,17 +915,9 @@ namespace MiiEngine {
 			staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 			staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
 			staticSamplers[0].ShaderRegister = 0; // s0
-			staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
-			staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-			staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;
-			staticSamplers[1].ShaderRegister = 1; // s1
-			staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // 全てのシェーダーステージで使用可能
+			staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-			/// RootSignatureの生成
+			// RootSignatureの生成
 			D3D12_ROOT_SIGNATURE_DESC desc{};
 			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 			desc.pParameters = rootParameters;
@@ -790,22 +925,18 @@ namespace MiiEngine {
 			desc.pStaticSamplers = staticSamplers;
 			desc.NumStaticSamplers = _countof(staticSamplers);
 
-			/// シリアライズ & 作成
+			// --- シリアライズ & 作成 ---
 			ComPtr<ID3DBlob> signatureBlob;
 			ComPtr<ID3DBlob> errorBlob;
 			HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 			if (FAILED(hr)) {
-				if (errorBlob) {
-					OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-				}
+				if (errorBlob) OutputDebugStringA((char*)errorBlob->GetBufferPointer());
 				assert(false);
 				return nullptr;
 			}
 
 			ComPtr<ID3D12RootSignature> rootSignature;
-			hr = device->CreateRootSignature(
-				0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
-				IID_PPV_ARGS(&rootSignature));
+			hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 			assert(SUCCEEDED(hr));
 
 			return rootSignature;
@@ -832,6 +963,8 @@ namespace MiiEngine {
 			{ PipelineType::RadiusBlur,			TypeOffScreenOneBuffer },
 			{ PipelineType::OutLine,			TypeOffScreen },
 			{ PipelineType::ShatterGlass,       TypeOffScreenShatterGlass },
+			{ PipelineType::HighLuminance,      TypeOffScreenHighLuminance },
+			{ PipelineType::BloomComposite,     TypeOffScreenBloomComposite },
 		};
 	}
 

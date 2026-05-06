@@ -86,6 +86,8 @@
       <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
     <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl" />
+    <FxCompile Include="Resource\Shaders\OffScreen\BloomComposite.PS.hlsl" />
+    <FxCompile Include="Resource\Shaders\OffScreen\HighLuminance.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -611,6 +613,9 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
+    <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
+    <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1184,6 +1189,9 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
+    <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
+    <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
