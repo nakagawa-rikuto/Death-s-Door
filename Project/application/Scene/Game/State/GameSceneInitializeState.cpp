@@ -18,6 +18,9 @@ void GameSceneInitializeState::Enter(GameScene* gameScene) {
 	/// ===Transition=== ///
 	float fadeInDuration = 2.0f;
 	sceneManager_->StartFadeIn(TransitionType::ShatterGlass, fadeInDuration); // フェードイン開始
+
+	// Bloomエフェクトの追加
+	Service::PostEffect::AddEffect(MiiEngine::OffScreenType::Bloom);
 }
 
 ///-------------------------------------------/// 
@@ -30,7 +33,7 @@ void GameSceneInitializeState::Update() {
 	gameScene_->GetPlayer()->UpdateAnimation();
 
 	if (sceneManager_->GetTransitionFinished()) {
-		Service::PostEffect::SetOffScreenType(MiiEngine::OffScreenType::CopyImage);
+		Service::PostEffect::RemoveEffect(MiiEngine::OffScreenType::ShatterGlass);
 		// InGame状態に変更
 		gameScene_->ChangState(std::make_unique<GameSceneStartAnimationState>());
 	}

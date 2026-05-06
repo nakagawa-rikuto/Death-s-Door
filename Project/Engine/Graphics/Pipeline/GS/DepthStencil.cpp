@@ -41,6 +41,8 @@ namespace MiiEngine {
 			{ PipelineType::RadiusBlur,   CreateDepthDesc(false) },
 			{ PipelineType::OutLine,	  CreateDepthDesc(false) },
 			{ PipelineType::ShatterGlass, CreateDepthDesc(false) },
+			{ PipelineType::HighLuminance, CreateDepthDesc(false) },
+			{ PipelineType::BloomComposite, CreateDepthDesc(false) },
 		};
 	}
 

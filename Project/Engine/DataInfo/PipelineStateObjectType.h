@@ -43,6 +43,10 @@ namespace MiiEngine {
 		OutLine,
 		// ShatterGlass
 		ShatterGlass,
+		// HighLuminance
+		HighLuminance,
+		// BloomComposite
+		BloomComposite,
 
 		// 総数(これは最後にしなければいけない)
 		CountOfPipelineType,
@@ -86,10 +90,12 @@ namespace MiiEngine {
 			PipelineType::RadiusBlur,
 			PipelineType::OutLine,
 			PipelineType::ShatterGlass,
+			PipelineType::HighLuminance,
+			PipelineType::BloomComposite,
 		};
 	}
 
-	///-------------------------------------------///
+	///-------------------------------------------///	
 	/// 列挙型の全値を取得する関数
 	///-------------------------------------------///
 	constexpr std::array<CSPipelineType, static_cast<size_t>(CSPipelineType::CountOfCSPipelineType)> AllCSPipelineTypes() {

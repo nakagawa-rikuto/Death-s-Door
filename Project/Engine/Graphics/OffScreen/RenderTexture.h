@@ -49,6 +49,10 @@ namespace MiiEngine {
 
 		// RenderTextureの取得
 		ID3D12Resource* GetBuffer();
+		// RTVManagerの取得
+		RTVManager* GetRTVManager();
+		// SRVManagerの取得
+		SRVManager* GetSRVManager();
 		// RTVHandleの取得
 		D3D12_CPU_DESCRIPTOR_HANDLE GetRTVHandle();
 		// SRVHandleの取得
@@ -57,6 +61,9 @@ namespace MiiEngine {
 		uint32_t GetRTVHandleIndex() const;
 		// SRVのインデックス番号の取得
 		uint32_t GetSRVHandleIndex() const;
+		// サイズ
+		uint32_t GetWidth() const;
+		uint32_t GetHeight() const;
 
 	private:
 		// Manager

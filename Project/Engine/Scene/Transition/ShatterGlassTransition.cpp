@@ -11,7 +11,7 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	ShatterGlassTransition::~ShatterGlassTransition() {
-		Service::PostEffect::SetOffScreenType(OffScreenType::CopyImage);
+		Service::PostEffect::RemoveEffect(MiiEngine::OffScreenType::ShatterGlass);
 		if (sprite_) {
 			sprite_.reset();
 		}

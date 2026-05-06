@@ -124,6 +124,8 @@ namespace MiiEngine {
 				{ PipelineType::RadiusBlur,   { nullptr,                  0 } },
 				{ PipelineType::OutLine,      { nullptr,                  0 } },
 				{ PipelineType::ShatterGlass, { nullptr,                  0 } },
+				{ PipelineType::HighLuminance, { nullptr,                  0 } },
+				{ PipelineType::BloomComposite, { nullptr,                  0 } },
 			};
 			}();
 	}

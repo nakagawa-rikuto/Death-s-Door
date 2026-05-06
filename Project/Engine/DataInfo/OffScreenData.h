@@ -11,5 +11,6 @@ namespace MiiEngine {
 		OutLine,
 		Dissolve,
 		ShatterGlass,
+		Bloom,
 	};
 }

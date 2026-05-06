@@ -24,6 +24,8 @@ namespace MiiEngine {
 		{ PipelineType::RadiusBlur,			D3D12_CULL_MODE_NONE },
 		{ PipelineType::OutLine,			D3D12_CULL_MODE_NONE },
 		{ PipelineType::ShatterGlass,		D3D12_CULL_MODE_NONE },
+		{ PipelineType::HighLuminance,		D3D12_CULL_MODE_NONE },
+		{ PipelineType::BloomComposite,		D3D12_CULL_MODE_NONE },
 		};
 	}
 

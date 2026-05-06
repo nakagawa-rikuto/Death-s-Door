@@ -72,6 +72,7 @@ void TitleScene::Initialize() {
 
 	/// ===PostEffectの設定=== ///
 	Service::PostEffect::SetOffScreenType(MiiEngine::OffScreenType::Vignette);
+	Service::PostEffect::AddEffect(MiiEngine::OffScreenType::Bloom);
 }
 
 ///-------------------------------------------/// 
