@@ -21,59 +21,35 @@ bool AttackDataSerializer::SaveToJson(const AttackData& data, const std::string&
         j["comboWindowTime"] = data.comboWindowTime;
         j["cooldownTime"] = data.cooldownTime;
 
-        // 軌道設定
-        j["isRightHandAttack"] = data.isRightHandAttack;
-        j["isLeftHandAttack"] = data.isLeftHandAttack;
+        // 共通軌道設定
         j["curveSegments"] = data.curveSegments;
         j["weaponLength"] = data.weaponLength;
 
-		// 武器用ベジェ曲線の制御点
-        json trajectoryArray = json::array();
-        for (const auto& point : data.weaponTrajectoryPoints) {
-            json pointJson;
-            pointJson["position"] = { point.position.x, point.position.y, point.position.z };
-            pointJson["rotation"] = { point.rotation.x, point.rotation.y, point.rotation.z, point.rotation.w };
-            pointJson["time"] = point.time;
-            trajectoryArray.push_back(pointJson);
-        }
-        j["weaponTrajectoryPoints"] = trajectoryArray;
+        /// ===軌道チャンネルの配列=== ///
+        json trajctoryChannelsArray = json::array();
+        for (const auto& channel : data.trajectories) {
+            json ch;
+            ch["name"] = channel.name;
+            ch["color"] = { channel.color.x, channel.color.y, channel.color.z };
+            ch["enabled"] = channel.enabled;
 
-		// 右手用ベジェ曲線の制御点
-        json rightHandArray = json::array();
-        for (const auto& point : data.rightHandTrajectoryPoints) {
-            json pointJson;
-            pointJson["position"] = { point.position.x, point.position.y, point.position.z };
-            pointJson["rotation"] = { point.rotation.x, point.rotation.y, point.rotation.z, point.rotation.w };
-            pointJson["time"] = point.time;
-            rightHandArray.push_back(pointJson);
+            json pointsArray = json::array();
+            for (const auto& point : channel.points) {
+                json pointJson;
+                pointJson["position"] = { point.position.x, point.position.y, point.position.z };
+                pointJson["rotation"] = { point.rotation.x, point.rotation.y, point.rotation.z, point.rotation.w };
+                pointJson["time"] = point.time;
+                pointsArray.push_back(pointJson);
+            }
+            ch["points"] = pointsArray;
+            trajctoryChannelsArray.push_back(ch);
         }
-        j["rightHandTrajectoryPoints"] = rightHandArray;
-
-		// 左手用ベジェ曲線の制御点
-        json leftHandArray = json::array();
-        for (const auto& point : data.leftHandTrajectoryPoints) {
-            json pointJson;
-            pointJson["position"] = { point.position.x, point.position.y, point.position.z };
-            pointJson["rotation"] = { point.rotation.x, point.rotation.y, point.rotation.z, point.rotation.w };
-            pointJson["time"] = point.time;
-            leftHandArray.push_back(pointJson);
-        }
-        j["leftHandTrajectoryPoints"] = leftHandArray;
+        j["trajectories"] = trajctoryChannelsArray;
 
         // コンボ設定
         j["canComboToNext"] = data.canComboToNext;
-        j["nextComboID"] = data.nextComboID;
+		j["nextComboID"] = data.nextComboID;
         j["branchComboIDs"] = data.branchComboIDs;
-
-        // エフェクト設定
-        j["particleEffectName"] = data.particleEffectName;
-        j["particleOffset"] = { data.particleOffset.x, data.particleOffset.y, data.particleOffset.z };
-        j["cameraShakeIntensity"] = data.cameraShakeIntensity;
-        j["cameraShakeDuration"] = data.cameraShakeDuration;
-
-        // サウンド設定
-        j["swingSoundName"] = data.swingSoundName;
-        j["hitSoundName"] = data.hitSoundName;
 
         // プレイヤーの動き
         j["moveSpeedMultiplier"] = data.moveSpeedMultiplier;
@@ -81,11 +57,8 @@ bool AttackDataSerializer::SaveToJson(const AttackData& data, const std::string&
 
         // デバッグ/プレビュー
         j["showTrajectory"] = data.showTrajectory;
-        j["trajectoryColor"] = { data.weaponColor.x, data.weaponColor.y, data.weaponColor.z };
-        j["rightHandColor"] = { data.rightHandColor.x, data.rightHandColor.y, data.rightHandColor.z };
-        j["leftHandColor"] = { data.leftHandColor.x, data.leftHandColor.y, data.leftHandColor.z };
 
-        // ディレクトリが存在しない場合は作成
+		// ディレクトリが存在しない場合は作成
         std::filesystem::path dirPath = std::filesystem::path(filepath).parent_path();
         if (!dirPath.empty() && !std::filesystem::exists(dirPath)) {
             std::filesystem::create_directories(dirPath);
@@ -96,7 +69,7 @@ bool AttackDataSerializer::SaveToJson(const AttackData& data, const std::string&
         if (!file.is_open()) {
             return false;
         }
-        file << j.dump(4); // インデント4でフォーマット
+        file << j.dump(4);
         file.close();
 
         return true;
@@ -142,60 +115,40 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
         data.comboWindowTime = j.value("comboWindowTime", 1.0f);
         data.cooldownTime = j.value("cooldownTime", 0.3f);
 
-        // 軌道設定
-        data.isRightHandAttack = j.value("isRightHandAttack", false);
-        data.isLeftHandAttack = j.value("isLeftHandAttack", false);
+		// 共通軌道設定
         data.curveSegments = j.value("curveSegments", AttackData::kDefaultBezierSegments);
         data.weaponLength = j.value("weaponLength", AttackData::kDefaultWeaponLength);
+        
+        /// ===軌道チャンネル配列=== ///
+        data.trajectories.clear();
+        if (j.contains("trajectories")) {
+            for (const auto& ch : j["trajectories"]) {
+                TrajectoryChannel channel;
+                channel.name = ch.value("name", "Channel");
+                channel.enabled = ch.value("enabled", true);
 
-		// 武器用ベジェ曲線の制御点
-        data.weaponTrajectoryPoints.clear();
-        if (j.contains("weaponTrajectoryPoints")) {
-            for (const auto& pointJson : j["weaponTrajectoryPoints"]) {
-                MiiEngine::BezierControlPointData point;
-                point.position.x = pointJson["position"][0];
-                point.position.y = pointJson["position"][1];
-                point.position.z = pointJson["position"][2];
-				point.rotation.x = pointJson["rotation"][0];
-				point.rotation.y = pointJson["rotation"][1];
-				point.rotation.z = pointJson["rotation"][2];
-				point.rotation.w = pointJson["rotation"][3];
-                point.time = pointJson["time"];
-                data.weaponTrajectoryPoints.push_back(point);
-            }
-        }
+                if (ch.contains("color")) {
+                    channel.color.x = ch["color"][0];
+					channel.color.y = ch["color"][1];
+					channel.color.z = ch["color"][2];
+                }
 
-		// 右手用ベジェ曲線の制御点
-        data.rightHandTrajectoryPoints.clear();
-        if (j.contains("rightHandTrajectoryPoints")) {
-            for (const auto& pointJson : j["rightHandTrajectoryPoints"]) {
-                MiiEngine::BezierControlPointData point;
-                point.position.x = pointJson["position"][0];
-                point.position.y = pointJson["position"][1];
-                point.position.z = pointJson["position"][2];
-                point.rotation.x = pointJson["rotation"][0];
-                point.rotation.y = pointJson["rotation"][1];
-                point.rotation.z = pointJson["rotation"][2];
-                point.rotation.w = pointJson["rotation"][3];
-                point.time = pointJson["time"];
-                data.rightHandTrajectoryPoints.push_back(point);
-            }
-        }
-
-		// 左手用ベジェ曲線の制御点
-        data.leftHandTrajectoryPoints.clear();
-        if (j.contains("leftHandTrajectoryPoints")) {
-            for (const auto& pointJson : j["leftHandTrajectoryPoints"]) {
-                MiiEngine::BezierControlPointData point;
-                point.position.x = pointJson["position"][0];
-                point.position.y = pointJson["position"][1];
-                point.position.z = pointJson["position"][2];
-                point.rotation.x = pointJson["rotation"][0];
-                point.rotation.y = pointJson["rotation"][1];
-                point.rotation.z = pointJson["rotation"][2];
-                point.rotation.w = pointJson["rotation"][3];
-                point.time = pointJson["time"];
-                data.leftHandTrajectoryPoints.push_back(point);
+                channel.points.clear();
+                if (ch.contains("points")) {
+                    for (const auto& pointJson : ch["points"]) {
+                        MiiEngine::BezierControlPointData point;
+                        point.position.x = pointJson["position"][0];
+                        point.position.y = pointJson["position"][1];
+                        point.position.z = pointJson["position"][2];
+                        point.rotation.x = pointJson["rotation"][0];
+                        point.rotation.y = pointJson["rotation"][1];
+                        point.rotation.z = pointJson["rotation"][2];
+                        point.rotation.w = pointJson["rotation"][3];
+                        point.time = pointJson["time"];
+                        channel.points.push_back(point);
+                    }
+                }
+                data.trajectories.push_back(channel);
             }
         }
 
@@ -205,20 +158,6 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
         if (j.contains("branchComboIDs")) {
             data.branchComboIDs = j["branchComboIDs"].get<std::vector<int>>();
         }
-
-        // エフェクト設定
-        data.particleEffectName = j.value("particleEffectName", "");
-        if (j.contains("particleOffset")) {
-            data.particleOffset.x = j["particleOffset"][0];
-            data.particleOffset.y = j["particleOffset"][1];
-            data.particleOffset.z = j["particleOffset"][2];
-        }
-        data.cameraShakeIntensity = j.value("cameraShakeIntensity", 0.0f);
-        data.cameraShakeDuration = j.value("cameraShakeDuration", 0.0f);
-
-        // サウンド設定
-        data.swingSoundName = j.value("swingSoundName", "");
-        data.hitSoundName = j.value("hitSoundName", "");
 
         // プレイヤーの動き
         data.moveSpeedMultiplier = j.value("moveSpeedMultiplier", 0.4f);
@@ -230,21 +169,6 @@ bool AttackDataSerializer::LoadFromJson(AttackData& data, const std::string& fil
 
         // デバッグ/プレビュー
         data.showTrajectory = j.value("showTrajectory", true);
-        if (j.contains("weaponColor")) {
-            data.weaponColor.x = j["weaponColor"][0];
-            data.weaponColor.y = j["weaponColor"][1];
-            data.weaponColor.z = j["weaponColor"][2];
-        }
-        if (j.contains("rightHandColor")) {
-            data.rightHandColor.x = j["rightHandColor"][0];
-            data.rightHandColor.y = j["rightHandColor"][1];
-            data.rightHandColor.z = j["rightHandColor"][2];
-        }
-        if (j.contains("leftHandColor")) {
-            data.leftHandColor.x = j["leftHandColor"][0];
-            data.leftHandColor.y = j["leftHandColor"][1];
-            data.leftHandColor.z = j["leftHandColor"][2];
-        }
 
         return true;
 

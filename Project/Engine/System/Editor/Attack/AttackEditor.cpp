@@ -1,8 +1,6 @@
 #include "AttackEditor.h"
 // PlayerWeapon
 #include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
-// PlayerHand
-#include "application/Game/Entity/Player/Hand/PlayerHand.h"
 // Service
 #include "Service/Locator.h"
 // Line
@@ -88,19 +86,9 @@ void AttackEditor::Render() {
                 ImGui::EndTabItem();
             }
 
-            if (ImGui::BeginTabItem("武器の軌道")) {
-                RenderTrajectorySettings(currentAttack);
-                ImGui::EndTabItem();
-            }
-
-            if (ImGui::BeginTabItem("手の軌道")) {
-                RenderDualHandTrajectorySettings(currentAttack);
-                ImGui::EndTabItem();
-            }
-
-            if (ImGui::BeginTabItem("エフェクト")) {
-                RenderEffectSettings(currentAttack);
-                ImGui::EndTabItem();
+            if (ImGui::BeginTabItem("軌道")) {
+                RenderTrajectoryChannelList(currentAttack);
+                ImGui::EndTabItem();    
             }
 
             if (ImGui::BeginTabItem("コンボ")) {
@@ -239,78 +227,40 @@ void AttackEditor::DrawPreview() {
         return;
     }
 
-    /// ===右手=== ///
-    if (currentAttack.isRightHandAttack) {
-        // Dataの取得
-        std::vector<MiiEngine::BezierControlPointData> HandWorld;
-        for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
-            MiiEngine::BezierControlPointData worldPoint = {};
-            worldPoint.position = point.position;
-            worldPoint.rotation = point.rotation;
-            worldPoint.time = point.time;
-            HandWorld.push_back(worldPoint);
+    // 全チャンネルを順番に描画
+    for (const auto& channel : currentAttack.trajectories) {
+        if (!channel.enabled || channel.points.size() < 2) {
+            continue;
         }
-        // 右手軌道（緑）
-        Vector4 color = { currentAttack.rightHandColor.x, currentAttack.rightHandColor.y, currentAttack.rightHandColor.z, 1.0f };
-        line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
-        // 制御点を可視化（右手）
+
+        // 描画用にコピー
+        std::vector<MiiEngine::BezierControlPointData> drawPoints = channel.points;
+
+        // ライン色
+        Vector4 lineColor = { channel.color.x, channel.color.y, channel.color.z, 1.0f };
+        line_->CreateSmoothCurve(drawPoints, lineColor, currentAttack.curveSegments);
+
+        // 制御点の可視化
+        Vector4 pointColor = {
+            (std::min)(channel.color.x + 0.5f, 1.0f),
+            (std::min)(channel.color.y + 0.5f, 1.0f),
+            (std::min)(channel.color.z + 0.5f, 1.0f),
+            1.0f
+        };
+        Vector4 pointColorAlpha = { channel.color.x, channel.color.y, channel.color.z, 0.5f };
+
+        // ベジェ曲線の描画
         Service::Locator::GetLineObject3D()->DrawBezierControlPoints(
-            HandWorld,
-            Vector4{ 0.5f, 1.0f, 0.5f, 1.0f },  // 明るい緑
-            Vector4{ 0.2f, 0.8f, 0.2f, 0.5f },  // 半透明緑
+            drawPoints,
+            pointColor,
+            pointColorAlpha,
             AttackData::kControlPointSize
         );
     }
 
-    /// ===左手=== ///
-    if (currentAttack.isLeftHandAttack) {
-        // Dataの取得
-        std::vector<MiiEngine::BezierControlPointData> HandWorld;
-        for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
-            MiiEngine::BezierControlPointData worldPoint = {};
-            worldPoint.position = point.position;
-			worldPoint.rotation = point.rotation;
-            worldPoint.time = point.time;
-            HandWorld.push_back(worldPoint);
-        }
-        // 左手軌道（青）
-        Vector4 color = { currentAttack.leftHandColor.x, currentAttack.leftHandColor.y, currentAttack.leftHandColor.z, 1.0f };
-        line_->CreateSmoothCurve(HandWorld, color, currentAttack.curveSegments);
-        // 制御点を可視化（左手）
-        Service::Locator::GetLineObject3D()->DrawBezierControlPoints(
-            HandWorld,
-            Vector4{ 0.5f, 0.5f, 1.0f, 1.0f },  // 明るい青
-            Vector4{ 0.2f, 0.2f, 0.8f, 0.5f },  // 半透明青
-            AttackData::kControlPointSize
-        );
-    }
-
-    /// ===武器=== ///
-    // Dataの取得
-    std::vector<MiiEngine::BezierControlPointData> WeaponWorld;
-    for (const auto& point : currentAttack.weaponTrajectoryPoints) {
-        MiiEngine::BezierControlPointData worldPoint = {};
-        worldPoint.position = point.position;
-        worldPoint.rotation = point.rotation;
-        worldPoint.time = point.time;
-        WeaponWorld.push_back(worldPoint);
-    }
-    // 武器軌道（赤）
-    Vector4 weaponColor = { currentAttack.weaponColor.x, currentAttack.weaponColor.y, currentAttack.weaponColor.z, 1.0f };
-    line_->CreateSmoothCurve(WeaponWorld, weaponColor, currentAttack.curveSegments);
-    // 制御点を可視化（武器）
-    Service::Locator::GetLineObject3D()->DrawBezierControlPoints(
-        WeaponWorld,
-        Vector4{ 1.0f, 0.5f, 0.5f, 1.0f },  // 明るい赤
-        Vector4{ 0.8f, 0.2f, 0.2f, 0.5f },  // 半透明赤
-        AttackData::kControlPointSize
-    );
-
-    // プレビュー用武器の描画（オプション）
-    if (previewWeapon_ && previewRightHand_ && previewLeftHand_&& isPlaying_) {
-        previewWeapon_->Draw(MiiEngine::BlendMode::KBlendModeNormal);
-		previewLeftHand_->Draw(MiiEngine::BlendMode::KBlendModeNormal);
-		previewRightHand_->Draw(MiiEngine::BlendMode::KBlendModeNormal);
+    // プレビュー再生中のみオブジェクトを描画
+    if (isPlaying_) {
+        if (previewWeapon_)    previewWeapon_->Draw(MiiEngine::BlendMode::KBlendModeNormal);
     }
 }
 
@@ -333,12 +283,9 @@ void AttackEditor::SetVisible(bool visible) {
 ///-------------------------------------------///
 void AttackEditor::SaveCurrent() {
 #ifdef USE_IMGUI
-    if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
-        return;
-    }
+    if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) return;
 
     AttackData& currentAttack = attacks_[selectedAttackIndex_];
-
     // 名前チェック
     if (currentAttack.attackName.empty()) {
         ImGui::OpenPopup("保存エラー");
@@ -429,38 +376,19 @@ void AttackEditor::CreateNew() {
     attacks_.push_back(newAttack);
     selectedAttackIndex_ = static_cast<int>(attacks_.size()) - 1;
 
-	// 回転データを初期化
-	UpdateRotationEditData();
+	// 新しい攻撃の回転データをオイラー角に変換して編集用バッファに追加
+    RebuildEulerAnglesBuffer();
 }
 
 ///-------------------------------------------/// 
 /// 全ての攻撃を保存
 ///-------------------------------------------///
 void AttackEditor::SaveAllAttacks() {
-    int successCount = 0;
-    int failCount = 0;
-
     for (const auto& attack : attacks_) {
-        // 名前が空の攻撃はスキップ
-        if (attack.attackName.empty()) {
-            failCount++;
-            continue;
-        }
-
+        if (attack.attackName.empty()) continue;
         std::string savePath = std::string(kDefaultSavePath) + attack.attackName + ".json";
-        if (serializer_->SaveToJson(attack, savePath)) {
-            successCount++;
-        } else {
-            failCount++;
-        }
+        serializer_->SaveToJson(attack, savePath);
     }
-
-#ifdef USE_IMGUI
-    // 結果を表示
-    if (failCount > 0) {
-        ImGui::OpenPopup("一括保存結果");
-    }
-#endif
 }
 
 ///-------------------------------------------/// 
@@ -488,9 +416,10 @@ void AttackEditor::LoadAllAttacks() {
         }
     }
 
-    // 最初の攻撃が選択されている場合、回転データを更新
-    if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
-        UpdateRotationEditData();
+	// 読み込んだ攻撃があれば最初の攻撃を選択
+    if (!attacks_.empty()) {
+        selectedAttackIndex_ = 0;
+        RebuildEulerAnglesBuffer();
     }
 }
 
@@ -592,8 +521,7 @@ void AttackEditor::RenderAttackList() {
         bool isSelected = (selectedAttackIndex_ == i);
         if (ImGui::Selectable(attacks_[i].attackName.c_str(), isSelected)) {
             selectedAttackIndex_ = i;
-            // 選択された攻撃の回転データをオイラー角に変換
-            UpdateRotationEditData();
+            RebuildEulerAnglesBuffer();
         }
     }
 
@@ -608,27 +536,27 @@ void AttackEditor::RenderAttackList() {
 /// 基本設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderBasicSettings(AttackData& data) {
-    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("基本情報");
 
     char nameBuffer[256];
     strncpy_s(nameBuffer, data.attackName.c_str(), sizeof(nameBuffer));
 
-    // 名前が空の場合は警告色で表示
-    if (data.attackName.empty()) {
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.6f, 0.2f, 0.2f, 0.5f)); // 赤っぽい背景
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));    // 黄色いテキスト
+    // Push前の状態で判定し、Push/Popが必ず対応するようにフラグで管理する
+    const bool isEmpty = data.attackName.empty();
+    if (isEmpty) {
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.6f, 0.2f, 0.2f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
     }
 
     if (ImGui::InputText("攻撃名", nameBuffer, sizeof(nameBuffer))) {
         data.attackName = nameBuffer;
     }
 
-    if (data.attackName.empty()) {
+    // Pushした分は必ずPopする
+    if (isEmpty) {
         ImGui::PopStyleColor(2);
-
-        // ヘルプテキスト
+		// ヘルプテキスト
         ImGui::SameLine();
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "(*)");
         if (ImGui::IsItemHovered()) {
@@ -664,114 +592,160 @@ void AttackEditor::RenderTimingSettings(AttackData& data) {
 }
 
 ///-------------------------------------------/// 
-/// 軌道設定UIの描画
+/// 軌道チャンネル一覧UIの描画
 ///-------------------------------------------///
-void AttackEditor::RenderTrajectorySettings(AttackData& data) {
-    data;
+void AttackEditor::RenderTrajectoryChannelList(AttackData& data) {
 #ifdef USE_IMGUI
-    ImGui::SeparatorText("武器の軌道設定");
-
-    ImGui::DragFloat("武器の距離", &data.weaponLength, 0.1f, 1.0f, 50.0f);
-    ImGui::DragInt("曲線の分割数", &data.curveSegments, 1, 5, 100);
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // ベジェ曲線の制御点リスト
-    ImGui::SeparatorText("ベジェ曲線の制御点");
-    RenderBezierControlPointList(data.weaponTrajectoryPoints, "Weapon", TrajectoryType::WeaponTrajectory);
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // プレビュー設定
-    ImGui::SeparatorText("プレビュー");
-    ImGui::Checkbox("軌道を表示", &data.showTrajectory);
-    ImGui::ColorEdit3("軌道の色", &data.weaponColor.x);
-#endif
-}
-
-///-------------------------------------------/// 
-/// 両手軌道設定UIの描画
-///-------------------------------------------///
-void AttackEditor::RenderDualHandTrajectorySettings(AttackData& data) {
-    data;
-#ifdef USE_IMGUI
-    ImGui::SeparatorText("手の攻撃設定");
-
-	// 攻撃モード選択
-    ImGui::Checkbox("左手攻撃", &data.isLeftHandAttack);
-    ImGui::Checkbox("右手攻撃", &data.isRightHandAttack);
-
-    ImGui::Spacing();
-    ImGui::Separator();
+    ImGui::SeparatorText("軌道チャンネル");
 
     // 共通設定
+    ImGui::DragFloat("武器の距離", &data.weaponLength, 0.1f, 1.0f, 50.0f);
     ImGui::DragInt("曲線の分割数", &data.curveSegments, 1, 5, 100);
-    // 色設定
-    ImGui::ColorEdit3("左手軌道の色", &data.leftHandColor.x);
-    ImGui::ColorEdit3("右手軌道の色", &data.rightHandColor.x);
-    
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // 左手のベジェ曲線の表示
-    ImGui::BeginChild("LeftHandPanel", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0), true);
-    ImGui::TextColored(ImVec4(0.3f, 0.3f, 1.0f, 1.0f), "左手 (Left Hand)");
-    ImGui::Separator();
-    RenderBezierControlPointList(data.leftHandTrajectoryPoints, "LeftHand", TrajectoryType::LeftHandTrajectory);
-    ImGui::EndChild();
-
-    ImGui::SameLine();
-
-    // 右手のベジェ曲線の表示
-    ImGui::BeginChild("RightHandPanel", ImVec2(0, 0), true);
-    ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "右手 (Right Hand)");
-    ImGui::Separator();
-    RenderBezierControlPointList(data.rightHandTrajectoryPoints, "RightHand", TrajectoryType::RightHandTrajectory);
-    ImGui::EndChild();
+    ImGui::Checkbox("軌道を表示", &data.showTrajectory);
 
     ImGui::Spacing();
+
+    // チャンネル追加ボタン
+    if (ImGui::Button("+ 軌道チャンネルを追加")) {
+        TrajectoryChannel newChannel;
+        newChannel.name = "Channel_" + std::to_string(static_cast<int>(data.trajectories.size()));
+        newChannel.color = Vector3{ 1.0f, 1.0f, 0.0f }; // デフォルト黄色
+        newChannel.enabled = true;
+        // デフォルト3点
+        newChannel.points.push_back({ Vector3{-5.0f, 0.0f, 0.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f}, 0.0f });
+        newChannel.points.push_back({ Vector3{ 0.0f, 0.0f, 5.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f}, 0.5f });
+        newChannel.points.push_back({ Vector3{ 5.0f, 0.0f, 0.0f}, Quaternion{0.0f, 0.0f, 0.0f, 1.0f}, 1.0f });
+        data.trajectories.push_back(newChannel);
+
+        // オイラーバッファも追加
+        eulerAnglesPerChannel_.push_back(std::vector<Vector3>(newChannel.points.size(), Vector3{ 0,0,0 }));
+    }
+
     ImGui::Separator();
 
+    // 各チャンネルをCollapsibleHeaderで表示
+    for (int i = 0; i < static_cast<int>(data.trajectories.size()); ++i) {
+        TrajectoryChannel& channel = data.trajectories[i];
+
+        ImGui::PushID(i);
+
+        // ヘッダー: "[0] Weapon "
+        std::string headerLabel = "[" + std::to_string(i) + "] " + channel.name;
+        bool headerOpen = ImGui::CollapsingHeader(headerLabel.c_str());
+
+        // ヘッダー右側にカラーとチェックボックス
+        ImGui::SameLine();
+        ImGui::ColorEdit3("##color", &channel.color.x,
+            ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+        ImGui::SameLine();
+        ImGui::Checkbox("##enabled", &channel.enabled);
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("有効/無効");
+
+        // 削除ボタン
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.1f, 0.1f, 1.0f));
+        if (ImGui::Button("削除") && data.trajectories.size() > 1) {
+            data.trajectories.erase(data.trajectories.begin() + i);
+            if (i < static_cast<int>(eulerAnglesPerChannel_.size())) {
+                eulerAnglesPerChannel_.erase(eulerAnglesPerChannel_.begin() + i);
+            }
+            ImGui::PopStyleColor();
+            ImGui::PopID();
+            break; // イテレータ無効化を避けて即break
+        }
+        ImGui::PopStyleColor();
+
+        if (headerOpen) {
+            // チャンネル名編集
+            char nameBuf[128];
+            strncpy_s(nameBuf, channel.name.c_str(), sizeof(nameBuf));
+            if (ImGui::InputText("チャンネル名", nameBuf, sizeof(nameBuf))) {
+                channel.name = nameBuf;
+            }
+
+            ImGui::TextDisabled("使用側でのインデックス: %d", i);
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("PlayerWeaponやPlayerHandでこの番号を指定して参照してください");
+            }
+
+            ImGui::Separator();
+
+            // 制御点リスト
+            RenderChannelControlPoints(channel, i);
+        }
+
+        ImGui::PopID();
+        ImGui::Spacing();
+    }
 #endif
 }
 
 ///-------------------------------------------/// 
-/// エフェクト設定UIの描画
+/// 1チャンネル分の制御点リストUIの描画
 ///-------------------------------------------///
-void AttackEditor::RenderEffectSettings(AttackData& data) {
-    data;
+void AttackEditor::RenderChannelControlPoints(TrajectoryChannel& channel, int channelIndex) {
 #ifdef USE_IMGUI
-    ImGui::SeparatorText("パーティクルエフェクト");
+    auto& points = channel.points;
 
-    char particleBuffer[256];
-    strncpy_s(particleBuffer, data.particleEffectName.c_str(), sizeof(particleBuffer));
-    if (ImGui::InputText("エフェクト名", particleBuffer, sizeof(particleBuffer))) {
-        data.particleEffectName = particleBuffer;
+    // オイラーバッファをチャンネルインデックスで参照
+    // バッファが足りない場合は拡張
+    SyncEulerBuffer(channelIndex, points);
+    auto& eulerList = eulerAnglesPerChannel_[channelIndex];
+
+    for (int i = 0; i < static_cast<int>(points.size()); ++i) {
+        ImGui::PushID(i);
+
+        ImGui::Text("制御点 %d", i);
+
+        ImGui::DragFloat3("位置", &points[i].position.x, 0.1f);
+
+        // 回転はオイラー角で編集→Quaternionに変換して保存
+        if (i < static_cast<int>(eulerList.size())) {
+            if (ImGui::DragFloat3("回転 (deg)", &eulerList[i].x, 0.5f)) {
+                points[i].rotation = Math::QuaternionFromVector(eulerList[i]);
+            }
+        }
+
+        // 時間スライダー（隣接制御点の時間を超えないようにクランプ）
+        float timeMin = (i > 0) ? points[i - 1].time + 0.01f : 0.0f;
+        float timeMax = (i < static_cast<int>(points.size()) - 1) ? points[i + 1].time - 0.01f : 1.0f;
+        ImGui::SliderFloat("時間", &points[i].time, timeMin, timeMax, "%.2f");
+
+        // 削除（最低2点は残す）
+        ImGui::SameLine();
+        if (ImGui::Button("削除") && points.size() > 2) {
+            points.erase(points.begin() + i);
+            eulerList.erase(eulerList.begin() + i);
+            ImGui::PopID();
+            break;
+        }
+
+        ImGui::Separator();
+        ImGui::PopID();
     }
 
-    ImGui::DragFloat3("エフェクトオフセット", &data.particleOffset.x, 0.1f);
+    // 末尾に制御点を追加
+    if (ImGui::Button("+ 制御点を追加")) {
+        MiiEngine::BezierControlPointData newPoint = {};
+        newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
+        newPoint.rotation = Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
 
-    ImGui::SeparatorText("カメラシェイク");
-    ImGui::DragFloat("シェイク強度", &data.cameraShakeIntensity, 0.01f, 0.0f, 10.0f);
-    ImGui::DragFloat("シェイク時間", &data.cameraShakeDuration, 0.01f, 0.0f, 5.0f);
+        // 時間は最後の制御点と1.0の中間に挿入
+        if (!points.empty()) {
+            float lastTime = points.back().time;
+            newPoint.time = lastTime + (1.0f - lastTime) * 0.5f;
+            newPoint.time = (std::min)(newPoint.time, 1.0f);
+        } else {
+            newPoint.time = 0.5f;
+        }
 
-    ImGui::SeparatorText("サウンド");
-
-    char swingBuffer[256];
-    strncpy_s(swingBuffer, data.swingSoundName.c_str(), sizeof(swingBuffer));
-    if (ImGui::InputText("振りサウンド", swingBuffer, sizeof(swingBuffer))) {
-        data.swingSoundName = swingBuffer;
-    }
-
-    char hitBuffer[256];
-    strncpy_s(hitBuffer, data.hitSoundName.c_str(), sizeof(hitBuffer));
-    if (ImGui::InputText("ヒットサウンド", hitBuffer, sizeof(hitBuffer))) {
-        data.hitSoundName = hitBuffer;
+        points.push_back(newPoint);
+        eulerList.push_back(Vector3{ 0.0f, 0.0f, 0.0f });
     }
 #endif
 }
+
+
 
 ///-------------------------------------------/// 
 /// コンボ設定UIの描画
@@ -838,14 +812,17 @@ void AttackEditor::RenderPreviewControl() {
         if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
 			// 現在の攻撃データを取得
             AttackData& currentAttack = attacks_[selectedAttackIndex_];
+
+			// チャンネル0を武器の軌道として使用
+            const TrajectoryChannel* weaponChannel = currentAttack.GetChannel(0);
             
             /// ===武器=== ///
 			// 武器の軌道ポイントが2つ以上あることを確認
-            if (currentAttack.weaponTrajectoryPoints.size() >= 2) {
+            if (weaponChannel && weaponChannel->points.size() >= 2) {
 
                 // 全ての制御点にオフセットを適用
                 std::vector<MiiEngine::BezierControlPointData> weaponPoints;
-                for (const auto& point : currentAttack.weaponTrajectoryPoints) {
+                for (const auto& point : weaponChannel->points) {
                     MiiEngine::BezierControlPointData weaponPoint = {};
                     weaponPoint.position = previewPlayerPosition_ + point.position;
 					weaponPoint.rotation = point.rotation;
@@ -855,44 +832,6 @@ void AttackEditor::RenderPreviewControl() {
 
                 // 武器に攻撃を実行させる（ベジェ曲線版）
                 previewWeapon_->StartAttack(weaponPoints, currentAttack.activeDuration);
-            }
-
-            /// ===右手攻撃=== ///
-			// 右手攻撃が有効で、プレビューオブジェクトが存在する場合
-            if (currentAttack.isRightHandAttack && previewRightHand_) {
-				// 右手の軌道ポイントが2つ以上あることを確認
-                if (currentAttack.rightHandTrajectoryPoints.size() >= 2) {
-					// 全ての制御点にオフセットを適用
-                    std::vector<MiiEngine::BezierControlPointData> rightHandPoints;
-                    for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
-                        MiiEngine::BezierControlPointData handPoint = {};
-                        handPoint.position = previewPlayerPosition_ + point.position;
-						handPoint.rotation = point.rotation;
-                        handPoint.time = point.time;
-                        rightHandPoints.push_back(handPoint);
-                    }
-					// 右手に攻撃を実行させる（ベジェ曲線版）
-                    previewRightHand_->StartAttack(rightHandPoints, currentAttack.activeDuration);
-                }
-			}
-
-            /// ===左手攻撃=== ///
-            // 左手攻撃が有効で、プレビューオブジェクトが存在する場合
-            if (currentAttack.isLeftHandAttack && previewLeftHand_) {
-                // 左手の軌道ポイントが2つ以上あることを確認
-                if (currentAttack.leftHandTrajectoryPoints.size() >= 2) {
-                    // 全ての制御点にオフセットを適用
-                    std::vector<MiiEngine::BezierControlPointData> leftHandPoints;
-                    for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
-                        MiiEngine::BezierControlPointData handPoint = {};
-                        handPoint.position = previewPlayerPosition_ + point.position;
-                        handPoint.rotation = point.rotation;
-                        handPoint.time = point.time;
-                        leftHandPoints.push_back(handPoint);
-                    }
-					// 左手に攻撃を実行させる（ベジェ曲線版）
-                    previewLeftHand_->StartAttack(leftHandPoints, currentAttack.activeDuration);
-                }
             }
 
             /// ===プレビュー再生開始=== ///
@@ -905,94 +844,13 @@ void AttackEditor::RenderPreviewControl() {
 }
 
 ///-------------------------------------------/// 
-/// ベジェ曲線制御点リストのUI描画
-///-------------------------------------------///
-void AttackEditor::RenderBezierControlPointList(std::vector<MiiEngine::BezierControlPointData>& points, const char* label, TrajectoryType type) {
-	points;
-	label;
-    type;
-#ifdef USE_IMGUI
-    // rotationEditDataのベクターサイズを調整
-    std::vector<Vector3>* eulerList = nullptr;
-    switch (type) {
-    case TrajectoryType::WeaponTrajectory:
-        eulerList = &rotationEditData_.weaponEuler;
-        break;
-    case TrajectoryType::RightHandTrajectory:
-        eulerList = &rotationEditData_.rightHandEuler;
-        break;
-    case TrajectoryType::LeftHandTrajectory:
-        eulerList = &rotationEditData_.leftHandEuler;
-        break;
-    }
-
-    // ベクターサイズが足りない場合は追加
-    if (eulerList && eulerList->size() < points.size()) {
-        size_t oldSize = eulerList->size();
-        eulerList->resize(points.size());
-        // 新しく追加された要素をQuaternionから変換して初期化
-        for (size_t i = oldSize; i < points.size(); ++i) {
-            (*eulerList)[i] = Math::QuaternionToEuler(points[i].rotation);
-        }
-    }
-    // ベクターサイズが多すぎる場合は削減
-    else if (eulerList && eulerList->size() > points.size()) {
-        eulerList->resize(points.size());
-    }
-
-    for (int i = 0; i < static_cast<int>(points.size()); ++i) {
-        ImGui::PushID((std::string(label) + std::to_string(i)).c_str());
-
-        // 制御点データ
-        ImGui::Text("制御点 %d", i);
-        ImGui::DragFloat3("位置", &points[i].position.x, 0.1f);
-
-        if (eulerList && i < static_cast<int>(eulerList->size())) {
-            ImGui::DragFloat3("回転", &(*eulerList)[i].x, 0.1f);
-            // 回転をQuaternionに変換して保存
-            points[i].rotation = Math::QuaternionFromVector((*eulerList)[i]);
-        }
-
-        ImGui::SliderFloat("時間", &points[i].time, 0.0f, 1.0f, "%.2f");
-        ImGui::SameLine();
-
-        // 削除
-        if (ImGui::Button("削除") && points.size() > 2) {
-            points.erase(points.begin() + i);
-            if (eulerList && i < static_cast<int>(eulerList->size())) {
-                eulerList->erase(eulerList->begin() + i);
-            }
-            ImGui::PopID();
-            break;
-        }
-        ImGui::Separator();
-        ImGui::PopID();
-    }
-
-    // 制御点追加ボタン
-    if (ImGui::Button((std::string("+ 制御点を追加_") + label).c_str())) {
-        MiiEngine::BezierControlPointData newPoint = {};
-        newPoint.position = Vector3{ 0.0f, 0.0f, 0.0f };
-        newPoint.rotation = Math::QuaternionFromVector(Vector3{ 0.0f, 0.0f, 0.0f });
-        newPoint.time = 0.5f;
-        points.push_back(newPoint);
-
-        // オイラー角リストにも追加
-        if (eulerList) {
-            eulerList->push_back(Vector3{ 0.0f, 0.0f, 0.0f });
-        }
-    }
-
-#endif
-}
-
-///-------------------------------------------/// 
 /// 選択中の攻撃を削除
 ///-------------------------------------------///
 void AttackEditor::DeleteSelectedAttack() {
     if (selectedAttackIndex_ >= 0 && selectedAttackIndex_ < static_cast<int>(attacks_.size())) {
         attacks_.erase(attacks_.begin() + selectedAttackIndex_);
         selectedAttackIndex_ = -1;
+		eulerAnglesPerChannel_.clear(); // バッファもクリア
     }
 }
 
@@ -1040,15 +898,7 @@ void AttackEditor::UpdateTrajectoryPreview(const float deltaTime) {
     previewTimer_ += deltaTime;
 
     // プレビュー用武器の更新
-    if (previewLeftHand_) {
-        previewLeftHand_->Update();
-    }
-    if (previewRightHand_) {
-        previewRightHand_->Update();
-    }
-    if (previewWeapon_) {
-        previewWeapon_->Update();
-    }
+    if (previewWeapon_) {previewWeapon_->Update();}
 
     // 攻撃時間を超えたらリセット
     if (previewTimer_ >= currentAttack.activeDuration) {
@@ -1061,30 +911,47 @@ void AttackEditor::UpdateTrajectoryPreview(const float deltaTime) {
 }
 
 ///-------------------------------------------/// 
-/// 選択中の攻撃の回転データをオイラー角に変換して保存
+/// 全チャンネルのオイラー角バッファを再構築
+/// 攻撃選択時・チャンネル数変化時に呼ぶ
 ///-------------------------------------------///
-void AttackEditor::UpdateRotationEditData() {
+void AttackEditor::RebuildEulerAnglesBuffer() {
     if (selectedAttackIndex_ < 0 || selectedAttackIndex_ >= static_cast<int>(attacks_.size())) {
+        eulerAnglesPerChannel_.clear();
         return;
     }
 
     AttackData& currentAttack = attacks_[selectedAttackIndex_];
+    eulerAnglesPerChannel_.resize(currentAttack.trajectories.size());
 
-    // 武器の回転データを変換
-    rotationEditData_.weaponEuler.clear();
-    for (const auto& point : currentAttack.weaponTrajectoryPoints) {
-        rotationEditData_.weaponEuler.push_back(Math::QuaternionToEuler(point.rotation));
+    for (int ci = 0; ci < static_cast<int>(currentAttack.trajectories.size()); ++ci) {
+        auto& points = currentAttack.trajectories[ci].points;
+        auto& eulerList = eulerAnglesPerChannel_[ci];
+        eulerList.resize(points.size());
+        for (int pi = 0; pi < static_cast<int>(points.size()); ++pi) {
+            eulerList[pi] = Math::QuaternionToEuler(points[pi].rotation);
+        }
+    }
+}
+
+///-------------------------------------------/// 
+/// 指定チャンネルのオイラー角バッファを制御点数に合わせて同期
+///-------------------------------------------///
+void AttackEditor::SyncEulerBuffer(int channelIndex, std::vector<MiiEngine::BezierControlPointData>& points) {
+    // バッファ自体が足りない場合は拡張
+    if (channelIndex >= static_cast<int>(eulerAnglesPerChannel_.size())) {
+        eulerAnglesPerChannel_.resize(channelIndex + 1);
     }
 
-    // 右手の回転データを変換
-    rotationEditData_.rightHandEuler.clear();
-    for (const auto& point : currentAttack.rightHandTrajectoryPoints) {
-        rotationEditData_.rightHandEuler.push_back(Math::QuaternionToEuler(point.rotation));
-    }
+    auto& eulerList = eulerAnglesPerChannel_[channelIndex];
 
-    // 左手の回転データを変換
-    rotationEditData_.leftHandEuler.clear();
-    for (const auto& point : currentAttack.leftHandTrajectoryPoints) {
-        rotationEditData_.leftHandEuler.push_back(Math::QuaternionToEuler(point.rotation));
+    // 制御点数に合わせて同期
+    if (eulerList.size() < points.size()) {
+        size_t oldSize = eulerList.size();
+        eulerList.resize(points.size());
+        for (size_t i = oldSize; i < points.size(); ++i) {
+            eulerList[i] = Math::QuaternionToEuler(points[i].rotation);
+        }
+    } else if (eulerList.size() > points.size()) {
+        eulerList.resize(points.size());
     }
 }

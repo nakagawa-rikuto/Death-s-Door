@@ -43,6 +43,7 @@ void AttackEditorScene::Initialize() {
     camera_->SetTranslate(cameraPosition_);
     camera_->SetRotate(cameraRotation_);
     camera_->SetFollowCamera(MiiEngine::FollowCameraType::Orbiting);
+    camera_->SetOrbitingOffset({ 0.0f, 20.0f, -30.0f });
     // カメラの設定
     Service::Camera::AddCamera("Editor", camera_.get());
     Service::Camera::SetActiveCamera("Editor");
@@ -57,13 +58,11 @@ void AttackEditorScene::Initialize() {
 
     /// ===プレビュー用プレイヤーの初期化=== ///
     previewPlayer_ = std::make_unique<Player>();
-    previewPlayer_->Initialize();
+    previewPlayer_->InitGame({0.0f, 0.0f, 0.0f}, camera_.get());
     // プレビュー用プレイヤーにカメラを設定
     previewPlayer_->SetCameraTargetPlayer();
 
     // エディターにプレビュー用プレイヤーとカメラを設定
-	attackEditor_->SetPreviewLeftHand(previewPlayer_->GetLeftHand());
-	attackEditor_->SetPreviewRightHand(previewPlayer_->GetRightHand());
     attackEditor_->SetPreviewPlayer(previewPlayer_->GetWeapon());
 }
 
@@ -110,7 +109,7 @@ void AttackEditorScene::Draw() {
         attackEditor_->DrawPreview();
     }
 
-    previewPlayer_->Draw();
+    //previewPlayer_->Draw();
 }
 
 ///-------------------------------------------/// 
