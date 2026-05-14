@@ -221,7 +221,7 @@ namespace MiiEngine {
 		/// 履歴管理
 		/// </summary>
 		void RecordHistory();
-
+#ifdef USE_IMGUI
 		/// <summary>
 		/// 履歴用のドラッグフロートUI(float)
 		/// </summary>
@@ -231,5 +231,6 @@ namespace MiiEngine {
 		/// 履歴用のドラッグフロートUI(Vector3)
 		/// </summary>
 		bool DragFloat3WithHistory(const char* label, Vector3* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f);
+#endif // USE_IMGUI
 	};
 }

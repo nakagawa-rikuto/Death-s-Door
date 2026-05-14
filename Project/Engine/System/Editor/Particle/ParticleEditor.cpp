@@ -1291,11 +1291,13 @@ namespace MiiEngine {
 	void ParticleEditor::RecordHistory() {
 		historyManager_->PushState(currentDefinition_);
 	}
-
+#ifdef USE_IMGUI
 	///-------------------------------------------/// 
 	/// 履歴管理付きドラッグフロートUI
 	///-------------------------------------------///
 	bool ParticleEditor::DragFloatWithHistory(const char* label, float* v, float v_speed, float v_min, float v_max) {
+
+		v_max;
 		bool changed = ImGui::DragFloat(label, v, v_speed, v_min, v_max);
 
 		// ドラッグが終わった瞬間に履歴を保存
@@ -1318,5 +1320,7 @@ namespace MiiEngine {
 		}
 
 		return changed; // ドラッグ中かどうかを返す
+
 	}
+#endif // USE_IMGUI
 }

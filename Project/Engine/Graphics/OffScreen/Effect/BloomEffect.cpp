@@ -33,9 +33,9 @@ namespace MiiEngine {
 		buffer_->GetBuffer()->Map(0, nullptr, reinterpret_cast<void**>(&data_));
 
 		// 初期値の設定
-		data_->threshold = 0.8f;
+		data_->threshold = 0.3f;
 		data_->brightness = { 0.2125f, 0.7154f, 0.0721f };
-		data_->intensity = 1.0f;
+		data_->intensity = 0.3f;
 
 		// ★ outputTexture から SRV/RTVマネージャーとサイズを取得して、内部テクスチャを作る
 		uint32_t width = outputTexture->GetWidth();   
