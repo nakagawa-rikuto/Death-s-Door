@@ -48,7 +48,7 @@ void PlayerAttackComponent::Update(const float deltaTime) {
 
     // コンボ受付時間の管理
     if (state_.canCombo) {
-        // ★ 前の攻撃IDからデータを取得
+        // 前の攻撃IDからデータを取得
         const AttackData* previousData = GetAttackData(state_.previousAttackID);
 
         if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
