@@ -23,7 +23,7 @@ private:
 	/// ===状態の構造体=== ///
 	struct JumpSmashState {
 		float phaseTimer = 0.0f;    // 現フェーズの経過時間
-		float distance;			// 攻撃開始時のBossとPlayerの距離。これを基準に飛行の放物線を計算する 
+		float distance = 0.0f;			// 攻撃開始時のBossとPlayerの距離。これを基準に飛行の放物線を計算する 
 		Quaternion baseRotation{};  // 攻撃開始時の基底回転
 
 		// --- Leap フェーズで使用する飛行データ ---
@@ -157,7 +157,7 @@ private:
 	void UpdateLeapWindUp(UpdateResult& result);
 
 	/// <summary>
-	/// 閏年に関する情報を更新します。
+	/// 放物線上の飛行を更新します。
 	/// </summary>
 	/// <param name="result">更新する結果オブジェクトへの参照。</param>
 	void UpdateLeap(UpdateResult& result);
