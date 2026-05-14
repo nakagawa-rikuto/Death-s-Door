@@ -20,7 +20,7 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	camera_ = camera;
 
 	// 攻撃の開始
-	if (player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
+	if (player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon())) {
 		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
 		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 	}
@@ -47,7 +47,7 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 	// 攻撃ボタンが押されたらコンボを試行
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
 		if (attackComp->CanCombo()) {
-			if (attackComp->TryCombo(player_->GetWeapon(), player_->GetRightHand(), player_->GetLeftHand())) {
+			if (attackComp->TryCombo(player_->GetWeapon())) {
 				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
 				moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 			}

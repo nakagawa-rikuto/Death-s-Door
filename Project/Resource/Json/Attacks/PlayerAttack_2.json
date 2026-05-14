@@ -1,0 +1,75 @@
+{
+    "activeDuration": 0.30000001192092896,
+    "attackID": 2,
+    "attackName": "PlayerAttack_2",
+    "branchComboIDs": [],
+    "canComboToNext": false,
+    "comboWindowTime": 1.0,
+    "cooldownTime": 0.30000001192092896,
+    "curveSegments": 20,
+    "description": "",
+    "moveSpeedMultiplier": 1.0,
+    "nextComboID": -1,
+    "rootMotion": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "showTrajectory": true,
+    "trajectories": [
+        {
+            "color": [
+                1.0,
+                0.0,
+                0.0
+            ],
+            "enabled": true,
+            "name": "Weapon",
+            "points": [
+                {
+                    "position": [
+                        0.0,
+                        11.300000190734863,
+                        -8.0
+                    ],
+                    "rotation": [
+                        -0.5792279839515686,
+                        0.5792279839515686,
+                        0.4055798053741455,
+                        0.4055798053741455
+                    ],
+                    "time": 0.0
+                },
+                {
+                    "position": [
+                        0.0,
+                        7.300000190734863,
+                        23.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        0.0,
+                        0.7071067690849304,
+                        0.7071067690849304
+                    ],
+                    "time": 0.5
+                },
+                {
+                    "position": [
+                        0.0,
+                        -2.4000000953674316,
+                        8.699999809265137
+                    ],
+                    "rotation": [
+                        0.1830126941204071,
+                        -0.1830126941204071,
+                        0.6830126643180847,
+                        0.6830126643180847
+                    ],
+                    "time": 1.0
+                }
+            ]
+        }
+    ],
+    "weaponLength": 8.0
+}

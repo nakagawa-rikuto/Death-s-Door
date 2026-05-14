@@ -64,16 +64,6 @@ public:
     /// </summary>
     void SetPreviewPlayer(PlayerWeapon* player) { previewWeapon_ = player; }
 
-    /// <summary>
-	/// プレビュー用右手の設定
-    /// </summary>
-    void SetPreviewRightHand(PlayerHand* hand) { previewRightHand_ = hand; }
-
-    /// <summary>
-	/// プレビュー用左手の設定
-    /// </summary>
-    void SetPreviewLeftHand(PlayerHand* hand) { previewLeftHand_ = hand; }
-
 private:
     /// ===エディター状態=== ///
     bool isVisible_ = false;                      // 表示フラグ
@@ -94,8 +84,6 @@ private:
 
     /// ===プレビュー用=== ///
     PlayerWeapon* previewWeapon_ = nullptr;         // プレビュー用武器
-	PlayerHand* previewRightHand_ = nullptr;        // プレビュー用右手
-	PlayerHand* previewLeftHand_ = nullptr;         // プレビュー用左手
 
     /// ===Line描画=== ///
     std::unique_ptr<Line> line_;                  // 線描画オブジェクト
@@ -104,12 +92,7 @@ private:
     std::unique_ptr<AttackDataSerializer> serializer_; // シリアライザ
 
     /// ===回転編集用（オイラー角）=== ///  
-    struct RotationEditData {
-		std::vector<Vector3> weaponEuler;    // 武器回転制御点
-		std::vector<Vector3> rightHandEuler; // 右手回転制御点
-		std::vector<Vector3> leftHandEuler;  // 左手回転制御点
-    };
-	RotationEditData rotationEditData_;
+	std::vector<std::vector<Vector3>> eulerAnglesPerChannel_; // 軌道チャンネルごとの回転編集用オイラー角リスト
 
 private:
 
@@ -192,17 +175,14 @@ private:
     /// <summary>
     /// 軌道設定UIの描画（単手）
     /// </summary>
-    void RenderTrajectorySettings(AttackData& data);
+    void RenderTrajectoryChannelList(AttackData& data);
 
     /// <summary>
-    /// 両手軌道設定UIの描画
+    /// チャンネル分の制御点リストUIの描画
     /// </summary>
-    void RenderDualHandTrajectorySettings(AttackData& data);
-
-    /// <summary>
-    /// エフェクト設定UIの描画
-    /// </summary>
-    void RenderEffectSettings(AttackData& data);
+    /// <param name="channel">対象チャンネル</param>
+    /// <param name="channelIndex">チャンネルインデックス</param>
+    void RenderChannelControlPoints(TrajectoryChannel& channel, int channelIndex);
 
     /// <summary>
     /// コンボ設定UIの描画
@@ -215,11 +195,6 @@ private:
     void RenderPreviewControl();
 
     /// ===ヘルパー関数=== ///
-
-    /// <summary>
-    /// ベジェ曲線制御点リストのUI描画
-    /// </summary>
-    void RenderBezierControlPointList(std::vector<MiiEngine::BezierControlPointData>& points, const char* label, TrajectoryType type);
 
     /// <summary>
     /// 選択中の攻撃を削除
@@ -242,7 +217,13 @@ private:
     void UpdateTrajectoryPreview(const float deltaTime);
 
     /// <summary>
-    /// 選択中の攻撃の回転データをオイラー角に変換
+    /// 選択中の攻撃の全チャンネルのオイラー角バッファを再構築
+    /// 攻撃選択時・チャンネル追加削除時に呼ぶ
     /// </summary>
-    void UpdateRotationEditData();
+    void RebuildEulerAnglesBuffer();
+
+    /// <summary>
+    /// 指定チャンネルのオイラー角バッファを制御点数に合わせて同期
+    /// </summary>
+    void SyncEulerBuffer(int channelIndex, std::vector<MiiEngine::BezierControlPointData>& points);
 };

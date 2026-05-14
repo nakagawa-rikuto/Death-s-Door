@@ -16,9 +16,9 @@
 ///-------------------------------------------///
 void PlayerAttackComponent::Initialize() {
     // コンボの読み込み
-    LoadAttackData(0, "Resource/Json/Attacks/Player_Attack_0.json");
-    LoadAttackData(1, "Resource/Json/Attacks/Player_Attack_1.json");
-    LoadAttackData(2, "Resource/Json/Attacks/Player_Attack_2.json");
+    LoadAttackData(0, "Resource/Json/Attacks/PlayerAttack_0.json");
+    LoadAttackData(1, "Resource/Json/Attacks/PlayerAttack_1.json");
+    LoadAttackData(2, "Resource/Json/Attacks/PlayerAttack_2.json");
 }
 
 ///-------------------------------------------/// 
@@ -48,7 +48,7 @@ void PlayerAttackComponent::Update(const float deltaTime) {
 
     // コンボ受付時間の管理
     if (state_.canCombo) {
-        // ★ 前の攻撃IDからデータを取得
+        // 前の攻撃IDからデータを取得
         const AttackData* previousData = GetAttackData(state_.previousAttackID);
 
         if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
@@ -119,11 +119,7 @@ bool PlayerAttackComponent::LoadAttackData(int attackID, const std::string& file
 ///-------------------------------------------/// 
 /// 攻撃を開始
 ///-------------------------------------------///
-bool PlayerAttackComponent::StartAttack(
-    int attackID, 
-    PlayerWeapon* weapon, 
-    PlayerHand* rightHand, 
-    PlayerHand* leftHand) {
+bool PlayerAttackComponent::StartAttack( int attackID, PlayerWeapon* weapon) {
 
     // 既に攻撃中の場合は失敗
     if (state_.isActive) {
@@ -141,7 +137,7 @@ bool PlayerAttackComponent::StartAttack(
     const AttackData& attackData = it->second;
 
     // 武器に攻撃を適用
-    ApplyAttackToWeapon(attackData, weapon, rightHand, leftHand);
+    ApplyAttackToWeapon(attackData, weapon);
 
     // 状態を更新
     state_.isActive = true;
@@ -156,10 +152,7 @@ bool PlayerAttackComponent::StartAttack(
 ///-------------------------------------------/// 
 /// コンボ攻撃を試行
 ///-------------------------------------------///
-bool PlayerAttackComponent::TryCombo(
-    PlayerWeapon* weapon, 
-    PlayerHand* rightHand,
-    PlayerHand* leftHand) {
+bool PlayerAttackComponent::TryCombo(PlayerWeapon* weapon) {
 
     // コンボ可能状態でない場合は失敗
     if (!state_.canCombo) {
@@ -182,7 +175,7 @@ bool PlayerAttackComponent::TryCombo(
     state_.canCombo = false;
     state_.comboCount++;
 
-    return StartAttack(nextAttackID, weapon, rightHand, leftHand);
+    return StartAttack(nextAttackID, weapon);
 }
 
 ///-------------------------------------------/// 
@@ -231,29 +224,15 @@ float PlayerAttackComponent::GetAttackProgress() const {
 ///-------------------------------------------/// 
 /// 武器に攻撃軌道を設定
 ///-------------------------------------------///
-void PlayerAttackComponent::ApplyAttackToWeapon(
-    const AttackData& data, 
-    PlayerWeapon* weapon, 
-    PlayerHand* rightHand, 
-    PlayerHand* leftHand) {
+void PlayerAttackComponent::ApplyAttackToWeapon( const AttackData& data, PlayerWeapon* weapon) {
+    // 早期リターン
+    if (!weapon) return;
 
-    if (!weapon) {
-        return;
+    // チャンネル0
+    const TrajectoryChannel* weaponChannel = data.GetChannel(0);
+    if (weapon && weaponChannel && weaponChannel->enabled && weaponChannel->points.size() >= 2) {
+        weapon->StartAttack(weaponChannel->points, data.activeDuration);
     }
-
-    /// ===攻撃スタート=== ///
-    if (data.isLeftHandAttack) {
-		// 左手攻撃
-        leftHand->StartAttack(data.leftHandTrajectoryPoints, data.activeDuration);
-    } 
-    
-    if (data.isRightHandAttack) {
-		// 右手攻撃
-		rightHand->StartAttack(data.rightHandTrajectoryPoints, data.activeDuration);
-    }
-
-	// 武器攻撃
-	weapon->StartAttack(data.weaponTrajectoryPoints, data.activeDuration);
 }
 
 ///-------------------------------------------/// 

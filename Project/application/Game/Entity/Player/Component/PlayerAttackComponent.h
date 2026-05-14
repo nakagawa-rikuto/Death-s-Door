@@ -63,19 +63,15 @@ public:
 	/// </summary>
 	/// <param name="attackID">実行する攻撃ID</param>
 	/// <param name="weapon">使用する武器</param>
-	/// <param name="playerPosition">プレイヤーの位置</param>
-	/// <param name="playerRotation">プレイヤーの回転</param>
 	/// <returns>攻撃開始に成功したらtrue</returns>
-	bool StartAttack(int attackID, PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
+	bool StartAttack(int attackID, PlayerWeapon* weapon);
 
 	/// <summary>
 	/// コンボ攻撃を試行
 	/// </summary>
 	/// <param name="weapon">使用する武器</param>
-	/// <param name="playerPosition">プレイヤーの位置</param>
-	/// <param name="playerRotation">プレイヤーの回転</param>
 	/// <returns>コンボ成功したらtrue</returns>
-	bool TryCombo(PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
+	bool TryCombo(PlayerWeapon* weapon);
 
 	/// <summary>
 	/// 攻撃をキャンセル
@@ -117,8 +113,6 @@ private:
 	/// </summary>
 	/// <param name="data">適用する攻撃情報を保持する参照。ダメージ値や攻撃種別、エフェクトなどを含みます。</param>
 	/// <param name="weapon">攻撃を受ける対象の武器オブジェクトを指すポインタ。</param>
-	/// <param name="basePosition">攻撃適用時の基準となる位置（ワールド座標）。</param>
-	/// <param name="baseRotation">攻撃適用時の基準となる回転（クォータニオン）。</param>
-	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon, PlayerHand* rightHand, PlayerHand* leftHand);
+	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
 };
 
