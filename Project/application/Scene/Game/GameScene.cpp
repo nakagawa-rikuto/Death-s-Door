@@ -69,6 +69,18 @@ void GameScene::Initialize() {
 	stage_ = std::make_unique<GameStage>();
 	stage_->Initialize("Level/BossStage.json");
 
+	// ColliderServiceのライト設定
+	Service::Collision::SetLight(MiiEngine::LightType::HalfLambert);
+	lightInfo_ = {
+		.shininess = 32.0f, // 光沢度を少し高めにしてハイライトを綺麗に
+		.directional = {
+			.color = { 1.0f, 0.98f, 0.9f, 1.0f }, // わずかに暖かみのある色
+			.direction = { -0.5f, -0.8f, 0.5f },  // 斜め少し前・上空からキャラクターを照らす向き
+			.intensity = 0.8f,
+		},
+	};
+	Service::Collision::SetLightData(lightInfo_);
+
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
 	Vector3 translation = { 0.0f, 5.0f, -30.0f };
@@ -85,34 +97,6 @@ void GameScene::Initialize() {
 	// 初期状態をInitializeStateに設定
 	ChangState(std::make_unique<GameSceneInitializeState>());
 
-	// ColliderServiceのライト設定
-	Service::Collision::SetLight(MiiEngine::LightType::HalfLambert);
-	lightInfo_ = {
-		.shininess = 32.0f, // 光沢度を少し高めにしてハイライトを綺麗に
-		.directional = {
-			.color = { 1.0f, 0.98f, 0.9f, 1.0f }, // わずかに暖かみのある色
-			.direction = { -0.5f, -0.8f, 0.5f },  // 斜め少し前・上空からキャラクターを照らす向き
-			.intensity = 0.8f,
-		},
-		.point {
-			.color = { 1.0f, 0.6f, 0.2f, 1.0f },  // 温かみのあるオレンジ系の環境アクセント
-			.position = { 0.0f, 30.0f, 0.0f },     // プレイヤーの少し上
-			.intensity = 30.0f,                    // ライトの強さ
-			.radius = 1000.0f,                      // プレイヤー周辺を十分覆う範囲
-			.decay = 1.5f,                        // 距離に応じた自然な減衰
-		},
-		.spot = {
-			.color = { 0.8f, 0.9f, 1.0f, 1.0f },  // スポットライトは少しクールな青白系
-			.position = { 0.0f, 8.0f, 0.0f },     // プレイヤーの真上
-			.intensity = 1.5f,                    // 少し強めに強調
-			.direction = { 0.0f, -1.0f, 0.0f },   // 真下を向く
-			.distance = 15.0f,                    // 地面に届く十分な距離
-			.decay = 2.0f,                        // スポット外周にかけての減衰率
-			.cosAngle = 0.707f,                   // 約45度の照射角 (cos(45度) ≒ 0.707)
-		},
-	};
-	Service::Collision::SetLightData(lightInfo_);
-
 	// BGMの再生
 	//AudioService::StartSound("title", true);
 }
@@ -124,60 +108,6 @@ void GameScene::Update() {
 	/// ===デバック用ImGui=== ///
 #ifdef USE_IMGUI
 	ImGui::Begin("GameScene");
-	ImGui::End();
-
-	// Light
-	ImGui::Begin("ライト情報");
-	/// ライトの種類の選択
-	static int lightType = static_cast<int>(MiiEngine::LightType::HalfLambert);
-	ImGui::Text("Light Type");
-	if (ImGui::RadioButton("Lambert", &lightType, static_cast<int>(MiiEngine::LightType::Lambert))) {
-		Service::Collision::SetLight(MiiEngine::LightType::Lambert);
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("HalfLambert", &lightType, static_cast<int>(MiiEngine::LightType::HalfLambert))) {
-		Service::Collision::SetLight(MiiEngine::LightType::HalfLambert);
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("PointLight", &lightType, static_cast<int>(MiiEngine::LightType::PointLight))) {
-		Service::Collision::SetLight(MiiEngine::LightType::PointLight);
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("SpotLight", &lightType, static_cast<int>(MiiEngine::LightType::SpotLight))) {
-		Service::Collision::SetLight(MiiEngine::LightType::SpotLight);
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("None", &lightType, static_cast<int>(MiiEngine::LightType::None))) {
-		Service::Collision::SetLight(MiiEngine::LightType::None);
-	}
-
-	ImGui::DragFloat("光沢度", &lightInfo_.shininess, 0.01f);
-
-	if (ImGui::TreeNode("Directionl")) {
-		ImGui::ColorEdit3("ライトの色", &lightInfo_.directional.color.x);
-		ImGui::DragFloat3("ライトの方向", &lightInfo_.directional.direction.x, 0.01f);
-		ImGui::DragFloat("ライトの強さ", &lightInfo_.directional.intensity, 0.01f);
-		ImGui::TreePop();
-	}
-	if (ImGui::TreeNode("Point")) {
-		ImGui::ColorEdit3("ライトの色", &lightInfo_.point.color.x);
-		ImGui::DragFloat3("ライトの位置", &lightInfo_.point.position.x, 0.01f);
-		ImGui::DragFloat("ライトの強さ", &lightInfo_.point.intensity, 0.01f);
-		ImGui::DragFloat("ライトの半径", &lightInfo_.point.radius, 0.01f);
-		ImGui::DragFloat("ライトの減衰率", &lightInfo_.point.decay, 0.01f);
-		ImGui::TreePop();
-	}
-	if (ImGui::TreeNode("Spot")) {
-		ImGui::ColorEdit3("ライトの色", &lightInfo_.spot.color.x);
-		ImGui::DragFloat3("ライトの位置", &lightInfo_.spot.position.x, 0.01f);
-		ImGui::DragFloat3("ライトの方向", &lightInfo_.spot.direction.x, 0.01f);
-		ImGui::DragFloat("ライトの強さ", &lightInfo_.spot.intensity, 0.01f);
-		ImGui::DragFloat("ライトの距離", &lightInfo_.spot.distance, 0.01f);
-		ImGui::DragFloat("ライトの減衰率", &lightInfo_.spot.decay, 0.01f);
-		ImGui::DragFloat("ライトのコサイン角度", &lightInfo_.spot.cosAngle, 0.01f);
-		ImGui::TreePop();
-	}
-	Service::Collision::SetLightData(lightInfo_);
 	ImGui::End();
 
 	// Camera

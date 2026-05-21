@@ -72,6 +72,18 @@ void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera)
 	weapon_->Initialize();
 	weapon_->SetUpParent(this);
 
+	/// ===LightInfo=== ///
+	SetLight(MiiEngine::LightType::PointLight);
+	baseInfo_.lightInfo_.shininess = 30.0f;
+	baseInfo_.lightInfo_.point = {
+		.color = { 1.0f, 1.0f, 1.0f, 1.0f },
+		.position = { transform_.translate.x, 100.0f, transform_.translate.z },
+		.intensity = 10.0f,
+		.radius = 115.0f,
+		.decay = 1.5f,
+	};
+	SetLightData(baseInfo_.lightInfo_);
+
 	/// ===パラメータの設定=== ///
 	SettingParamita();
 
@@ -129,6 +141,10 @@ void Player::Update() {
 	/// ===タイマーを進める=== ///
 	advanceTimer();
 
+	// ライトの位置をキャラクターの位置に合わせる
+	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
+	baseInfo_.lightInfo_.point.position.z = transform_.translate.z;
+
 	/// ===Stateの管理=== ///
 	if (currentState_) {
 		// 各Stateの更新
@@ -182,6 +198,17 @@ void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
 	GameCharacter::Information();		// 親クラスの情報表示
+	// LightInfoの情報表示
+	ImGui::DragFloat("光沢度", &baseInfo_.lightInfo_.shininess, 0.01f);
+	if (ImGui::TreeNode("Point")) {
+		ImGui::ColorEdit3("ライトの色", &baseInfo_.lightInfo_.point.color.x);
+		ImGui::DragFloat3("ライトの位置", &baseInfo_.lightInfo_.point.position.x, 0.01f);
+		ImGui::DragFloat("ライトの強さ", &baseInfo_.lightInfo_.point.intensity, 0.01f);	
+		ImGui::DragFloat("ライトの半径", &baseInfo_.lightInfo_.point.radius, 0.01f);
+		ImGui::DragFloat("ライトの減衰率", &baseInfo_.lightInfo_.point.decay, 0.01f);
+		ImGui::TreePop();
+	}
+	SetLightData(baseInfo_.lightInfo_);
 	moveComponent_->Information();		// 移動コンポーネントの情報表示
 	avoidanceComponent_->Information(); // 回避コンポーネントの情報表示
 	attackComponent_->Information();    // 攻撃コンポーネントの情報表示

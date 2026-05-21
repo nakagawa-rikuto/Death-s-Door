@@ -93,6 +93,7 @@ protected:
 		float gravity = -9.8f;  // 重力
 		uint32_t HP = 10;       // 体力
         bool isDead = false;    // 死亡フラグ
+		MiiEngine::LightInfo lightInfo_; // ライト情報
     };
     BaseInfo baseInfo_;
 
