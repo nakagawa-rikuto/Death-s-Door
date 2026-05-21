@@ -246,14 +246,11 @@ void BossEnemy::SetComponentConfig() {
 	/// ===AttackComponentの生成=== ///
 	// Rotate
 	attackConfig.rotateConfig = BossAttackRotateComponent::RotateConfig{
-		.windUpAngle = 30.0f,
-		.windUpDuration = 0.25f,
-		.strikeAngle = -15.0f,
-		.strikeDuration = 0.12f,
+		.windUpDuration = 3.0f,
+		.strikeAngle = 30.0f,
+		.strikeDuration = 0.3f,
 		.recoveryDuration = 0.5f,
-		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
-		.weaponWindUpOffset = { 0.0f,  0.0f, 12.0f },
-		.weaponStrikeOffset = { 0.0f,  0.0f, 12.0f },
+		.weaponOffset = { 0.0f,  0.0f,  12.0f },
 	};
 
 	// DownSwing

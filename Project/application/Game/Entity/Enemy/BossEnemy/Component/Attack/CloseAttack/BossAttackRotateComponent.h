@@ -25,24 +25,18 @@ private:
 public:
 	/// ===設定パラメータの構造体=== ///
 	struct RotateConfig {
-		// --- WindUp（予備動作）---
-		float windUpAngle = 30.0f;  // タメ時にY軸回転させる角度（度）
+		// --- WindUp ---
 		float windUpDuration = 0.25f;  // タメにかける時間（秒）
 
-		// --- Strike（突き）---
-		float strikeAngle = 15.0f;  // 切り返しのY軸回転角度（度）正面を超えた反対側まで（度）
-		float strikeDuration = 0.12f;  // 突き動作にかける時間（秒）
+		// --- Strike ---
+		float strikeAngle = 30.0f;  // 切り返しのY軸回転角度（度）正面を超えた反対側まで（度）
+		float strikeDuration = 0.4f;  // 突き動作にかける時間（秒）
 
-		// --- Recovery（戻り）---
+		// --- Recovery ---
 		float recoveryDuration = 0.35f;  // 0° へ戻るまでの時間（秒）。Strike より長めでゆっくり戻る
 
 		// --- 武器オフセット ---
-		// 武器の初期位置オフセット（Bossローカル座標）
-		Vector3 weaponRestOffset = { 0.8f,  0.0f,  0.0f };
-		// タメ時の武器引き絞りオフセット（Bossローカル座標）
-		Vector3 weaponWindUpOffset = { 0.8f,  0.0f, -0.3f };
-		// 突き時の武器前方オフセット（Bossローカル座標）
-		Vector3 weaponStrikeOffset = { 0.4f,  0.0f,  1.2f };
+		Vector3 weaponOffset = { 0.0f,  0.0f,  0.0f };
 	};
 
 	/// ===更新用コンテキスト=== ///
@@ -57,6 +51,7 @@ public:
 		Vector3 weaponLocalOffset{}; // ローカル座標系での武器位置オフセット
 		bool isAttacking = false;    // 攻撃判定が有効なフレーム
 		bool isFinished = false;	 // 攻撃が完全終了したか
+		bool isParticle = true;    // Particleを出すフレーム（攻撃終了の瞬間）
 	};
 
 public:

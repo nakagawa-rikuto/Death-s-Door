@@ -23,16 +23,16 @@ private:
     /// ===状態=== ///
     struct OrbitState {
         float orbitTimer = 0.0f; // 公転開始からの経過時間（角度計算に使用）
-        float lifeTimer = 0.0f; // 残り生存時間
+        float lifeTimer = 0.0f;  // 残り生存時間
     };
 
 public:
     /// ===設定パラメータ=== ///
     struct OrbitConfig {
         // --- 公転パラメータ ---
-        float orbitRadius = 3.0f;   // 公転半径（ボスからの距離）
+        float orbitRadius = 3.0f;     // 公転半径（ボスからの距離）
         float orbitSpeedDeg = 120.0f; // 1秒あたりの公転角速度（度/秒）
-        float orbitHeight = 0.0f;   // ボスY座標からの高さオフセット
+        float orbitHeight = 0.0f;     // ボスY座標からの高さオフセット
 
         // --- 弾の生存時間 ---
         float lifetime = 5.0f;   // 公転を続ける時間（秒）

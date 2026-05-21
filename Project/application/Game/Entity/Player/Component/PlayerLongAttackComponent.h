@@ -2,5 +2,14 @@
 /// ===Include=== ///
 #include "Math/Vector3.h"
 
-class PlayerLongAttackComponent {};
+
+///=====================================================/// 
+/// PlayerLongAttackComponent
+/// プレイヤーの遠距離攻撃コンポーネント
+///=====================================================///
+class PlayerLongAttackComponent {
+public:
+
+
+};
 

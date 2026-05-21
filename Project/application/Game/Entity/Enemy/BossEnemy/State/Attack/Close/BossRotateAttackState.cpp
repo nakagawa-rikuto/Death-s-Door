@@ -7,6 +7,8 @@
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
 #include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
+// Service
+#include "Service/Particle.h"
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -17,7 +19,8 @@ void BossRotateAttackState::Enter(BossEnemy* enemy) {
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
 	boss_->GetRotateComponent().StartAttack();
-	boss_->GetWeapon().SetActive(true); // 武器を有効化
+	// Particleの生成
+	Service::Particle::Emit("Boss", boss_->GetTransform().translate);
 }
 
 ///-------------------------------------------///  
@@ -37,6 +40,11 @@ void BossRotateAttackState::Update() {
 
 	// 武器のオフセットを反映
 	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
+
+	if (!result.isParticle) {
+		Service::Particle::StopParticle("Boss");
+		boss_->GetWeapon().SetActive(true); // 武器を有効化
+	}
 
 	// 波紋を生成するタイミングの判定
 	if (result.isAttacking) {
