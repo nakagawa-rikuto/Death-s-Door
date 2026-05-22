@@ -41,7 +41,7 @@ BossAttackRotateComponent::UpdateResult BossAttackRotateComponent::Update(const 
 	if (phase_ == RotatePhase::Idle || phase_ == RotatePhase::Finished) {
 		// 非アクティブ：基底回転そのまま、武器は定位置
 		result.modelRotation = context.baseRotation;
-		result.weaponLocalOffset = config_.weaponRestOffset;
+		result.weaponLocalOffset = config_.weaponOffset;
 		result.isFinished = (phase_ == RotatePhase::Finished);
 		return result;
 	}
@@ -67,7 +67,7 @@ void BossAttackRotateComponent::Reset() {
 ///-------------------------------------------///
 void BossAttackRotateComponent::Information() {
 #ifdef USE_IMGUI
-	if (ImGui::TreeNode("突き攻撃情報")) {
+	if (ImGui::TreeNode("回転攻撃情報")) {
 		// 現在フェーズ
 		const char* phaseNames[] = { "Idle", "WindUp", "Strike", "Recovery", "Finished" };
 		ImGui::Text("フェーズ: %s", phaseNames[static_cast<int>(phase_)]);
@@ -75,14 +75,13 @@ void BossAttackRotateComponent::Information() {
 
 		ImGui::Separator();
 
-		if (ImGui::TreeNode("予備動作（WindUp）")) {
-			ImGui::DragFloat("タメ角度 (度)", &config_.windUpAngle, 0.5f, 0.0f, 90.0f);
+		if (ImGui::TreeNode("予備動作")) {
 			ImGui::DragFloat("タメ時間 (秒)", &config_.windUpDuration, 0.01f, 0.01f, 2.0f);
 			ImGui::TreePop();
 		}
-		if (ImGui::TreeNode("突き（Strike）")) {
-			ImGui::DragFloat("切り返し角度 (度)", &config_.strikeAngle, 0.5f, 0.0f, 90.0f);
-			ImGui::DragFloat("突き時間 (秒)", &config_.strikeDuration, 0.01f, 0.01f, 2.0f);
+		if (ImGui::TreeNode("回転")) {
+			ImGui::DragFloat("回転角度 (度)", &config_.strikeAngle, 0.5f, 0.0f, 90.0f);
+			ImGui::DragFloat("攻撃時間 (秒)", &config_.strikeDuration, 0.01f, 0.01f, 2.0f);
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("戻り（Recovery）")) {
@@ -90,9 +89,7 @@ void BossAttackRotateComponent::Information() {
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("武器オフセット")) {
-			ImGui::DragFloat3("定位置", &config_.weaponRestOffset.x, 0.01f);
-			ImGui::DragFloat3("引き絞り", &config_.weaponWindUpOffset.x, 0.01f);
-			ImGui::DragFloat3("突き出し", &config_.weaponStrikeOffset.x, 0.01f);
+			ImGui::DragFloat3("定位置", &config_.weaponOffset.x, 0.01f);
 			ImGui::TreePop();
 		}
 
@@ -124,21 +121,11 @@ void BossAttackRotateComponent::UpdateAttack(const UpdateContext& context, Updat
 		// t
 		const float t = (config_.windUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f) : 1.0f;
 
-		// Y軸ひねり
-		const Quaternion windUpYaw = MakeYawQuaternion(config_.windUpAngle * t);
-		result.modelRotation = Multiply(context.baseRotation, windUpYaw);
-
-		// 武器オフセット
-		result.weaponLocalOffset = LerpVector3(
-			config_.weaponRestOffset,
-			config_.weaponWindUpOffset,
-			t
-		);
-
 		// フェーズ遷移
 		if (t >= 1.0f) {
 			state_.phaseTimer = 0.0f;
 			phase_ = RotatePhase::Strike;
+			result.isParticle = false; 
 		}
 	}
 	// -----------------------------------------------
@@ -148,19 +135,12 @@ void BossAttackRotateComponent::UpdateAttack(const UpdateContext& context, Updat
 		// t
 		const float t = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
 
-		// 回転の補間
-		const float startAngle = config_.windUpAngle;
-		const float endAngle = -config_.strikeAngle;
-		const float currentAngle = startAngle + (endAngle - startAngle) * t;
-		const Quaternion strikeYaw = MakeYawQuaternion(currentAngle);
+		// Y軸ひねり
+		const Quaternion strikeYaw = MakeYawQuaternion(config_.strikeAngle);
 		result.modelRotation = Multiply(context.baseRotation, strikeYaw);
 
 		// 武器オフセット
-		result.weaponLocalOffset = LerpVector3(
-			config_.weaponWindUpOffset,
-			config_.weaponStrikeOffset,
-			t
-		);
+		result.weaponLocalOffset = config_.weaponOffset;
 
 		// フェーズ遷移
 		if (t >= 1.0f) {
@@ -181,11 +161,7 @@ void BossAttackRotateComponent::UpdateAttack(const UpdateContext& context, Updat
 		result.modelRotation = Math::SLerp(strikeEndRot, context.baseRotation, t);
 
 		// 武器オフセット
-		result.weaponLocalOffset = LerpVector3(
-			config_.weaponStrikeOffset,
-			config_.weaponRestOffset,
-			t
-		);
+		result.weaponLocalOffset = config_.weaponOffset;
 
 		// フェーズ遷移
 		if (t >= 1.0f) {

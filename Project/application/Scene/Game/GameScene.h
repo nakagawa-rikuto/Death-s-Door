@@ -68,6 +68,9 @@ private:/// ===メンバ変数=== ///
 	};
 	CameraInfo cameraInfo_;
 
+	// ライトの情報
+	MiiEngine::LightInfo lightInfo_;
+
 private: /// ===メンバ関数=== ///
 
 	/// <summary>

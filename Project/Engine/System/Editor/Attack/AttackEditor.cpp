@@ -536,6 +536,7 @@ void AttackEditor::RenderAttackList() {
 /// 基本設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderBasicSettings(AttackData& data) {
+    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("基本情報");
 
@@ -595,6 +596,7 @@ void AttackEditor::RenderTimingSettings(AttackData& data) {
 /// 軌道チャンネル一覧UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderTrajectoryChannelList(AttackData& data) {
+    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("軌道チャンネル");
 
@@ -684,6 +686,8 @@ void AttackEditor::RenderTrajectoryChannelList(AttackData& data) {
 /// 1チャンネル分の制御点リストUIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderChannelControlPoints(TrajectoryChannel& channel, int channelIndex) {
+    channel;
+    channelIndex;
 #ifdef USE_IMGUI
     auto& points = channel.points;
 

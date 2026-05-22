@@ -46,7 +46,7 @@ void BossDownwarAttackState::Update() {
 	// 波紋を生成するタイミングの判定
 	if (result.onStrike) {
 		// 波紋を生成するタイミングの判定
-		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 30.0f);
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 1.0f, 50.0f);
 	}
 
 	if (result.isFinished) {

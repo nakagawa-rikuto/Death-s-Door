@@ -4,7 +4,7 @@
 #include <windows.h>
 
 /// ===ゲームタイトル=== ///
-const wchar_t kWindowTitle[] = L"Fallen Ascent";
+const wchar_t kWindowTitle[] = L"KaijounoKessen";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {

@@ -136,12 +136,13 @@ void BossAttackJumpSmashComponent::StartAttack(
 	}
 	// 攻撃開始に必要な情報を state_ に保存
 	state_.phaseTimer = 0.0f;
-	state_.distance = distance;
 	state_.baseRotation = baseRotation;
 	state_.startPosition = bossPosition;
 	state_.targetPosition = playerPosition;
 	state_.currentPosition = bossPosition;
 	phase_ = LeapPhase::LeapWindUp;
+	// 距離は config の範囲内にクランプして保存
+	state_.distance = std::clamp(distance, config_.minDistance, config_.maxDistance);
 }
 
 ///-------------------------------------------///
@@ -190,8 +191,7 @@ void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 	// t
-	state_.distance = std::clamp(state_.distance, config_.minDistance, config_.maxDistance);
-	float ration = state_.distance / config_.minDistance;
+	float ration = state_.distance / config_.maxDistance;
 	float actualDuration = config_.leapDuration * ration;
 	const float t = (actualDuration > 0.0f) ? std::min(state_.phaseTimer / actualDuration, 1.0f) : 1.0f;
 

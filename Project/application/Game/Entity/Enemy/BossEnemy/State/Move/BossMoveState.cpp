@@ -95,11 +95,8 @@ bool BossMoveState::ChangeStateIfNeeded(float dist) {
 		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
 		return true;
 	} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
-		// JumpSmash攻撃への遷移条件
-		float minRange = boss_->GetAttackManager().GetConfig().jumpSmashMinRange;
-		float maxRange = boss_->GetAttackManager().GetConfig().jumpSmashMaxRange;
-		// テレポートへ遷移
-		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
+		// JumpSmash攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
 		return true;
 	}
 

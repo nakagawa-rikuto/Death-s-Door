@@ -40,6 +40,18 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
 
+	/// ===LightInfo=== ///
+	SetLight(MiiEngine::LightType::PointLight);
+	baseInfo_.lightInfo_.shininess = 30.0f;
+	baseInfo_.lightInfo_.point = {
+		.color = { 1.0f, 1.0f, 1.0f, 1.0f },
+		.position = { transform_.translate.x, 80.0f, transform_.translate.z - 50.0f},
+		.intensity = 10.0f,
+		.radius = 115.0f,
+		.decay = 1.5f,
+	};
+	SetLightData(baseInfo_.lightInfo_);
+
 	/// ===Componentの設定=== ///
 	SetComponentConfig();
 
@@ -89,6 +101,10 @@ void BossEnemy::Update() {
 	/// ===Timerの更新=== ///
 	advanceTimer();
 
+	// ライトの位置をキャラクターの位置に合わせる
+	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
+	baseInfo_.lightInfo_.point.position.z = transform_.translate.z - 30.0f;
+
 	/// ===AttackManagerの更新=== ///
 	attackManager_->Update(transform_.translate, player_->GetTransform().translate, baseInfo_.deltaTime);
 
@@ -122,6 +138,17 @@ void BossEnemy::Draw(MiiEngine::BlendMode mode) {
 void BossEnemy::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("ボスエネミー");
+	// LightInfoの情報表示
+	ImGui::DragFloat("光沢度", &baseInfo_.lightInfo_.shininess, 0.01f);
+	if (ImGui::TreeNode("Point")) {
+		ImGui::ColorEdit3("ライトの色", &baseInfo_.lightInfo_.point.color.x);
+		ImGui::DragFloat3("ライトの位置", &baseInfo_.lightInfo_.point.position.x, 0.01f);
+		ImGui::DragFloat("ライトの強さ", &baseInfo_.lightInfo_.point.intensity, 0.01f);
+		ImGui::DragFloat("ライトの半径", &baseInfo_.lightInfo_.point.radius, 0.01f);
+		ImGui::DragFloat("ライトの減衰率", &baseInfo_.lightInfo_.point.decay, 0.01f);
+		ImGui::TreePop();
+	}
+	SetLightData(baseInfo_.lightInfo_);
 	/// ===GameCharacterの情報表示=== ///
 	GameCharacter::Information();
 	/// ===MoveComponentの情報表示=== ///
@@ -246,14 +273,11 @@ void BossEnemy::SetComponentConfig() {
 	/// ===AttackComponentの生成=== ///
 	// Rotate
 	attackConfig.rotateConfig = BossAttackRotateComponent::RotateConfig{
-		.windUpAngle = 30.0f,
-		.windUpDuration = 0.25f,
-		.strikeAngle = -15.0f,
-		.strikeDuration = 0.12f,
+		.windUpDuration = 3.0f,
+		.strikeAngle = 30.0f,
+		.strikeDuration = 0.3f,
 		.recoveryDuration = 0.5f,
-		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
-		.weaponWindUpOffset = { 0.0f,  0.0f, 12.0f },
-		.weaponStrikeOffset = { 0.0f,  0.0f, 12.0f },
+		.weaponOffset = { 0.0f,  0.0f,  12.0f },
 	};
 
 	// DownSwing

@@ -69,6 +69,18 @@ void GameScene::Initialize() {
 	stage_ = std::make_unique<GameStage>();
 	stage_->Initialize("Level/BossStage.json");
 
+	// ColliderServiceのライト設定
+	Service::Collision::SetLight(MiiEngine::LightType::HalfLambert);
+	lightInfo_ = {
+		.shininess = 32.0f, // 光沢度を少し高めにしてハイライトを綺麗に
+		.directional = {
+			.color = { 1.0f, 0.98f, 0.9f, 1.0f }, // わずかに暖かみのある色
+			.direction = { -0.5f, -0.8f, 0.5f },  // 斜め少し前・上空からキャラクターを照らす向き
+			.intensity = 0.8f,
+		},
+	};
+	Service::Collision::SetLightData(lightInfo_);
+
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
 	Vector3 translation = { 0.0f, 5.0f, -30.0f };
@@ -206,4 +218,5 @@ void GameScene::LoadParticle() {
 	Service::Particle::LoadParticleDefinition("EnemyHitEffect.json");
 	Service::Particle::LoadParticleDefinition("EnemyTeleportParticle.json");
 	Service::Particle::LoadParticleDefinition("EnemyDeathParticle.json");
+	Service::Particle::LoadParticleDefinition("Charge.json");
 }
