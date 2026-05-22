@@ -62,6 +62,9 @@ void BossRotateAttackState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossRotateAttackState::Finalize() {
+	// Particleの停止
+	Service::Particle::StopParticle("Boss");
+
 	// タイマーリセット
 	boss_->GetAttackManager().StartRotateCooldown();
 
