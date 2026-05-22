@@ -460,6 +460,8 @@
 └── └── └── └──     └── ├── PlayerAvoidanceComponent.h
 └── └── └── └──     └── ├── PlayerHitReactionComponent.cpp
 └── └── └── └──     └── ├── PlayerHitReactionComponent.h
+└── └── └── └──     └── ├── PlayerLongAttackComponent.cpp
+└── └── └── └──     └── ├── PlayerLongAttackComponent.h
 └── └── └── └──     └── ├── PlayerMoveComponent.cpp
 └── └── └── └──     └── └── PlayerMoveComponent.h
 └── └── └── └──     ├── Hand/
@@ -21298,6 +21300,7 @@ void AttackEditor::RenderAttackList() {
 /// 基本設定UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderBasicSettings(AttackData& data) {
+    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("基本情報");
 
@@ -21357,6 +21360,7 @@ void AttackEditor::RenderTimingSettings(AttackData& data) {
 /// 軌道チャンネル一覧UIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderTrajectoryChannelList(AttackData& data) {
+    data;
 #ifdef USE_IMGUI
     ImGui::SeparatorText("軌道チャンネル");
 
@@ -21446,6 +21450,8 @@ void AttackEditor::RenderTrajectoryChannelList(AttackData& data) {
 /// 1チャンネル分の制御点リストUIの描画
 ///-------------------------------------------///
 void AttackEditor::RenderChannelControlPoints(TrajectoryChannel& channel, int channelIndex) {
+    channel;
+    channelIndex;
 #ifdef USE_IMGUI
     auto& points = channel.points;
 
@@ -29398,6 +29404,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -29596,6 +29603,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -30612,6 +30620,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -31188,6 +31197,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -38033,6 +38043,18 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
 
+	/// ===LightInfo=== ///
+	SetLight(MiiEngine::LightType::PointLight);
+	baseInfo_.lightInfo_.shininess = 30.0f;
+	baseInfo_.lightInfo_.point = {
+		.color = { 1.0f, 1.0f, 1.0f, 1.0f },
+		.position = { transform_.translate.x, 80.0f, transform_.translate.z - 50.0f},
+		.intensity = 10.0f,
+		.radius = 115.0f,
+		.decay = 1.5f,
+	};
+	SetLightData(baseInfo_.lightInfo_);
+
 	/// ===Componentの設定=== ///
 	SetComponentConfig();
 
@@ -38082,6 +38104,10 @@ void BossEnemy::Update() {
 	/// ===Timerの更新=== ///
 	advanceTimer();
 
+	// ライトの位置をキャラクターの位置に合わせる
+	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
+	baseInfo_.lightInfo_.point.position.z = transform_.translate.z - 30.0f;
+
 	/// ===AttackManagerの更新=== ///
 	attackManager_->Update(transform_.translate, player_->GetTransform().translate, baseInfo_.deltaTime);
 
@@ -38115,6 +38141,17 @@ void BossEnemy::Draw(MiiEngine::BlendMode mode) {
 void BossEnemy::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("ボスエネミー");
+	// LightInfoの情報表示
+	ImGui::DragFloat("光沢度", &baseInfo_.lightInfo_.shininess, 0.01f);
+	if (ImGui::TreeNode("Point")) {
+		ImGui::ColorEdit3("ライトの色", &baseInfo_.lightInfo_.point.color.x);
+		ImGui::DragFloat3("ライトの位置", &baseInfo_.lightInfo_.point.position.x, 0.01f);
+		ImGui::DragFloat("ライトの強さ", &baseInfo_.lightInfo_.point.intensity, 0.01f);
+		ImGui::DragFloat("ライトの半径", &baseInfo_.lightInfo_.point.radius, 0.01f);
+		ImGui::DragFloat("ライトの減衰率", &baseInfo_.lightInfo_.point.decay, 0.01f);
+		ImGui::TreePop();
+	}
+	SetLightData(baseInfo_.lightInfo_);
 	/// ===GameCharacterの情報表示=== ///
 	GameCharacter::Information();
 	/// ===MoveComponentの情報表示=== ///
@@ -38239,14 +38276,11 @@ void BossEnemy::SetComponentConfig() {
 	/// ===AttackComponentの生成=== ///
 	// Rotate
 	attackConfig.rotateConfig = BossAttackRotateComponent::RotateConfig{
-		.windUpAngle = 30.0f,
-		.windUpDuration = 0.25f,
-		.strikeAngle = -15.0f,
-		.strikeDuration = 0.12f,
+		.windUpDuration = 3.0f,
+		.strikeAngle = 30.0f,
+		.strikeDuration = 0.3f,
 		.recoveryDuration = 0.5f,
-		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
-		.weaponWindUpOffset = { 0.0f,  0.0f, 12.0f },
-		.weaponStrikeOffset = { 0.0f,  0.0f, 12.0f },
+		.weaponOffset = { 0.0f,  0.0f,  12.0f },
 	};
 
 	// DownSwing
@@ -39705,12 +39739,13 @@ void BossAttackJumpSmashComponent::StartAttack(
 	}
 	// 攻撃開始に必要な情報を state_ に保存
 	state_.phaseTimer = 0.0f;
-	state_.distance = distance;
 	state_.baseRotation = baseRotation;
 	state_.startPosition = bossPosition;
 	state_.targetPosition = playerPosition;
 	state_.currentPosition = bossPosition;
 	phase_ = LeapPhase::LeapWindUp;
+	// 距離は config の範囲内にクランプして保存
+	state_.distance = std::clamp(distance, config_.minDistance, config_.maxDistance);
 }
 
 ///-------------------------------------------///
@@ -39759,8 +39794,7 @@ void BossAttackJumpSmashComponent::UpdateLeapWindUp(UpdateResult& result) {
 ///-------------------------------------------///
 void BossAttackJumpSmashComponent::UpdateLeap(UpdateResult& result) {
 	// t
-	state_.distance = std::clamp(state_.distance, config_.minDistance, config_.maxDistance);
-	float ration = state_.distance / config_.minDistance;
+	float ration = state_.distance / config_.maxDistance;
 	float actualDuration = config_.leapDuration * ration;
 	const float t = (actualDuration > 0.0f) ? std::min(state_.phaseTimer / actualDuration, 1.0f) : 1.0f;
 
@@ -39942,7 +39976,7 @@ private:
 	/// ===状態の構造体=== ///
 	struct JumpSmashState {
 		float phaseTimer = 0.0f;    // 現フェーズの経過時間
-		float distance;			// 攻撃開始時のBossとPlayerの距離。これを基準に飛行の放物線を計算する 
+		float distance = 0.0f;			// 攻撃開始時のBossとPlayerの距離。これを基準に飛行の放物線を計算する 
 		Quaternion baseRotation{};  // 攻撃開始時の基底回転
 
 		// --- Leap フェーズで使用する飛行データ ---
@@ -40076,7 +40110,7 @@ private:
 	void UpdateLeapWindUp(UpdateResult& result);
 
 	/// <summary>
-	/// 閏年に関する情報を更新します。
+	/// 放物線上の飛行を更新します。
 	/// </summary>
 	/// <param name="result">更新する結果オブジェクトへの参照。</param>
 	void UpdateLeap(UpdateResult& result);
@@ -40156,7 +40190,7 @@ BossAttackRotateComponent::UpdateResult BossAttackRotateComponent::Update(const 
 	if (phase_ == RotatePhase::Idle || phase_ == RotatePhase::Finished) {
 		// 非アクティブ：基底回転そのまま、武器は定位置
 		result.modelRotation = context.baseRotation;
-		result.weaponLocalOffset = config_.weaponRestOffset;
+		result.weaponLocalOffset = config_.weaponOffset;
 		result.isFinished = (phase_ == RotatePhase::Finished);
 		return result;
 	}
@@ -40182,7 +40216,7 @@ void BossAttackRotateComponent::Reset() {
 ///-------------------------------------------///
 void BossAttackRotateComponent::Information() {
 #ifdef USE_IMGUI
-	if (ImGui::TreeNode("突き攻撃情報")) {
+	if (ImGui::TreeNode("回転攻撃情報")) {
 		// 現在フェーズ
 		const char* phaseNames[] = { "Idle", "WindUp", "Strike", "Recovery", "Finished" };
 		ImGui::Text("フェーズ: %s", phaseNames[static_cast<int>(phase_)]);
@@ -40190,14 +40224,13 @@ void BossAttackRotateComponent::Information() {
 
 		ImGui::Separator();
 
-		if (ImGui::TreeNode("予備動作（WindUp）")) {
-			ImGui::DragFloat("タメ角度 (度)", &config_.windUpAngle, 0.5f, 0.0f, 90.0f);
+		if (ImGui::TreeNode("予備動作")) {
 			ImGui::DragFloat("タメ時間 (秒)", &config_.windUpDuration, 0.01f, 0.01f, 2.0f);
 			ImGui::TreePop();
 		}
-		if (ImGui::TreeNode("突き（Strike）")) {
-			ImGui::DragFloat("切り返し角度 (度)", &config_.strikeAngle, 0.5f, 0.0f, 90.0f);
-			ImGui::DragFloat("突き時間 (秒)", &config_.strikeDuration, 0.01f, 0.01f, 2.0f);
+		if (ImGui::TreeNode("回転")) {
+			ImGui::DragFloat("回転角度 (度)", &config_.strikeAngle, 0.5f, 0.0f, 90.0f);
+			ImGui::DragFloat("攻撃時間 (秒)", &config_.strikeDuration, 0.01f, 0.01f, 2.0f);
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("戻り（Recovery）")) {
@@ -40205,9 +40238,7 @@ void BossAttackRotateComponent::Information() {
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("武器オフセット")) {
-			ImGui::DragFloat3("定位置", &config_.weaponRestOffset.x, 0.01f);
-			ImGui::DragFloat3("引き絞り", &config_.weaponWindUpOffset.x, 0.01f);
-			ImGui::DragFloat3("突き出し", &config_.weaponStrikeOffset.x, 0.01f);
+			ImGui::DragFloat3("定位置", &config_.weaponOffset.x, 0.01f);
 			ImGui::TreePop();
 		}
 
@@ -40239,21 +40270,11 @@ void BossAttackRotateComponent::UpdateAttack(const UpdateContext& context, Updat
 		// t
 		const float t = (config_.windUpDuration > 0.0f) ? std::min(state_.phaseTimer / config_.windUpDuration, 1.0f) : 1.0f;
 
-		// Y軸ひねり
-		const Quaternion windUpYaw = MakeYawQuaternion(config_.windUpAngle * t);
-		result.modelRotation = Multiply(context.baseRotation, windUpYaw);
-
-		// 武器オフセット
-		result.weaponLocalOffset = LerpVector3(
-			config_.weaponRestOffset,
-			config_.weaponWindUpOffset,
-			t
-		);
-
 		// フェーズ遷移
 		if (t >= 1.0f) {
 			state_.phaseTimer = 0.0f;
 			phase_ = RotatePhase::Strike;
+			result.isParticle = false; 
 		}
 	}
 	// -----------------------------------------------
@@ -40263,19 +40284,12 @@ void BossAttackRotateComponent::UpdateAttack(const UpdateContext& context, Updat
 		// t
 		const float t = (config_.strikeDuration > 0.0f) ? std::min(state_.phaseTimer / config_.strikeDuration, 1.0f) : 1.0f;
 
-		// 回転の補間
-		const float startAngle = config_.windUpAngle;
-		const float endAngle = -config_.strikeAngle;
-		const float currentAngle = startAngle + (endAngle - startAngle) * t;
-		const Quaternion strikeYaw = MakeYawQuaternion(currentAngle);
+		// Y軸ひねり
+		const Quaternion strikeYaw = MakeYawQuaternion(config_.strikeAngle);
 		result.modelRotation = Multiply(context.baseRotation, strikeYaw);
 
 		// 武器オフセット
-		result.weaponLocalOffset = LerpVector3(
-			config_.weaponWindUpOffset,
-			config_.weaponStrikeOffset,
-			t
-		);
+		result.weaponLocalOffset = config_.weaponOffset;
 
 		// フェーズ遷移
 		if (t >= 1.0f) {
@@ -40296,11 +40310,7 @@ void BossAttackRotateComponent::UpdateAttack(const UpdateContext& context, Updat
 		result.modelRotation = Math::SLerp(strikeEndRot, context.baseRotation, t);
 
 		// 武器オフセット
-		result.weaponLocalOffset = LerpVector3(
-			config_.weaponStrikeOffset,
-			config_.weaponRestOffset,
-			t
-		);
+		result.weaponLocalOffset = config_.weaponOffset;
 
 		// フェーズ遷移
 		if (t >= 1.0f) {
@@ -40366,24 +40376,18 @@ private:
 public:
 	/// ===設定パラメータの構造体=== ///
 	struct RotateConfig {
-		// --- WindUp（予備動作）---
-		float windUpAngle = 30.0f;  // タメ時にY軸回転させる角度（度）
+		// --- WindUp ---
 		float windUpDuration = 0.25f;  // タメにかける時間（秒）
 
-		// --- Strike（突き）---
-		float strikeAngle = 15.0f;  // 切り返しのY軸回転角度（度）正面を超えた反対側まで（度）
-		float strikeDuration = 0.12f;  // 突き動作にかける時間（秒）
+		// --- Strike ---
+		float strikeAngle = 30.0f;  // 切り返しのY軸回転角度（度）正面を超えた反対側まで（度）
+		float strikeDuration = 0.4f;  // 突き動作にかける時間（秒）
 
-		// --- Recovery（戻り）---
+		// --- Recovery ---
 		float recoveryDuration = 0.35f;  // 0° へ戻るまでの時間（秒）。Strike より長めでゆっくり戻る
 
 		// --- 武器オフセット ---
-		// 武器の初期位置オフセット（Bossローカル座標）
-		Vector3 weaponRestOffset = { 0.8f,  0.0f,  0.0f };
-		// タメ時の武器引き絞りオフセット（Bossローカル座標）
-		Vector3 weaponWindUpOffset = { 0.8f,  0.0f, -0.3f };
-		// 突き時の武器前方オフセット（Bossローカル座標）
-		Vector3 weaponStrikeOffset = { 0.4f,  0.0f,  1.2f };
+		Vector3 weaponOffset = { 0.0f,  0.0f,  0.0f };
 	};
 
 	/// ===更新用コンテキスト=== ///
@@ -40398,6 +40402,7 @@ public:
 		Vector3 weaponLocalOffset{}; // ローカル座標系での武器位置オフセット
 		bool isAttacking = false;    // 攻撃判定が有効なフレーム
 		bool isFinished = false;	 // 攻撃が完全終了したか
+		bool isParticle = true;    // Particleを出すフレーム（攻撃終了の瞬間）
 	};
 
 public:
@@ -40690,16 +40695,16 @@ private:
     /// ===状態=== ///
     struct OrbitState {
         float orbitTimer = 0.0f; // 公転開始からの経過時間（角度計算に使用）
-        float lifeTimer = 0.0f; // 残り生存時間
+        float lifeTimer = 0.0f;  // 残り生存時間
     };
 
 public:
     /// ===設定パラメータ=== ///
     struct OrbitConfig {
         // --- 公転パラメータ ---
-        float orbitRadius = 3.0f;   // 公転半径（ボスからの距離）
+        float orbitRadius = 3.0f;     // 公転半径（ボスからの距離）
         float orbitSpeedDeg = 120.0f; // 1秒あたりの公転角速度（度/秒）
-        float orbitHeight = 0.0f;   // ボスY座標からの高さオフセット
+        float orbitHeight = 0.0f;     // ボスY座標からの高さオフセット
 
         // --- 弾の生存時間 ---
         float lifetime = 5.0f;   // 公転を続ける時間（秒）
@@ -42140,7 +42145,7 @@ void BossDownwarAttackState::Update() {
 	// 波紋を生成するタイミングの判定
 	if (result.onStrike) {
 		// 波紋を生成するタイミングの判定
-		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 30.0f);
+		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 1.0f, 50.0f);
 	}
 
 	if (result.isFinished) {
@@ -42342,6 +42347,8 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/Attack/Close/Bo
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
 #include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
+// Service
+#include "Service/Particle.h"
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -42352,7 +42359,8 @@ void BossRotateAttackState::Enter(BossEnemy* enemy) {
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
 	boss_->GetRotateComponent().StartAttack();
-	boss_->GetWeapon().SetActive(true); // 武器を有効化
+	// Particleの生成
+	Service::Particle::Emit("Boss", boss_->GetTransform().translate);
 }
 
 ///-------------------------------------------///  
@@ -42373,6 +42381,11 @@ void BossRotateAttackState::Update() {
 	// 武器のオフセットを反映
 	boss_->GetWeapon().SetTranslate(result.weaponLocalOffset);
 
+	if (!result.isParticle) {
+		Service::Particle::StopParticle("Boss");
+		boss_->GetWeapon().SetActive(true); // 武器を有効化
+	}
+
 	// 波紋を生成するタイミングの判定
 	if (result.isAttacking) {
 		boss_->GetGroundOcean()->AddRipple(boss_->GetWeapon().GetWorldTranslate(), 0.5f, 0.1f);
@@ -42389,6 +42402,9 @@ void BossRotateAttackState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossRotateAttackState::Finalize() {
+	// Particleの停止
+	Service::Particle::StopParticle("Boss");
+
 	// タイマーリセット
 	boss_->GetAttackManager().StartRotateCooldown();
 
@@ -42858,11 +42874,8 @@ bool BossMoveState::ChangeStateIfNeeded(float dist) {
 		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
 		return true;
 	} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
-		// JumpSmash攻撃への遷移条件
-		float minRange = boss_->GetAttackManager().GetConfig().jumpSmashMinRange;
-		float maxRange = boss_->GetAttackManager().GetConfig().jumpSmashMaxRange;
-		// テレポートへ遷移
-		boss_->ChangeState(std::make_unique<BossTeleportState>(minRange, maxRange));
+		// JumpSmash攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
 		return true;
 	}
 
@@ -43899,6 +43912,7 @@ protected:
 		float gravity = -9.8f;  // 重力
 		uint32_t HP = 10;       // 体力
         bool isDead = false;    // 死亡フラグ
+		MiiEngine::LightInfo lightInfo_; // ライト情報
     };
     BaseInfo baseInfo_;
 
@@ -44601,6 +44615,32 @@ private:
 
 
 ============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerLongAttackComponent.cpp
+============================================================
+#include "PlayerLongAttackComponent.h"
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/Component/PlayerLongAttackComponent.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Math/Vector3.h"
+
+
+///=====================================================/// 
+/// PlayerLongAttackComponent
+/// プレイヤーの遠距離攻撃コンポーネント
+///=====================================================///
+class PlayerLongAttackComponent {
+public:
+
+
+};
+
+
+
+============================================================
 File Path: Project/application/Game/Entity/Player/Component/PlayerMoveComponent.cpp
 ============================================================
 #include "PlayerMoveComponent.h"
@@ -45202,6 +45242,18 @@ void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera)
 	weapon_->Initialize();
 	weapon_->SetUpParent(this);
 
+	/// ===LightInfo=== ///
+	SetLight(MiiEngine::LightType::PointLight);
+	baseInfo_.lightInfo_.shininess = 30.0f;
+	baseInfo_.lightInfo_.point = {
+		.color = { 1.0f, 1.0f, 1.0f, 1.0f },
+		.position = { transform_.translate.x, 100.0f, transform_.translate.z },
+		.intensity = 10.0f,
+		.radius = 115.0f,
+		.decay = 1.5f,
+	};
+	SetLightData(baseInfo_.lightInfo_);
+
 	/// ===パラメータの設定=== ///
 	SettingParamita();
 
@@ -45259,6 +45311,10 @@ void Player::Update() {
 	/// ===タイマーを進める=== ///
 	advanceTimer();
 
+	// ライトの位置をキャラクターの位置に合わせる
+	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
+	baseInfo_.lightInfo_.point.position.z = transform_.translate.z;
+
 	/// ===Stateの管理=== ///
 	if (currentState_) {
 		// 各Stateの更新
@@ -45312,6 +45368,17 @@ void Player::Information() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Player");
 	GameCharacter::Information();		// 親クラスの情報表示
+	// LightInfoの情報表示
+	ImGui::DragFloat("光沢度", &baseInfo_.lightInfo_.shininess, 0.01f);
+	if (ImGui::TreeNode("Point")) {
+		ImGui::ColorEdit3("ライトの色", &baseInfo_.lightInfo_.point.color.x);
+		ImGui::DragFloat3("ライトの位置", &baseInfo_.lightInfo_.point.position.x, 0.01f);
+		ImGui::DragFloat("ライトの強さ", &baseInfo_.lightInfo_.point.intensity, 0.01f);	
+		ImGui::DragFloat("ライトの半径", &baseInfo_.lightInfo_.point.radius, 0.01f);
+		ImGui::DragFloat("ライトの減衰率", &baseInfo_.lightInfo_.point.decay, 0.01f);
+		ImGui::TreePop();
+	}
+	SetLightData(baseInfo_.lightInfo_);
 	moveComponent_->Information();		// 移動コンポーネントの情報表示
 	avoidanceComponent_->Information(); // 回避コンポーネントの情報表示
 	attackComponent_->Information();    // 攻撃コンポーネントの情報表示
@@ -48855,6 +48922,18 @@ void GameScene::Initialize() {
 	stage_ = std::make_unique<GameStage>();
 	stage_->Initialize("Level/BossStage.json");
 
+	// ColliderServiceのライト設定
+	Service::Collision::SetLight(MiiEngine::LightType::HalfLambert);
+	lightInfo_ = {
+		.shininess = 32.0f, // 光沢度を少し高めにしてハイライトを綺麗に
+		.directional = {
+			.color = { 1.0f, 0.98f, 0.9f, 1.0f }, // わずかに暖かみのある色
+			.direction = { -0.5f, -0.8f, 0.5f },  // 斜め少し前・上空からキャラクターを照らす向き
+			.intensity = 0.8f,
+		},
+	};
+	Service::Collision::SetLightData(lightInfo_);
+
 	/// ===Playerの生成=== ///
 	player_ = std::make_unique<Player>();
 	Vector3 translation = { 0.0f, 5.0f, -30.0f };
@@ -48992,6 +49071,7 @@ void GameScene::LoadParticle() {
 	Service::Particle::LoadParticleDefinition("EnemyHitEffect.json");
 	Service::Particle::LoadParticleDefinition("EnemyTeleportParticle.json");
 	Service::Particle::LoadParticleDefinition("EnemyDeathParticle.json");
+	Service::Particle::LoadParticleDefinition("Charge.json");
 }
 
 
@@ -49067,6 +49147,9 @@ private:/// ===メンバ変数=== ///
 		Quaternion rotate = { 0.372f, 0.0f, 0.0f, 1.055f };
 	};
 	CameraInfo cameraInfo_;
+
+	// ライトの情報
+	MiiEngine::LightInfo lightInfo_;
 
 private: /// ===メンバ関数=== ///
 
@@ -51103,7 +51186,7 @@ File Path: Project/main.cpp
 #include <windows.h>
 
 /// ===ゲームタイトル=== ///
-const wchar_t kWindowTitle[] = L"Fallen Ascent";
+const wchar_t kWindowTitle[] = L"KaijounoKessen";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
