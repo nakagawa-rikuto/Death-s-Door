@@ -45,7 +45,7 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	baseInfo_.lightInfo_.shininess = 30.0f;
 	baseInfo_.lightInfo_.point = {
 		.color = { 1.0f, 1.0f, 1.0f, 1.0f },
-		.position = { transform_.translate.x, 100.0f, transform_.translate.z },
+		.position = { transform_.translate.x, 80.0f, transform_.translate.z - 50.0f},
 		.intensity = 10.0f,
 		.radius = 115.0f,
 		.decay = 1.5f,
@@ -103,7 +103,7 @@ void BossEnemy::Update() {
 
 	// ライトの位置をキャラクターの位置に合わせる
 	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
-	baseInfo_.lightInfo_.point.position.z = transform_.translate.z;
+	baseInfo_.lightInfo_.point.position.z = transform_.translate.z - 30.0f;
 
 	/// ===AttackManagerの更新=== ///
 	attackManager_->Update(transform_.translate, player_->GetTransform().translate, baseInfo_.deltaTime);
