@@ -3,12 +3,10 @@
 #include "Engine/Graphics/Particle/ParticleFactory.h"
 #include "Engine/Graphics/Particle/ParticleGroup.h"
 // Service
+#include "Service/Locator.h"
 #include "Service/DeltaTime.h"
-
-#ifdef USE_IMGUI
-// ImGui
-#include <imgui.h>
-#endif // USE_IMGUI
+// TextureManager
+#include "Engine/System/Managers/TextureManager.h"
 // c++
 #include <fstream>
 #include <filesystem>
@@ -30,6 +28,9 @@ namespace MiiEngine {
 	/// 初期化
 	///-------------------------------------------///
 	void ParticleEditor::Initialize() {
+		// テクスチャマネージャーの取得
+		textureManager_ = Service::Locator::GetTextureManager();
+
 		// 利用可能なリソースを更新
 		UpdateAvailableModels();
 		UpdateAvailableTextures();
@@ -403,13 +404,15 @@ namespace MiiEngine {
 		}
 
 		/// ===形状選択=== ///
-		const char* shapes[] = { "円", "円柱", "なし" };
-		int currentShape = static_cast<int>(currentDefinition_.shape);
-		if (ImGui::Combo("形状タイプ", &currentShape, shapes, IM_ARRAYSIZE(shapes))) {
-			currentDefinition_.shape = static_cast<shapeType>(currentShape);
+		if (currentDefinition_.modelName == "plane") {
+			const char* shapes[] = { "円", "円柱", "なし" };
+			int currentShape = static_cast<int>(currentDefinition_.shape);
+			if (ImGui::Combo("形状タイプ", &currentShape, shapes, IM_ARRAYSIZE(shapes))) {
+				currentDefinition_.shape = static_cast<shapeType>(currentShape);
+			}
+			ImGui::TextDisabled("カスタム頂点バッファを使用する形状");
+			ImGui::Spacing();
 		}
-		ImGui::TextDisabled("カスタム頂点バッファを使用する形状");
-		ImGui::Spacing();
 
 		/// ===最大インスタンス数=== ///
 		int maxInstance = static_cast<int>(currentDefinition_.maxInstance);
@@ -593,34 +596,95 @@ namespace MiiEngine {
 
 		/// ===テクスチャ設定=== ///
 		ImGui::Text("テクスチャ");
-		if (!availableTextures_.empty()) {
-			if (ImGui::Combo("テクスチャファイル", &selectedTextureIndex_,
-				[](void* data, int idx, const char** out_text) {
-					auto& textures = *static_cast<std::vector<std::string>*>(data);
-					*out_text = textures[idx].c_str();
-					return true;
-				}, &availableTextures_, static_cast<int>(availableTextures_.size()))) {
-				currentDefinition_.appearance.texturePath = availableTextures_[selectedTextureIndex_];
-
-				if (previewParticle_) {
-					previewParticle_->SetTexture(currentDefinition_.appearance.texturePath);
-				}
-			}
-		} else {
-			char textureBuffer[256];
-			strcpy_s(textureBuffer, currentDefinition_.appearance.texturePath.c_str());
-			if (ImGui::InputText("テクスチャパス", textureBuffer, sizeof(textureBuffer))) {
-				currentDefinition_.appearance.texturePath = textureBuffer;
-
-				if (previewParticle_) {
-					previewParticle_->SetTexture(currentDefinition_.appearance.texturePath);
-				}
-			}
-		}
-
+		// 現在選択中のテクスチャを大きめに表示
 		if (!currentDefinition_.appearance.texturePath.empty()) {
-			ImGui::TextDisabled("現在: %s", currentDefinition_.appearance.texturePath.c_str());
+			auto it = textureThumbCache_.find(currentDefinition_.appearance.texturePath);
+			if (it != textureThumbCache_.end() && it->second) {
+				// チェッカー背景風の枠（透明テクスチャが見やすくなる）
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+				ImVec2 pos = ImGui::GetCursorScreenPos();
+				drawList->AddRectFilled(pos, ImVec2(pos.x + 72, pos.y + 72), IM_COL32(80, 80, 80, 255));
+
+				ImGui::Image(it->second, ImVec2(70, 70));
+				ImGui::SameLine();
+			}
+			ImGui::BeginGroup();
+			ImGui::Text("選択中");
+			ImGui::TextColored(ImVec4(0.6f, 0.9f, 1.0f, 1.0f), "%s", currentDefinition_.appearance.texturePath.c_str());
+			ImGui::EndGroup();
 		}
+
+		ImGui::Spacing();
+
+		// グリッド形式でサムネイルを並べる
+		constexpr float kThumbSize = 60.0f;
+		constexpr float kPadding = 4.0f;
+		const float panelWidth = ImGui::GetContentRegionAvail().x;
+		const int   columns = (std::max)(1, static_cast<int>(panelWidth / (kThumbSize + kPadding)));
+
+		// スクロール可能な領域
+		if (ImGui::BeginChild("TexturePicker", ImVec2(0, 180), ImGuiChildFlags_Border)) {
+			for (int i = 0; i < static_cast<int>(availableTextures_.size()); i++) {
+				const std::string& texName = availableTextures_[i];
+				bool isSelected = (selectedTextureIndex_ == i);
+
+				ImGui::PushID(i);
+
+				// 選択中の強調色
+				if (isSelected) {
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 1.0f, 0.9f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
+				}
+
+				// サムネイルがキャッシュにあればImageButton、なければテキストボタン
+				auto it = textureThumbCache_.find(texName);
+				bool clicked = false;
+
+				if (it != textureThumbCache_.end() && it->second) {
+					clicked = ImGui::ImageButton("##t", it->second, ImVec2(kThumbSize, kThumbSize));
+				} else {
+					// フォールバック：テクスチャ未ロード時はテキストボタン
+					clicked = ImGui::Button(texName.c_str(), ImVec2(kThumbSize, kThumbSize));
+				}
+
+				if (isSelected) {
+					ImGui::PopStyleColor(2);
+
+					// 選択枠を描画（ImageButtonの上から重ねる）
+					ImVec2 btnMin = ImGui::GetItemRectMin();
+					ImVec2 btnMax = ImGui::GetItemRectMax();
+					ImGui::GetWindowDrawList()->AddRect(
+						btnMin, btnMax, IM_COL32(80, 160, 255, 255), 3.0f, 0, 2.5f);
+				}
+
+				if (clicked) {
+					selectedTextureIndex_ = i;
+					currentDefinition_.appearance.texturePath = texName;
+					if (previewParticle_) {
+						previewParticle_->SetTexture(texName);
+					}
+					RecordHistory();  // ★Undo対応
+				}
+
+				// Tooltip（ファイル名とロード状態）
+				if (ImGui::IsItemHovered()) {
+					ImGui::BeginTooltip();
+					ImGui::Text("%s", texName.c_str());
+					if (it == textureThumbCache_.end() || !it->second) {
+						ImGui::TextColored(ImVec4(1, 0.5f, 0.5f, 1), "未ロード");
+					}
+					ImGui::EndTooltip();
+				}
+
+				// グリッド折り返し
+				if ((i + 1) % columns != 0) {
+					ImGui::SameLine(0.0f, kPadding);
+				}
+
+				ImGui::PopID();
+			}
+		}
+		ImGui::EndChild();
 #endif // USE_IMGUI
 	}
 
@@ -1100,15 +1164,24 @@ namespace MiiEngine {
 	void ParticleEditor::UpdateAvailableTextures() {
 #ifdef USE_IMGUI
 		availableTextures_.clear();
+		textureThumbCache_.clear();
 
 		// テクスチャの種類
-		availableTextures_.push_back("circle");
-		availableTextures_.push_back("circle2");
-		availableTextures_.push_back("gradationLine");
-		availableTextures_.push_back("Spark");
-		availableTextures_.push_back("FlameEye");
-		availableTextures_.push_back("Fire");
+		availableTextures_ = {
+		"Particle", "circle", "circle2", "Solar", "Corona",
+		"Cloud", "Smoke", "gradationLine", "Spark", "Fire", "Flame", "FlameEye"
+		};
 
+		// サムネイルキャッシュを構築
+		if (textureManager_) {
+			for (const auto& name : availableTextures_){
+				D3D12_GPU_DESCRIPTOR_HANDLE handle = textureManager_->GetSRVHandleGPU(name);
+				// ハンドルが有れば登録
+				if (handle.ptr != 0) {
+					textureThumbCache_[name] = (ImTextureID)handle.ptr;
+				}
+			}
+		}
 #endif // USE_IMGUI   
 	}
 

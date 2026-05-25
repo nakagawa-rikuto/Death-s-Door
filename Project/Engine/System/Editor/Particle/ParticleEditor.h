@@ -7,10 +7,15 @@
 #include <memory>
 #include <string>
 #include <vector>
+#ifdef USE_IMGUI
+// ImGui
+#include <imgui.h>
+#endif // USE_IMGUI
 
 namespace MiiEngine {
 	/// ===前方宣言=== ///
 	class ParticleGroup;
+	class TextureManager;
 
 	///=====================================================/// 
 	/// パーティクルエディター
@@ -176,6 +181,10 @@ namespace MiiEngine {
 		void ApplySmokePreset();
 
 	private:
+
+		/// ===テクスチャサムネイル=== ///
+		TextureManager* textureManager_ = nullptr;             // テクスチャマネージャー
+		std::unordered_map<std::string, ImTextureID> textureThumbCache_; // テクスチャのサムネイルIDマップ
 
 		/// ===エディター状態=== ///
 		bool isVisible_ = false;                              // エディターの表示状態
