@@ -17,7 +17,7 @@ void BossJumpSmashAttackState::Enter(BossEnemy* enemy) {
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
 	const float dist = CalcDistToPlayer();
-	boss_->GetJumpSmashComponent().StartAttack(
+	boss_->GetAttackComponentManager().GetJumpSmashComponent().StartAttack(
 		dist,
 		boss_->GetTransform().translate, 
 		boss_->GetPlayer()->GetTransform().translate, 
@@ -36,7 +36,7 @@ void BossJumpSmashAttackState::Update() {
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
-	BossAttackJumpSmashComponent::UpdateResult result = boss_->GetJumpSmashComponent().Update(context);
+	BossAttackJumpSmashComponent::UpdateResult result = boss_->GetAttackComponentManager().GetJumpSmashComponent().Update(context);
 
 	/// ===結果の反映=== ///
 	// 速度の反映
@@ -69,7 +69,7 @@ void BossJumpSmashAttackState::Update() {
 ///-------------------------------------------///
 void BossJumpSmashAttackState::Finalize() {
 	// タイマーリセット
-	boss_->GetAttackManager().StartJumpSmashCooldown();
+	boss_->GetAttackComponentManager().StartJumpSmashCooldown();
 
 	// 武器を無効化
 	boss_->GetWeapon().SetActive(false);

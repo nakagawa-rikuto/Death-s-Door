@@ -66,9 +66,7 @@ void BossMoveState::Finalize() {
 /// プレイヤーとボスの距離を計算して返す。
 ///-------------------------------------------///
 float BossMoveState::CalcDistToPlayer() const {
-	const Vector3 diff =
-		boss_->GetPlayer()->GetTransform().translate -
-		boss_->GetTransform().translate;
+	const Vector3 diff = boss_->GetPlayer()->GetTransform().translate - boss_->GetTransform().translate;
 	return Length(diff);
 }
 
@@ -77,28 +75,38 @@ float BossMoveState::CalcDistToPlayer() const {
 ///-------------------------------------------///
 bool BossMoveState::ChangeStateIfNeeded(float dist) {
 
-	/// ===遷移状態の判定=== ///
-	if (boss_->GetAttackManager().CanRotate(dist)) {
-		// Rotate攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
-		return true;
-	} else if (boss_->GetAttackManager().CanDownswing(dist)) {
-		// Downswing攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-		return true;
-	} else if (boss_->GetAttackManager().CanParabolicShot(dist)) {
+	if (boss_->GetAttackComponentManager().CanParabolicShot(dist)) {
 		// ParabolicShot攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
 		return true;
-	} else if (boss_->GetAttackManager().CanOrbitIngOrbs(dist)) {
+	} else if (boss_->GetAttackComponentManager().CanOrbitIngOrbs(dist)) {
 		// OrbitingOrbs攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
 		return true;
-	} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
-		// JumpSmash攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
-		return true;
 	}
+
+	/// ===遷移状態の判定=== ///
+	//if (boss_->GetAttackComponentManager().CanRotate(dist)) {
+	//	// Rotate攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossRotateAttackState>());
+	//	return true;
+	//} else if (boss_->GetAttackComponentManager().CanDownswing(dist)) {
+	//	// Downswing攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+	//	return true;
+	//} else if (boss_->GetAttackComponentManager().CanParabolicShot(dist)) {
+	//	// ParabolicShot攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+	//	return true;
+	//} else if (boss_->GetAttackComponentManager().CanOrbitingOrbs(dist)) {
+	//	// OrbitingOrbs攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
+	//	return true;
+	//} else if (boss_->GetAttackComponentManager().CanJumpSmash(dist)) {
+	//	// JumpSmash攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+	//	return true;
+	//}
 
 	return false;
 }

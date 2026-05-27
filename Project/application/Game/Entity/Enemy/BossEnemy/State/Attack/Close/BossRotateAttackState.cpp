@@ -1,8 +1,6 @@
 #include "BossRotateAttackState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
@@ -18,7 +16,7 @@ void BossRotateAttackState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetRotateComponent().StartAttack();
+	boss_->GetAttackComponentManager().GetRotateComponent().StartAttack();
 	// Particleの生成
 	Service::Particle::Emit("Boss", boss_->GetTransform().translate);
 }
@@ -33,7 +31,7 @@ void BossRotateAttackState::Update() {
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
-	BossAttackRotateComponent::UpdateResult result = boss_->GetRotateComponent().Update(context);
+	BossAttackRotateComponent::UpdateResult result = boss_->GetAttackComponentManager().GetRotateComponent().Update(context);
 
 	// 結果の反映
 	boss_->SetRotate(result.modelRotation);
@@ -66,7 +64,7 @@ void BossRotateAttackState::Finalize() {
 	Service::Particle::StopParticle("Boss");
 
 	// タイマーリセット
-	boss_->GetAttackManager().StartRotateCooldown();
+	boss_->GetAttackComponentManager().StartRotateCooldown();
 
 	// 武器を無効化
 	boss_->GetWeapon().SetActive(false);

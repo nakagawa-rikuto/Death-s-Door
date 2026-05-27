@@ -21,7 +21,7 @@ BossEnemy::~BossEnemy() {
 	currentState_.reset();
 	/// ===Componentの解放=== ///
 	moveComponent_.reset();
-	attackManager_.reset();
+	attackComponentManager_.reset();
 	hitReactionComponent_.reset();
 	/// ==Weapon==== ///
 	weapon_.reset();
@@ -51,6 +51,10 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 		.decay = 1.5f,
 	};
 	SetLightData(baseInfo_.lightInfo_);
+
+	/// ===BulletManagerの初期化=== ///
+	bulletManager_ = std::make_unique<BossBulletManager>();
+	bulletManager_->Initialize();
 
 	/// ===Componentの設定=== ///
 	SetComponentConfig();
@@ -105,8 +109,11 @@ void BossEnemy::Update() {
 	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
 	baseInfo_.lightInfo_.point.position.z = transform_.translate.z - 30.0f;
 
-	/// ===AttackManagerの更新=== ///
-	attackManager_->Update(transform_.translate, player_->GetTransform().translate, baseInfo_.deltaTime);
+	/// ===AttackComponentManagerの更新=== ///
+	attackComponentManager_->Update(transform_.translate, player_->GetTransform().translate, baseInfo_.deltaTime);
+
+	/// ===BulletManagerの更新=== ///
+	bulletManager_->Update();
 
 	/// ===Stateの更新=== ///
 	if (currentState_) {
@@ -153,8 +160,8 @@ void BossEnemy::Information() {
 	GameCharacter::Information();
 	/// ===MoveComponentの情報表示=== ///
 	moveComponent_->Information();
-	/// ===AttackManagerの情報表示=== ///
-	attackManager_->Information();
+	/// ===AttackComponentManagerの情報表示=== ///
+	attackComponentManager_->Information();
 	/// ===HitReactionComponentの情報表示=== ///
 	hitReactionComponent_->Information();
 	ImGui::End();
@@ -250,9 +257,9 @@ void BossEnemy::SetComponentConfig() {
 	// 初期化
 	hitReactionComponent_->Initialize(hitReactionConfig);
 
-	/// ===AttackManagerの生成=== ///
-	attackManager_ = std::make_unique<BossAttackManager>();
-	BossAttackManager::Config attackConfig{};
+	/// ===AttackComponentManagerの生成=== ///
+	attackComponentManager_ = std::make_unique<BossAttackComponentManager>();
+	BossAttackComponentManager::Config attackConfig{};
 	// Rotate
 	attackConfig.rotateRange = 14.0f;
 	attackConfig.rotateCooldown = 2.5f;
@@ -323,12 +330,13 @@ void BossEnemy::SetComponentConfig() {
 		.launchAngleDeg = 80.0f,
 		.gravity = 9.8f,
 		.lifetime = 5.0f,
+		.trembleDuration = 1.0f,
 		.enableGroundHit = true,
 		.maxHorizontalSpeed = 0.6f,
 	};
 
-	// AttackManagerの初期化
-	attackManager_->Initialize(attackConfig);
+	// AttackComponentManagerの初期化
+	attackComponentManager_->Initialize(attackConfig, bulletManager_.get());
 }
 
 

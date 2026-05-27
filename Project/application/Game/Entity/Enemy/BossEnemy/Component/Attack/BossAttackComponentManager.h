@@ -6,16 +6,17 @@
 #include "CloseAttack/BossAttackRotateComponent.h"
 #include "LongAttack/BossAttackOrbitingOrbsComponent.h"
 #include "LongAttack/BossAttackParabolicShotComponent.h"
-// Bullet
-#include <application/Game/Entity/Enemy/BossEnemy/Bullet/BossEnemyBullet.h>
 // C++
 #include <memory>
 #include <array>
 
+/// ===前方宣言=== ///
+class BossBulletManager;
+
 ///=====================================================/// 
 /// BossEnemyの攻撃コンポーネントと条件を管理するクラス
 ///=====================================================///
-class BossAttackManager {
+class BossAttackComponentManager {
 public:
 	/// ===設定パラメータの構造体=== ///
 	struct Config {
@@ -44,16 +45,16 @@ public:
 
 public:
 
-	BossAttackManager() = default;
-	~BossAttackManager();
+	BossAttackComponentManager() = default;
+	~BossAttackComponentManager();
 
-	BossAttackManager(const BossAttackManager&) = delete;
-	BossAttackManager& operator=(const BossAttackManager&) = delete;
+	BossAttackComponentManager(const BossAttackComponentManager&) = delete;
+	BossAttackComponentManager& operator=(const BossAttackComponentManager&) = delete;
 
 	/// <summary>
 	/// 初期化（生成時に一度だけ呼ぶ）
 	/// </summary>
-	void Initialize(const Config& config = Config{});
+	void Initialize(const Config& config, BossBulletManager* bulletManager);
 
 	/// <summary>
 	/// 更新処理
@@ -99,14 +100,6 @@ public: /// ===Getter=== ///
 	float GetJumpSmashCooldown() const { return cooldowns_.jumpSmash; }
 	float GetOrbitingOrbsCooldown() const { return cooldowns_.orbitingOrbs; }
 	float GetParabolicShotCooldown() const { return cooldowns_.parabolicShot; }
-	
-	// ParabolicShotの弾の位置を取得
-	Vector3 GetParabolicShotPosition() const { 
-		if (!parabolicShotBullets_.empty()) {
-			return parabolicShotBullets_.back()->GetTransform().translate;
-		}
-		return Vector3{};
-	}
 
 	// Configの取得
 	const Config& GetConfig() const { return config_; }
@@ -145,16 +138,26 @@ private:
 	std::unique_ptr<BossAttackOrbitingOrbsComponent> orbitingOrbs_{};
 	std::unique_ptr<BossAttackParabolicShotComponent> parabolicShot_{};
 
-	// OrbeBulletの管理
-	std::array<std::unique_ptr<BossEnemyBullet>, BossAttackOrbitingOrbsComponent::kOrbCount> orbitingBullets_{};
-
-	// 放物線ショットの弾の管理
-	std::vector<std::unique_ptr<BossEnemyBullet>> parabolicShotBullets_{};
+	/// ===弾管理=== ///
+	BossBulletManager* bulletManager_ = nullptr; // BossEnemyからセットされる想定
 
 private:
 	/// <summary>
 	/// 毎フレーム呼び出す更新処理（タイマーの更新）
 	/// </summary>
 	void UpdateTimers(float deltaTime);
+
+	/// <summary>
+	/// Orbit攻撃の更新処理。弾の位置を更新する。
+	/// </summary>
+	/// <param name="bossPosition"></param>
+	/// <param name="deltaTime"></param>
+	void UpdateOrbiting(const Vector3& bossPosition, float deltaTime);
+
+	/// <summary>
+	/// ParabolicShot攻撃の更新処理。弾の位置を更新し、地面に着いたら削除する。
+	/// </summary>
+	/// <param name="deltaTime"></param>
+	void UpdateParabolicShot(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime);
 };
 

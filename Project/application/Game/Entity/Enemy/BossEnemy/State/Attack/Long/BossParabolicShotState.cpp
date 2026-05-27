@@ -1,12 +1,10 @@
 #include "BossParabolicShotState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
-// AttackManager
-#include "application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackManager.h"
+// AttackComponentManager
+#include "application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackComponentManager.h"
 // State
 #include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
@@ -18,9 +16,7 @@ void BossParabolicShotState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetAttackManager().StartParabolicShot(
-		boss_->GetTransform().translate,
-		boss_->GetGroundYPos());
+	boss_->GetAttackComponentManager().StartParabolicShot(boss_->GetTransform().translate, boss_->GetGroundYPos());
 }
 
 ///-------------------------------------------/// 
@@ -28,10 +24,17 @@ void BossParabolicShotState::Enter(BossEnemy* enemy) {
 ///-------------------------------------------///
 void BossParabolicShotState::Update() {
 
+	auto& comp = boss_->GetAttackComponentManager().GetParabolicShotComponent();
+
+	// 回転を適用
+	/*if (comp.isLockOn()) {
+		boss_->SetRotate(Math::LookRotation(comp.Get()));
+	}*/
+
 	/// ===Stateの移動=== ///
-	if (boss_->GetParabolicShotComponent().IsHitGround()) {
+	if (comp.IsHitGround()) {
 		// 波紋の生成
-		boss_->GetGroundOcean()->AddRipple(boss_->GetParabolicShotComponent().GetHitPosition(), 1.0f, 1.0f);
+		boss_->GetGroundOcean()->AddRipple(comp.GetHitPosition(), 1.0f, 1.0f);
 
 		// 次の状態へ遷移
 		boss_->ChangeState(std::make_unique<BossMoveState>());

@@ -9,8 +9,10 @@
 // Component
 #include "Component/Move/BossMoveComponent.h"
 #include "Component/Move/BossTeleportComponent.h"
-#include "Component/Attack/BossAttackManager.h"
+#include "Component/Attack/BossAttackComponentManager.h"
 #include "Component/HitReaction/BossHitReactionComponent.h"
+// BulletManager
+#include "Bullet/BossBulletManager.h"
 // C++
 #include <vector>
 
@@ -75,13 +77,8 @@ public: /// ===Getter=== ///
 	// Componentの取得
 	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
 	BossTeleportComponent& GetTeleportComponent() const { return *teleportComponent_; }
-
-	BossAttackRotateComponent& GetRotateComponent() const { return attackManager_->GetRotateComponent(); }
-	BossAttackDownwardSwingComponent& GetDownswingComponent() const { return attackManager_->GetDownswingComponent(); }
-	BossAttackJumpSmashComponent& GetJumpSmashComponent() const { return attackManager_->GetJumpSmashComponent(); }
-	BossAttackOrbitingOrbsComponent& GetOrbitingOrbsComponent() const { return attackManager_->GetOrbitingOrbsComponent(); }
-	BossAttackParabolicShotComponent& GetParabolicShotComponent() const { return attackManager_->GetParabolicShotComponent(); }
-	BossAttackManager& GetAttackManager() const { return *attackManager_; }
+	// AttackComponentManagerの取得
+	BossAttackComponentManager& GetAttackComponentManager() const { return *attackComponentManager_; }
 
 	BossHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; }
 
@@ -95,8 +92,11 @@ private:
 	/// ===Component=== ///
 	std::unique_ptr<BossMoveComponent> moveComponent_;	// 移動コンポーネント
 	std::unique_ptr<BossTeleportComponent> teleportComponent_; // テレポートコンポーネント
-	std::unique_ptr<BossAttackManager> attackManager_; // 攻撃マネージャー
+	std::unique_ptr<BossAttackComponentManager> attackComponentManager_; // 攻撃マネージャー
 	std::unique_ptr<BossHitReactionComponent> hitReactionComponent_; // 被ダメージリアクションコンポーネント
+
+	/// ===BulletManager=== ///
+	std::unique_ptr<BossBulletManager> bulletManager_;
 
 	/// ===Particle=== ///
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;

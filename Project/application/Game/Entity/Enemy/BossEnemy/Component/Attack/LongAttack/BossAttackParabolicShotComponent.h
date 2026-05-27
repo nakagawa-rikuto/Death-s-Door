@@ -14,7 +14,7 @@ private:
 	/// ===フェーズ定義=== ///
 	enum class ParabolicPhase {
 		Idle,       // 待機フェーズ
-		Trembling,  // 震えるフェーズ
+		LockOn,		// 狙いを定めるフェーズ
 		Flying,     // 飛行フェーズ
 		Finished    // 終了フェーズ
 	};
@@ -24,7 +24,7 @@ private:
 		Vector3 velocity{};		// 現在の速度ベクトル
 		float lifeTimer = 0.0f; // 生存時間タイマー
 		float groundY = 0.0f;   // 地面のY座標
-		float trembleTimer = 0.0f; // 震えるタイマー
+		float trembleTimer = 0.0f; // 狙いを定めるタイマー
 	};
 
 public:
@@ -36,9 +36,8 @@ public:
 		float gravity = 9.8f;   // 重力加速度（Units/秒²）
 		float lifetime = 5.0f;   // 弾の最大生存時間（秒）
 
-		// --- 震えパラメータ ---
-		float trembleDuration = 1.0f;    // 震える時間（秒）
-		float trembleAmplitude = 0.5f;   // 震えの振幅
+		// --- 狙いを定めるパラメータ ---
+		float trembleDuration = 1.0f;    // 狙いを定める時間（秒）
 
 		// --- 着弾判定 ---
 		bool  enableGroundHit = true;   // 地面
@@ -58,8 +57,7 @@ public:
 	/// ===更新結果=== ///
 	struct UpdateResult {
 		Vector3 velocity{};      // 正規化された移動方向 
-		Vector3 position{};      // 震え中の位置
-		bool isTrembling = false;
+		Vector3 faceDirection{}; // LockOn中の顔の向き（プレイヤー方向）
 		bool isFlying = false;
 		bool isFinished = false;
 	};
@@ -100,6 +98,7 @@ public:
 
 public: /// ===Getter=== ///
 	bool IsActive() const { return phase_ != ParabolicPhase::Idle; }
+	bool isLockOn() const { return phase_ == ParabolicPhase::LockOn; }
 	bool isFinished() const { return phase_ == ParabolicPhase::Finished; }
 	bool IsHitGround() const { return isHitGround_; }
 	const Vector3& GetHitPosition() const { return hitPosition_; }

@@ -1,8 +1,6 @@
 #include "BossOrbitingOrbsState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
-// AttackManager
-#include "application/Game/Entity/Enemy/BossEnemy/Component/Attack/BossAttackManager.h"
 // State
 #include <application/Game/Entity/Enemy/BossEnemy/State/Move/BossMoveState.h>
 
@@ -14,7 +12,7 @@ void BossOrbitingOrbsState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetAttackManager().StartOrbitingOrbs(boss_->GetTransform().translate);
+	boss_->GetAttackComponentManager().StartOrbitingOrbs(boss_->GetTransform().translate);
 }
 
 ///-------------------------------------------/// 
@@ -30,7 +28,7 @@ void BossOrbitingOrbsState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossOrbitingOrbsState::Finalize() {
-	boss_->GetAttackManager().StartOrbitingOrbsCooldown();
+	boss_->GetAttackComponentManager().StartOrbitingOrbsCooldown();
 
 	BossState::Finalize();
 }

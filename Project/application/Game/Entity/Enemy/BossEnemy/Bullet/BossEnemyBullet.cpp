@@ -28,7 +28,7 @@ void BossEnemyBullet::Initialize() {
 	// SphereColliderの初期化
 	SphereCollider::Initialize();
 	name_ = MiiEngine::ColliderName::EnemyBullet;
-	SphereCollider::SetRadius(0.5f);
+	SphereCollider::SetRadius(2.0f);
 
 	// コライダーに登録
 	Service::Collision::AddCollider(this);

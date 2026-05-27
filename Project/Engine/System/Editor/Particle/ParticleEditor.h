@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-#ifdef USE_IMGUI
 // ImGui
+#ifdef USE_IMGUI
 #include <imgui.h>
 #endif // USE_IMGUI
 

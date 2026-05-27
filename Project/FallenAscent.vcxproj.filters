@@ -596,7 +596,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackParabolicShotComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponentManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
@@ -617,6 +617,7 @@
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1173,7 +1174,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackParabolicShotComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackManager.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponentManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />
@@ -1194,6 +1195,7 @@
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

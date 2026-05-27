@@ -1,8 +1,6 @@
 #include "BossDownwarAttackState.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
-// Player
-#include "application/Game/Entity/Player/Player.h"
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
@@ -16,7 +14,7 @@ void BossDownwarAttackState::Enter(BossEnemy* enemy) {
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
 	// 攻撃開始
-	boss_->GetDownswingComponent().StartAttack(boss_->GetTransform().rotate);
+	boss_->GetAttackComponentManager().GetDownswingComponent().StartAttack(boss_->GetTransform().rotate);
 	// 武器を有効化
 	boss_->GetWeapon().SetActive(true); 
 }
@@ -31,7 +29,7 @@ void BossDownwarAttackState::Update() {
 		.deltaTime = boss_->GetDeltaTime(),
 	};
 	// AttackComponentを更新
-	BossAttackDownwardSwingComponent::UpdateResult result = boss_->GetDownswingComponent().Update(context);
+	BossAttackDownwardSwingComponent::UpdateResult result = boss_->GetAttackComponentManager().GetDownswingComponent().Update(context);
 
 	/// ===結果の反映=== ///
 	// 速度の反映
@@ -61,7 +59,7 @@ void BossDownwarAttackState::Update() {
 ///-------------------------------------------///
 void BossDownwarAttackState::Finalize() {
 	// タイマーリセット
-	boss_->GetAttackManager().StartDownswingCooldown();
+	boss_->GetAttackComponentManager().StartDownswingCooldown();
 
 	// 武器を無効化
 	boss_->GetWeapon().SetActive(false);
