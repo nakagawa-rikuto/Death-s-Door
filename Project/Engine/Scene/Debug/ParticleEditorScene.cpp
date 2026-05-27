@@ -14,9 +14,11 @@ namespace MiiEngine {
 	/// デストラクタ
 	///-------------------------------------------///
 	ParticleEditorScene::~ParticleEditorScene() {
+#ifdef USE_IMGUI
 		particleEditor_.reset();
 		// ISceneのデストラクタ
 		IScene::~IScene();
+#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
@@ -25,7 +27,7 @@ namespace MiiEngine {
 	void ParticleEditorScene::Initialize() {
 		// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 		IScene::Initialize();
-
+#ifdef USE_IMGUI
 		cameraPosition_ = { 0.0f, 45.0f, -50.0f };
 		cameraRotation_ = { 0.343f, 0.0f, 0.0f, 0.939f };
 		defaultCamera_->SetTranslate(cameraPosition_);
@@ -43,20 +45,21 @@ namespace MiiEngine {
 		// デフォルトカメラの位置を設定
 		// camera_->SetTranslate(cameraPosition_);
 		// camera_->SetRotate(cameraRotation_);
+#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 更新
 	///-------------------------------------------///
 	void ParticleEditorScene::Update() {
+#ifdef USE_IMGUI
 		/// ===エディターの更新=== ///
 		if (particleEditor_) {
 			particleEditor_->Update();
 		}
 
 		/// ===ImGui描画=== ///
-#ifdef USE_IMGUI
-	//RenderMenuBar();
+		//RenderMenuBar();
 		defaultCamera_->ImGuiUpdate();
 		defaultCamera_->DebugUpdate();
 
@@ -79,6 +82,7 @@ namespace MiiEngine {
 	/// 描画
 	///-------------------------------------------///
 	void ParticleEditorScene::Draw() {
+#ifdef USE_IMGUI
 		/// ===グリッドの描画=== ///
 		line_->DrawGrid({ 0.0f, -10.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
 
@@ -86,13 +90,14 @@ namespace MiiEngine {
 		if (particleEditor_) {
 			particleEditor_->DrawPreview();
 		}
+#endif // USE_IMGUI
 	}
 
-	///-------------------------------------------/// 
-	/// メニューバーの描画
-	///-------------------------------------------///
-	void ParticleEditorScene::RenderMenuBar() {
 #ifdef USE_IMGUI
+	///-------------------------------------------/// 
+/// メニューバーの描画
+///-------------------------------------------///
+	void ParticleEditorScene::RenderMenuBar() {
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("ファイル")) {
 				if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
@@ -137,14 +142,12 @@ namespace MiiEngine {
 
 			ImGui::EndMainMenuBar();
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// ヘルプウィンドウの描画
 	///-------------------------------------------///
 	void ParticleEditorScene::RenderHelpWindow() {
-#ifdef USE_IMGUI
 		ImGui::Begin("使い方", &showHelp_);
 
 		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "パーティクルエディターの使い方");
@@ -183,14 +186,12 @@ namespace MiiEngine {
 		}
 
 		ImGui::End();
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 統計情報ウィンドウの描画
 	///-------------------------------------------///
 	void ParticleEditorScene::RenderStatsWindow() {
-#ifdef USE_IMGUI
 		ImGui::Begin("統計情報", &showStats_);
 
 		// FPS表示
@@ -233,14 +234,12 @@ namespace MiiEngine {
 			cameraRotation_.x, cameraRotation_.y, cameraRotation_.z);
 
 		ImGui::End();
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// カメラコントロールウィンドウの描画
 	///-------------------------------------------///
 	void ParticleEditorScene::RenderCameraControl() {
-#ifdef USE_IMGUI
 		ImGui::Begin("カメラコントロール");
 
 		ImGui::Text("カメラ設定");
@@ -281,6 +280,6 @@ namespace MiiEngine {
 		ImGui::TextDisabled("QE: 上下移動");
 
 		ImGui::End();
-#endif // USE_IMGUI
 	}
+#endif // USE_IMGUI
 }
