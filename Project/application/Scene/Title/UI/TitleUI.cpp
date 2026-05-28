@@ -241,7 +241,7 @@ void TitleUI::UpdateMenuSelection() {
 	bool moved = false;
 	bool isUp = false; // 上キーが押されたかどうかのフラグ
 
-	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) ||
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) ||
 		Service::Input::TriggerKey(DIK_W)) {
 		// 上入力 → 上のアイテムが中央へ（右ローテーション）
 		int tmp = slotIndex_[2];
@@ -252,7 +252,7 @@ void TitleUI::UpdateMenuSelection() {
 		isUp = true;
 	}
 
-	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadUP) ||
+	if (Service::Input::TriggerButton(0, ControllerButtonType::DPadDOWN) ||
 		Service::Input::TriggerKey(DIK_S)) {
 		// 下入力 → 下のアイテムが中央へ（左ローテーション）
 		int tmp = slotIndex_[0];
