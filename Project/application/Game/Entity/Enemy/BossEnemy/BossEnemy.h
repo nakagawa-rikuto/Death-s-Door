@@ -74,13 +74,17 @@ public: /// ===Getter=== ///
 	// Weaponの取得
 	BossWeapon& GetWeapon() const { return *weapon_; }
 
-	// Componentの取得
+	// MoveConponentの取得
 	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
+	// TeleportComponentの取得
 	BossTeleportComponent& GetTeleportComponent() const { return *teleportComponent_; }
 	// AttackComponentManagerの取得
 	BossAttackComponentManager& GetAttackComponentManager() const { return *attackComponentManager_; }
-
+	// HitReactionComponentの取得
 	BossHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; }
+
+	// BulletManagerの取得
+	BossBulletManager& GetBulletManager() const { return *bulletManager_; }
 
 private:
 	/// ===Weapon=== ///

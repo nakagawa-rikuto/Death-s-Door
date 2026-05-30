@@ -33,17 +33,17 @@ public:
 	struct ParabolicConfig {
 		// --- 発射パラメータ ---
 		float launchAngleDeg = 45.0f;  // 仰角（度）。大きいほど高い弧を描く
-		float gravity = 9.8f;   // 重力加速度（Units/秒²）
-		float lifetime = 5.0f;   // 弾の最大生存時間（秒）
+		float gravity = 9.8f;		   // 重力加速度（Units/秒²）
+		float lifetime = 5.0f;		   // 弾の最大生存時間（秒）
 
 		// --- 狙いを定めるパラメータ ---
-		float trembleDuration = 1.0f;    // 狙いを定める時間（秒）
+		float trembleDuration = 1.0f;  // 狙いを定める時間（秒）
 
 		// --- 着弾判定 ---
-		bool  enableGroundHit = true;   // 地面
+		bool  enableGroundHit = true;  // 地面
 
 		// --- 水平速度の上限 ---
-		float maxHorizontalSpeed = 20.0f; // 水平初速の上限
+		float maxHorizontalSpeed = 2.0f; // 水平初速の上限
 	};
 
 	/// ===更新用コンテキスト=== ///

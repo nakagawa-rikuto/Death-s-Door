@@ -79,10 +79,6 @@ bool BossMoveState::ChangeStateIfNeeded(float dist) {
 		// ParabolicShot攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
 		return true;
-	} else if (boss_->GetAttackComponentManager().CanOrbitIngOrbs(dist)) {
-		// OrbitingOrbs攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
-		return true;
 	}
 
 	/// ===遷移状態の判定=== ///

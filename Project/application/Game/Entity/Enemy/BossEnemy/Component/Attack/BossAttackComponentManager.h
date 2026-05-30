@@ -59,7 +59,7 @@ public:
 	/// <summary>
 	/// 更新処理
 	/// </summary>
-	void Update(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime);
+	void Update(const Vector3& bossPosition, float deltaTime);
 
 	/// <summary>
 	/// ImGui情報の表示
@@ -153,11 +153,5 @@ private:
 	/// <param name="bossPosition"></param>
 	/// <param name="deltaTime"></param>
 	void UpdateOrbiting(const Vector3& bossPosition, float deltaTime);
-
-	/// <summary>
-	/// ParabolicShot攻撃の更新処理。弾の位置を更新し、地面に着いたら削除する。
-	/// </summary>
-	/// <param name="deltaTime"></param>
-	void UpdateParabolicShot(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime);
 };
 

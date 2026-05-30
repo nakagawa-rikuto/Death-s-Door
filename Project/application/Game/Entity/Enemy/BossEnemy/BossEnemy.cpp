@@ -110,15 +110,15 @@ void BossEnemy::Update() {
 	baseInfo_.lightInfo_.point.position.z = transform_.translate.z - 30.0f;
 
 	/// ===AttackComponentManagerの更新=== ///
-	attackComponentManager_->Update(transform_.translate, player_->GetTransform().translate, baseInfo_.deltaTime);
-
-	/// ===BulletManagerの更新=== ///
-	bulletManager_->Update();
+	attackComponentManager_->Update(transform_.translate, baseInfo_.deltaTime);
 
 	/// ===Stateの更新=== ///
 	if (currentState_) {
 		currentState_->Update();
 	}
+
+	/// ===BulletManagerの更新=== ///
+	bulletManager_->Update();
 
 	/// ==Weaponの更新==== ///
 	weapon_->Update();
@@ -328,9 +328,9 @@ void BossEnemy::SetComponentConfig() {
 	// ParabolicShot
 	attackConfig.parabolicShotConfig = BossAttackParabolicShotComponent::ParabolicConfig{
 		.launchAngleDeg = 80.0f,
-		.gravity = 9.8f,
+		.gravity = 4.9f,
 		.lifetime = 5.0f,
-		.trembleDuration = 1.0f,
+		.trembleDuration = 3.0f,
 		.enableGroundHit = true,
 		.maxHorizontalSpeed = 0.6f,
 	};

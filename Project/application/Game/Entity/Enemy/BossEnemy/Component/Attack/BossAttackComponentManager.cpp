@@ -66,16 +66,13 @@ void BossAttackComponentManager::Initialize(const Config& config, BossBulletMana
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void BossAttackComponentManager::Update(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime) {
+void BossAttackComponentManager::Update(const Vector3& bossPosition, float deltaTime) {
 
 	/// ===Timer=== ///
 	UpdateTimers(deltaTime);
 
 	/// ===Orbiting Orbs=== ///
 	UpdateOrbiting(bossPosition, deltaTime);;
-
-	/// ===Parabolic Shot=== ///
-	UpdateParabolicShot(bossPosition, playerPosition, deltaTime);
 }
 
 
@@ -167,9 +164,6 @@ void BossAttackComponentManager::StartParabolicShot(const Vector3 & bossPos, flo
 
 	// BulletManagerに弾の生成を依頼
 	bulletManager_->SpawnParabolicBullets(bossPos, totalLifetime);
-
-	// クールダウン開始
-	StartParabolicShotCooldown();
 }
 
 ///-------------------------------------------///
@@ -206,37 +200,6 @@ void BossAttackComponentManager::UpdateOrbiting(const Vector3& bossPosition, flo
 
 			// BulletManagerに弾の位置更新を依頼
 			bulletManager_->SetOrbitingVelocities(bulletVelocity);
-		}
-	}
-}
-
-///-------------------------------------------/// 
-/// 放物線ショット攻撃の弾の更新
-///-------------------------------------------///
-void BossAttackComponentManager::UpdateParabolicShot(const Vector3& bossPosition, const Vector3& playerPosition, float deltaTime) {
-	if (parabolicShot_->IsActive()) {
-		// コンテキストの作成と更新の実行
-		BossAttackParabolicShotComponent::UpdateContext context{
-			.bulletPosition = bulletManager_->GetParabolicBulletPosition(),
-			.bossPosition = bossPosition,
-			.targetPosition = playerPosition,
-			.deltaTime = deltaTime
-		};
-		BossAttackParabolicShotComponent::UpdateResult result = parabolicShot_->Update(context);
-
-		if (result.isFlying) {
-			// 弾の位置を更新
-			bulletManager_->SetParabolicVelocity(result.velocity);
-		}
-
-		// 地面に到達していれば弾を非アクティブにする
-		if (parabolicShot_->IsHitGround()) {
-			bulletManager_->KillLatestParabolicBullets();
-		}
-
-		if (result.isFinished) {
-			bulletManager_->KillLatestParabolicBullets(); // 生存時間切れなどの場合にも念のため消去
-			parabolicShot_->Reset();
 		}
 	}
 }

@@ -36,6 +36,7 @@ BossAttackParabolicShotComponent::UpdateResult BossAttackParabolicShotComponent:
         return result;
     }
 
+    // ロックオンフェーズ
     if (phase_ == ParabolicPhase::LockOn) {
         state_.trembleTimer -= context.deltaTime;
         
@@ -69,7 +70,7 @@ BossAttackParabolicShotComponent::UpdateResult BossAttackParabolicShotComponent:
 
     // -----------------------------------------------
     // 生存タイマー更新
-    // -----------------------------------------------
+    // -----------------------------------------------                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     state_.lifeTimer -= context.deltaTime;
 
     // -----------------------------------------------

@@ -1,6 +1,10 @@
 #include "BossParabolicShotState.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
 // BossEnemy
 #include "application/Game/Entity/Enemy/BossEnemy/BossEnemy.h"
+// BulletManager
+#include "application/Game/Entity/Enemy/BossEnemy/Bullet/BossBulletManager.h"
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // AttackComponentManager
@@ -23,30 +27,51 @@ void BossParabolicShotState::Enter(BossEnemy* enemy) {
 /// 更新時に呼び出す
 ///-------------------------------------------///
 void BossParabolicShotState::Update() {
-
+	// コンポーネントの取得
 	auto& comp = boss_->GetAttackComponentManager().GetParabolicShotComponent();
+	// コンテキストの準備
+	BossAttackParabolicShotComponent::UpdateContext context{
+		.bulletPosition = boss_->GetBulletManager().GetParabolicBulletPosition(),
+		.bossPosition = boss_->GetTransform().translate,
+		.targetPosition = boss_->GetPlayer()->GetTransform().translate,
+		.deltaTime = boss_->GetDeltaTime()
+	};
+	BossAttackParabolicShotComponent::UpdateResult result = comp.Update(context);
+
+	// 弾の位置を反映
+	if (result.isFlying) {
+		boss_->GetBulletManager().SetParabolicVelocity(result.velocity);
+	}
 
 	// 回転を適用
-	/*if (comp.isLockOn()) {
-		boss_->SetRotate(Math::LookRotation(comp.Get()));
-	}*/
+	if (comp.isLockOn()) {
+		// Plaeyrの方向に回転させる
+		//boss_->SetRotate(Math::LookRotation(result.faceDirection));
+	}
 
-	/// ===Stateの移動=== ///
+	// 地面に当たったか
 	if (comp.IsHitGround()) {
 		// 波紋の生成
 		boss_->GetGroundOcean()->AddRipple(comp.GetHitPosition(), 1.0f, 1.0f);
+		// Bulletの削除
+		boss_->GetBulletManager().KillLatestParabolicBullets();
+	}
 
+	/// ===Stateの移動=== ///
+	if (result.isFinished) {
+		// Bulletの削除
+		boss_->GetBulletManager().KillLatestParabolicBullets();
+		// リセット
+		comp.Reset();
 		// 次の状態へ遷移
 		boss_->ChangeState(std::make_unique<BossMoveState>());
 		return;
 	}
-
-	
 }
 
 ///-------------------------------------------/// 
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossParabolicShotState::Finalize() {
-
+	boss_->GetAttackComponentManager().StartParabolicShotCooldown(); // クールダウン開始
 }
