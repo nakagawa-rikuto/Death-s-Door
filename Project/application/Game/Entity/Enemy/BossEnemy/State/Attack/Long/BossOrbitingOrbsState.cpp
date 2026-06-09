@@ -11,8 +11,8 @@ void BossOrbitingOrbsState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 攻撃開始
-	boss_->GetAttackComponentManager().StartOrbitingOrbs(boss_->GetTransform().translate);
+	// 攻撃の開始
+	boss_->GetBulletManager().SpawnOrbitingBullets();
 }
 
 ///-------------------------------------------/// 
@@ -28,7 +28,8 @@ void BossOrbitingOrbsState::Update() {
 /// 終了時に呼び出す
 ///-------------------------------------------///
 void BossOrbitingOrbsState::Finalize() {
-	boss_->GetAttackComponentManager().StartOrbitingOrbsCooldown();
+	// クールダウンの設定
+	boss_->SetOrbitingOrbsCooldown();
 
 	BossState::Finalize();
 }

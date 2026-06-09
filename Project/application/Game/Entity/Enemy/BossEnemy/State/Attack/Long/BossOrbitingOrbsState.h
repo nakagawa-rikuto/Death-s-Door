@@ -1,6 +1,14 @@
 #pragma once
 /// ===Include=== ///
 #include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
+// Math
+#include <Math/Vector3.h>
+#include <Math/Quaternion.h>
+// C++
+#include <array>
+
+/// ===前方宣言=== ///
+class BossBulletManager;
 
 ///=====================================================/// 
 /// BossOrbitingOrbsState
@@ -24,12 +32,5 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
-
-private:
-	// 弱い参照でBossEnemyを持つ
-	BossEnemy* boss_;
-
-	bool hasOrbited_ = false;
-
 };
 

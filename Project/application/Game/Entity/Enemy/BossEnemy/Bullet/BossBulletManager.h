@@ -2,12 +2,17 @@
 /// ===Include=== ///
 // Bullet
 #include "BossEnemyBullet.h"
-// AttackComponent
-#include "application/Game/Entity/Enemy/BossEnemy/Component/Attack/LongAttack/BossAttackOrbitingOrbsComponent.h"
+// Calculator
+#include "Calculator/BossOrbitingOrbsCalculator.h"
 // C++
 #include <memory>
 #include <array>
 #include <vector>
+
+/// ===前方宣言=== ///
+namespace BossComponent {
+	struct OrbitingAttackComponent;
+}
 
 ///=====================================================/// 
 /// BossEnemyの弾の管理クラス
@@ -23,12 +28,12 @@ public:
 	/// <summary>
 	/// 初期化処理
 	/// </summary>
-	void Initialize();
+	void Initialize(const BossComponent::OrbitingAttackComponent& component);
 
 	/// <summary>
 	/// 更新処理
 	/// </summary>
-	void Update();
+	void Update(float deltaTime);
 
 	/// <summary>
 	/// 描画処理
@@ -38,17 +43,14 @@ public:
 public:/// ===OrbitBullet=== ///
 
 	/// <summary>
-	/// OrbitBulletの生成
-	/// </summary>
-	/// <param name="positions"></param>
-	/// <param name="lifeTime"></param>
-	void SpawnOrbitingBullets(const std::array<Vector3, BossAttackOrbitingOrbsComponent::kOrbCount>& positions, float lifeTime);
+    /// OrbitBulletの生成
+    /// </summary>
+	void SpawnOrbitingBullets();
 
 	/// <summary>
-	/// OrbitBulletの速度の設定
+	/// OrbitBulletの停止
 	/// </summary>
-	/// <param name="velocities"></param>
-	void SetOrbitingVelocities(const std::array<Vector3, BossAttackOrbitingOrbsComponent::kOrbCount>& velocities);
+	void StopOrbitingBullets();
 
 public: /// ===ParabolicShot=== ///
 
@@ -76,10 +78,21 @@ public: /// ===Getter=== ///
 
 private:
 
-	// OrbitBulletの管理
-	std::array<std::unique_ptr<BossEnemyBullet>, BossAttackOrbitingOrbsComponent::kOrbCount> orbitingBullets_{};
+	/// ===OrbitBullet=== ///
+	struct OrbitBulletInfo {
+		int bulletCount = 0; // OrbitBulletの数
+		float lifeTime = 0.0f; // OrbitBulletの生存時間
+		float orbitSpeed = 0.0f; // OrbitBulletの公転速度
+	};
+	std::vector<std::unique_ptr<BossEnemyBullet>> orbitingBullets_{};
+	OrbitBulletInfo orbitInfo_{};
+	// OrbitBulletのアクティブ状態
+	bool isOrbitingActive_ = false; 
+	// OrbitBulletの位置と向きを計算するクラス
+	std::unique_ptr<BossOrbitingOrbsCalculator> orbitCalculator_; 
 
-	// 放物線ショットの弾の管理
+
+	/// ===ParabolicBullet=== ///
 	std::vector<std::unique_ptr<BossEnemyBullet>> parabolicBullets_{};
 
 private:
@@ -87,11 +100,11 @@ private:
 	/// <summary>
 	/// OrbitBulletの更新処理
 	/// </summary>
-	void UpdateOrbitingBullets();
+	void UpdateOrbitingBullets(float deltaTime);
 
 	/// <summary>
 	/// ParabolicShotの更新処理
 	/// </summary>
-	void UpdateParabolicBullets();
+	void UpdateParabolicBullets(float deltaTime);
 };
 	

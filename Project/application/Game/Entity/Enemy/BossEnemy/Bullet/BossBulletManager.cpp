@@ -1,4 +1,6 @@
 #include "BossBulletManager.h"
+// Component
+#include "application/Game/Entity/Enemy/BossEnemy/Component/BossComponent.h"
 // C++
 #include <algorithm>
 
@@ -28,20 +30,34 @@ Vector3 BossBulletManager::GetParabolicBulletPosition() const {
 ///-------------------------------------------///
 /// 初期化処理
 ///-------------------------------------------///
-void BossBulletManager::Initialize() {
+void BossBulletManager::Initialize(const BossComponent::OrbitingAttackComponent& component) {
+	// コンポーネントから値を取得
+	orbitInfo_.bulletCount = component.bulletCount;
+	orbitInfo_.lifeTime = component.lifeTime;
+	orbitInfo_.orbitSpeed = component.orbitSpeed;
+
+	// 途中で再確保が発生しないようにメモリを予約
+	orbitingBullets_.reserve(orbitInfo_.bulletCount);
+
 	// Orbiting弾のインスタンスを生成
-	for (auto& b : orbitingBullets_) {
-		b = std::make_unique<BossEnemyBullet>();
-		b->Initialize();
+	for (int i = 0; i < orbitInfo_.bulletCount; ++i) {
+		orbitingBullets_.push_back(std::make_unique<BossEnemyBullet>());
+		orbitingBullets_.back()->Initialize();
 	}
+
+	// OrbitBulletの位置と向きを計算するクラスを生成
+	orbitCalculator_ = std::make_unique<BossOrbitingOrbsCalculator>();
+	orbitCalculator_->Initialize(component);
 }
 
 ///-------------------------------------------///
 /// 更新処理
 ///-------------------------------------------///
-void BossBulletManager::Update() {
-	UpdateOrbitingBullets();
-	UpdateParabolicBullets();
+void BossBulletManager::Update(float deltaTime) {
+	// Orbiting弾の更新
+	UpdateOrbitingBullets(deltaTime);
+	// ParabolicShot弾の更新
+	UpdateParabolicBullets(deltaTime);
 }
 
 ///-------------------------------------------///
@@ -52,21 +68,33 @@ void BossBulletManager::Draw() {}
 ///-------------------------------------------///
 /// Orbiting弾を生成（再利用）する
 ///-------------------------------------------///
-void BossBulletManager::SpawnOrbitingBullets(const std::array<Vector3, BossAttackOrbitingOrbsComponent::kOrbCount>& positions, float lifetime) {
-	for (int i = 0; i < BossAttackOrbitingOrbsComponent::kOrbCount; ++i) {
-		orbitingBullets_[i]->Create(positions[i], lifetime);
+void BossBulletManager::SpawnOrbitingBullets() {
+	// 計算情報の取得
+	const auto& bulletInfos = orbitCalculator_->GetBulletInfo();
+
+	// ループ回数の設定
+	size_t updateCount = (std::min)(orbitingBullets_.size(), bulletInfos.size());
+
+	for (int i = 0; i < updateCount; ++i) {
+		orbitingBullets_[i]->Create(bulletInfos[i].position, orbitInfo_.lifeTime);
 	}
+	// アクティブ状態にする
+	isOrbitingActive_ = true;
+	// 攻撃開始
+	orbitCalculator_->StartAttack();
 }
 
+///-------------------------------------------/// 
+/// Orbiting弾を停止する
 ///-------------------------------------------///
-/// Orbiting弾の速度ベクトルを一括設定する
-///-------------------------------------------///
-void BossBulletManager::SetOrbitingVelocities( const std::array<Vector3, BossAttackOrbitingOrbsComponent::kOrbCount>& velocities) {
-	for (int i = 0; i < BossAttackOrbitingOrbsComponent::kOrbCount; ++i) {
-		if (orbitingBullets_[i] && orbitingBullets_[i]->GetIsAlive()) {
-			orbitingBullets_[i]->SetVelocity(velocities[i]);
+void BossBulletManager::StopOrbitingBullets() {
+	for (auto& b : orbitingBullets_) {
+		if (b && b->GetIsAlive()) {
+			b->SetAlive(false);
 		}
 	}
+	// アクティブ状態を解除
+	isOrbitingActive_ = false;
 }
 
 ///-------------------------------------------///
@@ -102,10 +130,27 @@ void BossBulletManager::KillLatestParabolicBullets() {
 ///-------------------------------------------///
 /// Orbiting弾の更新処理
 ///-------------------------------------------///
-void BossBulletManager::UpdateOrbitingBullets() {
-	for (auto& b : orbitingBullets_) {
-		if (b && b->GetIsAlive()) {
-			b->Update();
+void BossBulletManager::UpdateOrbitingBullets(float deltaTime) {
+	// アクティブ状態のときのみ更新
+	if (isOrbitingActive_) {
+		// OrbitBulletの位置と向きを計算
+		orbitCalculator_->Update(deltaTime);
+
+		// 計算情報の取得
+		const auto& bulletInfos = orbitCalculator_->GetBulletInfo();
+
+		// ループ回数の設定
+		size_t updateCount = (std::min)(orbitingBullets_.size(), bulletInfos.size());
+
+		for (size_t i = 0; i < updateCount; ++i) {
+			auto& b = orbitingBullets_[i];
+			const auto& info = bulletInfos[i];
+			// bulletが存在していたら
+			if (b && b->GetIsAlive()) {
+				Vector3 velocity = info.direction * orbitInfo_.orbitSpeed;
+				b->SetVelocity(velocity);
+				b->Update();
+			}
 		}
 	}
 }
@@ -113,7 +158,9 @@ void BossBulletManager::UpdateOrbitingBullets() {
 ///-------------------------------------------///
 /// ParabolicShot弾の更新処理・削除処理
 ///-------------------------------------------///
-void BossBulletManager::UpdateParabolicBullets() {
+void BossBulletManager::UpdateParabolicBullets(float deltaTime) {
+
+	deltaTime;
 
 	// 生存中の弾を更新
 	for (auto& b : parabolicBullets_) {

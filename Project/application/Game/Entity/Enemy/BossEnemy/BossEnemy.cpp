@@ -11,7 +11,6 @@
 #include <imgui.h>
 #endif // USE_IMGUI
 
-
 ///-------------------------------------------/// 
 /// デストラクタ
 ///-------------------------------------------///
@@ -19,10 +18,6 @@ BossEnemy::~BossEnemy() {
 	/// ===状態を解放=== ///
 	currentState_->Finalize();
 	currentState_.reset();
-	/// ===Componentの解放=== ///
-	moveComponent_.reset();
-	attackComponentManager_.reset();
-	hitReactionComponent_.reset();
 	/// ==Weapon==== ///
 	weapon_.reset();
 	/// ===Object3Dの解放=== ///
@@ -54,7 +49,7 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 
 	/// ===BulletManagerの初期化=== ///
 	bulletManager_ = std::make_unique<BossBulletManager>();
-	bulletManager_->Initialize();
+	bulletManager_->Initialize(parameters_.orbitingAttack);
 
 	/// ===Componentの設定=== ///
 	SetComponentConfig();
@@ -109,16 +104,13 @@ void BossEnemy::Update() {
 	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
 	baseInfo_.lightInfo_.point.position.z = transform_.translate.z - 30.0f;
 
-	/// ===AttackComponentManagerの更新=== ///
-	attackComponentManager_->Update(transform_.translate, baseInfo_.deltaTime);
-
 	/// ===Stateの更新=== ///
 	if (currentState_) {
 		currentState_->Update();
 	}
 
 	/// ===BulletManagerの更新=== ///
-	bulletManager_->Update();
+	bulletManager_->Update(baseInfo_.deltaTime);
 
 	/// ==Weaponの更新==== ///
 	weapon_->Update();
@@ -156,14 +148,13 @@ void BossEnemy::Information() {
 		ImGui::TreePop();
 	}
 	SetLightData(baseInfo_.lightInfo_);
+
 	/// ===GameCharacterの情報表示=== ///
 	GameCharacter::Information();
-	/// ===MoveComponentの情報表示=== ///
-	moveComponent_->Information();
-	/// ===AttackComponentManagerの情報表示=== ///
-	attackComponentManager_->Information();
-	/// ===HitReactionComponentの情報表示=== ///
-	hitReactionComponent_->Information();
+	
+	/// ===Componentの情報表示=== ///
+	BossComponent::Information(parameters_);
+
 	ImGui::End();
 #endif // USE_IMGUI
 }
@@ -182,15 +173,13 @@ void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 		if (!invincibleInfo_.isInvincible) {
 			// 通常攻撃の時
 			if (player_->GetAttackComponent()->IsAttacking()) {
-
-				// StateをHitReactionStateに変更
-				ChangeState(std::make_unique<BossHitReactionState>());
-
+				
 				// ノックバック方向の計算
 				Vector3 toWeapon = collider->GetTransform().translate - transform_.translate;
 				toWeapon.y = 0.0f; // Y軸は無視
 				toWeapon = -Normalize(toWeapon); // 反転して正規化
-				hitReactionComponent_->OnHit(toWeapon);
+				// StateをHitReactionStateに変更
+				ChangeState(std::make_unique<BossHitReactionState>(toWeapon));
 
 				// HPを減少
 				baseInfo_.HP--;
@@ -224,119 +213,79 @@ void BossEnemy::ChangeState(std::unique_ptr<BossState> nextState) {
 ///-------------------------------------------///
 void BossEnemy::SetComponentConfig() {
 
-	/// ===MoveComponentの生成=== ///
-	moveComponent_ = std::make_unique<BossMoveComponent>();
-	BossMoveComponent::MoveConfig moveConfig{
-		.speed = 0.2f,
-		.rotationSpeed = 8.0f,
-	};
-	// 初期化
-	moveComponent_->Initialize(moveConfig);
+	/// ===Parametersの設定=== ///
+	parameters_.attackRange.rotateAttack = 14.0f;
+	parameters_.attackRange.downwardSwingAttack = 20.0f;
+	parameters_.attackRange.jumpSmashMin = 30.0f;
+	parameters_.attackRange.jumpSmashMax = 50.0f;
+	parameters_.attackRange.orbitingOrbs = 40.0f;
+	parameters_.attackRange.parabolicShot = 35.0f;
 
-	/// ===TeleportComponentの生成=== ///
-	teleportComponent_ = std::make_unique<BossTeleportComponent>();
-	BossTeleportComponent::TeleportConfig teleportConfig{
-		.rotationSpeed = 5.0f,
-		.spinOutDuration = 0.6f,
-		.warpDuration = 0.4f,
-		.spinInDuration = 0.6f,
-	};
-	// 初期化
-	teleportComponent_->Initialize(teleportConfig);
+	parameters_.attackCooldown.rotateAttack = 2.5f;
+	parameters_.attackCooldown.downwardSwingAttack = 4.0f;
+	parameters_.attackCooldown.jumpSmashAttack = 8.0f;
+	parameters_.attackCooldown.orbitingOrbs = 6.0f;
+	parameters_.attackCooldown.parabolicShot = 5.0f;
+	
 
-	/// ===HitReactionComponentの生成=== ///
-	hitReactionComponent_ = std::make_unique<BossHitReactionComponent>();
-	BossHitReactionComponent::KnockBackConfig hitReactionConfig{
-		.knockBackForce = 1.5f,
-		.slowdownFactor = 0.5f,
-		.slowdownDuration = 0.2f,
-		.alphaDuration = 0.2f,
-		.hitAlpha = 0.2f,
-		.flashSpeed = 10.0f,
-	};
-	// 初期化
-	hitReactionComponent_->Initialize(hitReactionConfig);
+	parameters_.move.moveSpeed = 0.2f;
+	parameters_.move.rotationSpeed = 8.0f;
 
-	/// ===AttackComponentManagerの生成=== ///
-	attackComponentManager_ = std::make_unique<BossAttackComponentManager>();
-	BossAttackComponentManager::Config attackConfig{};
-	// Rotate
-	attackConfig.rotateRange = 14.0f;
-	attackConfig.rotateCooldown = 2.5f;
-	// DownSwing
-	attackConfig.downswingRange = 20.0f;
-	attackConfig.downswingCooldown = 4.0f;
-	// JumpSmash
-	attackConfig.jumpSmashCooldown = 8.0f;
-	attackConfig.jumpSmashMinRange = 30.0f;
-	attackConfig.jumpSmashMaxRange = 50.0f;
-	// OrbitingOrbs
-	attackConfig.orbitingOrbsRange = 40.0f;
-	attackConfig.orbitingOrbsCooldown = 6.0f;
-	// ParabolicShot
-	attackConfig.parabolicShotRange = 35.0f;
-	attackConfig.parabolicShotCooldown = 5.0f;
+	parameters_.teleport.rotationSpeed = 5.0f;
+	parameters_.teleport.spinOutDuration = 0.6f;
+	parameters_.teleport.warpDuration = 0.4f;
+	parameters_.teleport.spinInDuration = 0.6f;
 
-	/// ===AttackComponentの生成=== ///
-	// Rotate
-	attackConfig.rotateConfig = BossAttackRotateComponent::RotateConfig{
-		.windUpDuration = 3.0f,
-		.strikeAngle = 30.0f,
-		.strikeDuration = 0.3f,
-		.recoveryDuration = 0.5f,
-		.weaponOffset = { 0.0f,  0.0f,  12.0f },
-	};
+	parameters_.hitReaction.knockBackForce = 1.5f;
+	parameters_.hitReaction.slowdownFactor = 0.5f;
+	parameters_.hitReaction.slowdownDuration = 0.2f;
+	parameters_.hitReaction.alphaDuration = 0.2f;
+	parameters_.hitReaction.hitAlpha = 0.2f;
+	parameters_.hitReaction.flashSpeed = 10.0f;
 
-	// DownSwing
-	attackConfig.downswingConfig = BossAttackDownwardSwingComponent::DownwardSwingConfig{
-		.windUpPitch = -2.0f,
-		.windUpDuration = 1.0f,
-		.strikeForwardPitch = -20.0f,
-		.strikeDuration = 0.1f,
-		.holdDownDuration = 0.2f,
-		.recoveryDuration = 0.45f,
-		.strikeStepForward = 0.1f,
-		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
-	};
+	parameters_.rotateAttack.windUpDuration = 1.6f;
+	parameters_.rotateAttack.strikeAngle = 30.0f;
+	parameters_.rotateAttack.strikeDuration = 0.3f;
+	parameters_.rotateAttack.recoveryDuration = 0.5f;
+	parameters_.rotateAttack.weaponOffset = { 0.0f,  0.0f,  12.0f };
 
-	// JumpSmash
-	attackConfig.jumpSmashConfig = BossAttackJumpSmashComponent::JumpSmashConfig{
-		.minDistance = attackConfig.jumpSmashMinRange,
-		.maxDistance = attackConfig.jumpSmashMaxRange,
-		.leapWindUpCrouchPitch = 5.0f,
-		.leapWindUpDuration = 0.1f,
-		.leapDuration = 0.6f,
-		.leapArcHeight = 30.0f,
-		.leapAscentPitch = 120.0f,
-		.leapDescentPitch = 120.0f,
-		.strikeForwardPitch = 20.0f,
-		.strikeDuration = 0.2f,
-		.holdDownDuration = 0.8f,
-		.recoveryDuration = 0.45f,
-		.weaponRestOffset = { 0.0f,  0.0f,  12.0f },
-	};
+	parameters_.downwardSwingAttack.windUpPitch = -2.0f;
+	parameters_.downwardSwingAttack.windUpDuration = 1.0f;
+	parameters_.downwardSwingAttack.strikeForwardPitch = -20.0f;
+	parameters_.downwardSwingAttack.strikeDuration = 0.1f;
+	parameters_.downwardSwingAttack.holdDownDuration = 0.2f;
+	parameters_.downwardSwingAttack.recoveryDuration = 0.45f;
+	parameters_.downwardSwingAttack.strikeStepForward = 0.1f;
+	parameters_.downwardSwingAttack.weaponOffset = { 0.0f,  0.0f,  12.0f };
 
-	// OrbitingOrbs
-	attackConfig.orbitingOrbsConfig = BossAttackOrbitingOrbsComponent::OrbitConfig{
-		.orbitRadius = 3.0f,
-		.orbitSpeedDeg = 120.0f,
-		.orbitHeight = 0.0f,
-		.lifetime = 5.0f,
-		.initialAngleDeg = 120.0f,
-	};
+	parameters_.jumpSmashAttack.minDistance = parameters_.attackRange.jumpSmashMin;
+	parameters_.jumpSmashAttack.maxDistance = parameters_.attackRange.jumpSmashMax;
+	parameters_.jumpSmashAttack.leapWindUpCrouchPitch = 5.0f;
+	parameters_.jumpSmashAttack.leapWindUpDuration = 0.1f;
+	parameters_.jumpSmashAttack.leapDuration = 0.6f;
+	parameters_.jumpSmashAttack.leapArcHeight = 30.0f;
+	parameters_.jumpSmashAttack.leapAscentPitch = 120.0f;
+	parameters_.jumpSmashAttack.leapDescentPitch = 120.0f;
+	parameters_.jumpSmashAttack.strikeForwardPitch = 20.0f;
+	parameters_.jumpSmashAttack.strikeDuration = 0.2f;
+	parameters_.jumpSmashAttack.holdDownDuration = 0.8f;
+	parameters_.jumpSmashAttack.recoveryDuration = 0.45f;
+	parameters_.jumpSmashAttack.weaponOffset = { 0.0f,  0.0f,  12.0f };
 
-	// ParabolicShot
-	attackConfig.parabolicShotConfig = BossAttackParabolicShotComponent::ParabolicConfig{
-		.launchAngleDeg = 80.0f,
-		.gravity = 4.9f,
-		.lifetime = 5.0f,
-		.trembleDuration = 3.0f,
-		.enableGroundHit = true,
-		.maxHorizontalSpeed = 0.6f,
-	};
+	parameters_.orbitingAttack.bulletCount = 3;
+	parameters_.orbitingAttack.orbitRadius = 3.0f;
+	parameters_.orbitingAttack.orbitSpeed = 120.0f;
+	parameters_.orbitingAttack.orbitHeight = 0.0f;
+	parameters_.orbitingAttack.lifeTime = 5.0f;
+	parameters_.orbitingAttack.initialAngle = 120.0f;
 
-	// AttackComponentManagerの初期化
-	attackComponentManager_->Initialize(attackConfig, bulletManager_.get());
+	parameters_.parabolicShotAttack.launchAngle = 80.0f;
+	parameters_.parabolicShotAttack.gravity = 4.9f;
+	parameters_.parabolicShotAttack.lifeTime = 5.0f;
+	parameters_.parabolicShotAttack.trebleDuration = 3.0f;
+	parameters_.parabolicShotAttack.rotationSpeed = 8.0f;
+	parameters_.parabolicShotAttack.enableGroundHit = true;
+	parameters_.parabolicShotAttack.maxHorizontalSpeed = 0.6f;
 }
 
 
@@ -356,6 +305,13 @@ void BossEnemy::advanceTimer() {
 			invincibleInfo_.timer = 0.0f;
 		}
 	}
+
+	// 攻撃のクールダウンを進める
+	cooldownTimer_.rotateAttack= (std::max)(0.0f, cooldownTimer_.rotateAttack - GetDeltaTime());
+	cooldownTimer_.downwardSwingAttack = (std::max)(0.0f, cooldownTimer_.downwardSwingAttack - GetDeltaTime());
+	cooldownTimer_.jumpSmashAttack = (std::max)(0.0f, cooldownTimer_.jumpSmashAttack - GetDeltaTime());
+	cooldownTimer_.orbitingOrbs = (std::max)(0.0f, cooldownTimer_.orbitingOrbs - GetDeltaTime());
+	cooldownTimer_.parabolicShot = (std::max)(0.0f, cooldownTimer_.parabolicShot - GetDeltaTime());
 }
 
 ///-------------------------------------------/// 

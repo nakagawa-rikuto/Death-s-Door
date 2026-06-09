@@ -111,6 +111,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.cpp" />
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp" />
     <ClCompile Include="application\Scene\Game\GameScene.cpp" />
@@ -120,23 +121,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
     <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp" />
     <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackRotateComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackParabolicShotComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponentManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
     <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\CS\CSCompiler.cpp" />
@@ -309,27 +302,20 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossMoveComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackDownwardSwingComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackRotateComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\CloseAttack\BossAttackJumpSmashComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackOrbitingOrbsComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\LongAttack\BossAttackParabolicShotComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Attack\BossAttackComponentManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\HitReaction\BossHitReactionComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\Move\BossTeleportComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
     <ClInclude Include="application\Game\UI\Game\BossUI.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />

@@ -7,15 +7,9 @@
 // State
 #include "State/Base/BossState.h"
 // Component
-#include "Component/Move/BossMoveComponent.h"
-#include "Component/Move/BossTeleportComponent.h"
-#include "Component/Attack/BossAttackComponentManager.h"
-#include "Component/HitReaction/BossHitReactionComponent.h"
+#include "Component/BossComponent.h"
 // BulletManager
 #include "Bullet/BossBulletManager.h"
-// C++
-#include <vector>
-
 
 ///=====================================================/// 
 /// BossEnemy
@@ -69,22 +63,29 @@ public: /// ===その他関数=== ///
 	/// <param name="nextState">次の敵の状態を表すユニークポインタ。</param>
 	void ChangeState(std::unique_ptr<BossState> nextState);
 
+	/// ===攻撃判定=== ///
+	bool CanRotateAttack(float distToPlayer) const {return distToPlayer <= parameters_.attackRange.rotateAttack && cooldownTimer_.rotateAttack <= 0.0f; }
+	bool CanDownSwingAttack(float distToPlayer) const {return distToPlayer <= parameters_.attackRange.downwardSwingAttack && cooldownTimer_.downwardSwingAttack <= 0.0f; }
+	bool CanJumpSmashAttack(float distToPlayer) const {return parameters_.attackRange.jumpSmashMin <= distToPlayer && distToPlayer <= parameters_.attackRange.jumpSmashMax && cooldownTimer_.jumpSmashAttack <= 0.0f; }
+	bool CanOrbitingOrbs(float distToPlayer) const {return distToPlayer <= parameters_.attackRange.orbitingOrbs && cooldownTimer_.orbitingOrbs <= 0.0f; }
+	bool CanParabolicShot(float distToPlayer) const {return distToPlayer <= parameters_.attackRange.parabolicShot && cooldownTimer_.parabolicShot <= 0.0f; }
+
 public: /// ===Getter=== ///
 
 	// Weaponの取得
 	BossWeapon& GetWeapon() const { return *weapon_; }
-
-	// MoveConponentの取得
-	BossMoveComponent& GetMoveComponent() const { return *moveComponent_; }
-	// TeleportComponentの取得
-	BossTeleportComponent& GetTeleportComponent() const { return *teleportComponent_; }
-	// AttackComponentManagerの取得
-	BossAttackComponentManager& GetAttackComponentManager() const { return *attackComponentManager_; }
-	// HitReactionComponentの取得
-	BossHitReactionComponent& GetHitReactionComponent() const { return *hitReactionComponent_; }
-
 	// BulletManagerの取得
 	BossBulletManager& GetBulletManager() const { return *bulletManager_; }
+	// Componentのパラメータの取得
+	const BossComponent::Parameters& GetComponentParameters() const { return parameters_; }
+
+public: /// ===Setter=== ///
+	// クールダウンの設定
+	void SetRotateAttackCooldown() { cooldownTimer_.rotateAttack = parameters_.attackCooldown.rotateAttack; }
+	void SetDownwardSwingAttackCooldown() { cooldownTimer_.downwardSwingAttack = parameters_.attackCooldown.downwardSwingAttack; }
+	void SetJumpSmashAttackCooldown() { cooldownTimer_.jumpSmashAttack = parameters_.attackCooldown.jumpSmashAttack; }
+	void SetOrbitingOrbsCooldown() { cooldownTimer_.orbitingOrbs = parameters_.attackCooldown.orbitingOrbs; }
+	void SetParabolicShotCooldown() { cooldownTimer_.parabolicShot = parameters_.attackCooldown.parabolicShot; }
 
 private:
 	/// ===Weapon=== ///
@@ -94,10 +95,7 @@ private:
 	std::unique_ptr<BossState> currentState_; // 現在のState
 
 	/// ===Component=== ///
-	std::unique_ptr<BossMoveComponent> moveComponent_;	// 移動コンポーネント
-	std::unique_ptr<BossTeleportComponent> teleportComponent_; // テレポートコンポーネント
-	std::unique_ptr<BossAttackComponentManager> attackComponentManager_; // 攻撃マネージャー
-	std::unique_ptr<BossHitReactionComponent> hitReactionComponent_; // 被ダメージリアクションコンポーネント
+	BossComponent::Parameters parameters_; // パラメータ
 
 	/// ===BulletManager=== ///
 	std::unique_ptr<BossBulletManager> bulletManager_;
@@ -105,6 +103,9 @@ private:
 	/// ===Particle=== ///
 	MiiEngine::ParticleGroup* hitParticle_ = nullptr;
 	MiiEngine::ParticleGroup* deathParticle_ = nullptr;
+
+	/// ===クールダウン=== ///
+	BossComponent::AttackCooldown cooldownTimer_;
 
 private:
 

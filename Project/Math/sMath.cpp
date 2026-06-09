@@ -1,6 +1,9 @@
 #include "sMath.h"
+// C++
 #include <cassert>
 #include <numbers>
+#include <algorithm>
+// MatrixMath
 #include "MatrixMath.h"
 
 ///=====================================================///
@@ -238,6 +241,40 @@ Quaternion Math::ApplyPitchToCurrentRotation(const Quaternion& currentYRotation,
     result.z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2;
 
     return result;
+}
+ 
+///-------------------------------------------/// 
+/// 方向ベクトル間の回転を表すクォータニオンを計算
+///-------------------------------------------///
+Quaternion Math::DirectionToQuaternion(const Vector3& from, const Vector3& to) {
+    // 2ベクトルが同じ方向の場合は恒等Quaternionを返す
+    const float dot = Dot(from, to);
+    if (dot >= 1.0f - 0.001f) {
+        return Quaternion{ 0.0f, 0.0f, 0.0f, 1.0f };
+    }
+
+    // 2ベクトルが逆方向の場合はY軸周りで180度回転させる
+    if (dot <= -1.0f + 0.001f) {
+        // キャラクターが上下反転しないように、強制的にY軸を回転軸にする
+        return Quaternion{
+            0.0f,
+            1.0f,
+            0.0f,
+            0.0f
+        };
+    }
+
+    // 通常ケース：外積を回転軸、内積から角度を求める
+    const Vector3 axis = Normalize(Math::Cross(from, to));
+    const float   angle = std::acos(std::clamp(dot, -1.0f, 1.0f));
+    const float   s = std::sin(angle * 0.5f);
+
+    return Quaternion{
+        axis.x * s,
+        axis.y * s,
+        axis.z * s,
+        std::cos(angle * 0.5f)
+    };
 }
 
 ///-------------------------------------------/// 
