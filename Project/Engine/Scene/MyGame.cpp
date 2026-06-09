@@ -118,12 +118,18 @@ namespace MiiEngine {
 		Loader::LoadTexture("monsterBall", "monsterBall.png");
 		Loader::LoadTexture("White", "WhiteTexture.png");
 		// Particle
+		Loader::LoadTexture("Particle", "Particle/Particle.png");
 		Loader::LoadTexture("circle", "Particle/circle.png");
 		Loader::LoadTexture("circle2", "Particle/circle2.png");
 		Loader::LoadTexture("gradationLine", "Particle/gradationLine.png");
 		Loader::LoadTexture("Spark", "Particle/Spark.png");
 		Loader::LoadTexture("FlameEye", "Particle/FlameEye.png");
 		Loader::LoadTexture("Fire", "Particle/Fire.png");
+		Loader::LoadTexture("Cloud", "Particle/Cloud.png");
+		Loader::LoadTexture("Corona", "Particle/Corona.png");
+		Loader::LoadTexture("Smoke", "Particle/Smoke.png");
+		Loader::LoadTexture("Solar", "Particle/Solar.png");
+		Loader::LoadTexture("Flame", "Particle/Flame.png");
 		// OffScreen
 		Loader::LoadTexture("noise0", "OffScreen/noise0.png");
 		Loader::LoadTexture("noise1", "OffScreen/noise1.png");

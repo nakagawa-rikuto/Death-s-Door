@@ -27,8 +27,14 @@ public:
 	/// </summary>
 	virtual void Finalize();
 
+	/// <summary>
+	/// プレイヤーとボスの距離を計算して返す。
+	/// </summary>
+	float CalcDistToPlayer() const;
+
 protected:
 	// Bossのポインター
 	BossEnemy* boss_ = nullptr;
+
 };
 

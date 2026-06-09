@@ -1,6 +1,7 @@
 #pragma once
 /// ===Include=== ///
 #include <application/Game/Entity/Enemy/BossEnemy/State/Base/BossState.h>
+#include "Math/Vector3.h"
 
 ///=====================================================/// 
 /// BossMoveState
@@ -27,10 +28,19 @@ public:
 	void Finalize() override;
 
 private:
+
+	/// ===現在の状態=== ///
+	struct MoveState {
+		Vector3 direction = {0.0f, 0.0f, 0.0f};         // 現在の移動方向
+	};
+	MoveState state_{};
+
+private:
+
 	/// <summary>
-	/// プレイヤーとボスの距離を計算して返す。
+	/// 移動処理を更新する。
 	/// </summary>
-	float CalcDistToPlayer() const;
+	void UpdateMove();
 
 	/// <summary>
 	/// Stateの変更が必要か判定して、必要なら変更する。

@@ -31,11 +31,11 @@
             "enableSwirling": false,
             "expansionRate": 0.800000011920929,
             "followEmitter": false,
-            "followStrength": 1.0,
-            "rotationInfluence": 1.2000000476837158,
-            "swirlingSpeed": 3.0,
+            "followStrength": 0.3319999873638153,
+            "rotationInfluence": 0.0,
+            "swirlingSpeed": 16.5,
             "useRotationInfluence": false,
-            "velocityDamping": 0.949999988079071
+            "velocityDamping": 0.39100000262260437
         },
         "scaleAnimation": {
             "endScale": 0.10000000149011612,
@@ -43,13 +43,13 @@
             "startScale": 0.30000001192092896,
             "type": "Bounce"
         },
-        "trailSpacing": 0.00800000037997961
+        "trailSpacing": 0.10000000149011612
     },
     "appearance": {
         "endColor": [
             0.0,
-            0.7843137383460999,
             1.0,
+            0.9873416423797607,
             0.0
         ],
         "endScale": [
@@ -58,22 +58,22 @@
             0.5
         ],
         "startColor": [
+            0.0,
+            0.025316476821899414,
             1.0,
-            0.0,
-            0.0,
             1.0
         ],
         "startScaleMax": [
-            4.0,
-            4.0,
-            4.0
+            2.0,
+            2.0,
+            2.0
         ],
         "startScaleMin": [
-            4.0,
-            4.0,
-            4.0
+            2.0,
+            2.0,
+            2.0
         ],
-        "texturePath": "circle2",
+        "texturePath": "Particle",
         "useColorGradient": true,
         "useScaleAnimation": false
     },
@@ -86,7 +86,7 @@
         "lifetimeMin": 0.4000000059604645
     },
     "maxInstance": 200,
-    "modelName": "plane",
+    "modelName": "cube",
     "name": "EnemyAttack",
     "physics": {
         "acceleration": [
@@ -114,7 +114,7 @@
         ]
     },
     "rotation": {
-        "enableRotation": false,
+        "enableRotation": true,
         "initialRotationMax": [
             0.0,
             0.0,
@@ -126,16 +126,16 @@
             0.0
         ],
         "randomInitialRotation": false,
-        "randomRotation": false,
+        "randomRotation": true,
         "rotationSpeedMax": [
-            6.5,
-            6.900000095367432,
-            6.099999904632568
+            0.0,
+            2.0,
+            0.0
         ],
         "rotationSpeedMin": [
-            -7.5,
-            -6.099999904632568,
-            -5.800000190734863
+            0.0,
+            -2.0,
+            0.0
         ]
     },
     "shape": "None"

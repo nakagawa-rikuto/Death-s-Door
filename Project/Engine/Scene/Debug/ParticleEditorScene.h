@@ -1,10 +1,14 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/Scene/IScene.h"
+
+#ifdef USE_IMGUI
 // Editor
 #include "Engine/System/Editor/Particle/ParticleEditor.h"
 // Line
 #include "application/Drawing/3d/Line.h"
+#endif // USE_IMGUI
+
 // c++
 #include <memory>
 
@@ -34,6 +38,7 @@ namespace MiiEngine {
 		void Draw() override;
 
 	private:
+#ifdef USE_IMGUI
 		/// ===Line=== ///
 		std::unique_ptr<Line> line_;
 		/// ===エディター=== ///
@@ -49,7 +54,6 @@ namespace MiiEngine {
 		Quaternion cameraRotation_ = { 0.3f, 0.0f, 0.0f };
 		float cameraSpeed_ = 0.1f;
 		float cameraRotationSpeed_ = 0.02f;
-
 	private:
 
 		/// <summary>
@@ -71,5 +75,6 @@ namespace MiiEngine {
 		/// カメラコントロールウィンドウの描画
 		/// </summary>
 		void RenderCameraControl();
+#endif // USE_IMGUI
 	};
 }

@@ -7,10 +7,16 @@
 #include <memory>
 #include <string>
 #include <vector>
+// ImGui
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif // USE_IMGUI
 
+#ifdef USE_IMGUI
 namespace MiiEngine {
 	/// ===前方宣言=== ///
 	class ParticleGroup;
+	class TextureManager;
 
 	///=====================================================/// 
 	/// パーティクルエディター
@@ -177,6 +183,10 @@ namespace MiiEngine {
 
 	private:
 
+		/// ===テクスチャサムネイル=== ///
+		TextureManager* textureManager_ = nullptr;             // テクスチャマネージャー
+		std::unordered_map<std::string, ImTextureID> textureThumbCache_; // テクスチャのサムネイルIDマップ
+
 		/// ===エディター状態=== ///
 		bool isVisible_ = false;                              // エディターの表示状態
 		ParticleDefinition currentDefinition_;                // 編集中のパーティクル定義
@@ -221,7 +231,7 @@ namespace MiiEngine {
 		/// 履歴管理
 		/// </summary>
 		void RecordHistory();
-#ifdef USE_IMGUI
+
 		/// <summary>
 		/// 履歴用のドラッグフロートUI(float)
 		/// </summary>
@@ -231,6 +241,6 @@ namespace MiiEngine {
 		/// 履歴用のドラッグフロートUI(Vector3)
 		/// </summary>
 		bool DragFloat3WithHistory(const char* label, Vector3* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f);
-#endif // USE_IMGUI
 	};
 }
+#endif // USE_IMGUI

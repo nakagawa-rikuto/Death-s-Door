@@ -12,6 +12,10 @@
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Long/BossOrbitingOrbsState.h>
 #include <application/Game/Entity/Enemy/BossEnemy/State/Attack/Long/BossParabolicShotState.h>
 #include "BossTeleportState.h"
+// C++
+#include <algorithm>
+// Math
+#include <Math/sMath.h>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -34,24 +38,10 @@ void BossMoveState::Update() {
 		return;
 	}
 
-	// コンテキストの準備
-	BossMoveComponent::UpdateContext context{
-		.currentPosition = boss_->GetTransform().translate,
-		.currentRotation = boss_->GetTransform().rotate,
-		.playerPosition = boss_->GetPlayer()->GetTransform().translate,
-		.deltaTime = boss_->GetDeltaTime(),
-	};
-	// 移動コンポーネントの更新
-	BossMoveComponent::UpdateResult result = boss_->GetMoveComponent().Update(context);
+	/// ===移動処理=== ///
+	UpdateMove();
 
-	// 結果の適用
-	result.velocity.y = boss_->GetVelocity().y;
-	boss_->SetVelocity(result.velocity);
-
-	// 回転の更新
-	boss_->SetRotate(result.rotate);
-
-	// 波紋の生成
+	/// ===波紋の生成=== ///
 	boss_->GetGroundOcean()->AddRipple(boss_->GetTransform().translate, 1.0f, 0.1f);
 }
 
@@ -63,38 +53,58 @@ void BossMoveState::Finalize() {
 }
 
 ///-------------------------------------------/// 
-/// プレイヤーとボスの距離を計算して返す。
+/// 移動処理を更新する。
 ///-------------------------------------------///
-float BossMoveState::CalcDistToPlayer() const {
-	const Vector3 diff =
-		boss_->GetPlayer()->GetTransform().translate -
-		boss_->GetTransform().translate;
-	return Length(diff);
+void BossMoveState::UpdateMove() {
+	// コンポーネントのパラメータを取得
+	BossComponent::MoveComponent component = boss_->GetComponentParameters().move;
+
+	// プレイヤーへのベクトルを計算
+	Vector3 toPlayer = boss_->GetPlayer()->GetTransform().translate - boss_->GetTransform().translate;
+	// 高低差を無視
+	toPlayer.y = 0.0f;
+
+	// プレイヤーに向かってゆっくり移動する方向を計算
+	if (Length(toPlayer) > 0.001f) {
+		state_.direction = Normalize(toPlayer);
+	}
+
+	// 速度の更新
+	Vector3 velocity = state_.direction * component.moveSpeed;
+	velocity.y = boss_->GetVelocity().y; // Y軸の速度は維持
+	boss_->SetVelocity(velocity);
+
+	// プレイヤーの方を徐々に向くように回転を計算
+	const Vector3 forward = { 0.0f, 0.0f, 1.0f }; // ボスの正面方向（Z軸）
+	const Quaternion targetRotate = Math::DirectionToQuaternion(forward, state_.direction);
+	const float t = (std::min)(component.rotationSpeed * boss_->GetDeltaTime(), 1.0f);
+	Quaternion rotate = Math::SLerp(boss_->GetTransform().rotate, targetRotate, t);
+	boss_->SetRotate(rotate);
+
 }
 
 ///-------------------------------------------/// 
 /// Stateの変更が必要か判定して、必要なら変更する。
 ///-------------------------------------------///
 bool BossMoveState::ChangeStateIfNeeded(float dist) {
-
 	/// ===遷移状態の判定=== ///
-	if (boss_->GetAttackManager().CanRotate(dist)) {
+	if (boss_->CanRotateAttack(dist)) {
 		// Rotate攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
 		return true;
-	} else if (boss_->GetAttackManager().CanDownswing(dist)) {
+	} else if (boss_->CanDownSwingAttack(dist)) {
 		// Downswing攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
 		return true;
-	} else if (boss_->GetAttackManager().CanParabolicShot(dist)) {
+	} else if (boss_->CanParabolicShot(dist)) {
 		// ParabolicShot攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
 		return true;
-	} else if (boss_->GetAttackManager().CanOrbitIngOrbs(dist)) {
+	} else if (boss_->CanOrbitingOrbs(dist)) {
 		// OrbitingOrbs攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
 		return true;
-	} else if (boss_->GetAttackManager().CanJumpSmash(dist)) {
+	} else if (boss_->CanJumpSmashAttack(dist)) {
 		// JumpSmash攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
 		return true;

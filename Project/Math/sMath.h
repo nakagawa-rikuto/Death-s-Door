@@ -145,6 +145,14 @@ namespace Math {
 	/// <returns>ピッチが適用された新しい Quaternion。元の四元数は変更されません。</returns>
 	Quaternion ApplyPitchToCurrentRotation(const Quaternion& currentYRotation, float pitchAngleDegrees);
 
+	/// <summary>
+	/// 2つの方向ベクトル間の回転を表すクォータニオンを計算します。
+	/// </summary>
+	/// <param name="from">回転の開始方向ベクトル。</param>
+	/// <param name="to">回転の終了方向ベクトル。</param>
+	/// <returns>from方向からto方向への回転を表すクォータニオン。</returns>
+	Quaternion DirectionToQuaternion(const Vector3& from, const Vector3& to);
+
 #pragma region Lerp・SLerp
 	/// <summary>
 	/// start と end の間を t に応じて線形補間してその値を返す

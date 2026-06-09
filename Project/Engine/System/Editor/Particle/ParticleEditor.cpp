@@ -3,16 +3,15 @@
 #include "Engine/Graphics/Particle/ParticleFactory.h"
 #include "Engine/Graphics/Particle/ParticleGroup.h"
 // Service
+#include "Service/Locator.h"
 #include "Service/DeltaTime.h"
-
-#ifdef USE_IMGUI
-// ImGui
-#include <imgui.h>
-#endif // USE_IMGUI
+// TextureManager
+#include "Engine/System/Managers/TextureManager.h"
 // c++
 #include <fstream>
 #include <filesystem>
 
+#ifdef USE_IMGUI
 namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// コンストラクタ・デストラクタ
@@ -30,6 +29,9 @@ namespace MiiEngine {
 	/// 初期化
 	///-------------------------------------------///
 	void ParticleEditor::Initialize() {
+		// テクスチャマネージャーの取得
+		textureManager_ = Service::Locator::GetTextureManager();
+
 		// 利用可能なリソースを更新
 		UpdateAvailableModels();
 		UpdateAvailableTextures();
@@ -48,7 +50,6 @@ namespace MiiEngine {
 	void ParticleEditor::Update() {
 		if (!isVisible_) return;
 
-#ifdef USE_IMGUI
 		// エディターウィンドウがフォーカスされている時だけUndo/Redoを受け付ける（誤爆防止）
 		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
 			// Ctrl + Z (Undo)
@@ -71,7 +72,6 @@ namespace MiiEngine {
 				}
 			}
 		}
-#endif // USE_IMGUI
 
 
 		// プレビューパーティクルの更新
@@ -95,7 +95,6 @@ namespace MiiEngine {
 	/// ImGui描画
 	///-------------------------------------------///
 	void ParticleEditor::Render() {
-#ifdef USE_IMGUI
 		if (!isVisible_) return;
 
 		ImGui::Begin("パーティクルエディター", &isVisible_, ImGuiWindowFlags_MenuBar);
@@ -154,18 +153,15 @@ namespace MiiEngine {
 		RenderFileOperations();
 
 		ImGui::End();
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// プレビュー描画
 	///-------------------------------------------///
 	void ParticleEditor::DrawPreview() {
-#ifdef USE_IMGUI
 		if (isPlaying_ && previewParticle_) {
 			previewParticle_->Draw(previewBlendMode_);
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
@@ -187,7 +183,6 @@ namespace MiiEngine {
 	/// JSON保存
 	///-------------------------------------------///
 	void ParticleEditor::SaveToJson() {
-#ifdef USE_IMGUI
 		try {
 			// 編集中の定義を保存
 			nlohmann::json j = currentDefinition_.ToJson();
@@ -210,14 +205,12 @@ namespace MiiEngine {
 			// エラーハンドリング（コンソールに出力など）
 			e;
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// JSON読み込み
 	///-------------------------------------------///
 	void ParticleEditor::LoadFromJson() {
-#ifdef USE_IMGUI
 		try {
 			std::string filepath = filePathBuffer_;
 			if (filepath.find(kFileExtension) == std::string::npos) {
@@ -246,14 +239,12 @@ namespace MiiEngine {
 			// エラーハンドリング
 			e;
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 新規作成
 	///-------------------------------------------///
 	void ParticleEditor::CreateNew() {
-#ifdef USE_IMGUI
 		currentDefinition_ = ParticleDefinition();
 		currentFilePath_.clear();
 		strcpy_s(filePathBuffer_, kDefaultSavePath);
@@ -261,61 +252,51 @@ namespace MiiEngine {
 		if (isPlaying_) {
 			StopPreview();
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// プレビュー再生
 	///-------------------------------------------///
 	void ParticleEditor::PlayPreview() {
-#ifdef USE_IMGUI
 		if (!previewParticle_) {
 			CreatePreviewParticle();
 		}
 		isPlaying_ = true;
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// プレビュー停止
 	///-------------------------------------------///
 	void ParticleEditor::StopPreview() {
-#ifdef USE_IMGUI
 		isPlaying_ = false;
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// プレビューリセット
 	///-------------------------------------------///
 	void ParticleEditor::ResetPreview() {
-#ifdef USE_IMGUI
 		previewParticle_.reset();
 		isPlaying_ = false;
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// プレビューパーティクル生成
 	///-------------------------------------------///
 	void ParticleEditor::CreatePreviewParticle() {
-#ifdef USE_IMGUI
 		// ParticleGroupを生成してDefinitionを適用
 		previewParticle_ = std::make_unique<ParticleGroup>();
 		previewParticle_->Initialize(previewPosition_, currentDefinition_);
 
-		// ★テクスチャが指定されていれば明示的に設定（二重適用になるが安全のため）
+		// テクスチャが指定されていれば明示的に設定（二重適用になるが安全のため）
 		if (!currentDefinition_.appearance.texturePath.empty()) {
 			previewParticle_->SetTexture(currentDefinition_.appearance.texturePath);
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// メニューバー描画
 	///-------------------------------------------///
 	void ParticleEditor::RenderMenuBar() {
-#ifdef USE_IMGUI
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("ファイル")) {
 				if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
@@ -358,14 +339,12 @@ namespace MiiEngine {
 
 			ImGui::EndMenuBar();
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 基本設定UI
 	///-------------------------------------------///
 	void ParticleEditor::RenderBasicSettings() {
-#ifdef USE_IMGUI
 		ImGui::SeparatorText("基本設定");
 
 		/// ===名前=== ///
@@ -403,13 +382,15 @@ namespace MiiEngine {
 		}
 
 		/// ===形状選択=== ///
-		const char* shapes[] = { "円", "円柱", "なし" };
-		int currentShape = static_cast<int>(currentDefinition_.shape);
-		if (ImGui::Combo("形状タイプ", &currentShape, shapes, IM_ARRAYSIZE(shapes))) {
-			currentDefinition_.shape = static_cast<shapeType>(currentShape);
+		if (currentDefinition_.modelName == "plane") {
+			const char* shapes[] = { "円", "円柱", "なし" };
+			int currentShape = static_cast<int>(currentDefinition_.shape);
+			if (ImGui::Combo("形状タイプ", &currentShape, shapes, IM_ARRAYSIZE(shapes))) {
+				currentDefinition_.shape = static_cast<shapeType>(currentShape);
+			}
+			ImGui::TextDisabled("カスタム頂点バッファを使用する形状");
+			ImGui::Spacing();
 		}
-		ImGui::TextDisabled("カスタム頂点バッファを使用する形状");
-		ImGui::Spacing();
 
 		/// ===最大インスタンス数=== ///
 		int maxInstance = static_cast<int>(currentDefinition_.maxInstance);
@@ -451,14 +432,12 @@ namespace MiiEngine {
 
 		ImGui::Spacing();
 		ImGui::TextDisabled("Tips: プレビュー再生中でも位置を変更できます");
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 物理設定UI
 	///-------------------------------------------///
 	void ParticleEditor::RenderPhysicsSettings() {
-#ifdef USE_IMGUI
 		ImGui::SeparatorText("物理設定");
 
 		/// ===速度設定=== ///
@@ -522,14 +501,12 @@ namespace MiiEngine {
 		ImGui::TextDisabled("発生時にY軸速度に加算される値");
 		ImGui::Spacing();
 		ImGui::Separator();
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 見た目設定UI
 	///-------------------------------------------///
 	void ParticleEditor::RenderAppearanceSettings() {
-#ifdef USE_IMGUI
 		ImGui::SeparatorText("見た目設定");
 
 		/// ===色設定=== ///
@@ -593,42 +570,101 @@ namespace MiiEngine {
 
 		/// ===テクスチャ設定=== ///
 		ImGui::Text("テクスチャ");
-		if (!availableTextures_.empty()) {
-			if (ImGui::Combo("テクスチャファイル", &selectedTextureIndex_,
-				[](void* data, int idx, const char** out_text) {
-					auto& textures = *static_cast<std::vector<std::string>*>(data);
-					*out_text = textures[idx].c_str();
-					return true;
-				}, &availableTextures_, static_cast<int>(availableTextures_.size()))) {
-				currentDefinition_.appearance.texturePath = availableTextures_[selectedTextureIndex_];
-
-				if (previewParticle_) {
-					previewParticle_->SetTexture(currentDefinition_.appearance.texturePath);
-				}
-			}
-		} else {
-			char textureBuffer[256];
-			strcpy_s(textureBuffer, currentDefinition_.appearance.texturePath.c_str());
-			if (ImGui::InputText("テクスチャパス", textureBuffer, sizeof(textureBuffer))) {
-				currentDefinition_.appearance.texturePath = textureBuffer;
-
-				if (previewParticle_) {
-					previewParticle_->SetTexture(currentDefinition_.appearance.texturePath);
-				}
-			}
-		}
-
+		// 現在選択中のテクスチャを大きめに表示
 		if (!currentDefinition_.appearance.texturePath.empty()) {
-			ImGui::TextDisabled("現在: %s", currentDefinition_.appearance.texturePath.c_str());
+			auto it = textureThumbCache_.find(currentDefinition_.appearance.texturePath);
+			if (it != textureThumbCache_.end() && it->second) {
+				// チェッカー背景風の枠（透明テクスチャが見やすくなる）
+				ImDrawList* drawList = ImGui::GetWindowDrawList();
+				ImVec2 pos = ImGui::GetCursorScreenPos();
+				drawList->AddRectFilled(pos, ImVec2(pos.x + 72, pos.y + 72), IM_COL32(80, 80, 80, 255));
+
+				ImGui::Image(it->second, ImVec2(70, 70));
+				ImGui::SameLine();
+			}
+			ImGui::BeginGroup();
+			ImGui::Text("選択中");
+			ImGui::TextColored(ImVec4(0.6f, 0.9f, 1.0f, 1.0f), "%s", currentDefinition_.appearance.texturePath.c_str());
+			ImGui::EndGroup();
 		}
-#endif // USE_IMGUI
+
+		ImGui::Spacing();
+
+		// グリッド形式でサムネイルを並べる
+		constexpr float kThumbSize = 60.0f;
+		constexpr float kPadding = 4.0f;
+		const float panelWidth = ImGui::GetContentRegionAvail().x;
+		const int   columns = (std::max)(1, static_cast<int>(panelWidth / (kThumbSize + kPadding)));
+
+		// スクロール可能な領域
+		if (ImGui::BeginChild("TexturePicker", ImVec2(0, 180), ImGuiChildFlags_Border)) {
+			for (int i = 0; i < static_cast<int>(availableTextures_.size()); i++) {
+				const std::string& texName = availableTextures_[i];
+				bool isSelected = (selectedTextureIndex_ == i);
+
+				ImGui::PushID(i);
+
+				// 選択中の強調色
+				if (isSelected) {
+					ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 1.0f, 0.9f));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
+				}
+
+				// サムネイルがキャッシュにあればImageButton、なければテキストボタン
+				auto it = textureThumbCache_.find(texName);
+				bool clicked = false;
+
+				if (it != textureThumbCache_.end() && it->second) {
+					clicked = ImGui::ImageButton("##t", it->second, ImVec2(kThumbSize, kThumbSize));
+				} else {
+					// フォールバック：テクスチャ未ロード時はテキストボタン
+					clicked = ImGui::Button(texName.c_str(), ImVec2(kThumbSize, kThumbSize));
+				}
+
+				if (isSelected) {
+					ImGui::PopStyleColor(2);
+
+					// 選択枠を描画（ImageButtonの上から重ねる）
+					ImVec2 btnMin = ImGui::GetItemRectMin();
+					ImVec2 btnMax = ImGui::GetItemRectMax();
+					ImGui::GetWindowDrawList()->AddRect(
+						btnMin, btnMax, IM_COL32(80, 160, 255, 255), 3.0f, 0, 2.5f);
+				}
+
+				if (clicked) {
+					selectedTextureIndex_ = i;
+					currentDefinition_.appearance.texturePath = texName;
+					if (previewParticle_) {
+						previewParticle_->SetTexture(texName);
+					}
+					RecordHistory();  // ★Undo対応
+				}
+
+				// Tooltip（ファイル名とロード状態）
+				if (ImGui::IsItemHovered()) {
+					ImGui::BeginTooltip();
+					ImGui::Text("%s", texName.c_str());
+					if (it == textureThumbCache_.end() || !it->second) {
+						ImGui::TextColored(ImVec4(1, 0.5f, 0.5f, 1), "未ロード");
+					}
+					ImGui::EndTooltip();
+				}
+
+				// グリッド折り返し
+				if ((i + 1) % columns != 0) {
+					ImGui::SameLine(0.0f, kPadding);
+				}
+
+				ImGui::PopID();
+			}
+		}
+		ImGui::EndChild();
 	}
 
 	///-------------------------------------------/// 
 	/// 回転設定UI
 	///-------------------------------------------///
 	void ParticleEditor::RenderRotationSettings() {
-#ifdef USE_IMGUI
 		ImGui::SeparatorText("回転設定");
 
 		/// ===回転の設定=== ///
@@ -701,14 +737,12 @@ namespace MiiEngine {
 			ImGui::Spacing();
 			ImGui::TextDisabled("回転が無効化されています");
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 発生設定UI
 	///-------------------------------------------///
 	void ParticleEditor::RenderEmissionSettings() {
-#ifdef USE_IMGUI
 		ImGui::SeparatorText("発生設定");
 
 		/// ===寿命の設定=== ///
@@ -790,16 +824,12 @@ namespace MiiEngine {
 		ImGui::TextDisabled("1回の発生で生成される粒子数");
 		ImGui::Spacing();
 		ImGui::Separator();
-
-
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 高度設定UI
 	///-------------------------------------------///
 	void ParticleEditor::RenderAdvancedSettings() {
-#ifdef USE_IMGUI
 		ImGui::SeparatorText("動作設定");
 
 		// ===軌跡パーティクル設定=== ///
@@ -971,14 +1001,12 @@ namespace MiiEngine {
 		if (ImGui::Button("煙プリセット", ImVec2(200, 30))) {
 			ApplySmokePreset();
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// プレビューコントロールUI
 	///-------------------------------------------///
 	void ParticleEditor::RenderPreviewControls() {
-#ifdef USE_IMGUI
 		ImGui::SeparatorText("プレビュー");
 
 		// 再生/停止ボタン
@@ -1027,14 +1055,12 @@ namespace MiiEngine {
 			ImGui::Spacing();
 			ImGui::Text("アクティブパーティクル数: %u", previewParticle_->GetActiveParticleCount());
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// ファイル操作UI
 	///-------------------------------------------///
 	void ParticleEditor::RenderFileOperations() {
-#ifdef USE_IMGUI
 		ImGui::Separator();
 		ImGui::SeparatorText("ファイル操作");
 
@@ -1077,46 +1103,50 @@ namespace MiiEngine {
 				LoadFromJson();
 			}
 		}
-#endif // USE_IMGUI
+
 	}
 
 	///-------------------------------------------/// 
 	/// 利用可能なモデル更新
 	///-------------------------------------------///
 	void ParticleEditor::UpdateAvailableModels() {
-#ifdef USE_IMGUI
 		availableModels_.clear();
 		// 実際の実装では、Assets/Modelsディレクトリをスキャンする
 		availableModels_.push_back("plane");
 		availableModels_.push_back("sphere");
 		availableModels_.push_back("cube");
 		availableModels_.push_back("triangle");
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 利用可能なテクスチャ更新
 	///-------------------------------------------///
 	void ParticleEditor::UpdateAvailableTextures() {
-#ifdef USE_IMGUI
 		availableTextures_.clear();
+		textureThumbCache_.clear();
 
 		// テクスチャの種類
-		availableTextures_.push_back("circle");
-		availableTextures_.push_back("circle2");
-		availableTextures_.push_back("gradationLine");
-		availableTextures_.push_back("Spark");
-		availableTextures_.push_back("FlameEye");
-		availableTextures_.push_back("Fire");
+		availableTextures_ = {
+		"Particle", "circle", "circle2", "Solar", "Corona",
+		"Cloud", "Smoke", "gradationLine", "Spark", "Fire", "Flame", "FlameEye"
+		};
 
-#endif // USE_IMGUI   
+		// サムネイルキャッシュを構築
+		if (textureManager_) {
+			for (const auto& name : availableTextures_){
+				D3D12_GPU_DESCRIPTOR_HANDLE handle = textureManager_->GetSRVHandleGPU(name);
+				// ハンドルが有れば登録
+				if (handle.ptr != 0) {
+					textureThumbCache_[name] = (ImTextureID)handle.ptr;
+				}
+			}
+		}  
 	}
 
 	///-------------------------------------------/// 
 	/// 利用可能なプリセット更新
 	///-------------------------------------------///
 	void ParticleEditor::UpdateAvailablePresets() {
-#ifdef USE_IMGUI
 		availablePresets_.clear();
 
 		// Assets/Particlesディレクトリをスキャン
@@ -1128,14 +1158,12 @@ namespace MiiEngine {
 				}
 			}
 		}
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
 	/// 軌跡プレビューの更新
 	///-------------------------------------------///
 	void ParticleEditor::UpdateTrajectoryPreview() {
-#ifdef USE_IMGUI
 		float deltaTime = Service::DeltaTime::GetDeltaTime();
 
 		// 進行度を更新
@@ -1159,7 +1187,6 @@ namespace MiiEngine {
 		// エミッタ位置と回転を更新
 		previewParticle_->SetEmitterPosition(currentPos);
 		previewParticle_->SetEmitterRotate(currentRot);
-#endif // USE_IMGUI
 	}
 
 	///-------------------------------------------/// 
@@ -1291,7 +1318,6 @@ namespace MiiEngine {
 	void ParticleEditor::RecordHistory() {
 		historyManager_->PushState(currentDefinition_);
 	}
-#ifdef USE_IMGUI
 	///-------------------------------------------/// 
 	/// 履歴管理付きドラッグフロートUI
 	///-------------------------------------------///
@@ -1322,5 +1348,5 @@ namespace MiiEngine {
 		return changed; // ドラッグ中かどうかを返す
 
 	}
-#endif // USE_IMGUI
 }
+#endif // USE_IMGUI
