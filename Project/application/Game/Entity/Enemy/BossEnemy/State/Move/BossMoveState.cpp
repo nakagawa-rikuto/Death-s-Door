@@ -87,6 +87,7 @@ void BossMoveState::UpdateMove() {
 /// Stateの変更が必要か判定して、必要なら変更する。
 ///-------------------------------------------///
 bool BossMoveState::ChangeStateIfNeeded(float dist) {
+
 	/// ===遷移状態の判定=== ///
 	if (boss_->CanRotateAttack(dist)) {
 		// Rotate攻撃へ遷移

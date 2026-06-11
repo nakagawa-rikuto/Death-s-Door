@@ -182,7 +182,7 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// 再生速度の設定
 	///-------------------------------------------///
-	void AudioManager::setPitch(const std::string& key, float pitch) {
+	void AudioManager::SetPitch(const std::string& key, float pitch) {
 		if (sourceVoices_[key]) {
 			sourceVoices_[key]->SetFrequencyRatio(pitch);
 		}
