@@ -71,7 +71,7 @@ namespace MiiEngine {
 		/// <param name="key">再生対象を識別する文字列キー。</param>
 		/// <param name="loop">再生をループするかどうかを示すフラグ。true の場合は繰り返し再生し、false（既定値）は一度だけ再生します。</param>
 		void Play(const std::string& key, bool loop = false);
-
+	
 		/// <summary>
 		/// サウンドの停止処理
 		/// </summary>
@@ -101,7 +101,7 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="key">ピッチを設定する対象を識別する文字列キー。</param>
 		/// <param name="pitch">設定するピッチ値（float）。</param>
-		void setPitch(const std::string& key, float pitch);
+		void SetPitch(const std::string& key, float pitch);
 
 	private: /// ===変数=== ///
 		ComPtr<IXAudio2> xAudio2_;
@@ -134,5 +134,3 @@ namespace MiiEngine {
 		void UnloadSoundData(SoundData& data);
 	};
 }
-
-
