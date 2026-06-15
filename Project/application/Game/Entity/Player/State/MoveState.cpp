@@ -22,9 +22,10 @@ void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// タイマーのリセット
-	rippleTimer_ = 0.0f;
-	rippleTime_ = 0.01f;
+	// 状態の初期化
+	state_.direction = { 0.0f, 0.0f, 0.0f };
+	state_.velocity = { 0.0f, 0.0f, 0.0f };
+	state_.rotation = player_->GetTransform().rotate;
 
 	// 移動パーティクルの強制停止
 	if (moveParticle_) {
@@ -120,6 +121,10 @@ void MoveState::ApplyStickMovement(const Vector2& stick) {
 	};
 	// 更新
 	auto result = player_->GetMoveComponent()->Update(context);
+	// 状態の更新
+	state_.direction = { stick.x, 0.0f, stick.y };
+	state_.velocity = state_.direction * player_->GetParameters().move.speed;`11
+	
 
 	// 結果を反映
 	result.velocity.y = player_->GetVelocity().y; // 現在のY軸の速度を維持

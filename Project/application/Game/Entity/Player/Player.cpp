@@ -22,14 +22,12 @@
 /// デストラクタ
 ///-------------------------------------------///
 Player::~Player() {
+	// weapon、hand、stateの解放
 	weapon_.reset();
 	rightHand_.reset();
 	leftHand_.reset();
-	moveComponent_.reset();
-	avoidanceComponent_.reset();
-	attackComponent_.reset();
 	currentState_.reset();
-
+	// Object3dの解放
 	object3d_.reset();
 }
 
@@ -260,38 +258,18 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 ///-------------------------------------------///
 void Player::SettingParamita() {
 
-	/// ===Component=== ///
-	// Componentの生成
-	moveComponent_ = std::make_unique<PlayerMoveComponent>();
-	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
-	attackComponent_ = std::make_unique<PlayerAttackComponent>();
-	hitReactionComponent_ = std::make_unique<PlayerHitReactionComponent>();
-
-	// MoveComponentの初期化
-	PlayerMoveComponent::MoveConfig moveConfig{
-		.speed = 0.4f,
-		.rotationSpeed = 10.0f,
-		.deceleration = 0.85f
-	};
-	moveComponent_->Initialize(moveConfig);
-
-	// AvoidanceComponentの初期化
-	PlayerAvoidanceComponent::AvoidanceConfig avoidanceConfig{
-		.speed = 15.0f,
-		.activeTime = 0.3f,
-		.coolTime = 1.0f,
-		.invincibleTime = 0.01f
-	};
-	avoidanceComponent_->Initialize(avoidanceConfig);
-
-	// HitReactionComponentの初期化
-	PlayerHitReactionComponent::HitConfig hitReactionConfig{
-		.knockbackSpeed = 1.5f,
-	};
-	hitReactionComponent_->Initialize(hitReactionConfig);
-
-	// AttackComponentの初期化
-	attackComponent_->Initialize();
+	/// ===パラメーターの調整=== ///
+	// MoveComponentのパラメーター設定
+	parameters_.move.speed = 0.4f;
+	parameters_.move.rotationSpeed = 10.0f;
+	parameters_.move.deceleration = 0.85f;
+	// DodgeComponentのパラメーター設定
+	parameters_.dodge.speed = 15.0f;
+	parameters_.dodge.activeTime = 0.3f;
+	parameters_.dodge.coolTime = 1.0f;
+	parameters_.dodge.invincibleTime = 0.01f;
+	// HitReactionComponentのパラメーター設定
+	parameters_.hitReaction.knockbackSpeed = 1.5f;
 
 	// 無敵情報の設定
 	invincibleInfo_.isFlag = true; // このフラグをtrueにすると落ちない、falseにするとゲーム開始時から落ちる。

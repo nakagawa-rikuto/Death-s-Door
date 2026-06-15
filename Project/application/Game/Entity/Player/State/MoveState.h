@@ -37,12 +37,16 @@ public:
 	void Finalize() override;	
 
 private:
+	/// ===状態=== ///
+	struct State {
+		Vector3 direction;	  // 移動方向
+		Vector3 velocity;	  // 速度
+		Quaternion rotation;  // 回転
+	};
+	State state_{}; // 現在の状態
+
 	// 移動パーティクル
 	MiiEngine::ParticleGroup* moveParticle_ = nullptr;
-
-	// 移動時に発生する波紋の時間
-	float rippleTimer_ = 0.0f;
-	float rippleTime_ = 0.0f;
 
 private:
 

@@ -1174,6 +1174,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

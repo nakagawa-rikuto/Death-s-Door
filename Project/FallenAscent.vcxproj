@@ -310,6 +310,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
     <ClInclude Include="application\Game\UI\Game\BossUI.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h" />

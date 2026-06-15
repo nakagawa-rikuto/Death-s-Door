@@ -3,10 +3,7 @@
 // GameCharacter
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // Component
-#include "Component/PlayerMoveComponent.h"
-#include "Component/PlayerAvoidanceComponent.h"
-#include "Component/PlayerAttackComponent.h"
-#include "Component/PlayerHitReactionComponent.h"
+#include "Component/PlayerComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Hand
@@ -74,13 +71,8 @@ public: /// ===Getter=== ///
 	PlayerHand* GetLeftHand() const { return leftHand_.get(); };
 	// Weapon
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
-
 	// Component
-	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
-	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
-	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
-	PlayerHitReactionComponent* GetHitReactionComponent() const { return hitReactionComponent_.get(); };
-
+	const PlayerComponent::Parameters& GetParameters() const { return parameters_; }
 	// StickState
 	Vector2 GetLeftStickState() const { return stickState_.leftStick; };
 	Vector2 GetRightStickState() const { return stickState_.rightStick; };
@@ -119,10 +111,7 @@ private: /// ===変数の宣言=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
 
 	/// ===Component=== ///
-	std::unique_ptr<PlayerMoveComponent> moveComponent_;
-	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
-	std::unique_ptr<PlayerAttackComponent> attackComponent_;
-	std::unique_ptr<PlayerHitReactionComponent> hitReactionComponent_;
+	PlayerComponent::Parameters parameters_{};
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
