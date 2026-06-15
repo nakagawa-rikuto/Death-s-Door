@@ -15,16 +15,8 @@
 /// コンストラクタ
 ///-------------------------------------------///
 BossHitReactionState::BossHitReactionState(const Vector3& hitDirection) {
-	// フラグを立てる
-	isHit_ = true;
 	// 方向の取得
 	hitDirection_ = hitDirection;
-	// タイマーの初期化
-	state_.slowdownTimer = boss_->GetComponentParameters().hitReaction.slowdownDuration;
-	state_.colorTimer = boss_->GetComponentParameters().hitReaction.alphaDuration;
-	state_.colorInterval = 0.0f;
-	// 色変化フラグを立てる
-	isColorChange_ = true;
 }
 
 ///-------------------------------------------/// 
@@ -32,6 +24,14 @@ BossHitReactionState::BossHitReactionState(const Vector3& hitDirection) {
 ///-------------------------------------------///
 void BossHitReactionState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
+	// フラグを立てる
+	isHit_ = true;
+	// タイマーの初期化
+	state_.slowdownTimer = boss_->GetComponentParameters().hitReaction.slowdownDuration;
+	state_.colorTimer = boss_->GetComponentParameters().hitReaction.alphaDuration;
+	state_.colorInterval = 0.0f;
+	// 色変化フラグを立てる
+	isColorChange_ = true;
 }
 
 ///-------------------------------------------/// 
