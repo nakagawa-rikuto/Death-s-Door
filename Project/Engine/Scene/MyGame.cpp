@@ -153,7 +153,7 @@ namespace MiiEngine {
 		Loader::LoadTexture("MoveUI", "GameUI/MoveUI.png");
 		Loader::LoadTexture("CameraUI", "GameUI/CameraUI.png");
 		Loader::LoadTexture("AttackUI", "GameUI/AttackUI.png");
-		Loader::LoadTexture("AvoidanceUI", "GameUI/AvoidanceUI.png");
+		Loader::LoadTexture("DodgeUI", "GameUI/DodgeUI.png");
 		Loader::LoadTexture("xButton", "GameUI/xbox_button_color_x.png");
 		Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
 		Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");

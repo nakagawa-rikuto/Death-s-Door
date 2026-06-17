@@ -1,7 +1,12 @@
 /// ===Include=== ///
 #include "Base/PlayerState.h"
+// AttackData
+#include "Engine/System/Editor/Attack/Data/AttackData.h"
 // Math
 #include "Math/Vector3.h"
+
+/// ===前方宣言=== ///
+class PlayerWeapon;
 
 ///=====================================================/// 
 /// AttackState
@@ -21,9 +26,7 @@ public:
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
-	/// <param name="player">更新対象の Player オブジェクトへのポインタ。nullptr の扱いは実装に依存する。</param>
-	/// <param name="camera">更新処理で参照する CameraCommon オブジェクトへのポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+	void Update() override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -31,9 +34,59 @@ public:
 	void Finalize() override;
 
 private:
-	float moveForwardStrength_ = 0.5f; // 攻撃開始時の前方移動の強さ
+	/// ===状態=== ///
+	struct State {
+		int attackID = -1;		   // 攻撃ID
+		int previousAttackID = -1; // 前の攻撃ID
+		int comboCount = 0;		   // コンボカウント
+		float timer = 0.0f;		   // タイマー
+		float comboTimer = 0.0f;   // コンボタイマー
+	};
+	State state_{};
+
+	// 攻撃中フラグ
+	bool isAttacking_ = false;
+
+	// コンボ可能フラグ
+	bool canCombo_ = false;
+
+	// 攻撃データ
+	AttackData attackData_{};
+
+	// 攻撃開始時の前方移動の強さ
+	float moveForwardStrength_ = 0.5f; 
 
 private:
+	/// <summary>
+	/// 攻撃を開始
+	/// </summary>
+	/// <param name="attackID">開始する攻撃のID</param>
+	/// <param name="weapon">使用する武器</param>
+	bool StartAttack(int attackID, PlayerWeapon* weapon);
+
+	/// <summary>
+	/// コンボ攻撃を試行
+	/// </summary>
+	/// <param name="weapon">使用する武器</param>
+	bool TryCombo(PlayerWeapon* weapon);
+
+	/// <summary>
+	/// 攻撃をキャンセル
+	/// </summary>
+	void CancelAttack();
+
+	/// <summary>
+	/// タイマーの更新
+	/// </summary>
+	void UpdateTimers(const float deltaTime);
+
+	/// <summary>
+	/// 武器に攻撃軌道を設定
+	/// </summary>
+	/// <param name="data"></param>
+	/// <param name="weapon"></param>
+	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
+
 	/// <summary>
 	/// 攻撃開始時に前方に移動します。
 	/// </summary>

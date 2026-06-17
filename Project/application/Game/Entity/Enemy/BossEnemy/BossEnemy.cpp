@@ -172,7 +172,7 @@ void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 		// クールタイム中でなければノックバック処理を実行
 		if (!invincibleInfo_.isInvincible) {
 			// 通常攻撃の時
-			if (player_->GetAttackComponent()->IsAttacking()) {
+			if (player_->GetActiveAttackFlag()) {
 				
 				// ノックバック方向の計算
 				Vector3 toWeapon = collider->GetTransform().translate - transform_.translate;

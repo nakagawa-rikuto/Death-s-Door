@@ -22,17 +22,23 @@ public:
 	/// <summary>
 	/// ステート時の更新処理、純粋仮想関数
 	/// </summary>
-	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
-	/// <param name="camera">現在のゲームカメラを指すポインタ。</param>
-	virtual void Update(Player* player, MiiEngine::CameraCommon* camera) = 0;
+	virtual void Update() = 0;
 
 	/// <summary>
 	/// ステートの終了処理
 	/// </summary>
 	virtual void Finalize();
 
+	/// <summary>
+	/// 減速処理
+	/// </summary>
+	/// <param name="deceleration">減速率</param>
+	void ApplyDeceleration(const float& deceleration);
+
 protected:
 
 	Player* player_ = nullptr; // Player
 	MiiEngine::CameraCommon* camera_ = nullptr; // Camera
+
+	
 };

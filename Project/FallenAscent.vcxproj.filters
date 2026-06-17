@@ -109,7 +109,7 @@
     <ClCompile Include="application\Game\Entity\Player\State\Base\PlayerState.cpp">
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp">
+    <ClCompile Include="application\Game\Entity\Player\State\DodgeState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp">
@@ -412,15 +412,6 @@
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp">
       <Filter>application\Game\Object\StageObject</Filter>
     </ClCompile>
@@ -594,7 +585,6 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\UI\Game\BossUI.cpp" />
     <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.cpp" />
@@ -603,10 +593,10 @@
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -627,7 +617,7 @@
     <ClInclude Include="application\Game\Entity\Player\State\Base\PlayerState.h">
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h">
+    <ClInclude Include="application\Game\Entity\Player\State\DodgeState.h">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h">
@@ -972,15 +962,6 @@
     <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h">
       <Filter>application\Game\Object\StageObject</Filter>
     </ClInclude>
@@ -1161,7 +1142,6 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
     <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
     <ClInclude Include="application\Game\UI\Game\BossUI.h" />
     <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
@@ -1170,10 +1150,11 @@
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

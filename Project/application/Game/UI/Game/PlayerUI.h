@@ -34,9 +34,8 @@ private:
 	/// ===Object2d=== ///
 	// アクション
 	std::unique_ptr<Object2d> moveUI_;      // 移動UI
-	std::unique_ptr<Object2d> cameraUI_;    // カメラUI
 	std::unique_ptr<Object2d> attackUI_;    // 攻撃UI
-	std::unique_ptr<Object2d> avoidanceUI_; // 回避UI
+	std::unique_ptr<Object2d> dodgeUI_; // 回避UI
 	// コントローラー
 	std::unique_ptr<Object2d> xButton_;		// X
 	std::unique_ptr<Object2d> aButton_;		// A
@@ -47,17 +46,19 @@ private:
 
 	/// ===位置=== ///
 	Vector2 moveUIPos_ = { 100.0f, 500.0f };      // 移動UI位置
-	Vector2 cameraUIPos_ = { 300.0f, 500.0f };    // カメラUI位置
 	Vector2 hpUIPos_ = { 0.0f, 0.0f };			  // HPUI位置
 	Vector2 hpUIOffset_ = { 0.0f, 0.0f };			  // HPUIのオフセット
 
 	/// ===Color=== ///
+	Vector4 baseColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };     // 基本カラー
 	Vector4 activeColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };   // アクティブカラー
+	Vector4 cooldownColor_ = { 1.0f, 1.0f, 0.0f, 1.0f }; // クールダウンカラー
 
 	/// ===フラグ=== ///
 	struct ColorChange {
-		bool attackUI = false;    // 攻撃UIアクティブフラグ
-		bool avoidanceUI = false; // 回避UIアクティブフラグ
+		bool attackUI = false;		  // 攻撃UIアクティブフラグ
+		bool dodgeActiveUI = false;   // 回避UIアクティブフラグ
+		bool dodgeCooldownUI = false; // 回避UIクールダウンフラグ
 	};
 	ColorChange colorChange_;
 

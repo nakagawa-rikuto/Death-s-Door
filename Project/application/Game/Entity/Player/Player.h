@@ -3,16 +3,15 @@
 // GameCharacter
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // Component
-#include "Component/PlayerMoveComponent.h"
-#include "Component/PlayerAvoidanceComponent.h"
-#include "Component/PlayerAttackComponent.h"
-#include "Component/PlayerHitReactionComponent.h"
+#include "Component/PlayerComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Hand
 #include "Hand/PlayerHand.h"
 // Weapon
 #include "Weapon/PlayerWeapon.h"
+// C++
+#include <unordered_map>
 
 /// ===前方宣言=== ///
 class Enemy;
@@ -74,16 +73,17 @@ public: /// ===Getter=== ///
 	PlayerHand* GetLeftHand() const { return leftHand_.get(); };
 	// Weapon
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
-
 	// Component
-	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
-	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
-	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
-	PlayerHitReactionComponent* GetHitReactionComponent() const { return hitReactionComponent_.get(); };
-
-	// StickState
-	Vector2 GetLeftStickState() const { return stickState_.leftStick; };
-	Vector2 GetRightStickState() const { return stickState_.rightStick; };
+	const PlayerComponent::Parameters& GetParameters() const { return parameters_; }
+	// Stick
+	const Vector2& GetLeftStickValue() const { return leftStickValue_; }
+	// 攻撃データをIDで取得できるようにする
+	const AttackData* GetAttackData(int attackID) const;
+	// 回避行動可能判定
+	bool CanDodge() const { return coolDownInfo_.timer <= 0.0f; }
+	// アクティブフラグの取得
+	bool GetActiveAttackFlag() const { return activeInfo_.isAttacking; }
+	bool GetActiveDodgeFlag() const { return activeInfo_.isDodge; }
 
 public: /// ===Setter=== ///
 	// Camera
@@ -92,14 +92,13 @@ public: /// ===Setter=== ///
 	void SetInvincibleTime(const float& time);
 	// Gravityの設定
 	void SetGravity(const float& gravity) { baseInfo_.gravity = gravity; };
+	// 回避行動のクールタイムの設定
+	void SetDodgeCoolDown() { coolDownInfo_.timer = parameters_.dodge.coolTime; }
+	// アクティブフラグの設定
+	void SetActiveAttackFlag(bool isActive) { activeInfo_.isAttacking = isActive; }
+	void SetActiveDodgeFlag(bool isDodge) { activeInfo_.isDodge = isDodge; }
 
 public: /// ===State用関数=== ///
-
-	/// <summary>
-	/// 減速処理
-	/// </summary>
-	/// <param name="deceleration">適用する減速量を表す浮動小数点数への const 参照。</param>
-	void ApplyDeceleration(const float& deceleration);
 
 	/// <summary>
 	/// Stateの変更処理
@@ -119,13 +118,16 @@ private: /// ===変数の宣言=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
 
 	/// ===Component=== ///
-	std::unique_ptr<PlayerMoveComponent> moveComponent_;
-	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
-	std::unique_ptr<PlayerAttackComponent> attackComponent_;
-	std::unique_ptr<PlayerHitReactionComponent> hitReactionComponent_;
+	PlayerComponent::Parameters parameters_{};
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
+
+	/// ===攻撃データ=== ///
+	std::unordered_map<int, AttackData> attackDataMap_;
+
+	/// ===スティック情報=== ///
+	Vector2 leftStickValue_;  // 左スティックの入力値
 
 	/// ===無敵時間の情報=== ///
 	struct InvincibleInfo {
@@ -135,12 +137,18 @@ private: /// ===変数の宣言=== ///
 	};
 	InvincibleInfo invincibleInfo_;
 
-	/// ===StickState=== ///
-	struct ControllerStickState {
-		Vector2 leftStick = {0.0f, 0.0f};
-		Vector2 rightStick = {0.0f, 0.0f};
+	/// ===アクティブ情報=== ///
+	struct ActiveInfo {
+		bool isAttacking = false; // 攻撃中フラグ
+		bool isDodge = false;     // 回避中フラグ
 	};
-	ControllerStickState stickState_;
+	ActiveInfo activeInfo_;
+
+	/// ===クールダウン情報=== ///
+	struct CoolDownInfo {
+		float timer = 0.0f;      // 回避タイマー
+	};
+	CoolDownInfo coolDownInfo_;
 
 	/// ===AreaInfo=== ///
 	struct AreaInfo {
@@ -155,6 +163,13 @@ private:
 	/// パラメータの設定
 	/// </summary>
 	void SettingParamita();
+
+	/// <summary>
+	/// 攻撃データをJSONから読み込みます。
+	/// </summary>
+	/// <param name="attackID">攻撃データのID。</param>
+	/// <param name="filePath">JSONファイルのパス。</param>	
+	void LoadAttackData(int attackID, const std::string& filePath);
 
 	/// <summary>
 	/// タイマーを進める関数

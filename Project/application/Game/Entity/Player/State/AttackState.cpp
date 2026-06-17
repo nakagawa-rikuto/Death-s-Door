@@ -20,42 +20,70 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	camera_ = camera;
 
 	// 攻撃の開始
-	if (player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon())) {
+	if (StartAttack(0, player_->GetWeapon())) {
 		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
 		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 	}
+
+	// 攻撃のアクティブフラグを設定
+	player_->SetActiveAttackFlag(isAttacking_);
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
-	// 引数の取得
-	player_ = player;
-	camera_ = camera;
+void AttackState::Update() {
 
-	PlayerAttackComponent* attackComp = player_->GetAttackComponent();
-	// 早期リターン
-	if (!attackComp) return;
+	/// ===減速処理=== ///
+	PlayerState::ApplyDeceleration(0.4f); // 攻撃中は減速率を高めに設定
 
-	// 減速処理
-	player_->ApplyDeceleration(0.4f);
+	/// ===タイマーの更新=== ///
+	UpdateTimers(player_->GetDeltaTime());
 
-	// 攻撃コンポーネントの更新
-	attackComp->Update(player_->GetDeltaTime());
+	/// ===攻撃中の処理=== ///
+	if (isAttacking_) {
+		// 攻撃時間が終了していないかチェック
+		const AttackData* currentData = player_->GetAttackData(state_.attackID);
+
+		if (currentData && state_.timer >= currentData->activeDuration) {
+			isAttacking_ = false;
+			state_.previousAttackID = state_.attackID; // 前の攻撃IDを保存
+			state_.attackID = -1; // 攻撃IDをリセット
+
+			// コンボ受付の開始
+			if (currentData->canComboToNext) {
+				canCombo_ = true; // コンボ受付開始
+				state_.comboTimer = 0.0f; // コンボタイマーリセット
+			}
+		}
+	}
+
+	/// ===コンボ受付時間の管理=== ///
+	if (canCombo_) {
+		// 前の攻撃IDからデータを取得
+		const AttackData* previousData = player_->GetAttackData(state_.previousAttackID);
+
+		// コンボ受付時間が終了していないかチェック
+		if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
+			canCombo_ = false; // コンボ受付終了
+			state_.comboTimer = 0.0f; // コンボタイマーリセット
+			state_.previousAttackID = -1; // 前の攻撃IDリセット
+		}
+	}
 
 	// 攻撃ボタンが押されたらコンボを試行
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
-		if (attackComp->CanCombo()) {
-			if (attackComp->TryCombo(player_->GetWeapon())) {
+		if (canCombo_) {
+			if (TryCombo(player_->GetWeapon())) {
 				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
 				moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 			}
 		}
 	}
 
-	// 攻撃が終了したらRootStateへ遷移
-	if (!attackComp->IsAttacking() && !attackComp->CanCombo()) {
+	/// ===Stateの移動=== ///
+	if (!isAttacking_ && !canCombo_) {
+		// 攻撃もコンボも終了している場合はRootStateに移行
 		player_->ChangState(std::make_unique<RootState>());
 	}
 }
@@ -64,7 +92,99 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 /// 終了処理
 ///-------------------------------------------///
 void AttackState::Finalize() {
+	CancelAttack(); // 攻撃状態をリセット
+	player_->SetActiveAttackFlag(isAttacking_); // 攻撃終了
 	PlayerState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// 攻撃開始処理
+///-------------------------------------------///
+bool AttackState::StartAttack(int attackID, PlayerWeapon* weapon) {
+	// 既存の攻撃をキャンセル
+	CancelAttack(); 
+
+	// 攻撃データを取得
+	const AttackData* attackData = player_->GetAttackData(attackID);
+	if (!attackData) {
+		return false;
+	}
+	attackData_ = *attackData;
+
+	// 攻撃データを武器に適用
+	ApplyAttackToWeapon(attackData_, weapon);
+
+	// 状態の更新
+	isAttacking_ = true;
+	state_.attackID = attackID;
+	state_.timer = 0.0f;
+	state_.comboCount = 0;
+	canCombo_ = false;
+
+	return true;
+}
+
+///-------------------------------------------/// 
+/// コンボ攻撃の試行
+///-------------------------------------------///
+bool AttackState::TryCombo(PlayerWeapon* weapon) {
+	// コンボ可能かどうかのチェック
+	if (!canCombo_) return false;
+
+	// 前の攻撃データを取得
+	const AttackData* previousData = player_->GetAttackData(state_.previousAttackID);
+	if (!previousData || !previousData->canComboToNext) return false;
+
+	// 次の攻撃IDを取得
+	int nextAttackID = previousData->nextComboID;
+	if (nextAttackID < 0) return false;
+
+	// 次の攻撃を開始
+	canCombo_ = false;
+	state_.comboCount++;
+	return StartAttack(nextAttackID, weapon);
+}
+
+///-------------------------------------------/// 
+/// 攻撃のキャンセル
+///-------------------------------------------///
+void AttackState::CancelAttack() {
+	isAttacking_ = false;
+	canCombo_ = false;
+	state_.attackID = -1;
+	state_.previousAttackID = -1;
+	state_.comboCount = 0;
+	state_.timer = 0.0f;
+	state_.comboTimer = 0.0f;
+}
+
+///-------------------------------------------/// 
+/// タイマーの更新
+///-------------------------------------------///
+void AttackState::UpdateTimers(const float deltaTime) {
+	// 攻撃中なら攻撃タイマーを更新
+	if (isAttacking_) {
+		state_.timer += deltaTime;
+	}
+	
+	// コンボ受付中ならコンボタイマーも更新
+	if (canCombo_) {
+		state_.comboTimer += deltaTime;
+	}
+}
+
+///-------------------------------------------/// 
+/// 攻撃データを武器に適用
+///-------------------------------------------///
+void AttackState::ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon) {
+	// 早期リターン
+	if (!weapon) return;
+
+	// チャンネル0
+	const TrajectoryChannel* weaponChannel = data.GetChannel(0);
+	if (weapon && weaponChannel && weaponChannel->enabled && weaponChannel->points.size() >= 2) {
+		weapon->StartAttack(weaponChannel->points, data.activeDuration);
+	}
 }
 
 ///-------------------------------------------/// 
