@@ -143,11 +143,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -290,9 +288,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
     <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
@@ -338,11 +333,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
     <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
     <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -499,9 +492,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
     <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
     <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
