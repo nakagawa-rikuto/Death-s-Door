@@ -26,16 +26,16 @@
         },
         "isTrajectoryParticle": true,
         "motion": {
-            "billboardRotationSpeed": 10.0,
-            "enableBillboardRotation": false,
+            "billboardRotationSpeed": 0.10000000149011612,
+            "enableBillboardRotation": true,
             "enableSwirling": false,
-            "expansionRate": 0.800000011920929,
+            "expansionRate": 5.0,
             "followEmitter": false,
             "followStrength": 0.3319999873638153,
             "rotationInfluence": 0.0,
-            "swirlingSpeed": 16.5,
+            "swirlingSpeed": 19.799999237060547,
             "useRotationInfluence": false,
-            "velocityDamping": 0.39100000262260437
+            "velocityDamping": 1.0
         },
         "scaleAnimation": {
             "endScale": 0.10000000149011612,
@@ -43,50 +43,50 @@
             "startScale": 0.30000001192092896,
             "type": "Bounce"
         },
-        "trailSpacing": 0.10000000149011612
+        "trailSpacing": 0.009999999776482582
     },
     "appearance": {
         "endColor": [
-            0.0,
+            0.8607596158981323,
             1.0,
-            0.9873416423797607,
+            0.0,
             0.0
         ],
         "endScale": [
-            0.5,
-            0.5,
-            0.5
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
         ],
         "startColor": [
-            0.0,
-            0.025316476821899414,
             1.0,
+            0.0,
+            0.0,
             1.0
         ],
         "startScaleMax": [
-            2.0,
-            2.0,
-            2.0
+            3.0,
+            3.0,
+            3.0
         ],
         "startScaleMin": [
             2.0,
             2.0,
             2.0
         ],
-        "texturePath": "Particle",
+        "texturePath": "Fire",
         "useColorGradient": true,
-        "useScaleAnimation": false
+        "useScaleAnimation": true
     },
     "emission": {
         "burstCount": 0,
-        "emissionRate": 5.0,
-        "frequency": 0.1899999976158142,
+        "emissionRate": 80.0,
+        "frequency": 0.10000000149011612,
         "isBurst": false,
         "lifetimeMax": 0.800000011920929,
         "lifetimeMin": 0.4000000059604645
     },
     "maxInstance": 200,
-    "modelName": "cube",
+    "modelName": "plane",
     "name": "EnemyAttack",
     "physics": {
         "acceleration": [
@@ -95,21 +95,21 @@
             0.0
         ],
         "explosionRange": [
-            0.0,
-            0.0,
-            0.0
+            2.0,
+            2.0,
+            2.0
         ],
-        "gravity": -12.399999618530273,
-        "upwardForce": 3.4000000953674316,
+        "gravity": 9.800000190734863,
+        "upwardForce": 0.0,
         "useRandomVelocity": true,
         "velocityMax": [
             1.0,
-            5.0,
+            1.0,
             1.0
         ],
         "velocityMin": [
             -1.0,
-            1.0,
+            -1.0,
             -1.0
         ]
     },
