@@ -33,7 +33,7 @@ public:
 	/// <summary>
 	/// 更新処理
 	/// </summary>
-	void Update(float deltaTime);
+	void Update(const Vector3& bossPosition, float deltaTime);
 
 	/// <summary>
 	/// 描画処理
@@ -45,7 +45,7 @@ public:/// ===OrbitBullet=== ///
 	/// <summary>
     /// OrbitBulletの生成
     /// </summary>
-	void SpawnOrbitingBullets();
+	void SpawnOrbitingBullets(const Vector3& position);
 
 	/// <summary>
 	/// OrbitBulletの停止
@@ -100,7 +100,7 @@ private:
 	/// <summary>
 	/// OrbitBulletの更新処理
 	/// </summary>
-	void UpdateOrbitingBullets(float deltaTime);
+	void UpdateOrbitingBullets(const Vector3& bossPosition, float deltaTime);
 
 	/// <summary>
 	/// ParabolicShotの更新処理

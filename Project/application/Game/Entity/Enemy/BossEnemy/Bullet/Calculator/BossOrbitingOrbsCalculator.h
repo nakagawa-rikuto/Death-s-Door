@@ -20,7 +20,6 @@ public:
 	/// ===Bullet情報=== ///
 	struct BulletInfo {
 		Vector3 position{};   // ワールド座標
-		Vector3 direction{};  // 移動方向
 	};
 
 public:
@@ -38,12 +37,12 @@ public:
 	/// 更新処理
 	/// </summary>
 	/// <param name="deltaTime">デルタタイム</param>
-	void Update(float deltaTime);
+	void Update(const Vector3& bossPosition, float deltaTime);
 
 	/// <summary>
 	/// 攻撃開始処理
 	/// </summary>
-	void StartAttack();
+	void StartAttack(const Vector3& centerPosition);
 
 public: /// ===Getter=== ///
 
@@ -62,7 +61,6 @@ private:
 	};
 	Phase phase_ = Phase::Idle; // 現在のフェーズ
 
-
 	/// ===状態=== ///
 	struct State {
 		float orbitTimer = 0.0f; // 公転中の経過時間
@@ -71,8 +69,10 @@ private:
 	};
 	State state_{};
 
-	// BossEnemyの場所
-	Vector3 bossPosition_{};
+	// 弾ごとの角度のオフセット
+	float orbSpacingRad_ = 0.0f; 
+	// 角度計算用
+	float kDegToRad = 0.0f; 
 
 private:
 

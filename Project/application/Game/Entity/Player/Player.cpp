@@ -274,7 +274,7 @@ void Player::SettingParamita() {
 	parameters_.move.rotationSpeed = 10.0f;
 	parameters_.move.deceleration = 0.85f;
 	// DodgeComponentのパラメーター設定
-	parameters_.dodge.speed = 2.0f;
+	parameters_.dodge.speed = 20.0f;
 	parameters_.dodge.activeTime = 0.3f;
 	parameters_.dodge.coolTime = 1.0f;
 	parameters_.dodge.invincibleTime = 0.01f;

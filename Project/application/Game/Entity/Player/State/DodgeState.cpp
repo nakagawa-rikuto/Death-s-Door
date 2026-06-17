@@ -84,8 +84,8 @@ void DodgeState::UpdateAvoidance() {
 	float speed = player_->GetParameters().dodge.speed * state_.acceleration;
 
 	// Velocityに反映
-	state_.velocity.x += state_.direction.x * speed;
-	state_.velocity.z += state_.direction.z * speed;
+	state_.velocity.x = state_.direction.x * speed;
+	state_.velocity.z = state_.direction.z * speed;
 
 	// プレイヤーの速度に反映
 	player_->SetVelocity(state_.velocity);
