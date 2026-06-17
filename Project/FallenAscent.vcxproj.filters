@@ -109,7 +109,7 @@
     <ClCompile Include="application\Game\Entity\Player\State\Base\PlayerState.cpp">
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp">
+    <ClCompile Include="application\Game\Entity\Player\State\DodgeState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp">
@@ -607,6 +607,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -627,7 +628,7 @@
     <ClInclude Include="application\Game\Entity\Player\State\Base\PlayerState.h">
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h">
+    <ClInclude Include="application\Game\Entity\Player\State\DodgeState.h">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h">
@@ -1175,6 +1176,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

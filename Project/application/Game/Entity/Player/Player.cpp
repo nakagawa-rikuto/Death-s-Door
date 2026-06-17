@@ -1,9 +1,12 @@
 #include "Player.h"
+// AttackDataSerializer
+#include "Engine/System/Editor/Attack/AttackDataSerializer.h"
 // Camera
 #include "Engine/Camera/FollowCamera.h"
 // State
 #include "State/RootState.h"
 #include "State/HitReactionState.h"
+#include "State/DeathState.h"
 // Service
 #include "Service/Input.h"
 #include "Service/Camera.h"
@@ -29,6 +32,18 @@ Player::~Player() {
 	currentState_.reset();
 	// Object3dの解放
 	object3d_.reset();
+}
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+// 攻撃データをIDで取得できるようにする
+const AttackData* Player::GetAttackData(int attackID) const {
+	auto it = attackDataMap_.find(attackID);
+	if (it != attackDataMap_.end()) {
+		return &it->second;
+	}
+	return nullptr;
 }
 
 ///-------------------------------------------/// 
@@ -110,6 +125,11 @@ void Player::Initialize() {
 	/// ===AreaInfo=== ///
 	areaInfo_.center = { 0.0f, 0.0f, 0.0f };
 	areaInfo_.halfSize = { 200.0f, 100.0f, 200.0f };
+
+	/// ===AttackDataの読み込み=== ///
+	LoadAttackData(0, "Resource/Json/Attacks/PlayerAttack_0.json");
+	LoadAttackData(1, "Resource/Json/Attacks/PlayerAttack_1.json");
+	LoadAttackData(2, "Resource/Json/Attacks/PlayerAttack_2.json");
 }
 
 
@@ -118,23 +138,18 @@ void Player::Initialize() {
 ///-------------------------------------------///
 void Player::Update() {
 
-	// 早期リターン
+	// 死亡時の処理
 	if (baseInfo_.isDead) {
-		ApplyDeceleration(0.7f);
-		UpdateAnimation();
-		return;
+		// currentState_がDeathStateでない場合、DeathStateに変更する
+		if (dynamic_cast<DeathState*>(currentState_.get()) == nullptr) {
+			ChangState(std::make_unique<DeathState>());
+		}
 	}
 
 	/// ===スティックの取得=== ///
 	StickState leftStick = Service::Input::GetLeftStickState(0);
-	StickState rightStick = Service::Input::GetRightStickState(0);
 	// スティック情報を保存
-	stickState_ = {
-		.leftStick = { leftStick.x, leftStick.y },
-		.rightStick = { rightStick.x, rightStick.y }
-	};
-	// カメラにスティック情報を渡す
-	camera_->SetStick(stickState_.rightStick);
+	leftStickValue_ = { leftStick.x, leftStick.y };
 
 	/// ===タイマーを進める=== ///
 	advanceTimer();
@@ -146,7 +161,7 @@ void Player::Update() {
 	/// ===Stateの管理=== ///
 	if (currentState_) {
 		// 各Stateの更新
-		currentState_->Update(this, camera_);
+		currentState_->Update();
 	}
 
 	/// ===更新処理=== ///
@@ -207,9 +222,6 @@ void Player::Information() {
 		ImGui::TreePop();
 	}
 	SetLightData(baseInfo_.lightInfo_);
-	moveComponent_->Information();		// 移動コンポーネントの情報表示
-	avoidanceComponent_->Information(); // 回避コンポーネントの情報表示
-	attackComponent_->Information();    // 攻撃コンポーネントの情報表示
 	ImGui::DragFloat("無敵時間", &invincibleInfo_.timer, 0.01f);
 	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
@@ -241,8 +253,6 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			Vector3 knockbackDirection = transform_.translate - enemyPos;
 			// ステートの変更
 			ChangState(std::make_unique<HitReactionState>(knockbackDirection));
-			// 攻撃キャンセル
-			attackComponent_->CancelAttack();
 
 			// ダメージ処理
 			Service::Particle::Emit("PlayerHitEffect1", transform_.translate);
@@ -264,7 +274,7 @@ void Player::SettingParamita() {
 	parameters_.move.rotationSpeed = 10.0f;
 	parameters_.move.deceleration = 0.85f;
 	// DodgeComponentのパラメーター設定
-	parameters_.dodge.speed = 15.0f;
+	parameters_.dodge.speed = 2.0f;
 	parameters_.dodge.activeTime = 0.3f;
 	parameters_.dodge.coolTime = 1.0f;
 	parameters_.dodge.invincibleTime = 0.01f;
@@ -276,6 +286,17 @@ void Player::SettingParamita() {
 
 	// HPの設定
 	baseInfo_.HP = 8;
+}
+
+///-------------------------------------------/// 
+/// 攻撃データの読み込み
+///-------------------------------------------///
+void Player::LoadAttackData(int attackID, const std::string& filePath) {
+	AttackData data;
+	if (AttackDataSerializer::LoadFromJson(data, filePath)) {
+		data.attackID = attackID; // 読み込んだデータに攻撃IDを設定
+		attackDataMap_[attackID] = data;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -292,27 +313,8 @@ void Player::advanceTimer() {
 	}
 
 	// 回避タイマーの更新
-	avoidanceComponent_->UpdateTimer(baseInfo_.deltaTime);
-}
-
-///-------------------------------------------/// 
-/// 減速処理
-///-------------------------------------------///
-void Player::ApplyDeceleration(const float& develeration) {
-	// Velocityが0でないなら徐々に0にする
-	if (baseInfo_.velocity.x != 0.0f) {
-		// 各軸に対して減速適用
-		baseInfo_.velocity.x *= develeration;
-		// 小さすぎる値は完全に0にスナップ
-		if (std::abs(baseInfo_.velocity.x) < 0.01f) {
-			baseInfo_.velocity.x = 0.0f;
-		}
-	}
-	if (baseInfo_.velocity.z != 0.0f) {
-		baseInfo_.velocity.z *= develeration;
-		if (std::abs(baseInfo_.velocity.z) < 0.01f) {
-			baseInfo_.velocity.z = 0.0f;
-		}
+	if (coolDownInfo_.timer > 0.0f) {
+		coolDownInfo_.timer -= baseInfo_.deltaTime;
 	}
 }
 

@@ -23,9 +23,7 @@ public:
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
-	/// <param name="player">更新対象の Player インスタンスへのポインタ。</param>
-	/// <param name="camera">更新処理に使用する MiiEngine::CameraCommon インスタンスへのポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+	void Update() override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -33,7 +31,18 @@ public:
 	void Finalize() override;
 
 private:
-	// ノックバックの方向
-	Vector3 knockbackDirection_;
+	/// ===状態=== ///
+	struct State {
+		Vector3 knockbackDirection; // ノックバックの方向
+		Vector3 velocity; // ノックバックの速度
+	};
+	State state_{};
+
+private:
+
+	/// <summary>
+	/// ヒットリアクションを開始します。
+	/// </summary>
+	void StartHitReaction();
 };
 

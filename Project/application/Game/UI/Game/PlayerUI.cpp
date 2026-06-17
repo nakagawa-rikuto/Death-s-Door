@@ -15,9 +15,8 @@
 ///-------------------------------------------///
 PlayerUI::~PlayerUI() {
 	moveUI_.reset();
-	cameraUI_.reset();
 	attackUI_.reset();
-	avoidanceUI_.reset();
+	dodgeUI_.reset();
 	xButton_.reset();
 	aButton_.reset();
 	leftStick_.reset();
@@ -40,7 +39,6 @@ void PlayerUI::Initialize(Player* player, const Vector2& windowSize) {
 
 	// UIの位置の保存
 	moveUIPos_ = moveUI_->GetPosition();
-	cameraUIPos_ = cameraUI_->GetPosition();
 
 	/// ===HPUI=== ///
 	hpUI_ = std::make_unique<HpUI>();
@@ -64,10 +62,15 @@ void PlayerUI::Update() {
 	// フラグと色のリセット
 	if (colorChange_.attackUI) {
 		colorChange_.attackUI = false;
-		attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	} else if (colorChange_.avoidanceUI) {
-		colorChange_.avoidanceUI = false;
-		avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+		attackUI_->SetColor(baseColor_);
+	} 
+	if (colorChange_.dodgeActiveUI) {
+		colorChange_.dodgeActiveUI = false;
+		dodgeUI_->SetColor(baseColor_);
+	} 
+	if (colorChange_.dodgeCooldownUI) {
+		colorChange_.dodgeCooldownUI = false;
+		dodgeUI_->SetColor(baseColor_);
 	}
 
 	// スプライトの更新処理
@@ -92,11 +95,10 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 	/// ===object2dの生成=== ///
 	moveUI_ = std::make_unique<Object2d>();
 	leftStick_ = std::make_unique<Object2d>();
-	cameraUI_ = std::make_unique<Object2d>();
 	rightStick_ = std::make_unique<Object2d>();
 	attackUI_ = std::make_unique<Object2d>();
 	xButton_ = std::make_unique<Object2d>();
-	avoidanceUI_ = std::make_unique<Object2d>();
+	dodgeUI_ = std::make_unique<Object2d>();
 	aButton_ = std::make_unique<Object2d>();
 
 	/// ===基準の設定=== ///
@@ -124,22 +126,9 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
 
-	// カメラUIの初期化
-	cameraUI_->Initialize("CameraUI");
-	cameraUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
-	cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	cameraUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	cameraUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-
-	// 右スティックUI初期化
-	rightStick_->Initialize("rightStick");
-	rightStick_->SetPosition({ cameraUI_->GetPosition().x, controllerPosY });
-	rightStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	rightStick_->SetAnchorPoint({ 0.5f, 0.5f });
-
 	// 攻撃UIの初期化
 	attackUI_->Initialize("AttackUI");
-	attackUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
+	attackUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
 	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
@@ -151,15 +140,15 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// 回避UIの初期化
-	avoidanceUI_->Initialize("AvoidanceUI");
-	avoidanceUI_->SetPosition({ point.x + (spaceX * 7.0f), point.y });
-	avoidanceUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	avoidanceUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	dodgeUI_->Initialize("DodgeUI");
+	dodgeUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
+	dodgeUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
+	dodgeUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	dodgeUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 	// AボタンUIの初期化
 	aButton_->Initialize("aButton");
-	aButton_->SetPosition({ avoidanceUI_->GetPosition().x, controllerPosY });
+	aButton_->SetPosition({ dodgeUI_->GetPosition().x, controllerPosY });
 	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
 	aButton_->Update();
@@ -171,16 +160,12 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 void PlayerUI::SpriteUpdate() {
 
 	/// ===スティックの取得=== ///
-	Vector2 leftStick = player_->GetLeftStickState();
-	Vector2 rightStick = player_->GetRightStickState();
+	Vector2 leftStick = player_->GetLeftStickValue();
 	leftStick.y *= -1.0f;
-	rightStick.y *= -1.0f;
 
 	/// ===位置の更新=== ///
 	// 移動UI
 	moveUI_->SetPosition(moveUIPos_ + leftStick * 15.0f);
-	// カメラUI
-	cameraUI_->SetPosition(cameraUIPos_ + rightStick * 15.0f);
 
 	/// ===サイズの管理=== ///
 	if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
@@ -190,13 +175,6 @@ void PlayerUI::SpriteUpdate() {
 		// サイズを元に戻す
 		moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	}
-	if (std::abs(rightStick.x) > 0.1f || std::abs(rightStick.y) > 0.1f) {
-		// サイズを大きくする
-		cameraUI_->SetSize({ 100.0f * scale_.x, 100.0f * scale_.y });
-	} else {
-		// サイズを元に戻す
-		cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	}
 }
 
 ///-------------------------------------------/// 
@@ -204,13 +182,15 @@ void PlayerUI::SpriteUpdate() {
 ///-------------------------------------------///
 void PlayerUI::ColorUpdate() {
 	/// ===色変更のフラグ管理=== ///
-	if (player_->GetAttackComponent()->GetState().isActive && !colorChange_.attackUI) {
-		// 攻撃UI
+	// 攻撃UI
+	if (player_->GetActiveAttackFlag() && !colorChange_.attackUI) {
 		colorChange_.attackUI = true;
 	}
-	if (player_->GetAvoidanceComponent()->GetState().isActive && !colorChange_.avoidanceUI) {
-		// 回避UI
-		colorChange_.avoidanceUI = true;
+	// 回避UI
+	if (player_->GetActiveDodgeFlag() && !colorChange_.dodgeActiveUI) {
+		colorChange_.dodgeActiveUI = true;
+	} else if (!player_->CanDodge() && !colorChange_.dodgeCooldownUI) {
+		colorChange_.dodgeCooldownUI = true;
 	}
 
 	/// ===UIの色更新=== ///
@@ -218,8 +198,12 @@ void PlayerUI::ColorUpdate() {
 		// 攻撃UI
 		attackUI_->SetColor(activeColor_);
 	}
-	if (colorChange_.avoidanceUI) {
+	if (colorChange_.dodgeActiveUI) {
 		// 回避UI
-		avoidanceUI_->SetColor(activeColor_);
+		dodgeUI_->SetColor(activeColor_);
+	} 
+	if (colorChange_.dodgeCooldownUI) {
+		// 回避UI
+		dodgeUI_->SetColor(cooldownColor_);
 	}
 }

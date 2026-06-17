@@ -122,6 +122,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
     <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp" />
     <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp" />
@@ -273,7 +274,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\State\Base\PlayerState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\RootState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\DodgeState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Weapon\PlayerWeapon.cpp" />
     <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
@@ -317,6 +318,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
@@ -481,7 +483,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\State\Base\PlayerState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\RootState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h" />
-    <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\DodgeState.h" />
     <ClInclude Include="application\Game\Entity\Player\Weapon\PlayerWeapon.h" />
     <ClInclude Include="application\Scene\Title\UI\TitleUI.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />

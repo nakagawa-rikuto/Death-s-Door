@@ -3,6 +3,8 @@
 #include "Base/PlayerState.h"
 // Math
 #include "Math/Vector2.h"
+#include "Math/Vector3.h"
+#include "Math/Quaternion.h"
 
 /// ===前方宣言=== ///
 namespace MiiEngine {
@@ -27,9 +29,7 @@ public:
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
-	/// <param name="player">更新対象の Player インスタンスへのポインタ。</param>
-	/// <param name="camera">更新処理に使用する MiiEngine::CameraCommon インスタンスへのポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+	void Update() override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -60,10 +60,5 @@ private:
 	/// </summary>
 	/// <param name="stick">スティックの入力を表す2Dベクトル。</param>
 	void ApplyStickMovement(const Vector2& stick);
-
-	/// <summary>
-	/// 減速処理
-	/// </summary>
-	void ApplyBraking();
 };
 

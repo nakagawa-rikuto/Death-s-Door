@@ -5,12 +5,12 @@
 #include "Math/Vector3.h"
 
 ///=====================================================/// 
-/// AvoidanceState
+/// DodgeState
 ///=====================================================///
-class AvoidanceState : public PlayerState {
+class DodgeState : public PlayerState {
 public:
-	AvoidanceState(const Vector3& direction);
-	~AvoidanceState() override = default;
+	DodgeState(const Vector3& direction);
+	~DodgeState() override = default;
 
 	/// <summary>
 	/// ステートに入った時に呼ばれる処理
@@ -22,9 +22,7 @@ public:
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
-	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
-	/// <param name="camera">更新処理に使用するゲームカメラを指すポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+	void Update() override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -32,7 +30,30 @@ public:
 	void Finalize() override;
 
 private:
-	/// ===回避方向=== ///
-	Vector3 direction_; // 回避方向
+	/// ===状態=== ///
+	struct State {
+		float timer = 0.0f;		// タイマー
+		float acceleration;		// 加速度
+		Vector3 direction;		// 回避方向
+		Vector3 velocity;		// 回避ベクトル
+	};
+	State state_{};
+
+private:
+
+	/// <summary>
+	/// 回避処理の開始
+	/// </summary>
+	void StartAvoidance();
+
+	/// <summary>
+	/// タイマーの更新処理
+	/// </summary>
+	void UpdateTimer();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void UpdateAvoidance();
 };
 
