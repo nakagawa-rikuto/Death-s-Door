@@ -5,16 +5,13 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <numbers>
 // Math
 #include <Math/sMath.h>
 
-// ===定数定義=== ///
 namespace Orbit {
 	BossComponent::OrbitingAttackComponent component_;
-	const float kDegToRad = Math::Pi() / 180.0f;
-	const float kTwoPi = Math::Pi() * 2.0f;
-	const float kOrbSpacingRad = kTwoPi / static_cast<float>(component_.bulletCount);
-} 
+}
 
 ///-------------------------------------------/// 
 /// 初期化処理
@@ -23,6 +20,14 @@ void BossOrbitingOrbsCalculator::Initialize(const BossComponent::OrbitingAttackC
 	// コンポーネントの取得
 	Orbit::component_ = component;
 
+	kDegToRad = Math::Pi() / 180.0f;
+
+	// 弾数に応じたオフセット角度（ラジアン）の計算
+	if (Orbit::component_.bulletCount > 0) {
+		const float kTwoPi = Math::Pi() * 2.0f;
+		orbSpacingRad_ = kTwoPi / static_cast<float>(Orbit::component_.bulletCount);
+	}
+
 	// 弾の情報ベクターをコンポーネントの弾数に合わせてリサイズ
 	state_.bullets.resize(Orbit::component_.bulletCount);
 }
@@ -30,13 +35,13 @@ void BossOrbitingOrbsCalculator::Initialize(const BossComponent::OrbitingAttackC
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void BossOrbitingOrbsCalculator::Update(float deltaTime) {
+void BossOrbitingOrbsCalculator::Update(const Vector3& bossPosition, float deltaTime) {
 	// 非アクティブ時は何もしない
 	if (phase_ == Phase::Idle || phase_ == Phase::Finished) return;
 
 	/// ===タイマーの更新=== ///
 	state_.orbitTimer += deltaTime;
-	state_.lifeTimer += deltaTime;
+	state_.lifeTimer -= deltaTime;
 
 	/// ===各弾の位置・方向の計算=== ///
 	for (int i = 0; i < Orbit::component_.bulletCount; ++i) {
@@ -44,13 +49,12 @@ void BossOrbitingOrbsCalculator::Update(float deltaTime) {
 		const float angleRad = CalcOrbitAngleRad(i);
 
 		// 現在位置の計算
-		Vector3 currentPos = CalcOrbitPosition(bossPosition_, angleRad);
+		Vector3 currentPos = CalcOrbitPosition(bossPosition, angleRad);
 
 		// 次フレームの向きの計算
-		Vector3 dir = CalcOrbitDirection(bossPosition_, currentPos, angleRad, deltaTime);
+		Vector3 dir = CalcOrbitDirection(bossPosition, currentPos, angleRad, deltaTime);
 
 		state_.bullets[i].position = currentPos;
-		state_.bullets[i].direction = dir;
 	}
 
 	/// ===Finishedへの遷移=== ///
@@ -62,10 +66,17 @@ void BossOrbitingOrbsCalculator::Update(float deltaTime) {
 ///-------------------------------------------/// 
 /// 攻撃開始処理
 ///-------------------------------------------///
-void BossOrbitingOrbsCalculator::StartAttack() {
+void BossOrbitingOrbsCalculator::StartAttack(const Vector3& centerPosition) {
+
 	state_.orbitTimer = 0.0f;
-	state_.lifeTimer = Orbit::component_.lifeTime;
+	state_.lifeTimer =Orbit::component_.lifeTime;
 	phase_ = Phase::Orbiting;
+
+	// 弾の初期位置を計算して配置
+	for (int i = 0; i < Orbit::component_.bulletCount; ++i) {
+		float angleRad = CalcOrbitAngleRad(i);
+		state_.bullets[i].position = CalcOrbitPosition(centerPosition, angleRad);
+	}
 }
 
 ///-------------------------------------------/// 
@@ -73,13 +84,13 @@ void BossOrbitingOrbsCalculator::StartAttack() {
 ///-------------------------------------------///
 float BossOrbitingOrbsCalculator::CalcOrbitAngleRad(int index) const {
 	// 全弾共通の基準角
-	const float baseAngle = state_.orbitTimer * Orbit::component_.orbitSpeed * Orbit::kDegToRad;
+	float baseAngle = state_.orbitTimer * Orbit::component_.orbitSpeed;
 
 	// 弾ごとの等間隔オフセット
-	const float evenSpacing = static_cast<float>(index) * Orbit::kOrbSpacingRad;
+	float evenSpacing = static_cast<float>(index) * orbSpacingRad_;
 
 	// 全体の初期スタート角
-	const float initialAngle = Orbit::component_.initialAngle * Orbit::kDegToRad;
+	float initialAngle = Orbit::component_.initialAngle * kDegToRad;
 
 	// 最終的な角度
 	return baseAngle + evenSpacing + initialAngle;
@@ -106,8 +117,8 @@ Vector3 BossOrbitingOrbsCalculator::CalcOrbitDirection(
 	float deltaTime) const {
 
 	// 次フレームの角度と位置
-	const float nextAngleRad = angleRad + Orbit::component_.orbitSpeed * Orbit::kDegToRad * deltaTime;
-	const Vector3 nextPos = CalcOrbitPosition(center, nextAngleRad);
+	float nextAngleRad = angleRad + Orbit::component_.orbitSpeed * deltaTime;
+	Vector3 nextPos = CalcOrbitPosition(center, nextAngleRad);
 	// 差分ベクトル
 	Vector3 dir = {
 		nextPos.x - currentPos.x,

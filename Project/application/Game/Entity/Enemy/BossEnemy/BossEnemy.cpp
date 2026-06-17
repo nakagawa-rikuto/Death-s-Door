@@ -35,6 +35,9 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
 
+	/// ===Componentの設定=== ///
+	SetComponentConfig();
+
 	/// ===LightInfo=== ///
 	SetLight(MiiEngine::LightType::PointLight);
 	baseInfo_.lightInfo_.shininess = 30.0f;
@@ -50,9 +53,6 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	/// ===BulletManagerの初期化=== ///
 	bulletManager_ = std::make_unique<BossBulletManager>();
 	bulletManager_->Initialize(parameters_.orbitingAttack);
-
-	/// ===Componentの設定=== ///
-	SetComponentConfig();
 
 	// Stateの設定
 	ChangeState(std::make_unique<BossMoveState>());
@@ -110,7 +110,7 @@ void BossEnemy::Update() {
 	}
 
 	/// ===BulletManagerの更新=== ///
-	bulletManager_->Update(baseInfo_.deltaTime);
+	bulletManager_->Update(transform_.translate, baseInfo_.deltaTime);
 
 	/// ==Weaponの更新==== ///
 	weapon_->Update();
@@ -224,7 +224,7 @@ void BossEnemy::SetComponentConfig() {
 	parameters_.attackCooldown.rotateAttack = 2.5f;
 	parameters_.attackCooldown.downwardSwingAttack = 4.0f;
 	parameters_.attackCooldown.jumpSmashAttack = 8.0f;
-	parameters_.attackCooldown.orbitingOrbs = 6.0f;
+	parameters_.attackCooldown.orbitingOrbs = 16.0f;
 	parameters_.attackCooldown.parabolicShot = 5.0f;
 	
 
@@ -264,7 +264,7 @@ void BossEnemy::SetComponentConfig() {
 	parameters_.jumpSmashAttack.leapWindUpDuration = 0.1f;
 	parameters_.jumpSmashAttack.leapDuration = 0.6f;
 	parameters_.jumpSmashAttack.leapArcHeight = 30.0f;
-	parameters_.jumpSmashAttack.leapAscentPitch = 120.0f;
+	parameters_.jumpSmashAttack.leapAscentPitch = 120.0f;			
 	parameters_.jumpSmashAttack.leapDescentPitch = 120.0f;
 	parameters_.jumpSmashAttack.strikeForwardPitch = 20.0f;
 	parameters_.jumpSmashAttack.strikeDuration = 0.2f;
@@ -273,10 +273,10 @@ void BossEnemy::SetComponentConfig() {
 	parameters_.jumpSmashAttack.weaponOffset = { 0.0f,  0.0f,  12.0f };
 
 	parameters_.orbitingAttack.bulletCount = 3;
-	parameters_.orbitingAttack.orbitRadius = 3.0f;
-	parameters_.orbitingAttack.orbitSpeed = 120.0f;
-	parameters_.orbitingAttack.orbitHeight = 0.0f;
-	parameters_.orbitingAttack.lifeTime = 5.0f;
+	parameters_.orbitingAttack.orbitRadius = 15.0f;
+	parameters_.orbitingAttack.orbitSpeed = 1.6f;
+	parameters_.orbitingAttack.orbitHeight = -1.0f;
+	parameters_.orbitingAttack.lifeTime = 10.0f;
 	parameters_.orbitingAttack.initialAngle = 120.0f;
 
 	parameters_.parabolicShotAttack.launchAngle = 80.0f;
