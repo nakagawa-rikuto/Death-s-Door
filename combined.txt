@@ -38045,6 +38045,9 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
 
+	/// ===Componentの設定=== ///
+	SetComponentConfig();
+
 	/// ===LightInfo=== ///
 	SetLight(MiiEngine::LightType::PointLight);
 	baseInfo_.lightInfo_.shininess = 30.0f;
@@ -38060,9 +38063,6 @@ void BossEnemy::InitGameScene(const Vector3& translate) {
 	/// ===BulletManagerの初期化=== ///
 	bulletManager_ = std::make_unique<BossBulletManager>();
 	bulletManager_->Initialize(parameters_.orbitingAttack);
-
-	/// ===Componentの設定=== ///
-	SetComponentConfig();
 
 	// Stateの設定
 	ChangeState(std::make_unique<BossMoveState>());
@@ -38120,7 +38120,7 @@ void BossEnemy::Update() {
 	}
 
 	/// ===BulletManagerの更新=== ///
-	bulletManager_->Update(baseInfo_.deltaTime);
+	bulletManager_->Update(transform_.translate, baseInfo_.deltaTime);
 
 	/// ==Weaponの更新==== ///
 	weapon_->Update();
@@ -38234,7 +38234,7 @@ void BossEnemy::SetComponentConfig() {
 	parameters_.attackCooldown.rotateAttack = 2.5f;
 	parameters_.attackCooldown.downwardSwingAttack = 4.0f;
 	parameters_.attackCooldown.jumpSmashAttack = 8.0f;
-	parameters_.attackCooldown.orbitingOrbs = 6.0f;
+	parameters_.attackCooldown.orbitingOrbs = 16.0f;
 	parameters_.attackCooldown.parabolicShot = 5.0f;
 	
 
@@ -38274,7 +38274,7 @@ void BossEnemy::SetComponentConfig() {
 	parameters_.jumpSmashAttack.leapWindUpDuration = 0.1f;
 	parameters_.jumpSmashAttack.leapDuration = 0.6f;
 	parameters_.jumpSmashAttack.leapArcHeight = 30.0f;
-	parameters_.jumpSmashAttack.leapAscentPitch = 120.0f;
+	parameters_.jumpSmashAttack.leapAscentPitch = 120.0f;			
 	parameters_.jumpSmashAttack.leapDescentPitch = 120.0f;
 	parameters_.jumpSmashAttack.strikeForwardPitch = 20.0f;
 	parameters_.jumpSmashAttack.strikeDuration = 0.2f;
@@ -38283,10 +38283,10 @@ void BossEnemy::SetComponentConfig() {
 	parameters_.jumpSmashAttack.weaponOffset = { 0.0f,  0.0f,  12.0f };
 
 	parameters_.orbitingAttack.bulletCount = 3;
-	parameters_.orbitingAttack.orbitRadius = 3.0f;
-	parameters_.orbitingAttack.orbitSpeed = 120.0f;
-	parameters_.orbitingAttack.orbitHeight = 0.0f;
-	parameters_.orbitingAttack.lifeTime = 5.0f;
+	parameters_.orbitingAttack.orbitRadius = 15.0f;
+	parameters_.orbitingAttack.orbitSpeed = 1.6f;
+	parameters_.orbitingAttack.orbitHeight = -1.0f;
+	parameters_.orbitingAttack.lifeTime = 10.0f;
 	parameters_.orbitingAttack.initialAngle = 120.0f;
 
 	parameters_.parabolicShotAttack.launchAngle = 80.0f;
@@ -38541,9 +38541,9 @@ void BossBulletManager::Initialize(const BossComponent::OrbitingAttackComponent&
 ///-------------------------------------------///
 /// 更新処理
 ///-------------------------------------------///
-void BossBulletManager::Update(float deltaTime) {
+void BossBulletManager::Update(const Vector3& bossPosition, float deltaTime) {
 	// Orbiting弾の更新
-	UpdateOrbitingBullets(deltaTime);
+	UpdateOrbitingBullets(bossPosition, deltaTime);
 	// ParabolicShot弾の更新
 	UpdateParabolicBullets(deltaTime);
 }
@@ -38556,20 +38556,25 @@ void BossBulletManager::Draw() {}
 ///-------------------------------------------///
 /// Orbiting弾を生成（再利用）する
 ///-------------------------------------------///
-void BossBulletManager::SpawnOrbitingBullets() {
+void BossBulletManager::SpawnOrbitingBullets(const Vector3& position) {
+
+	// 攻撃開始
+	orbitCalculator_->StartAttack(position);
+
 	// 計算情報の取得
 	const auto& bulletInfos = orbitCalculator_->GetBulletInfo();
 
-	// ループ回数の設定
-	size_t updateCount = (std::min)(orbitingBullets_.size(), bulletInfos.size());
-
-	for (int i = 0; i < updateCount; ++i) {
-		orbitingBullets_[i]->Create(bulletInfos[i].position, orbitInfo_.lifeTime);
+	// 取得した情報に基づいて実体の弾を生成する
+	orbitingBullets_.clear();
+	for (const auto& info : bulletInfos) {
+		auto bullet = std::make_unique<BossEnemyBullet>();
+		bullet->Initialize();
+		bullet->Create(info.position, orbitInfo_.lifeTime);
+		orbitingBullets_.push_back(std::move(bullet));
 	}
+
 	// アクティブ状態にする
 	isOrbitingActive_ = true;
-	// 攻撃開始
-	orbitCalculator_->StartAttack();
 }
 
 ///-------------------------------------------/// 
@@ -38618,11 +38623,11 @@ void BossBulletManager::KillLatestParabolicBullets() {
 ///-------------------------------------------///
 /// Orbiting弾の更新処理
 ///-------------------------------------------///
-void BossBulletManager::UpdateOrbitingBullets(float deltaTime) {
+void BossBulletManager::UpdateOrbitingBullets(const Vector3& bossPosition, float deltaTime) {
 	// アクティブ状態のときのみ更新
 	if (isOrbitingActive_) {
 		// OrbitBulletの位置と向きを計算
-		orbitCalculator_->Update(deltaTime);
+		orbitCalculator_->Update(bossPosition, deltaTime);
 
 		// 計算情報の取得
 		const auto& bulletInfos = orbitCalculator_->GetBulletInfo();
@@ -38635,8 +38640,7 @@ void BossBulletManager::UpdateOrbitingBullets(float deltaTime) {
 			const auto& info = bulletInfos[i];
 			// bulletが存在していたら
 			if (b && b->GetIsAlive()) {
-				Vector3 velocity = info.direction * orbitInfo_.orbitSpeed;
-				b->SetVelocity(velocity);
+				b->SetTranslate(info.position);
 				b->Update();
 			}
 		}
@@ -38703,7 +38707,7 @@ public:
 	/// <summary>
 	/// 更新処理
 	/// </summary>
-	void Update(float deltaTime);
+	void Update(const Vector3& bossPosition, float deltaTime);
 
 	/// <summary>
 	/// 描画処理
@@ -38715,7 +38719,7 @@ public:/// ===OrbitBullet=== ///
 	/// <summary>
     /// OrbitBulletの生成
     /// </summary>
-	void SpawnOrbitingBullets();
+	void SpawnOrbitingBullets(const Vector3& position);
 
 	/// <summary>
 	/// OrbitBulletの停止
@@ -38770,7 +38774,7 @@ private:
 	/// <summary>
 	/// OrbitBulletの更新処理
 	/// </summary>
-	void UpdateOrbitingBullets(float deltaTime);
+	void UpdateOrbitingBullets(const Vector3& bossPosition, float deltaTime);
 
 	/// <summary>
 	/// ParabolicShotの更新処理
@@ -39017,16 +39021,13 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/Bullet/Calculator/Bos
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <numbers>
 // Math
 #include <Math/sMath.h>
 
-// ===定数定義=== ///
 namespace Orbit {
 	BossComponent::OrbitingAttackComponent component_;
-	const float kDegToRad = Math::Pi() / 180.0f;
-	const float kTwoPi = Math::Pi() * 2.0f;
-	const float kOrbSpacingRad = kTwoPi / static_cast<float>(component_.bulletCount);
-} 
+}
 
 ///-------------------------------------------/// 
 /// 初期化処理
@@ -39035,6 +39036,14 @@ void BossOrbitingOrbsCalculator::Initialize(const BossComponent::OrbitingAttackC
 	// コンポーネントの取得
 	Orbit::component_ = component;
 
+	kDegToRad = Math::Pi() / 180.0f;
+
+	// 弾数に応じたオフセット角度（ラジアン）の計算
+	if (Orbit::component_.bulletCount > 0) {
+		const float kTwoPi = Math::Pi() * 2.0f;
+		orbSpacingRad_ = kTwoPi / static_cast<float>(Orbit::component_.bulletCount);
+	}
+
 	// 弾の情報ベクターをコンポーネントの弾数に合わせてリサイズ
 	state_.bullets.resize(Orbit::component_.bulletCount);
 }
@@ -39042,13 +39051,13 @@ void BossOrbitingOrbsCalculator::Initialize(const BossComponent::OrbitingAttackC
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
-void BossOrbitingOrbsCalculator::Update(float deltaTime) {
+void BossOrbitingOrbsCalculator::Update(const Vector3& bossPosition, float deltaTime) {
 	// 非アクティブ時は何もしない
 	if (phase_ == Phase::Idle || phase_ == Phase::Finished) return;
 
 	/// ===タイマーの更新=== ///
 	state_.orbitTimer += deltaTime;
-	state_.lifeTimer += deltaTime;
+	state_.lifeTimer -= deltaTime;
 
 	/// ===各弾の位置・方向の計算=== ///
 	for (int i = 0; i < Orbit::component_.bulletCount; ++i) {
@@ -39056,13 +39065,12 @@ void BossOrbitingOrbsCalculator::Update(float deltaTime) {
 		const float angleRad = CalcOrbitAngleRad(i);
 
 		// 現在位置の計算
-		Vector3 currentPos = CalcOrbitPosition(bossPosition_, angleRad);
+		Vector3 currentPos = CalcOrbitPosition(bossPosition, angleRad);
 
 		// 次フレームの向きの計算
-		Vector3 dir = CalcOrbitDirection(bossPosition_, currentPos, angleRad, deltaTime);
+		Vector3 dir = CalcOrbitDirection(bossPosition, currentPos, angleRad, deltaTime);
 
 		state_.bullets[i].position = currentPos;
-		state_.bullets[i].direction = dir;
 	}
 
 	/// ===Finishedへの遷移=== ///
@@ -39074,10 +39082,17 @@ void BossOrbitingOrbsCalculator::Update(float deltaTime) {
 ///-------------------------------------------/// 
 /// 攻撃開始処理
 ///-------------------------------------------///
-void BossOrbitingOrbsCalculator::StartAttack() {
+void BossOrbitingOrbsCalculator::StartAttack(const Vector3& centerPosition) {
+
 	state_.orbitTimer = 0.0f;
-	state_.lifeTimer = Orbit::component_.lifeTime;
+	state_.lifeTimer =Orbit::component_.lifeTime;
 	phase_ = Phase::Orbiting;
+
+	// 弾の初期位置を計算して配置
+	for (int i = 0; i < Orbit::component_.bulletCount; ++i) {
+		float angleRad = CalcOrbitAngleRad(i);
+		state_.bullets[i].position = CalcOrbitPosition(centerPosition, angleRad);
+	}
 }
 
 ///-------------------------------------------/// 
@@ -39085,13 +39100,13 @@ void BossOrbitingOrbsCalculator::StartAttack() {
 ///-------------------------------------------///
 float BossOrbitingOrbsCalculator::CalcOrbitAngleRad(int index) const {
 	// 全弾共通の基準角
-	const float baseAngle = state_.orbitTimer * Orbit::component_.orbitSpeed * Orbit::kDegToRad;
+	float baseAngle = state_.orbitTimer * Orbit::component_.orbitSpeed;
 
 	// 弾ごとの等間隔オフセット
-	const float evenSpacing = static_cast<float>(index) * Orbit::kOrbSpacingRad;
+	float evenSpacing = static_cast<float>(index) * orbSpacingRad_;
 
 	// 全体の初期スタート角
-	const float initialAngle = Orbit::component_.initialAngle * Orbit::kDegToRad;
+	float initialAngle = Orbit::component_.initialAngle * kDegToRad;
 
 	// 最終的な角度
 	return baseAngle + evenSpacing + initialAngle;
@@ -39118,8 +39133,8 @@ Vector3 BossOrbitingOrbsCalculator::CalcOrbitDirection(
 	float deltaTime) const {
 
 	// 次フレームの角度と位置
-	const float nextAngleRad = angleRad + Orbit::component_.orbitSpeed * Orbit::kDegToRad * deltaTime;
-	const Vector3 nextPos = CalcOrbitPosition(center, nextAngleRad);
+	float nextAngleRad = angleRad + Orbit::component_.orbitSpeed * deltaTime;
+	Vector3 nextPos = CalcOrbitPosition(center, nextAngleRad);
 	// 差分ベクトル
 	Vector3 dir = {
 		nextPos.x - currentPos.x,
@@ -39159,7 +39174,6 @@ public:
 	/// ===Bullet情報=== ///
 	struct BulletInfo {
 		Vector3 position{};   // ワールド座標
-		Vector3 direction{};  // 移動方向
 	};
 
 public:
@@ -39177,12 +39191,12 @@ public:
 	/// 更新処理
 	/// </summary>
 	/// <param name="deltaTime">デルタタイム</param>
-	void Update(float deltaTime);
+	void Update(const Vector3& bossPosition, float deltaTime);
 
 	/// <summary>
 	/// 攻撃開始処理
 	/// </summary>
-	void StartAttack();
+	void StartAttack(const Vector3& centerPosition);
 
 public: /// ===Getter=== ///
 
@@ -39201,7 +39215,6 @@ private:
 	};
 	Phase phase_ = Phase::Idle; // 現在のフェーズ
 
-
 	/// ===状態=== ///
 	struct State {
 		float orbitTimer = 0.0f; // 公転中の経過時間
@@ -39210,8 +39223,10 @@ private:
 	};
 	State state_{};
 
-	// BossEnemyの場所
-	Vector3 bossPosition_{};
+	// 弾ごとの角度のオフセット
+	float orbSpacingRad_ = 0.0f; 
+	// 角度計算用
+	float kDegToRad = 0.0f; 
 
 private:
 
@@ -40495,17 +40510,64 @@ void BossOrbitingOrbsState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
 	// velocityをリセット
 	boss_->SetVelocity({ 0.0f, 0.0f, 0.0f });
-	// 攻撃の開始
-	boss_->GetBulletManager().SpawnOrbitingBullets();
+	// 現在のスケールを保存
+	state_.scale_ = boss_->GetTransform().scale; 
+
+	// フェーズをAnticipationに設定
+	currentPhase_ = Phase::Anticipation;
 }
 
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
 void BossOrbitingOrbsState::Update() {
-	// 次の状態へ遷移
-	boss_->ChangeState(std::make_unique<BossMoveState>());
-	return;
+	/// ===フェーズがAnticipation(予備動作)のとき=== ///
+	if (currentPhase_ == Phase::Anticipation) {
+		// タイマーを進める
+		state_.anticipationTimer += boss_->GetDeltaTime();
+
+		// 予備動作の時間に応じてスケールを変化させる
+		float t = state_.anticipationTimer / anticipationInfo_.time;
+		if (t > 1.0f) t = 1.0f;
+		float easing = (std::sin(t * Math::Pi() * 4.0f) + 1.0f) * 0.5f;
+		float scale = Math::Lerp(anticipationInfo_.minScale, anticipationInfo_.maxScale, easing);
+
+		boss_->SetScale({ scale, scale, scale });
+
+		// 時間が経過したらフェーズ移行
+		if (state_.anticipationTimer >= anticipationInfo_.time) {
+			currentPhase_ = Phase::StartAttack;
+		}
+	}
+
+	/// ===フェーズがStartAttackになったら=== ///
+	if (currentPhase_ == Phase::StartAttack) {
+		// 現在のスケールを取得
+		Vector3 currentScale = boss_->GetTransform().scale;
+
+		// スケールを自然に 1.0f に戻す
+		float t = (std::min)(boss_->GetDeltaTime() * anticipationInfo_.returnSpeed, 1.0f);
+
+		// Lerpを使ってスケールを徐々に 1.0f に近づける
+		currentScale.x = Math::Lerp(currentScale.x, 1.0f, t);
+		currentScale.y = Math::Lerp(currentScale.y, 1.0f, t);
+		currentScale.z = Math::Lerp(currentScale.z, 1.0f, t);
+		boss_->SetScale(currentScale);
+
+		// スケールがほぼ 1.0f に戻りきったら攻撃し、次のステートへ遷移
+		if (std::abs(currentScale.x - 1.0f) <= 0.01f) {
+
+			// スケールを完全に 1.0f にリセット
+			boss_->SetScale({ 1.0f, 1.0f, 1.0f });
+
+			// 攻撃の開始
+			boss_->GetBulletManager().SpawnOrbitingBullets(boss_->GetTransform().translate);
+
+			// MoveStateに遷移
+			boss_->ChangeState(std::make_unique<BossMoveState>());
+			return;
+		}
+	}
 }
 
 ///-------------------------------------------/// 
@@ -40555,6 +40617,30 @@ public:
 	/// 終了処理
 	/// </summary>
 	void Finalize() override;
+
+private:
+	/// ===フェーズ=== ///
+	enum class Phase {
+		Anticipation, // 予備動作
+		StartAttack,  // 攻撃開始
+	};
+	Phase currentPhase_ = Phase::Anticipation; // 現在のフェーズ
+
+	/// ===予備動作情報=== ///
+	struct AnticipationInfo {
+		float time = 1.0f; // 予備動作の時間
+		float maxScale = 1.2f; // 最大スケール
+		float minScale = 0.8f; // 最小スケール
+		float returnSpeed = 5.0f; // スケールを元に戻す速度
+	};
+	AnticipationInfo anticipationInfo_;
+
+	/// ===情報=== ///
+	struct State {
+		float anticipationTimer = 0.0f; // 予備動作のタイマー
+		Vector3 scale_ = { 1.0f, 1.0f, 1.0f }; // スケール
+	};
+	State state_;
 };
 
 
@@ -41322,28 +41408,35 @@ void BossMoveState::UpdateMove() {
 ///-------------------------------------------///
 bool BossMoveState::ChangeStateIfNeeded(float dist) {
 
-	/// ===遷移状態の判定=== ///
-	if (boss_->CanRotateAttack(dist)) {
-		// Rotate攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
-		return true;
-	} else if (boss_->CanDownSwingAttack(dist)) {
-		// Downswing攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-		return true;
-	} else if (boss_->CanParabolicShot(dist)) {
-		// ParabolicShot攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
-		return true;
-	} else if (boss_->CanOrbitingOrbs(dist)) {
+	// デバッグ用
+	if (boss_->CanOrbitingOrbs(dist)) {
 		// OrbitingOrbs攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
 		return true;
-	} else if (boss_->CanJumpSmashAttack(dist)) {
-		// JumpSmash攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
-		return true;
 	}
+
+	/// ===遷移状態の判定=== ///
+	//if (boss_->CanRotateAttack(dist)) {
+	//	// Rotate攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossRotateAttackState>());
+	//	return true;
+	//} else if (boss_->CanDownSwingAttack(dist)) {
+	//	// Downswing攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+	//	return true;
+	//} else if (boss_->CanParabolicShot(dist)) {
+	//	// ParabolicShot攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+	//	return true;
+	//} else if (boss_->CanOrbitingOrbs(dist)) {
+	//	// OrbitingOrbs攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
+	//	return true;
+	//} else if (boss_->CanJumpSmashAttack(dist)) {
+	//	// JumpSmash攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+	//	return true;
+	//}
 
 	return false;
 }
@@ -43309,7 +43402,7 @@ void Player::SettingParamita() {
 	parameters_.move.rotationSpeed = 10.0f;
 	parameters_.move.deceleration = 0.85f;
 	// DodgeComponentのパラメーター設定
-	parameters_.dodge.speed = 2.0f;
+	parameters_.dodge.speed = 20.0f;
 	parameters_.dodge.activeTime = 0.3f;
 	parameters_.dodge.coolTime = 1.0f;
 	parameters_.dodge.invincibleTime = 0.01f;
@@ -44143,8 +44236,8 @@ void DodgeState::UpdateAvoidance() {
 	float speed = player_->GetParameters().dodge.speed * state_.acceleration;
 
 	// Velocityに反映
-	state_.velocity.x += state_.direction.x * speed;
-	state_.velocity.z += state_.direction.z * speed;
+	state_.velocity.x = state_.direction.x * speed;
+	state_.velocity.z = state_.direction.z * speed;
 
 	// プレイヤーの速度に反映
 	player_->SetVelocity(state_.velocity);
