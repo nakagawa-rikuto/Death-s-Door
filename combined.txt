@@ -38113,6 +38113,7 @@ void BossEnemy::Update() {
 	// ライトの位置をキャラクターの位置に合わせる
 	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
 	baseInfo_.lightInfo_.point.position.z = transform_.translate.z - 30.0f;
+	SetLightData(baseInfo_.lightInfo_);
 
 	/// ===Stateの更新=== ///
 	if (currentState_) {
@@ -38157,7 +38158,6 @@ void BossEnemy::Information() {
 		ImGui::DragFloat("ライトの減衰率", &baseInfo_.lightInfo_.point.decay, 0.01f);
 		ImGui::TreePop();
 	}
-	SetLightData(baseInfo_.lightInfo_);
 
 	/// ===GameCharacterの情報表示=== ///
 	GameCharacter::Information();
@@ -41408,35 +41408,28 @@ void BossMoveState::UpdateMove() {
 ///-------------------------------------------///
 bool BossMoveState::ChangeStateIfNeeded(float dist) {
 
-	// デバッグ用
-	if (boss_->CanOrbitingOrbs(dist)) {
+	/// ===遷移状態の判定=== ///
+	if (boss_->CanRotateAttack(dist)) {
+		// Rotate攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
+		return true;
+	} else if (boss_->CanDownSwingAttack(dist)) {
+		// Downswing攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+		return true;
+	} else if (boss_->CanParabolicShot(dist)) {
+		// ParabolicShot攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+		return true;
+	} else if (boss_->CanOrbitingOrbs(dist)) {
 		// OrbitingOrbs攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
 		return true;
+	} else if (boss_->CanJumpSmashAttack(dist)) {
+		// JumpSmash攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+		return true;
 	}
-
-	/// ===遷移状態の判定=== ///
-	//if (boss_->CanRotateAttack(dist)) {
-	//	// Rotate攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossRotateAttackState>());
-	//	return true;
-	//} else if (boss_->CanDownSwingAttack(dist)) {
-	//	// Downswing攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-	//	return true;
-	//} else if (boss_->CanParabolicShot(dist)) {
-	//	// ParabolicShot攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossParabolicShotState>());
-	//	return true;
-	//} else if (boss_->CanOrbitingOrbs(dist)) {
-	//	// OrbitingOrbs攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
-	//	return true;
-	//} else if (boss_->CanJumpSmashAttack(dist)) {
-	//	// JumpSmash攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
-	//	return true;
-	//}
 
 	return false;
 }
@@ -43285,6 +43278,7 @@ void Player::Update() {
 	// ライトの位置をキャラクターの位置に合わせる
 	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
 	baseInfo_.lightInfo_.point.position.z = transform_.translate.z;
+	SetLightData(baseInfo_.lightInfo_);
 
 	/// ===Stateの管理=== ///
 	if (currentState_) {
@@ -43349,7 +43343,6 @@ void Player::Information() {
 		ImGui::DragFloat("ライトの減衰率", &baseInfo_.lightInfo_.point.decay, 0.01f);
 		ImGui::TreePop();
 	}
-	SetLightData(baseInfo_.lightInfo_);
 	ImGui::DragFloat("無敵時間", &invincibleInfo_.timer, 0.01f);
 	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
@@ -45912,14 +45905,14 @@ BossUI::~BossUI() {
 ///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
-void BossUI::Initialize(BossEnemy * boss) {
+void BossUI::Initialize(BossEnemy * boss, const Vector2& windowSize) {
 	// ボスの取得
 	boss_ = boss;
 
 	/// ===HPUI=== ///
 	// 位置とサイズの設定
-	Vector2 hpUIPosition = { 50.0f, 50.0f };
-	Vector2 hpUISize = { 900.0f, 80.0f };
+	Vector2 hpUISize = { 500.0f, 40.0f };
+	Vector2 hpUIPosition = { windowSize.x / 10.0f - 100.0f, windowSize.y / 8.0f - hpUISize.y};
 	//　生成
 	hpUI_ = std::make_unique<HpUI>();
 	float maxHp = static_cast<float>(boss_->GetHP());
@@ -45960,7 +45953,7 @@ public:
 	/// 初期化処理
 	/// </summary>
 	/// <param name="boss">初期化するボスエネミーへのポインタ。</param>
-	void Initialize(BossEnemy* boss);
+	void Initialize(BossEnemy* boss, const Vector2& windowSize);
 
 	/// <summary>
 	/// 更新処理
@@ -48267,7 +48260,7 @@ void GameSceneUI::Initialize(Player* player, BossEnemy* boss) {
 
 	/// ===BossUi=== ///
 	bossUI_ = std::make_unique<BossUI>();
-	bossUI_->Initialize(boss);
+	bossUI_->Initialize(boss, windowSize);
 
 	/// ===OptionSprite=== ///
 	optionMenuSprite_ = std::make_unique<Object2d>();
