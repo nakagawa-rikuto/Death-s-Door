@@ -438,16 +438,7 @@
 └── └── └── └── └── └── GameCharacter.h
 └── └── └── └── └── Player/
 └── └── └── └──     ├── Component/
-└── └── └── └──     └── ├── PlayerAttackComponent.cpp
-└── └── └── └──     └── ├── PlayerAttackComponent.h
-└── └── └── └──     └── ├── PlayerAvoidanceComponent.cpp
-└── └── └── └──     └── ├── PlayerAvoidanceComponent.h
-└── └── └── └──     └── ├── PlayerHitReactionComponent.cpp
-└── └── └── └──     └── ├── PlayerHitReactionComponent.h
-└── └── └── └──     └── ├── PlayerLongAttackComponent.cpp
-└── └── └── └──     └── ├── PlayerLongAttackComponent.h
-└── └── └── └──     └── ├── PlayerMoveComponent.cpp
-└── └── └── └──     └── └── PlayerMoveComponent.h
+└── └── └── └──     └── └── PlayerComponent.h
 └── └── └── └──     ├── Hand/
 └── └── └── └──     └── ├── PlayerHand.cpp
 └── └── └── └──     └── └── PlayerHand.h
@@ -456,11 +447,13 @@
 └── └── └── └──     ├── State/
 └── └── └── └──     └── ├── AttackState.cpp
 └── └── └── └──     └── ├── AttackState.h
-└── └── └── └──     └── ├── AvoidanceState.cpp
-└── └── └── └──     └── ├── AvoidanceState.h
 └── └── └── └──     └── ├── Base/
 └── └── └── └──     └── └── ├── PlayerState.cpp
 └── └── └── └──     └── └── └── PlayerState.h
+└── └── └── └──     └── ├── DeathState.cpp
+└── └── └── └──     └── ├── DeathState.h
+└── └── └── └──     └── ├── DodgeState.cpp
+└── └── └── └──     └── ├── DodgeState.h
 └── └── └── └──     └── ├── HitReactionState.cpp
 └── └── └── └──     └── ├── HitReactionState.h
 └── └── └── └──     └── ├── MoveState.cpp
@@ -19570,7 +19563,7 @@ namespace MiiEngine {
 		Loader::LoadTexture("MoveUI", "GameUI/MoveUI.png");
 		Loader::LoadTexture("CameraUI", "GameUI/CameraUI.png");
 		Loader::LoadTexture("AttackUI", "GameUI/AttackUI.png");
-		Loader::LoadTexture("AvoidanceUI", "GameUI/AvoidanceUI.png");
+		Loader::LoadTexture("DodgeUI", "GameUI/DodgeUI.png");
 		Loader::LoadTexture("xButton", "GameUI/xbox_button_color_x.png");
 		Loader::LoadTexture("aButton", "GameUI/xbox_button_color_a.png");
 		Loader::LoadTexture("leftStick", "GameUI/xbox_stick_l.png");
@@ -29401,6 +29394,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
     <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp" />
     <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp" />
@@ -29421,11 +29415,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -29552,7 +29544,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\Entity\Player\State\Base\PlayerState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\RootState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\DodgeState.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Weapon\PlayerWeapon.cpp" />
     <ClCompile Include="application\Scene\Title\UI\TitleUI.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.cpp" />
@@ -29568,9 +29560,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp" />
     <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp" />
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp" />
     <ClCompile Include="application\Game\UI\Option\OptionUI.cpp" />
     <ClCompile Include="application\Game\Entity\Player\Hand\PlayerHand.cpp" />
@@ -29589,12 +29578,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
     <ClInclude Include="application\Game\UI\Game\BossUI.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
     <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\CS\CSCompiler.h" />
@@ -29614,11 +29605,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h" />
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
     <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
     <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -29759,7 +29748,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\Entity\Player\State\Base\PlayerState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\RootState.h" />
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h" />
-    <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\DodgeState.h" />
     <ClInclude Include="application\Game\Entity\Player\Weapon\PlayerWeapon.h" />
     <ClInclude Include="application\Scene\Title\UI\TitleUI.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\ShatterGlassEffect.h" />
@@ -29775,9 +29764,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h" />
     <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h" />
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h" />
     <ClInclude Include="application\Game\UI\Option\OptionUI.h" />
     <ClInclude Include="application\Game\Entity\Player\Hand\PlayerHand.h" />
@@ -30128,7 +30114,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Player\State\Base\PlayerState.cpp">
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\State\AvoidanceState.cpp">
+    <ClCompile Include="application\Game\Entity\Player\State\DodgeState.cpp">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\Entity\Player\State\MoveState.cpp">
@@ -30431,15 +30417,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.cpp">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerMoveComponent.cpp">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.cpp">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerAttackComponent.cpp">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClCompile>
     <ClCompile Include="application\Game\Object\StageObject\StageObject.cpp">
       <Filter>application\Game\Object\StageObject</Filter>
     </ClCompile>
@@ -30613,7 +30590,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
     <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.cpp" />
     <ClCompile Include="application\Game\UI\Game\BossUI.cpp" />
     <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.cpp" />
@@ -30622,10 +30598,10 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
+    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -30646,7 +30622,7 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Player\State\Base\PlayerState.h">
       <Filter>application\Game\Entity\Player\State\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\State\AvoidanceState.h">
+    <ClInclude Include="application\Game\Entity\Player\State\DodgeState.h">
       <Filter>application\Game\Entity\Player\State</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\Entity\Player\State\MoveState.h">
@@ -30991,15 +30967,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\GameCharacter\Collision\GameCharacterCollision.h">
       <Filter>application\Game\Entity\GameCharacter</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerMoveComponent.h">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAvoidanceComponent.h">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerAttackComponent.h">
-      <Filter>application\Game\Entity\Player\Component</Filter>
-    </ClInclude>
     <ClInclude Include="application\Game\Object\StageObject\StageObject.h">
       <Filter>application\Game\Object\StageObject</Filter>
     </ClInclude>
@@ -31180,7 +31147,6 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
     <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
     <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerHitReactionComponent.h" />
     <ClInclude Include="application\Game\UI\Game\BossUI.h" />
     <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
@@ -31189,10 +31155,11 @@ File Path: Project/FallenAscent.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
     <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerLongAttackComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h" />
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
+    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -38215,7 +38182,7 @@ void BossEnemy::OnCollision(MiiEngine::Collider* collider) {
 		// クールタイム中でなければノックバック処理を実行
 		if (!invincibleInfo_.isInvincible) {
 			// 通常攻撃の時
-			if (player_->GetAttackComponent()->IsAttacking()) {
+			if (player_->GetActiveAttackFlag()) {
 				
 				// ノックバック方向の計算
 				Vector3 toWeapon = collider->GetTransform().translate - transform_.translate;
@@ -41012,16 +40979,8 @@ File Path: Project/application/Game/Entity/Enemy/BossEnemy/State/HItReaction/Bos
 /// コンストラクタ
 ///-------------------------------------------///
 BossHitReactionState::BossHitReactionState(const Vector3& hitDirection) {
-	// フラグを立てる
-	isHit_ = true;
 	// 方向の取得
 	hitDirection_ = hitDirection;
-	// タイマーの初期化
-	state_.slowdownTimer = boss_->GetComponentParameters().hitReaction.slowdownDuration;
-	state_.colorTimer = boss_->GetComponentParameters().hitReaction.alphaDuration;
-	state_.colorInterval = 0.0f;
-	// 色変化フラグを立てる
-	isColorChange_ = true;
 }
 
 ///-------------------------------------------/// 
@@ -41029,6 +40988,14 @@ BossHitReactionState::BossHitReactionState(const Vector3& hitDirection) {
 ///-------------------------------------------///
 void BossHitReactionState::Enter(BossEnemy* enemy) {
 	boss_ = enemy;
+	// フラグを立てる
+	isHit_ = true;
+	// タイマーの初期化
+	state_.slowdownTimer = boss_->GetComponentParameters().hitReaction.slowdownDuration;
+	state_.colorTimer = boss_->GetComponentParameters().hitReaction.alphaDuration;
+	state_.colorInterval = 0.0f;
+	// 色変化フラグを立てる
+	isColorChange_ = true;
 }
 
 ///-------------------------------------------/// 
@@ -42646,863 +42613,52 @@ private: /// ===地面との衝突処理=== ///
 
 
 ============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponent.cpp
-============================================================
-#include "PlayerAttackComponent.h"
-// PlayerHand
-#include "application/Game/Entity/Player/Hand/PlayerHand.h"
-// PlayerWeapon
-#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
-// AttackDataSerializer
-#include "Engine/System/Editor/Attack/AttackDataSerializer.h"
-// ImGui
-#ifdef USE_IMGUI
-#include <imgui.h>
-#endif // USE_IMGUI
-
-
-///-------------------------------------------/// 
-/// 初期化処理
-///-------------------------------------------///
-void PlayerAttackComponent::Initialize() {
-    // コンボの読み込み
-    LoadAttackData(0, "Resource/Json/Attacks/PlayerAttack_0.json");
-    LoadAttackData(1, "Resource/Json/Attacks/PlayerAttack_1.json");
-    LoadAttackData(2, "Resource/Json/Attacks/PlayerAttack_2.json");
-}
-
-///-------------------------------------------/// 
-/// 更新処理
-///-------------------------------------------///
-void PlayerAttackComponent::Update(const float deltaTime) {
-    // タイマーを更新
-    UpdateTimers(deltaTime);
-
-    // 攻撃中の処理
-    if (state_.isActive) {
-        // 攻撃時間が終了したかチェック
-        const AttackData* currentData = GetAttackData(state_.currentAttackID);
-
-        if (currentData && state_.timer >= currentData->activeDuration) {
-            state_.isActive = false;
-            state_.previousAttackID = state_.currentAttackID;  // ← 前の攻撃IDを保存
-            state_.currentAttackID = -1;
-
-            // コンボ受付開始
-            if (currentData->canComboToNext) {
-                state_.canCombo = true;
-                state_.comboTimer = 0.0f;
-            }
-        }
-    }
-
-    // コンボ受付時間の管理
-    if (state_.canCombo) {
-        // 前の攻撃IDからデータを取得
-        const AttackData* previousData = GetAttackData(state_.previousAttackID);
-
-        if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
-            state_.canCombo = false;
-            state_.comboCount = 0;
-            state_.previousAttackID = -1;  // ← リセット
-        }
-    }
-}
-
-///-------------------------------------------/// 
-/// ImGui情報の表示
-///-------------------------------------------///
-void PlayerAttackComponent::Information() {
-#ifdef USE_IMGUI
-    ImGui::SeparatorText("PlayerAttackComponent");
-
-    ImGui::Text("攻撃中: %s", state_.isActive ? "true" : "false");
-    ImGui::Text("現在の攻撃ID: %d", state_.currentAttackID);
-    ImGui::Text("前の攻撃ID: %d", state_.previousAttackID);  // ← 追加
-    ImGui::Text("コンボ可能: %s", state_.canCombo ? "true" : "false");
-    ImGui::Text("コンボ数: %d", state_.comboCount);
-    ImGui::Text("攻撃タイマー: %.3f", state_.timer);
-    ImGui::Text("コンボタイマー: %.3f", state_.comboTimer);
-    ImGui::Text("攻撃進行度: %. 1f%%", GetAttackProgress() * 100.0f);
-
-    // デバッグ情報
-    ImGui::Separator();
-
-    if (state_.isActive) {
-        const AttackData* currentData = GetAttackData(state_.currentAttackID);
-        if (currentData) {
-            ImGui::TextColored(ImVec4(0, 1, 0, 1), "現在の攻撃:  %s", currentData->attackName.c_str());
-            ImGui::Text("攻撃時間: %.2f秒", currentData->activeDuration);
-            ImGui::Text("終了まで: %. 2f秒", currentData->activeDuration - state_.timer);
-        }
-    }
-
-    if (state_.canCombo) {
-        const AttackData* previousData = GetAttackData(state_.previousAttackID);
-        if (previousData) {
-            ImGui::TextColored(ImVec4(1, 1, 0, 1), "コンボ受付中！");
-            ImGui::Text("前の攻撃:  %s", previousData->attackName.c_str());
-            ImGui::Text("次の攻撃ID: %d", previousData->nextComboID);
-            ImGui::Text("受付時間: %.2f秒", previousData->comboWindowTime);
-            ImGui::Text("残り時間: %.2f秒", previousData->comboWindowTime - state_.comboTimer);
-        }
-    }
-
-    ImGui::Separator();
-    ImGui::Text("登録されている攻撃数: %zu", attackDataMap_.size());
-#endif
-}
-
-///-------------------------------------------/// 
-/// 攻撃データをJsonから読み込み
-///-------------------------------------------///
-bool PlayerAttackComponent::LoadAttackData(int attackID, const std::string& filepath) {
-    AttackData data;
-    if (AttackDataSerializer::LoadFromJson(data, filepath)) {
-        data.attackID = attackID;  // IDを確実に設定
-        attackDataMap_[attackID] = data;
-        return true;
-    }
-    return false;
-}
-
-///-------------------------------------------/// 
-/// 攻撃を開始
-///-------------------------------------------///
-bool PlayerAttackComponent::StartAttack( int attackID, PlayerWeapon* weapon) {
-
-    // 既に攻撃中の場合は失敗
-    if (state_.isActive) {
-        return false;
-    }
-
-	CancelAttack(); // 状態をリセット
-
-    // 攻撃データを取得
-    auto it = attackDataMap_.find(attackID);
-    if (it == attackDataMap_.end()) {
-        return false;
-    }
-
-    const AttackData& attackData = it->second;
-
-    // 武器に攻撃を適用
-    ApplyAttackToWeapon(attackData, weapon);
-
-    // 状態を更新
-    state_.isActive = true;
-    state_.currentAttackID = attackID;
-    state_.timer = 0.0f;
-    state_.canCombo = false;
-    state_.comboCount = 0;
-
-    return true;
-}
-
-///-------------------------------------------/// 
-/// コンボ攻撃を試行
-///-------------------------------------------///
-bool PlayerAttackComponent::TryCombo(PlayerWeapon* weapon) {
-
-    // コンボ可能状態でない場合は失敗
-    if (!state_.canCombo) {
-        return false;
-    }
-
-    // 前の攻撃データを取得
-    const AttackData* previousData = GetAttackData(state_.previousAttackID);
-    if (!previousData || !previousData->canComboToNext) {
-        return false;
-    }
-
-    // 次のコンボIDを取得
-    int nextAttackID = previousData->nextComboID;
-    if (nextAttackID < 0) {
-        return false;
-    }
-
-    // 次の攻撃を開始
-    state_.canCombo = false;
-    state_.comboCount++;
-
-    return StartAttack(nextAttackID, weapon);
-}
-
-///-------------------------------------------/// 
-/// 攻撃をキャンセル
-///-------------------------------------------///
-void PlayerAttackComponent::CancelAttack() {
-    state_.isActive = false;
-    state_.canCombo = false;
-    state_.currentAttackID = -1;
-    state_.previousAttackID = -1;  // ← リセット
-    state_.comboCount = 0;
-    state_.timer = 0.0f;
-    state_.comboTimer = 0.0f;
-}
-
-///-------------------------------------------/// 
-/// 現在の攻撃データを取得
-///-------------------------------------------///
-const AttackData* PlayerAttackComponent::GetCurrentAttackData() const {
-    return GetAttackData(state_.currentAttackID);
-}
-
-///-------------------------------------------/// 
-/// 攻撃データをIDで取得
-///-------------------------------------------///
-const AttackData* PlayerAttackComponent::GetAttackData(int attackID) const {
-    auto it = attackDataMap_.find(attackID);
-    if (it != attackDataMap_.end()) {
-        return &it->second;
-    }
-    return nullptr;
-}
-
-///-------------------------------------------/// 
-/// 現在の攻撃進行度を取得
-///-------------------------------------------///
-float PlayerAttackComponent::GetAttackProgress() const {
-    const AttackData* data = GetCurrentAttackData();
-    if (!data || !state_.isActive) {
-        return 0.0f;
-    }
-
-    return (std::min)(state_.timer / data->activeDuration, 1.0f);
-}
-
-///-------------------------------------------/// 
-/// 武器に攻撃軌道を設定
-///-------------------------------------------///
-void PlayerAttackComponent::ApplyAttackToWeapon( const AttackData& data, PlayerWeapon* weapon) {
-    // 早期リターン
-    if (!weapon) return;
-
-    // チャンネル0
-    const TrajectoryChannel* weaponChannel = data.GetChannel(0);
-    if (weapon && weaponChannel && weaponChannel->enabled && weaponChannel->points.size() >= 2) {
-        weapon->StartAttack(weaponChannel->points, data.activeDuration);
-    }
-}
-
-///-------------------------------------------/// 
-/// タイマーの更新
-///-------------------------------------------///
-void PlayerAttackComponent::UpdateTimers(float deltaTime) {
-    if (state_.isActive) {
-        state_.timer += deltaTime;
-    }
-
-    if (state_.canCombo) {
-        state_.comboTimer += deltaTime;
-    }
-}
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerAttackComponent.h
+File Path: Project/application/Game/Entity/Player/Component/PlayerComponent.h
 ============================================================
 #pragma once
-/// ===Include=== ///
-#include <Engine/System/Editor/Attack/Data/AttackData.h>
-// C++
-#include <memory>
-#include <unordered_map>
-#include <string>
-
-/// ===前方宣言=== ///
-class PlayerHand;
-class PlayerWeapon;
 
 ///-------------------------------------------/// 
-/// PlayerAttackComponent
+/// PlayerComponent
+/// Playerクラスのコンポーネントをまとめるための名前空間
 ///-------------------------------------------///
-class PlayerAttackComponent {
-private:
-	/// ===攻撃状態の構造体=== ///
-	struct AttackState {
-		float timer = 0.0f;         // 攻撃タイマー
-		float comboTimer = 0.0f;    // コンボタイマー
-		bool isActive = false;      // 攻撃中フラグ
-		bool canCombo = false;      // コンボ可能フラグ
-		int currentAttackID = -1;   // 現在の攻撃ID
-		int previousAttackID = -1;  // 前の攻撃ID
-		int comboCount = 0;         // コンボカウント
-	};
-
-public:
-
-	PlayerAttackComponent() = default;
-	~PlayerAttackComponent() = default;
-
-	// コピー・ムーブは明示的に制御
-	PlayerAttackComponent(const PlayerAttackComponent&) = delete;
-	PlayerAttackComponent& operator=(const PlayerAttackComponent&) = delete;
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	void Initialize();
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	void Update(const float deltaTime);
-
-	/// <summary>
-	/// ImGui情報の表示
-	/// </summary>
-	void Information();
-
-	/// <summary>
-	/// 攻撃データをJSONから読み込み
-	/// </summary>
-	/// <param name="attackID">攻撃ID</param>
-	/// <param name="filepath">JSONファイルパス</param>
-	/// <returns>読み込み成功したらtrue</returns>
-	bool LoadAttackData(int attackID, const std::string& filepath);
-
-	/// <summary>
-	/// 攻撃を開始
-	/// </summary>
-	/// <param name="attackID">実行する攻撃ID</param>
-	/// <param name="weapon">使用する武器</param>
-	/// <returns>攻撃開始に成功したらtrue</returns>
-	bool StartAttack(int attackID, PlayerWeapon* weapon);
-
-	/// <summary>
-	/// コンボ攻撃を試行
-	/// </summary>
-	/// <param name="weapon">使用する武器</param>
-	/// <returns>コンボ成功したらtrue</returns>
-	bool TryCombo(PlayerWeapon* weapon);
-
-	/// <summary>
-	/// 攻撃をキャンセル
-	/// </summary>
-	void CancelAttack();
-
-public: /// ===Getter=== ///
-
-	// 現在の攻撃データを取得
-	const AttackData* GetCurrentAttackData() const;
-	// 攻撃データをIDで取得
-	const AttackData* GetAttackData(int attackID) const;
-	// 攻撃状態
-	const AttackState& GetState() const { return state_; }
-	// 攻撃中か
-	bool IsAttacking() const { return state_.isActive; }
-	// コンボ可能か
-	bool CanCombo() const { return state_.canCombo; }
-	// 現在の攻撃進行度
-	float GetAttackProgress() const;
-
-private:
-	// 攻撃データの管理
-	std::unordered_map<int, AttackData> attackDataMap_;
-
-	// 攻撃状態
-	AttackState state_;
-
-private:
-
-	/// <summary>
-	/// タイマーを更新します。
-	/// </summary>
-	/// <param name="deltaTime">前回の更新からの経過時間（秒）</param>
-	void UpdateTimers(const float deltaTime);
-
-	/// <summary>
-	/// 武器に攻撃軌道を設定
-	/// </summary>
-	/// <param name="data">適用する攻撃情報を保持する参照。ダメージ値や攻撃種別、エフェクトなどを含みます。</param>
-	/// <param name="weapon">攻撃を受ける対象の武器オブジェクトを指すポインタ。</param>
-	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
-};
-
-
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerAvoidanceComponent.cpp
-============================================================
-#include "PlayerAvoidanceComponent.h"
-// Math
-#include "Math/sMath.h"
-// C++
-#include <cassert>
-// ImGui
-#ifdef USE_IMGUI
-#include <imgui.h>
-#endif // USE_IMGUI
-
-///-------------------------------------------/// 
-/// 初期化処理
-///-------------------------------------------///
-void PlayerAvoidanceComponent::Initialize(const AvoidanceConfig& config) {
-	// 設定の初期化
-	config_ = config;
-
-	// 初期化
-	acceleration_ = 0.1f;
-	direction_ = { 0.0f, 0.0f, 0.0f };
-}
-
-///-------------------------------------------/// 
-/// 更新処理
-///-------------------------------------------///
-PlayerAvoidanceComponent::UpdateResult PlayerAvoidanceComponent::Update(const UpdateContext& context) {
-	
-	UpdateResult result{};
-
-	// 加速度の減少
-	acceleration_ -= context.deltaTime * config_.activeTime;
-	// 速度の設定
-	float speed = config_.speed * acceleration_;
-
-	/// ===Velocityに反映=== ///
-	result.velocity.x += context.inputDirection.x * speed;
-	result.velocity.z += context.inputDirection.z * speed;
-
-	return result;
-}
-
-///-------------------------------------------/// 
-/// タイマーの更新処理
-///-------------------------------------------///
-void PlayerAvoidanceComponent::UpdateTimer(const float deltaTime) {
-	if (state_.timer > 0.0f) {
-		state_.timer -= deltaTime;
-	} else {
-		state_.isPreparation = true;
-	}
-}
-
-///-------------------------------------------/// 
-/// ImGui情報の表示
-///-------------------------------------------///
-void PlayerAvoidanceComponent::Information() {
-#ifdef USE_IMGUI
-	if (ImGui::TreeNode("回避情報")) {
-		ImGui::DragFloat("回避速度", &config_.speed, 0.01f);
-		ImGui::DragFloat("有効時間", &config_.activeTime, 0.01f);
-		ImGui::DragFloat("クールタイム", &config_.coolTime, 0.01f);
-		ImGui::DragFloat("無敵時間", &config_.invincibleTime, 0.01f);
-		ImGui::Separator();
-		ImGui::TreePop();
-	}
-#endif // USE_IMGUI
-}
-
-///-------------------------------------------/// 
-/// 回避処理の開始
-///-------------------------------------------///
-void PlayerAvoidanceComponent::StartAvoidance() {
-	// 状態の初期化
-	acceleration_ = 0.1f;
-	state_.timer = config_.activeTime;
-	state_.isActive = true;
-}
-
-///-------------------------------------------/// 
-/// 状態のリセット
-///-------------------------------------------///
-void PlayerAvoidanceComponent::ResetState() {
-	state_.isActive = false;
-	state_.timer = config_.coolTime;
-	state_.isPreparation = false;
-}
-
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerAvoidanceComponent.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include "Math/Vector3.h"
-
-///=====================================================/// 
-/// PlayerAvoidanceComponent（回避）
-///=====================================================///
-class PlayerAvoidanceComponent {
-private:
-	/// ===状態の構造体=== ///
-	struct AvoidanceState {
-		float timer = 0.0f;	 // タイマー
-		bool isActive = false;      // 回避中フラグ
-		bool isPreparation = false; // 準備フラグ
-	};
-public:
-	/// ===回避設定パラメータの構造体=== ///
-	struct AvoidanceConfig {
-		float speed = 0.4f;           // 回避速度
-		float activeTime = 0.3f;     // 回避の有効時間
-		float coolTime = 1.0f;       // 回避のクールタイム
-		float invincibleTime = 0.01f; // 回避時の無敵時間
-	};
-
-	/// ===更新用コンテキスト=== ///
-	struct UpdateContext {
-		Vector3 inputDirection; // 入力方向
-		float deltaTime;        // デルタタイム
-	};
-
-	/// ===更新結果=== ///
-	struct UpdateResult {
-		Vector3 velocity; // 回避ベクトル
-	};
-
-public:
-
-	PlayerAvoidanceComponent() = default;
-	~PlayerAvoidanceComponent() = default;
-
-	// コピー・ムーブは明示的に制御
-	PlayerAvoidanceComponent(const PlayerAvoidanceComponent&) = delete;
-	PlayerAvoidanceComponent& operator=(const PlayerAvoidanceComponent&) = delete;
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	/// <param name="config">初期化に使用する設定を const 参照で受け取る。省略した場合は AvoidanceConfig{} による既定設定が使用される。</param>
-	void Initialize(const AvoidanceConfig& config = AvoidanceConfig{});
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	/// <param name="context">更新用コンテキストを示す UpdateContext の const 参照。</param>
-	/// <returns>更新結果を含む UpdateResult 構造体。</returns>
-	UpdateResult Update(const UpdateContext& context);
-
-	/// <summary>
-	///タイマーの更新処理
-	/// </summary>
-	/// <param name="deltaTime">前回の更新からの経過時間（秒単位）</param>
-	void UpdateTimer(const float deltaTime);
-
-	/// <summary>
-	/// ImGui情報の表示
-	/// </summary>
-	void Information();
-
-	/// <summary>
-	/// 回避処理の開始
-	/// </summary>
-	void StartAvoidance();
-
-	/// <summary>
-	/// 状態のリセット
-	/// </summary>
-	void ResetState();
-
-public: /// ===Getter=== ///
-
-	// AvoidanceConfig
-	const AvoidanceConfig& GetConfig() const { return config_; }
-	// AvoidanceState
-	const AvoidanceState& GetState() const { return state_; }
-
-private:
-
-	/// ===情報=== ///
-	AvoidanceConfig config_;
-	AvoidanceState state_;
-
-	// 加速度
-	float acceleration_ = 0.0f;
-	// 方向
-	Vector3 direction_{ 0.0f, 0.0f, 0.0f };
-};
-
-
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerHitReactionComponent.cpp
-============================================================
-#include "PlayerHitReactionComponent.h"
-// Math
-#include "Math/sMath.h"
-
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif
-
-///-------------------------------------------/// 
-/// 初期化処理
-///-------------------------------------------///
-void PlayerHitReactionComponent::Initialize(const HitConfig& config) {
-	config_ = config;
-	currentKnockBackDirection_ = { 0.0f, 0.0f, 0.0f };
-}
-
-///-------------------------------------------/// 
-/// ヒットリアクションの開始
-///-------------------------------------------///
-PlayerHitReactionComponent::UpdateResult PlayerHitReactionComponent::Start(const Vector3& knockbackDirection) {
-	// ノックバック方向の正規化（y成分は0にして水平ノックバックのみ）
-	currentKnockBackDirection_ = knockbackDirection;
-	currentKnockBackDirection_.y = 0.0f; // 水平方向のみノックバック
-	if (currentKnockBackDirection_.x != 0.0f || currentKnockBackDirection_.z != 0.0f) {
-		currentKnockBackDirection_ = Normalize(currentKnockBackDirection_);
-	}
-
-	// 更新結果の作成
-	UpdateResult result{};
-	result.velocity = currentKnockBackDirection_ * config_.knockbackSpeed;
-	return result;
-}
-
-///-------------------------------------------/// 
-/// ImGui
-///-------------------------------------------///
-void PlayerHitReactionComponent::Information() {
-#ifdef USE_IMGUI
-	if (ImGui::TreeNode("HitReaction")) {
-		ImGui::DragFloat("Knockback Speed", &config_.knockbackSpeed, 0.1f);
-		ImGui::TreePop();
-	}
-#endif
-}
-
-
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerHitReactionComponent.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include <Math/Vector3.h>
-
-///=====================================================/// 
-/// PlayerHitReactionComponent（ヒットリアクション）
-///=====================================================///
-class PlayerHitReactionComponent {
-public:
-	struct HitConfig {
-		float knockbackSpeed = 1.5f; // ノックバックの速度
-	};
-
-	/// ===更新結果=== ///
-	struct UpdateResult {
-		Vector3 velocity;		    // 移動ベクトル
-	};
-
-public:
-
-	PlayerHitReactionComponent() = default;
-	~PlayerHitReactionComponent() = default;
-
-	// コピー・ムーブは明示的に制御
-	PlayerHitReactionComponent(const PlayerHitReactionComponent&) = delete;
-	PlayerHitReactionComponent& operator=(const PlayerHitReactionComponent&) = delete;
-
-	/// <summary>
-	/// 初期化を実行します。
-	/// </summary>
-	/// <param name="config">初期化の構成設定。デフォルトではHitConfig{}が使用されます。</param>
-	void Initialize(const HitConfig& config = HitConfig{});
-
-	/// <summary>
-	/// ヒットリアクションを開始します。
-	/// </summary>
-	/// <param name="knockbackDirection">ノックバックの方向。</param>
-	UpdateResult Start(const Vector3& knockbackDirection);
-
-	/// <summary>
-	/// ImGui情報
-	/// </summary>
-	void Information();
-
-public: /// ===Getter=== ///
-	// HitConfig
-	const HitConfig& GetConfig() const { return config_; }
-
-private:
-	/// ===情報=== ///
-	HitConfig config_;
-	Vector3 currentKnockBackDirection_;
-};
-
-
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerLongAttackComponent.cpp
-============================================================
-#include "PlayerLongAttackComponent.h"
-
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerLongAttackComponent.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include "Math/Vector3.h"
-
-
-///=====================================================/// 
-/// PlayerLongAttackComponent
-/// プレイヤーの遠距離攻撃コンポーネント
-///=====================================================///
-class PlayerLongAttackComponent {
-public:
-
-
-};
-
-
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerMoveComponent.cpp
-============================================================
-#include "PlayerMoveComponent.h"
-// Math
-#include "Math/sMath.h"
-// C++
-#include <cassert>
-// ImGui
-#ifdef USE_IMGUI
-#include <imgui.h>
-#endif // USE_IMGUI
-
-///-------------------------------------------/// 
-/// 初期化処理
-///-------------------------------------------///
-void PlayerMoveComponent::Initialize(const MoveConfig& config) {
-	// 設定の初期化
-	config_ = config;
-
-	// 現在の移動方向の初期化
-	currentDirection_ = { 0.0f, 0.0f, 0.0f };
-}
-
-///-------------------------------------------/// 
-/// 更新処理
-///-------------------------------------------///
-PlayerMoveComponent::UpdateResult PlayerMoveComponent::Update(const UpdateContext & context) {
-	
-	UpdateResult result{};
-
-	/// ===値の取得=== ///
-	currentDirection_ = context.inputDirection;
-
-	/// ===Velocityに反映=== ///
-	result.velocity = currentDirection_ * config_.speed;
-
-	/// ===移動方向に沿って回転=== ///
-	// 方向が変更されたら
-	if (Length(currentDirection_) > 0.01f) {
-		// 現在のYaw角(Y軸の回転)を取得
-		float currentYaw = Math::GetYAngle(context.currentRotation);
-		// 入力方向から目標のYaw角を取得
-		float targetYaw = std::atan2(currentDirection_.x, currentDirection_.z);
-		// 差分を [-π, π] に正規化 
-		float diff = Math::NormalizeAngle(targetYaw - currentYaw);
-		// イージング補間（短い方向へ回転）
-		float easedYaw = currentYaw + diff * (context.deltaTime * 10.0f);
-		// Quaternionに再変換
-		result.targetRotation = Math::MakeRotateAxisAngle({ 0, 1, 0 }, easedYaw);
-	} else {
-		// 入力がない場合は現在の回転を維持
-		result.targetRotation = context.currentRotation;
-	}
-
-	return result;
-}
-
-///-------------------------------------------/// 
-/// ImGui情報の表示
-///-------------------------------------------///
-void PlayerMoveComponent::Information() {
-#ifdef USE_IMGUI
-	if (ImGui::TreeNode("移動情報")) {
-		ImGui::DragFloat("移動速度", &config_.speed, 0.01f);
-		ImGui::DragFloat("回転速度", &config_.rotationSpeed, 0.01f);
-		ImGui::DragFloat("減速率", &config_.deceleration, 0.01f, 0.0f, 1.0f);
-
-		ImGui::Separator();
-		ImGui::Text("現在の移動方向");
-		ImGui::Text("X: %.2f", currentDirection_.x);
-		ImGui::Text("Y: %.2f", currentDirection_.y);
-		ImGui::Text("Z: %.2f", currentDirection_.z);
-		ImGui::TreePop();
-	}
-#endif // USE_IMGUI
-}
-
-============================================================
-File Path: Project/application/Game/Entity/Player/Component/PlayerMoveComponent.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include "Math/Vector3.h"
-#include "Math/Quaternion.h"
-
-///=====================================================/// 
-/// PlayerMoveComponent（移動）
-///=====================================================///
-class PlayerMoveComponent {
-public:
-	/// ===移動設定パラメータの構造体=== ///
-	struct MoveConfig {
-		float speed = 0.5f;			 // 移動速度
-		float rotationSpeed = 0.15f; // 回転速度
+namespace PlayerComponent {
+	/// ===移動コンポーネント=== ///
+	struct MoveComponent {
+		float speed = 0.5f;			  // 移動速度
+		float rotationSpeed = 0.15f;  // 回転速度
 		float deceleration = 0.95f;   // 減速率
 	};
 
-	/// ===更新用コンテキスト=== ///
-	struct UpdateContext {
-		Vector3 inputDirection;		// 入力方向
-		Vector3 currentPosition;	// 現在の位置
-		Quaternion currentRotation; // 現在の回転
-		float deltaTime;			// デルタタイム
+	/// ===回避コンポーネント=== ///
+	struct DodgeComponent {
+		float speed = 15.0f;          // 回避速度
+		float activeTime = 0.3f;      // 回避の有効時間
+		float coolTime = 1.0f;        // 回避のクールタイム
+		float invincibleTime = 0.01f; // 回避時の無敵時間
 	};
 
-	/// ===更新結果=== ///
-	struct UpdateResult {
-		Vector3 velocity;		    // 移動ベクトル
-		Quaternion targetRotation; // 目標回転
+	/// ===ヒットリアクションコンポーネント=== ///
+	struct HitReactionComponent {
+		float knockbackSpeed = 1.5f; // ノックバックの速度
 	};
 
-public:
+	/// ===遠距離攻撃コンポーネント=== ///
+	struct RangedAttackComponent {};
 
-	PlayerMoveComponent() = default;
-	~PlayerMoveComponent() = default;
-
-	// コピー・ムーブは明示的に制御
-	PlayerMoveComponent(const PlayerMoveComponent&) = delete;
-	PlayerMoveComponent& operator=(const PlayerMoveComponent&) = delete;
-
-	/// <summary>
-	/// 初期化処理
-	/// </summary>
-	/// <param name="config">初期化に使用する設定を const 参照で受け取る。省略した場合は MoveConfig{} による既定設定が使用される。</param>
-	void Initialize(const MoveConfig& config = MoveConfig{});
-
-	/// <summary>
-	/// 更新処理
-	/// </summary>
-	/// <param name="context">更新用コンテキストを示す UpdateContext の const 参照。</param>
-	/// <returns>更新結果を含む UpdateResult 構造体。</returns>
-	UpdateResult Update(const UpdateContext& contex);
+	/// ===パラメーター=== ///
+	struct Parameters {
+		MoveComponent move;				  // 移動コンポーネントのパラメーター
+		DodgeComponent dodge;			  // 回避コンポーネントのパラメーター
+		HitReactionComponent hitReaction; // ヒットリアクションコンポーネントのパラメーター
+		RangedAttackComponent rangedAttack; // 遠距離攻撃コンポーネントのパラメーター
+	};
 
 	/// <summary>
 	/// ImGui情報の表示
 	/// </summary>
-	void Information();
-
-public: /// ===Getter=== ///
-	// MoveConfig
-	const MoveConfig& GetConfig() const { return config_; }
-	// CurrentDirection
-	const Vector3& GetCurrentDirection() const { return currentDirection_; }
-
-private:
-
-	/// ===情報=== ///
-	MoveConfig config_;
-	// 現在の移動方向
-	Vector3 currentDirection_ = { 0.0f, 0.0f, 0.0f };
-};
-
-
+	/// <param name="params"></param>
+	void Information(const Parameters& params);
+}
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/Hand/PlayerHand.cpp
@@ -43878,11 +43034,14 @@ private:
 File Path: Project/application/Game/Entity/Player/Player.cpp
 ============================================================
 #include "Player.h"
+// AttackDataSerializer
+#include "Engine/System/Editor/Attack/AttackDataSerializer.h"
 // Camera
 #include "Engine/Camera/FollowCamera.h"
 // State
 #include "State/RootState.h"
 #include "State/HitReactionState.h"
+#include "State/DeathState.h"
 // Service
 #include "Service/Input.h"
 #include "Service/Camera.h"
@@ -43901,15 +43060,25 @@ File Path: Project/application/Game/Entity/Player/Player.cpp
 /// デストラクタ
 ///-------------------------------------------///
 Player::~Player() {
+	// weapon、hand、stateの解放
 	weapon_.reset();
 	rightHand_.reset();
 	leftHand_.reset();
-	moveComponent_.reset();
-	avoidanceComponent_.reset();
-	attackComponent_.reset();
 	currentState_.reset();
-
+	// Object3dの解放
 	object3d_.reset();
+}
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+// 攻撃データをIDで取得できるようにする
+const AttackData* Player::GetAttackData(int attackID) const {
+	auto it = attackDataMap_.find(attackID);
+	if (it != attackDataMap_.end()) {
+		return &it->second;
+	}
+	return nullptr;
 }
 
 ///-------------------------------------------/// 
@@ -43991,6 +43160,11 @@ void Player::Initialize() {
 	/// ===AreaInfo=== ///
 	areaInfo_.center = { 0.0f, 0.0f, 0.0f };
 	areaInfo_.halfSize = { 200.0f, 100.0f, 200.0f };
+
+	/// ===AttackDataの読み込み=== ///
+	LoadAttackData(0, "Resource/Json/Attacks/PlayerAttack_0.json");
+	LoadAttackData(1, "Resource/Json/Attacks/PlayerAttack_1.json");
+	LoadAttackData(2, "Resource/Json/Attacks/PlayerAttack_2.json");
 }
 
 
@@ -43999,23 +43173,18 @@ void Player::Initialize() {
 ///-------------------------------------------///
 void Player::Update() {
 
-	// 早期リターン
+	// 死亡時の処理
 	if (baseInfo_.isDead) {
-		ApplyDeceleration(0.7f);
-		UpdateAnimation();
-		return;
+		// currentState_がDeathStateでない場合、DeathStateに変更する
+		if (dynamic_cast<DeathState*>(currentState_.get()) == nullptr) {
+			ChangState(std::make_unique<DeathState>());
+		}
 	}
 
 	/// ===スティックの取得=== ///
 	StickState leftStick = Service::Input::GetLeftStickState(0);
-	StickState rightStick = Service::Input::GetRightStickState(0);
 	// スティック情報を保存
-	stickState_ = {
-		.leftStick = { leftStick.x, leftStick.y },
-		.rightStick = { rightStick.x, rightStick.y }
-	};
-	// カメラにスティック情報を渡す
-	camera_->SetStick(stickState_.rightStick);
+	leftStickValue_ = { leftStick.x, leftStick.y };
 
 	/// ===タイマーを進める=== ///
 	advanceTimer();
@@ -44027,7 +43196,7 @@ void Player::Update() {
 	/// ===Stateの管理=== ///
 	if (currentState_) {
 		// 各Stateの更新
-		currentState_->Update(this, camera_);
+		currentState_->Update();
 	}
 
 	/// ===更新処理=== ///
@@ -44088,9 +43257,6 @@ void Player::Information() {
 		ImGui::TreePop();
 	}
 	SetLightData(baseInfo_.lightInfo_);
-	moveComponent_->Information();		// 移動コンポーネントの情報表示
-	avoidanceComponent_->Information(); // 回避コンポーネントの情報表示
-	attackComponent_->Information();    // 攻撃コンポーネントの情報表示
 	ImGui::DragFloat("無敵時間", &invincibleInfo_.timer, 0.01f);
 	weapon_->Information();         // Weaponの情報表示
 	ImGui::End();
@@ -44122,8 +43288,6 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			Vector3 knockbackDirection = transform_.translate - enemyPos;
 			// ステートの変更
 			ChangState(std::make_unique<HitReactionState>(knockbackDirection));
-			// 攻撃キャンセル
-			attackComponent_->CancelAttack();
 
 			// ダメージ処理
 			Service::Particle::Emit("PlayerHitEffect1", transform_.translate);
@@ -44139,44 +43303,35 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 ///-------------------------------------------///
 void Player::SettingParamita() {
 
-	/// ===Component=== ///
-	// Componentの生成
-	moveComponent_ = std::make_unique<PlayerMoveComponent>();
-	avoidanceComponent_ = std::make_unique<PlayerAvoidanceComponent>();
-	attackComponent_ = std::make_unique<PlayerAttackComponent>();
-	hitReactionComponent_ = std::make_unique<PlayerHitReactionComponent>();
-
-	// MoveComponentの初期化
-	PlayerMoveComponent::MoveConfig moveConfig{
-		.speed = 0.4f,
-		.rotationSpeed = 10.0f,
-		.deceleration = 0.85f
-	};
-	moveComponent_->Initialize(moveConfig);
-
-	// AvoidanceComponentの初期化
-	PlayerAvoidanceComponent::AvoidanceConfig avoidanceConfig{
-		.speed = 15.0f,
-		.activeTime = 0.3f,
-		.coolTime = 1.0f,
-		.invincibleTime = 0.01f
-	};
-	avoidanceComponent_->Initialize(avoidanceConfig);
-
-	// HitReactionComponentの初期化
-	PlayerHitReactionComponent::HitConfig hitReactionConfig{
-		.knockbackSpeed = 1.5f,
-	};
-	hitReactionComponent_->Initialize(hitReactionConfig);
-
-	// AttackComponentの初期化
-	attackComponent_->Initialize();
+	/// ===パラメーターの調整=== ///
+	// MoveComponentのパラメーター設定
+	parameters_.move.speed = 0.4f;
+	parameters_.move.rotationSpeed = 10.0f;
+	parameters_.move.deceleration = 0.85f;
+	// DodgeComponentのパラメーター設定
+	parameters_.dodge.speed = 2.0f;
+	parameters_.dodge.activeTime = 0.3f;
+	parameters_.dodge.coolTime = 1.0f;
+	parameters_.dodge.invincibleTime = 0.01f;
+	// HitReactionComponentのパラメーター設定
+	parameters_.hitReaction.knockbackSpeed = 1.5f;
 
 	// 無敵情報の設定
 	invincibleInfo_.isFlag = true; // このフラグをtrueにすると落ちない、falseにするとゲーム開始時から落ちる。
 
 	// HPの設定
 	baseInfo_.HP = 8;
+}
+
+///-------------------------------------------/// 
+/// 攻撃データの読み込み
+///-------------------------------------------///
+void Player::LoadAttackData(int attackID, const std::string& filePath) {
+	AttackData data;
+	if (AttackDataSerializer::LoadFromJson(data, filePath)) {
+		data.attackID = attackID; // 読み込んだデータに攻撃IDを設定
+		attackDataMap_[attackID] = data;
+	}
 }
 
 ///-------------------------------------------/// 
@@ -44193,27 +43348,8 @@ void Player::advanceTimer() {
 	}
 
 	// 回避タイマーの更新
-	avoidanceComponent_->UpdateTimer(baseInfo_.deltaTime);
-}
-
-///-------------------------------------------/// 
-/// 減速処理
-///-------------------------------------------///
-void Player::ApplyDeceleration(const float& develeration) {
-	// Velocityが0でないなら徐々に0にする
-	if (baseInfo_.velocity.x != 0.0f) {
-		// 各軸に対して減速適用
-		baseInfo_.velocity.x *= develeration;
-		// 小さすぎる値は完全に0にスナップ
-		if (std::abs(baseInfo_.velocity.x) < 0.01f) {
-			baseInfo_.velocity.x = 0.0f;
-		}
-	}
-	if (baseInfo_.velocity.z != 0.0f) {
-		baseInfo_.velocity.z *= develeration;
-		if (std::abs(baseInfo_.velocity.z) < 0.01f) {
-			baseInfo_.velocity.z = 0.0f;
-		}
+	if (coolDownInfo_.timer > 0.0f) {
+		coolDownInfo_.timer -= baseInfo_.deltaTime;
 	}
 }
 
@@ -44268,16 +43404,15 @@ File Path: Project/application/Game/Entity/Player/Player.h
 // GameCharacter
 #include "application/Game/Entity/GameCharacter/GameCharacter.h"
 // Component
-#include "Component/PlayerMoveComponent.h"
-#include "Component/PlayerAvoidanceComponent.h"
-#include "Component/PlayerAttackComponent.h"
-#include "Component/PlayerHitReactionComponent.h"
+#include "Component/PlayerComponent.h"
 // State
 #include "State/Base/PlayerState.h"
 // Hand
 #include "Hand/PlayerHand.h"
 // Weapon
 #include "Weapon/PlayerWeapon.h"
+// C++
+#include <unordered_map>
 
 /// ===前方宣言=== ///
 class Enemy;
@@ -44339,16 +43474,17 @@ public: /// ===Getter=== ///
 	PlayerHand* GetLeftHand() const { return leftHand_.get(); };
 	// Weapon
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
-
 	// Component
-	PlayerMoveComponent* GetMoveComponent() const { return moveComponent_.get(); };
-	PlayerAvoidanceComponent* GetAvoidanceComponent() const { return avoidanceComponent_.get(); };
-	PlayerAttackComponent* GetAttackComponent() const { return attackComponent_.get(); };
-	PlayerHitReactionComponent* GetHitReactionComponent() const { return hitReactionComponent_.get(); };
-
-	// StickState
-	Vector2 GetLeftStickState() const { return stickState_.leftStick; };
-	Vector2 GetRightStickState() const { return stickState_.rightStick; };
+	const PlayerComponent::Parameters& GetParameters() const { return parameters_; }
+	// Stick
+	const Vector2& GetLeftStickValue() const { return leftStickValue_; }
+	// 攻撃データをIDで取得できるようにする
+	const AttackData* GetAttackData(int attackID) const;
+	// 回避行動可能判定
+	bool CanDodge() const { return coolDownInfo_.timer <= 0.0f; }
+	// アクティブフラグの取得
+	bool GetActiveAttackFlag() const { return activeInfo_.isAttacking; }
+	bool GetActiveDodgeFlag() const { return activeInfo_.isDodge; }
 
 public: /// ===Setter=== ///
 	// Camera
@@ -44357,14 +43493,13 @@ public: /// ===Setter=== ///
 	void SetInvincibleTime(const float& time);
 	// Gravityの設定
 	void SetGravity(const float& gravity) { baseInfo_.gravity = gravity; };
+	// 回避行動のクールタイムの設定
+	void SetDodgeCoolDown() { coolDownInfo_.timer = parameters_.dodge.coolTime; }
+	// アクティブフラグの設定
+	void SetActiveAttackFlag(bool isActive) { activeInfo_.isAttacking = isActive; }
+	void SetActiveDodgeFlag(bool isDodge) { activeInfo_.isDodge = isDodge; }
 
 public: /// ===State用関数=== ///
-
-	/// <summary>
-	/// 減速処理
-	/// </summary>
-	/// <param name="deceleration">適用する減速量を表す浮動小数点数への const 参照。</param>
-	void ApplyDeceleration(const float& deceleration);
 
 	/// <summary>
 	/// Stateの変更処理
@@ -44384,13 +43519,16 @@ private: /// ===変数の宣言=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
 
 	/// ===Component=== ///
-	std::unique_ptr<PlayerMoveComponent> moveComponent_;
-	std::unique_ptr<PlayerAvoidanceComponent> avoidanceComponent_;
-	std::unique_ptr<PlayerAttackComponent> attackComponent_;
-	std::unique_ptr<PlayerHitReactionComponent> hitReactionComponent_;
+	PlayerComponent::Parameters parameters_{};
 
 	/// ===State=== ///
 	std::unique_ptr<PlayerState> currentState_;
+
+	/// ===攻撃データ=== ///
+	std::unordered_map<int, AttackData> attackDataMap_;
+
+	/// ===スティック情報=== ///
+	Vector2 leftStickValue_;  // 左スティックの入力値
 
 	/// ===無敵時間の情報=== ///
 	struct InvincibleInfo {
@@ -44400,12 +43538,18 @@ private: /// ===変数の宣言=== ///
 	};
 	InvincibleInfo invincibleInfo_;
 
-	/// ===StickState=== ///
-	struct ControllerStickState {
-		Vector2 leftStick = {0.0f, 0.0f};
-		Vector2 rightStick = {0.0f, 0.0f};
+	/// ===アクティブ情報=== ///
+	struct ActiveInfo {
+		bool isAttacking = false; // 攻撃中フラグ
+		bool isDodge = false;     // 回避中フラグ
 	};
-	ControllerStickState stickState_;
+	ActiveInfo activeInfo_;
+
+	/// ===クールダウン情報=== ///
+	struct CoolDownInfo {
+		float timer = 0.0f;      // 回避タイマー
+	};
+	CoolDownInfo coolDownInfo_;
 
 	/// ===AreaInfo=== ///
 	struct AreaInfo {
@@ -44420,6 +43564,13 @@ private:
 	/// パラメータの設定
 	/// </summary>
 	void SettingParamita();
+
+	/// <summary>
+	/// 攻撃データをJSONから読み込みます。
+	/// </summary>
+	/// <param name="attackID">攻撃データのID。</param>
+	/// <param name="filePath">JSONファイルのパス。</param>	
+	void LoadAttackData(int attackID, const std::string& filePath);
 
 	/// <summary>
 	/// タイマーを進める関数
@@ -44457,42 +43608,70 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	camera_ = camera;
 
 	// 攻撃の開始
-	if (player_->GetAttackComponent()->StartAttack(0, player_->GetWeapon())) {
+	if (StartAttack(0, player_->GetWeapon())) {
 		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
 		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 	}
+
+	// 攻撃のアクティブフラグを設定
+	player_->SetActiveAttackFlag(isAttacking_);
 }
 
 ///-------------------------------------------/// 
 /// 更新
 ///-------------------------------------------///
-void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
-	// 引数の取得
-	player_ = player;
-	camera_ = camera;
+void AttackState::Update() {
 
-	PlayerAttackComponent* attackComp = player_->GetAttackComponent();
-	// 早期リターン
-	if (!attackComp) return;
+	/// ===減速処理=== ///
+	PlayerState::ApplyDeceleration(0.4f); // 攻撃中は減速率を高めに設定
 
-	// 減速処理
-	player_->ApplyDeceleration(0.4f);
+	/// ===タイマーの更新=== ///
+	UpdateTimers(player_->GetDeltaTime());
 
-	// 攻撃コンポーネントの更新
-	attackComp->Update(player_->GetDeltaTime());
+	/// ===攻撃中の処理=== ///
+	if (isAttacking_) {
+		// 攻撃時間が終了していないかチェック
+		const AttackData* currentData = player_->GetAttackData(state_.attackID);
+
+		if (currentData && state_.timer >= currentData->activeDuration) {
+			isAttacking_ = false;
+			state_.previousAttackID = state_.attackID; // 前の攻撃IDを保存
+			state_.attackID = -1; // 攻撃IDをリセット
+
+			// コンボ受付の開始
+			if (currentData->canComboToNext) {
+				canCombo_ = true; // コンボ受付開始
+				state_.comboTimer = 0.0f; // コンボタイマーリセット
+			}
+		}
+	}
+
+	/// ===コンボ受付時間の管理=== ///
+	if (canCombo_) {
+		// 前の攻撃IDからデータを取得
+		const AttackData* previousData = player_->GetAttackData(state_.previousAttackID);
+
+		// コンボ受付時間が終了していないかチェック
+		if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
+			canCombo_ = false; // コンボ受付終了
+			state_.comboTimer = 0.0f; // コンボタイマーリセット
+			state_.previousAttackID = -1; // 前の攻撃IDリセット
+		}
+	}
 
 	// 攻撃ボタンが押されたらコンボを試行
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
-		if (attackComp->CanCombo()) {
-			if (attackComp->TryCombo(player_->GetWeapon())) {
+		if (canCombo_) {
+			if (TryCombo(player_->GetWeapon())) {
 				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
 				moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
 			}
 		}
 	}
 
-	// 攻撃が終了したらRootStateへ遷移
-	if (!attackComp->IsAttacking() && !attackComp->CanCombo()) {
+	/// ===Stateの移動=== ///
+	if (!isAttacking_ && !canCombo_) {
+		// 攻撃もコンボも終了している場合はRootStateに移行
 		player_->ChangState(std::make_unique<RootState>());
 	}
 }
@@ -44501,7 +43680,99 @@ void AttackState::Update(Player* player, MiiEngine::CameraCommon* camera) {
 /// 終了処理
 ///-------------------------------------------///
 void AttackState::Finalize() {
+	CancelAttack(); // 攻撃状態をリセット
+	player_->SetActiveAttackFlag(isAttacking_); // 攻撃終了
 	PlayerState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// 攻撃開始処理
+///-------------------------------------------///
+bool AttackState::StartAttack(int attackID, PlayerWeapon* weapon) {
+	// 既存の攻撃をキャンセル
+	CancelAttack(); 
+
+	// 攻撃データを取得
+	const AttackData* attackData = player_->GetAttackData(attackID);
+	if (!attackData) {
+		return false;
+	}
+	attackData_ = *attackData;
+
+	// 攻撃データを武器に適用
+	ApplyAttackToWeapon(attackData_, weapon);
+
+	// 状態の更新
+	isAttacking_ = true;
+	state_.attackID = attackID;
+	state_.timer = 0.0f;
+	state_.comboCount = 0;
+	canCombo_ = false;
+
+	return true;
+}
+
+///-------------------------------------------/// 
+/// コンボ攻撃の試行
+///-------------------------------------------///
+bool AttackState::TryCombo(PlayerWeapon* weapon) {
+	// コンボ可能かどうかのチェック
+	if (!canCombo_) return false;
+
+	// 前の攻撃データを取得
+	const AttackData* previousData = player_->GetAttackData(state_.previousAttackID);
+	if (!previousData || !previousData->canComboToNext) return false;
+
+	// 次の攻撃IDを取得
+	int nextAttackID = previousData->nextComboID;
+	if (nextAttackID < 0) return false;
+
+	// 次の攻撃を開始
+	canCombo_ = false;
+	state_.comboCount++;
+	return StartAttack(nextAttackID, weapon);
+}
+
+///-------------------------------------------/// 
+/// 攻撃のキャンセル
+///-------------------------------------------///
+void AttackState::CancelAttack() {
+	isAttacking_ = false;
+	canCombo_ = false;
+	state_.attackID = -1;
+	state_.previousAttackID = -1;
+	state_.comboCount = 0;
+	state_.timer = 0.0f;
+	state_.comboTimer = 0.0f;
+}
+
+///-------------------------------------------/// 
+/// タイマーの更新
+///-------------------------------------------///
+void AttackState::UpdateTimers(const float deltaTime) {
+	// 攻撃中なら攻撃タイマーを更新
+	if (isAttacking_) {
+		state_.timer += deltaTime;
+	}
+	
+	// コンボ受付中ならコンボタイマーも更新
+	if (canCombo_) {
+		state_.comboTimer += deltaTime;
+	}
+}
+
+///-------------------------------------------/// 
+/// 攻撃データを武器に適用
+///-------------------------------------------///
+void AttackState::ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon) {
+	// 早期リターン
+	if (!weapon) return;
+
+	// チャンネル0
+	const TrajectoryChannel* weaponChannel = data.GetChannel(0);
+	if (weapon && weaponChannel && weaponChannel->enabled && weaponChannel->points.size() >= 2) {
+		weapon->StartAttack(weaponChannel->points, data.activeDuration);
+	}
 }
 
 ///-------------------------------------------/// 
@@ -44525,8 +43796,13 @@ File Path: Project/application/Game/Entity/Player/State/AttackState.h
 ============================================================
 /// ===Include=== ///
 #include "Base/PlayerState.h"
+// AttackData
+#include "Engine/System/Editor/Attack/Data/AttackData.h"
 // Math
 #include "Math/Vector3.h"
+
+/// ===前方宣言=== ///
+class PlayerWeapon;
 
 ///=====================================================/// 
 /// AttackState
@@ -44546,9 +43822,7 @@ public:
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
-	/// <param name="player">更新対象の Player オブジェクトへのポインタ。nullptr の扱いは実装に依存する。</param>
-	/// <param name="camera">更新処理で参照する CameraCommon オブジェクトへのポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+	void Update() override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -44556,9 +43830,59 @@ public:
 	void Finalize() override;
 
 private:
-	float moveForwardStrength_ = 0.5f; // 攻撃開始時の前方移動の強さ
+	/// ===状態=== ///
+	struct State {
+		int attackID = -1;		   // 攻撃ID
+		int previousAttackID = -1; // 前の攻撃ID
+		int comboCount = 0;		   // コンボカウント
+		float timer = 0.0f;		   // タイマー
+		float comboTimer = 0.0f;   // コンボタイマー
+	};
+	State state_{};
+
+	// 攻撃中フラグ
+	bool isAttacking_ = false;
+
+	// コンボ可能フラグ
+	bool canCombo_ = false;
+
+	// 攻撃データ
+	AttackData attackData_{};
+
+	// 攻撃開始時の前方移動の強さ
+	float moveForwardStrength_ = 0.5f; 
 
 private:
+	/// <summary>
+	/// 攻撃を開始
+	/// </summary>
+	/// <param name="attackID">開始する攻撃のID</param>
+	/// <param name="weapon">使用する武器</param>
+	bool StartAttack(int attackID, PlayerWeapon* weapon);
+
+	/// <summary>
+	/// コンボ攻撃を試行
+	/// </summary>
+	/// <param name="weapon">使用する武器</param>
+	bool TryCombo(PlayerWeapon* weapon);
+
+	/// <summary>
+	/// 攻撃をキャンセル
+	/// </summary>
+	void CancelAttack();
+
+	/// <summary>
+	/// タイマーの更新
+	/// </summary>
+	void UpdateTimers(const float deltaTime);
+
+	/// <summary>
+	/// 武器に攻撃軌道を設定
+	/// </summary>
+	/// <param name="data"></param>
+	/// <param name="weapon"></param>
+	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
+
 	/// <summary>
 	/// 攻撃開始時に前方に移動します。
 	/// </summary>
@@ -44566,114 +43890,11 @@ private:
 };
 
 ============================================================
-File Path: Project/application/Game/Entity/Player/State/AvoidanceState.cpp
-============================================================
-#include "AvoidanceState.h"
-// Player, Camera
-#include "application/Game/Entity/Player/Player.h"
-// State
-#include "RootState.h"
-
-///-------------------------------------------/// 
-/// コンストラクタ
-///-------------------------------------------///
-AvoidanceState::AvoidanceState(const Vector3& direction) { direction_ = direction;}
-
-///-------------------------------------------/// 
-/// 開始時に呼び出す
-///-------------------------------------------///
-void AvoidanceState::Enter(Player * player, MiiEngine::CameraCommon* camera) {
-	// 引数の取得
-	player_ = player;
-	camera_ = camera;
-
-	// 回避処理を開始
-	player_->GetAvoidanceComponent()->StartAvoidance();
-}
-
-///-------------------------------------------/// 
-/// 更新処理
-///-------------------------------------------///
-void AvoidanceState::Update(Player * player, MiiEngine::CameraCommon* camera) {
-	// 引数の取得
-	player_ = player;
-	camera_ = camera;
-
-	/// ===回避処理=== ///
-	PlayerAvoidanceComponent::UpdateContext context{
-		.inputDirection = direction_,
-		.deltaTime = player_->GetDeltaTime()
-	};
-	// 更新
-	auto result = player_->GetAvoidanceComponent()->Update(context);
-
-	// 結果を反映
-	player_->SetVelocity(result.velocity);
-
-	/// ===タイマーが時間を超えたら=== ///
-	if (player_->GetAvoidanceComponent()->GetState().timer <= 0.0f) {
-		// 状態をリセット
-		player_->GetAvoidanceComponent()->ResetState();
-		// Stateの変更
-		player_->ChangState(std::make_unique<RootState>());
-	}
-}
-
-///-------------------------------------------/// 
-/// 終了時に呼び出す
-///-------------------------------------------///
-void AvoidanceState::Finalize() {
-	PlayerState::Finalize();	
-}
-
-
-============================================================
-File Path: Project/application/Game/Entity/Player/State/AvoidanceState.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include "Base/PlayerState.h"
-// Math
-#include "Math/Vector3.h"
-
-///=====================================================/// 
-/// AvoidanceState
-///=====================================================///
-class AvoidanceState : public PlayerState {
-public:
-	AvoidanceState(const Vector3& direction);
-	~AvoidanceState() override = default;
-
-	/// <summary>
-	/// ステートに入った時に呼ばれる処理
-	/// </summary>
-	/// <param name="player">処理対象のプレイヤーを指すポインタ。</param>
-	/// <param name="camera">現在のゲームカメラを指すポインタ。エントリ処理でカメラの状態や視点を使用する可能性がある。</param>
-	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
-
-	/// <summary>
-	/// ステート時の更新処理
-	/// </summary>
-	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
-	/// <param name="camera">更新処理に使用するゲームカメラを指すポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
-
-	/// <summary>
-	/// ステートの終了処理
-	/// </summary>
-	void Finalize() override;
-
-private:
-	/// ===回避方向=== ///
-	Vector3 direction_; // 回避方向
-};
-
-
-
-============================================================
 File Path: Project/application/Game/Entity/Player/State/Base/PlayerState.cpp
 ============================================================
 #include "PlayerState.h"
+// Player
+#include "application/Game/Entity/Player/Player.h"
 
 ///-------------------------------------------/// 
 /// 終了処理
@@ -44681,6 +43902,34 @@ File Path: Project/application/Game/Entity/Player/State/Base/PlayerState.cpp
 void PlayerState::Finalize() {
 	player_ = nullptr;
 	camera_ = nullptr;
+}
+
+///-------------------------------------------/// 
+/// 減速処理
+///-------------------------------------------///
+void PlayerState::ApplyDeceleration(const float& deceleration) {
+	// 現在の速度を取得
+	Vector3 velocity = player_->GetVelocity();
+
+	// Velocityが0ではないなら徐々に0にする
+	if (velocity.x != 0.0f) { // X軸の速度に対して減速を適用
+		velocity.x *= deceleration;
+		// 速度が小さくなりすぎたら0にする
+		if (std::abs(velocity.x) < 0.01f) {
+			velocity.x = 0.0f;
+		}
+	}
+
+	if (velocity.z != 0.0f) { // Z軸の速度に対して減速を適用
+		velocity.z *= deceleration;
+		// 速度が小さくなりすぎたら0にする
+		if (std::abs(velocity.z) < 0.01f) {
+			velocity.z = 0.0f;
+		}
+	}
+
+	// 減速後の速度をプレイヤーに設定
+	player_->SetVelocity(velocity);
 }
 
 
@@ -44711,20 +43960,258 @@ public:
 	/// <summary>
 	/// ステート時の更新処理、純粋仮想関数
 	/// </summary>
-	/// <param name="player">更新対象のプレイヤーを指すポインタ。</param>
-	/// <param name="camera">現在のゲームカメラを指すポインタ。</param>
-	virtual void Update(Player* player, MiiEngine::CameraCommon* camera) = 0;
+	virtual void Update() = 0;
 
 	/// <summary>
 	/// ステートの終了処理
 	/// </summary>
 	virtual void Finalize();
 
+	/// <summary>
+	/// 減速処理
+	/// </summary>
+	/// <param name="deceleration">減速率</param>
+	void ApplyDeceleration(const float& deceleration);
+
 protected:
 
 	Player* player_ = nullptr; // Player
 	MiiEngine::CameraCommon* camera_ = nullptr; // Camera
+
+	
 };
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/State/DeathState.cpp
+============================================================
+#include "DeathState.h"
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void DeathState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
+	player_ = player;
+	camera_ = camera;
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void DeathState::Update() {
+	// 減速処理
+	PlayerState::ApplyDeceleration(decelerationRate_);
+}
+
+///-------------------------------------------/// 
+/// 終了処理
+///-------------------------------------------///
+void DeathState::Finalize() {
+	PlayerState::Finalize();
+}
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/State/DeathState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/PlayerState.h"
+// Math
+#include "Math/Vector3.h"
+
+///=====================================================/// 
+/// DeathState
+/// 死亡時のステート
+///=====================================================///
+class DeathState : public PlayerState {
+public:
+
+	~DeathState() = default;
+
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="player">処理対象のプレイヤーを指すポインタ。状態遷移時にプレイヤーに対する初期化や設定を行うために使用される。</param>
+	/// <param name="camera">状態で使用するゲームカメラを指すポインタ。表示や視点の初期設定に使用される。</param>
+	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
+
+	/// <summary>
+	/// ステート時の更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// ステートの終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+
+	// 減速率
+	float decelerationRate_ = 0.7f;
+};
+
+
+
+============================================================
+File Path: Project/application/Game/Entity/Player/State/DodgeState.cpp
+============================================================
+#include "DodgeState.h"
+// Player, Camera
+#include "application/Game/Entity/Player/Player.h"
+// State
+#include "RootState.h"
+
+///-------------------------------------------/// 
+/// コンストラクタ
+///-------------------------------------------///
+DodgeState::DodgeState(const Vector3& direction) {
+	state_.direction = direction;
+}
+
+///-------------------------------------------/// 
+/// 開始時に呼び出す
+///-------------------------------------------///
+void DodgeState::Enter(Player * player, MiiEngine::CameraCommon* camera) {
+	// 引数の取得
+	player_ = player;
+	camera_ = camera;
+
+	// 回避行動のアクティブフラグを設定
+	player_->SetActiveDodgeFlag(true);
+
+	// 回避処理を開始
+	StartAvoidance();
+}
+
+///-------------------------------------------/// 
+/// 更新処理
+///-------------------------------------------///
+void DodgeState::Update() {
+
+	/// ===タイマ-の更新=== ///
+	UpdateTimer();
+
+	/// ===回避処理=== ///
+	UpdateAvoidance();
+
+	/// ===タイマーが時間を超えたら=== ///
+	if (state_.timer <= 0.0f) {
+		// Stateの変更
+		player_->ChangState(std::make_unique<RootState>());
+	}
+}
+
+///-------------------------------------------/// 
+/// 終了時に呼び出す
+///-------------------------------------------///
+void DodgeState::Finalize() {
+	// 回避行動のクールタイムを設定
+	player_->SetDodgeCoolDown();
+	// 回避行動のアクティブフラグをリセット
+	player_->SetActiveDodgeFlag(false);
+
+	PlayerState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// 回避開始処理
+///-------------------------------------------///
+void DodgeState::StartAvoidance() {
+	// 状態の初期化
+	state_.acceleration = 0.1f;
+	state_.timer = player_->GetParameters().dodge.activeTime;
+}
+
+///-------------------------------------------/// 
+/// タイマーの更新処理
+///-------------------------------------------///
+void DodgeState::UpdateTimer() {
+	if (state_.timer > 0.0f) {
+		state_.timer -= player_->GetDeltaTime();
+	}
+}
+
+///-------------------------------------------/// 
+/// 回避処理の更新
+///-------------------------------------------///
+void DodgeState::UpdateAvoidance() {
+	// 加速度の減少
+	state_.acceleration -= player_->GetDeltaTime() * player_->GetParameters().dodge.activeTime;
+	// 速度の設定
+	float speed = player_->GetParameters().dodge.speed * state_.acceleration;
+
+	// Velocityに反映
+	state_.velocity.x += state_.direction.x * speed;
+	state_.velocity.z += state_.direction.z * speed;
+
+	// プレイヤーの速度に反映
+	player_->SetVelocity(state_.velocity);
+}
+
+============================================================
+File Path: Project/application/Game/Entity/Player/State/DodgeState.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Base/PlayerState.h"
+// Math
+#include "Math/Vector3.h"
+
+///=====================================================/// 
+/// DodgeState
+///=====================================================///
+class DodgeState : public PlayerState {
+public:
+	DodgeState(const Vector3& direction);
+	~DodgeState() override = default;
+
+	/// <summary>
+	/// ステートに入った時に呼ばれる処理
+	/// </summary>
+	/// <param name="player">処理対象のプレイヤーを指すポインタ。</param>
+	/// <param name="camera">現在のゲームカメラを指すポインタ。エントリ処理でカメラの状態や視点を使用する可能性がある。</param>
+	void Enter(Player* player, MiiEngine::CameraCommon* camera) override;
+
+	/// <summary>
+	/// ステート時の更新処理
+	/// </summary>
+	void Update() override;
+
+	/// <summary>
+	/// ステートの終了処理
+	/// </summary>
+	void Finalize() override;
+
+private:
+	/// ===状態=== ///
+	struct State {
+		float timer = 0.0f;		// タイマー
+		float acceleration;		// 加速度
+		Vector3 direction;		// 回避方向
+		Vector3 velocity;		// 回避ベクトル
+	};
+	State state_{};
+
+private:
+
+	/// <summary>
+	/// 回避処理の開始
+	/// </summary>
+	void StartAvoidance();
+
+	/// <summary>
+	/// タイマーの更新処理
+	/// </summary>
+	void UpdateTimer();
+
+	/// <summary>
+	/// 更新処理
+	/// </summary>
+	void UpdateAvoidance();
+};
+
 
 
 ============================================================
@@ -44737,16 +44224,12 @@ File Path: Project/application/Game/Entity/Player/State/HitReactionState.cpp
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
 #include "RootState.h"
-// Collider
-#include "Engine/Collider/ColliderConcept.h"
-// Component
-#include "application/Game/Entity/Player/Component/PlayerHitReactionComponent.h"
 
 ///-------------------------------------------/// 
 /// コンストラクタ
 ///-------------------------------------------///
 HitReactionState::HitReactionState(const Vector3& direction) {
-	knockbackDirection_ = direction;
+	state_.knockbackDirection = direction;
 }
 
 ///-------------------------------------------/// 
@@ -44757,10 +44240,8 @@ void HitReactionState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	player_ = player;
 	camera_ = camera;
 	
-	// 更新結果の取得
-	auto result = player_->GetHitReactionComponent()->Start(knockbackDirection_);
-	// 結果の反映
-	player_->SetVelocity(result.velocity);
+	// ヒットリアクションの開始
+	StartHitReaction();
 
 	// 波紋を出す
 	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 0.5f, 0.05f);
@@ -44769,17 +44250,13 @@ void HitReactionState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void HitReactionState::Update(Player * player, MiiEngine::CameraCommon * camera) {
-	// 引数の更新
-	player_ = player;
-	camera_ = camera;
+void HitReactionState::Update() {
 
 	// 減速処理
-	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
+	PlayerState::ApplyDeceleration(player_->GetParameters().move.deceleration);
 	
 	/// ===Stateの変更=== ///
 	if (std::abs(player_->GetVelocity().x) <= 0.01f && std::abs(player_->GetVelocity().z) <= 0.01f) {
-		
 		// RootStateへ移行
 		player_->ChangState(std::make_unique<RootState>());
 	}
@@ -44790,6 +44267,23 @@ void HitReactionState::Update(Player * player, MiiEngine::CameraCommon * camera)
 ///-------------------------------------------///
 void HitReactionState::Finalize() {
 	PlayerState::Finalize();
+}
+
+///-------------------------------------------/// 
+/// ヒットリアクションを開始します
+///-------------------------------------------///
+void HitReactionState::StartHitReaction() {
+	// Y軸のノックバックを無効化
+	state_.knockbackDirection.y = 0.0f; 
+
+	// XZ平面のノックバック方向を正規化
+	if (state_.knockbackDirection.x != 0.0f || state_.knockbackDirection.z != 0.0f) {
+		state_.knockbackDirection = Normalize(state_.knockbackDirection);
+	}
+
+	// ノックバックの速度を設定
+	state_.velocity = state_.knockbackDirection * player_->GetParameters().hitReaction.knockbackSpeed;
+	player_->SetVelocity(state_.velocity);
 }
 
 
@@ -44821,9 +44315,7 @@ public:
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
-	/// <param name="player">更新対象の Player インスタンスへのポインタ。</param>
-	/// <param name="camera">更新処理に使用する MiiEngine::CameraCommon インスタンスへのポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+	void Update() override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -44831,8 +44323,19 @@ public:
 	void Finalize() override;
 
 private:
-	// ノックバックの方向
-	Vector3 knockbackDirection_;
+	/// ===状態=== ///
+	struct State {
+		Vector3 knockbackDirection; // ノックバックの方向
+		Vector3 velocity; // ノックバックの速度
+	};
+	State state_{};
+
+private:
+
+	/// <summary>
+	/// ヒットリアクションを開始します。
+	/// </summary>
+	void StartHitReaction();
 };
 
 
@@ -44850,11 +44353,12 @@ File Path: Project/application/Game/Entity/Player/State/MoveState.cpp
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
 #include "RootState.h"
-#include "AvoidanceState.h"
+#include "DodgeState.h"
 #include "AttackState.h"
 // Math
 #include "Math/sMath.h"
-
+// C++
+#include <algorithm>
 
 ///-------------------------------------------/// 
 /// 開始時に呼び出す
@@ -44864,9 +44368,10 @@ void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// タイマーのリセット
-	rippleTimer_ = 0.0f;
-	rippleTime_ = 0.01f;
+	// 状態の初期化
+	state_.direction = { 0.0f, 0.0f, 0.0f };
+	state_.velocity = { 0.0f, 0.0f, 0.0f };
+	state_.rotation = player_->GetTransform().rotate;
 
 	// 移動パーティクルの強制停止
 	if (moveParticle_) {
@@ -44882,21 +44387,18 @@ void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void MoveState::Update(Player * player, MiiEngine::CameraCommon* camera) {
-	// 引数の取得
-	player_ = player;
-	camera_ = camera;
+void MoveState::Update() {
 
 	/// ===スティックの取得=== ///
-	Vector2 leftStick = player_->GetLeftStickState();
-	bool hasInput = std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f;
+	Vector2 leftStickInput_ = player_->GetLeftStickValue();
+	bool hasInput = std::abs(leftStickInput_.x) > 0.1f || std::abs(leftStickInput_.y) > 0.1f;
 	if (hasInput) {
 		// スティックの動きを適用
-		ApplyStickMovement(leftStick);
+		ApplyStickMovement(leftStickInput_);
 
 	} else {
 		// 入力がない場合は減速処理を適用
-		ApplyBraking();
+		PlayerState::ApplyDeceleration(player_->GetParameters().move.deceleration);
 	}
 
 	// 波紋を出す
@@ -44910,18 +44412,14 @@ void MoveState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 	/// ===Stateの変更=== ///
 	// 攻撃ボタンが押されたら攻撃状態へ
 	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
-		// 攻撃の準備ができていれば
-		if (!player_->GetAttackComponent()->GetState().isActive) {
-			// AttackStateへ移行
-			player_->ChangState(std::make_unique<AttackState>());
-		}
+		/// AttackStateへ移行
+		player_->ChangState(std::make_unique<AttackState>());
 
 	// Aボタンが押されたら回避状態へ
 	} else if (Service::Input::TriggerButton(0, ControllerButtonType::A)) {
-		// 回避の準備ができていれば
-		if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
-			// AvoidanceStateへ移行
-			player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetMoveComponent()->GetCurrentDirection())));
+		// DodgeStateへ移行
+		if (player_->CanDodge()) {
+			player_->ChangState(std::make_unique<DodgeState>(Normalize(state_.direction)));
 		}
 
 	// 移動が無ければ通常状態へ
@@ -44954,27 +44452,31 @@ void MoveState::StopMoveParticle() {
 ///-------------------------------------------///
 void MoveState::ApplyStickMovement(const Vector2& stick) {
 	/// ===移動処理=== ///
-	PlayerMoveComponent::UpdateContext context{
-		.inputDirection = { stick.x, 0.0f, stick.y},
-		.currentPosition = player_->GetTransform().translate,
-		.currentRotation = player_->GetTransform().rotate,
-		.deltaTime = player_->GetDeltaTime()
-	};
-	// 更新
-	auto result = player_->GetMoveComponent()->Update(context);
+	// 状態の更新
+	state_.direction = { stick.x, 0.0f, stick.y };
+	state_.velocity = state_.direction * player_->GetParameters().move.speed;
+
+	// 回転
+	if (Length(state_.direction) > 0.0f) {
+		// 現在のYaw角
+		float currentYaw = Math::GetYAngle(state_.rotation);
+		// 目標のYaw角
+		float targetYaw = std::atan2(state_.direction.x, state_.direction.z);
+		// 差分を [-π, π] に正規化
+		float diff = Math::NormalizeAngle(targetYaw - currentYaw);
+		// イージング補間（短い方向へ回転）
+		float easedYaw = currentYaw + diff * (player_->GetDeltaTime() * 10.0f);
+		// Quaternionに再変換
+		state_.rotation = Math::MakeRotateAxisAngle({ 0, 1, 0 }, easedYaw);
+	} else {
+		// 入力がない場合は現在の回転を維持
+		state_.rotation = player_->GetTransform().rotate;
+	}
 
 	// 結果を反映
-	result.velocity.y = player_->GetVelocity().y; // 現在のY軸の速度を維持
-	player_->SetVelocity(result.velocity);
-	player_->SetRotate(result.targetRotation);
-}
-
-///-------------------------------------------/// 
-/// 減速処理
-///-------------------------------------------///
-void MoveState::ApplyBraking() {
-	/// ===減速処理(数値を下げるほどゆっくり止まる)=== ///
-	player_->ApplyDeceleration(player_->GetMoveComponent()->GetConfig().deceleration);
+	state_.velocity.y = player_->GetVelocity().y; // 現在のY軸の速度を維持
+	player_->SetVelocity(state_.velocity);
+	player_->SetRotate(state_.rotation);
 }
 
 
@@ -44986,6 +44488,8 @@ File Path: Project/application/Game/Entity/Player/State/MoveState.h
 #include "Base/PlayerState.h"
 // Math
 #include "Math/Vector2.h"
+#include "Math/Vector3.h"
+#include "Math/Quaternion.h"
 
 /// ===前方宣言=== ///
 namespace MiiEngine {
@@ -45010,9 +44514,7 @@ public:
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
-	/// <param name="player">更新対象の Player インスタンスへのポインタ。</param>
-	/// <param name="camera">更新処理に使用する MiiEngine::CameraCommon インスタンスへのポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+	void Update() override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -45020,12 +44522,16 @@ public:
 	void Finalize() override;	
 
 private:
+	/// ===状態=== ///
+	struct State {
+		Vector3 direction;	  // 移動方向
+		Vector3 velocity;	  // 速度
+		Quaternion rotation;  // 回転
+	};
+	State state_{}; // 現在の状態
+
 	// 移動パーティクル
 	MiiEngine::ParticleGroup* moveParticle_ = nullptr;
-
-	// 移動時に発生する波紋の時間
-	float rippleTimer_ = 0.0f;
-	float rippleTime_ = 0.0f;
 
 private:
 
@@ -45039,11 +44545,6 @@ private:
 	/// </summary>
 	/// <param name="stick">スティックの入力を表す2Dベクトル。</param>
 	void ApplyStickMovement(const Vector2& stick);
-
-	/// <summary>
-	/// 減速処理
-	/// </summary>
-	void ApplyBraking();
 };
 
 
@@ -45058,7 +44559,7 @@ File Path: Project/application/Game/Entity/Player/State/RootState.cpp
 #include "application/Game/Entity/Player/Player.h"
 // State
 #include "MoveState.h"
-#include "AvoidanceState.h"
+#include "DodgeState.h"
 #include "AttackState.h"
 
 ///-------------------------------------------/// 
@@ -45073,10 +44574,7 @@ void RootState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 ///-------------------------------------------/// 
 /// 更新時に呼び出す
 ///-------------------------------------------///
-void RootState::Update(Player * player, MiiEngine::CameraCommon* camera) {
-	// 引数の取得
-	player_ = player;
-	camera_ = camera;
+void RootState::Update() {
 
 	/// ===左スティックの取得=== ///
 	StickState leftStick = Service::Input::GetLeftStickState(0);
@@ -45086,23 +44584,20 @@ void RootState::Update(Player * player, MiiEngine::CameraCommon* camera) {
 		/// ===Stateの変更=== ///
 		// 攻撃ボタンが押されたら攻撃状態へ
 		if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
-			// 攻撃の準備ができていれば
-			if (!player_->GetAttackComponent()->GetState().isActive) {
-				player_->ChangState(std::make_unique<AttackState>());
-			}
+			// 攻撃状態へ移行
+			player_->ChangState(std::make_unique<AttackState>());
+
 			// RBボタンが押されたら進んでいる突進状態へ
 		} else if (Service::Input::TriggerButton(0, ControllerButtonType::RB)) {
 
 			// Aボタンが押されたら回避状態へ
 		} else if (Service::Input::TriggerButton(0, ControllerButtonType::A)) {
-			// 回避の準備ができていれば
-			if (player_->GetAvoidanceComponent()->GetState().isPreparation) {
-				// パーティクル発生
-				player_->ChangState(std::make_unique<AvoidanceState>(Normalize(player_->GetVelocity())));
-			}
+			// 回避行動へ移動
+			player_->ChangState(std::make_unique<DodgeState>(Normalize(player_->GetVelocity())));
+
 			// 移動が有れば
 		} else if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
-			// Stateを移動状態へ
+			// 移動状態へ移行
 			player_->ChangState(std::make_unique<MoveState>());
 		}
 	}
@@ -45141,9 +44636,7 @@ public:
 	/// <summary>
 	/// ステート時の更新処理
 	/// </summary>
-	/// <param name="player">更新対象の Player オブジェクトを指すポインタ。</param>
-	/// <param name="camera">更新対象の MiiEngine::CameraCommon オブジェクトを指すポインタ。</param>
-	void Update(Player* player, MiiEngine::CameraCommon* camera) override;
+	void Update() override;
 
 	/// <summary>
 	/// ステートの終了処理
@@ -46412,9 +45905,8 @@ File Path: Project/application/Game/UI/Game/PlayerUI.cpp
 ///-------------------------------------------///
 PlayerUI::~PlayerUI() {
 	moveUI_.reset();
-	cameraUI_.reset();
 	attackUI_.reset();
-	avoidanceUI_.reset();
+	dodgeUI_.reset();
 	xButton_.reset();
 	aButton_.reset();
 	leftStick_.reset();
@@ -46437,7 +45929,6 @@ void PlayerUI::Initialize(Player* player, const Vector2& windowSize) {
 
 	// UIの位置の保存
 	moveUIPos_ = moveUI_->GetPosition();
-	cameraUIPos_ = cameraUI_->GetPosition();
 
 	/// ===HPUI=== ///
 	hpUI_ = std::make_unique<HpUI>();
@@ -46461,10 +45952,15 @@ void PlayerUI::Update() {
 	// フラグと色のリセット
 	if (colorChange_.attackUI) {
 		colorChange_.attackUI = false;
-		attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-	} else if (colorChange_.avoidanceUI) {
-		colorChange_.avoidanceUI = false;
-		avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+		attackUI_->SetColor(baseColor_);
+	} 
+	if (colorChange_.dodgeActiveUI) {
+		colorChange_.dodgeActiveUI = false;
+		dodgeUI_->SetColor(baseColor_);
+	} 
+	if (colorChange_.dodgeCooldownUI) {
+		colorChange_.dodgeCooldownUI = false;
+		dodgeUI_->SetColor(baseColor_);
 	}
 
 	// スプライトの更新処理
@@ -46489,11 +45985,10 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 	/// ===object2dの生成=== ///
 	moveUI_ = std::make_unique<Object2d>();
 	leftStick_ = std::make_unique<Object2d>();
-	cameraUI_ = std::make_unique<Object2d>();
 	rightStick_ = std::make_unique<Object2d>();
 	attackUI_ = std::make_unique<Object2d>();
 	xButton_ = std::make_unique<Object2d>();
-	avoidanceUI_ = std::make_unique<Object2d>();
+	dodgeUI_ = std::make_unique<Object2d>();
 	aButton_ = std::make_unique<Object2d>();
 
 	/// ===基準の設定=== ///
@@ -46521,22 +46016,9 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
 
-	// カメラUIの初期化
-	cameraUI_->Initialize("CameraUI");
-	cameraUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
-	cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	cameraUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	cameraUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-
-	// 右スティックUI初期化
-	rightStick_->Initialize("rightStick");
-	rightStick_->SetPosition({ cameraUI_->GetPosition().x, controllerPosY });
-	rightStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	rightStick_->SetAnchorPoint({ 0.5f, 0.5f });
-
 	// 攻撃UIの初期化
 	attackUI_->Initialize("AttackUI");
-	attackUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
+	attackUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
 	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
 	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
@@ -46548,15 +46030,15 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
 
 	// 回避UIの初期化
-	avoidanceUI_->Initialize("AvoidanceUI");
-	avoidanceUI_->SetPosition({ point.x + (spaceX * 7.0f), point.y });
-	avoidanceUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	avoidanceUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	avoidanceUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	dodgeUI_->Initialize("DodgeUI");
+	dodgeUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
+	dodgeUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
+	dodgeUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	dodgeUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 	// AボタンUIの初期化
 	aButton_->Initialize("aButton");
-	aButton_->SetPosition({ avoidanceUI_->GetPosition().x, controllerPosY });
+	aButton_->SetPosition({ dodgeUI_->GetPosition().x, controllerPosY });
 	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
 	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
 	aButton_->Update();
@@ -46568,16 +46050,12 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 void PlayerUI::SpriteUpdate() {
 
 	/// ===スティックの取得=== ///
-	Vector2 leftStick = player_->GetLeftStickState();
-	Vector2 rightStick = player_->GetRightStickState();
+	Vector2 leftStick = player_->GetLeftStickValue();
 	leftStick.y *= -1.0f;
-	rightStick.y *= -1.0f;
 
 	/// ===位置の更新=== ///
 	// 移動UI
 	moveUI_->SetPosition(moveUIPos_ + leftStick * 15.0f);
-	// カメラUI
-	cameraUI_->SetPosition(cameraUIPos_ + rightStick * 15.0f);
 
 	/// ===サイズの管理=== ///
 	if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
@@ -46587,13 +46065,6 @@ void PlayerUI::SpriteUpdate() {
 		// サイズを元に戻す
 		moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
 	}
-	if (std::abs(rightStick.x) > 0.1f || std::abs(rightStick.y) > 0.1f) {
-		// サイズを大きくする
-		cameraUI_->SetSize({ 100.0f * scale_.x, 100.0f * scale_.y });
-	} else {
-		// サイズを元に戻す
-		cameraUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	}
 }
 
 ///-------------------------------------------/// 
@@ -46601,13 +46072,15 @@ void PlayerUI::SpriteUpdate() {
 ///-------------------------------------------///
 void PlayerUI::ColorUpdate() {
 	/// ===色変更のフラグ管理=== ///
-	if (player_->GetAttackComponent()->GetState().isActive && !colorChange_.attackUI) {
-		// 攻撃UI
+	// 攻撃UI
+	if (player_->GetActiveAttackFlag() && !colorChange_.attackUI) {
 		colorChange_.attackUI = true;
 	}
-	if (player_->GetAvoidanceComponent()->GetState().isActive && !colorChange_.avoidanceUI) {
-		// 回避UI
-		colorChange_.avoidanceUI = true;
+	// 回避UI
+	if (player_->GetActiveDodgeFlag() && !colorChange_.dodgeActiveUI) {
+		colorChange_.dodgeActiveUI = true;
+	} else if (!player_->CanDodge() && !colorChange_.dodgeCooldownUI) {
+		colorChange_.dodgeCooldownUI = true;
 	}
 
 	/// ===UIの色更新=== ///
@@ -46615,9 +46088,13 @@ void PlayerUI::ColorUpdate() {
 		// 攻撃UI
 		attackUI_->SetColor(activeColor_);
 	}
-	if (colorChange_.avoidanceUI) {
+	if (colorChange_.dodgeActiveUI) {
 		// 回避UI
-		avoidanceUI_->SetColor(activeColor_);
+		dodgeUI_->SetColor(activeColor_);
+	} 
+	if (colorChange_.dodgeCooldownUI) {
+		// 回避UI
+		dodgeUI_->SetColor(cooldownColor_);
 	}
 }
 
@@ -46661,9 +46138,8 @@ private:
 	/// ===Object2d=== ///
 	// アクション
 	std::unique_ptr<Object2d> moveUI_;      // 移動UI
-	std::unique_ptr<Object2d> cameraUI_;    // カメラUI
 	std::unique_ptr<Object2d> attackUI_;    // 攻撃UI
-	std::unique_ptr<Object2d> avoidanceUI_; // 回避UI
+	std::unique_ptr<Object2d> dodgeUI_; // 回避UI
 	// コントローラー
 	std::unique_ptr<Object2d> xButton_;		// X
 	std::unique_ptr<Object2d> aButton_;		// A
@@ -46674,17 +46150,19 @@ private:
 
 	/// ===位置=== ///
 	Vector2 moveUIPos_ = { 100.0f, 500.0f };      // 移動UI位置
-	Vector2 cameraUIPos_ = { 300.0f, 500.0f };    // カメラUI位置
 	Vector2 hpUIPos_ = { 0.0f, 0.0f };			  // HPUI位置
 	Vector2 hpUIOffset_ = { 0.0f, 0.0f };			  // HPUIのオフセット
 
 	/// ===Color=== ///
+	Vector4 baseColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };     // 基本カラー
 	Vector4 activeColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };   // アクティブカラー
+	Vector4 cooldownColor_ = { 1.0f, 1.0f, 0.0f, 1.0f }; // クールダウンカラー
 
 	/// ===フラグ=== ///
 	struct ColorChange {
-		bool attackUI = false;    // 攻撃UIアクティブフラグ
-		bool avoidanceUI = false; // 回避UIアクティブフラグ
+		bool attackUI = false;		  // 攻撃UIアクティブフラグ
+		bool dodgeActiveUI = false;   // 回避UIアクティブフラグ
+		bool dodgeCooldownUI = false; // 回避UIクールダウンフラグ
 	};
 	ColorChange colorChange_;
 
