@@ -103,6 +103,7 @@ void BossEnemy::Update() {
 	// ライトの位置をキャラクターの位置に合わせる
 	baseInfo_.lightInfo_.point.position.x = transform_.translate.x;
 	baseInfo_.lightInfo_.point.position.z = transform_.translate.z - 30.0f;
+	SetLightData(baseInfo_.lightInfo_);
 
 	/// ===Stateの更新=== ///
 	if (currentState_) {
@@ -147,7 +148,6 @@ void BossEnemy::Information() {
 		ImGui::DragFloat("ライトの減衰率", &baseInfo_.lightInfo_.point.decay, 0.01f);
 		ImGui::TreePop();
 	}
-	SetLightData(baseInfo_.lightInfo_);
 
 	/// ===GameCharacterの情報表示=== ///
 	GameCharacter::Information();

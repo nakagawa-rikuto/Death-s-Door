@@ -19,7 +19,7 @@ public:
 	/// 初期化処理
 	/// </summary>
 	/// <param name="boss">初期化するボスエネミーへのポインタ。</param>
-	void Initialize(BossEnemy* boss);
+	void Initialize(BossEnemy* boss, const Vector2& windowSize);
 
 	/// <summary>
 	/// 更新処理
