@@ -88,35 +88,28 @@ void BossMoveState::UpdateMove() {
 ///-------------------------------------------///
 bool BossMoveState::ChangeStateIfNeeded(float dist) {
 
-	// デバッグ用
-	if (boss_->CanOrbitingOrbs(dist)) {
+	/// ===遷移状態の判定=== ///
+	if (boss_->CanRotateAttack(dist)) {
+		// Rotate攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
+		return true;
+	} else if (boss_->CanDownSwingAttack(dist)) {
+		// Downswing攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+		return true;
+	} else if (boss_->CanParabolicShot(dist)) {
+		// ParabolicShot攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+		return true;
+	} else if (boss_->CanOrbitingOrbs(dist)) {
 		// OrbitingOrbs攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
 		return true;
+	} else if (boss_->CanJumpSmashAttack(dist)) {
+		// JumpSmash攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+		return true;
 	}
-
-	/// ===遷移状態の判定=== ///
-	//if (boss_->CanRotateAttack(dist)) {
-	//	// Rotate攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossRotateAttackState>());
-	//	return true;
-	//} else if (boss_->CanDownSwingAttack(dist)) {
-	//	// Downswing攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-	//	return true;
-	//} else if (boss_->CanParabolicShot(dist)) {
-	//	// ParabolicShot攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossParabolicShotState>());
-	//	return true;
-	//} else if (boss_->CanOrbitingOrbs(dist)) {
-	//	// OrbitingOrbs攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
-	//	return true;
-	//} else if (boss_->CanJumpSmashAttack(dist)) {
-	//	// JumpSmash攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
-	//	return true;
-	//}
 
 	return false;
 }

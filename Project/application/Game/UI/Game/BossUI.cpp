@@ -15,14 +15,14 @@ BossUI::~BossUI() {
 ///-------------------------------------------/// 
 /// 初期化処理
 ///-------------------------------------------///
-void BossUI::Initialize(BossEnemy * boss) {
+void BossUI::Initialize(BossEnemy * boss, const Vector2& windowSize) {
 	// ボスの取得
 	boss_ = boss;
 
 	/// ===HPUI=== ///
 	// 位置とサイズの設定
-	Vector2 hpUIPosition = { 50.0f, 50.0f };
-	Vector2 hpUISize = { 900.0f, 80.0f };
+	Vector2 hpUISize = { 500.0f, 40.0f };
+	Vector2 hpUIPosition = { windowSize.x / 10.0f - 100.0f, windowSize.y / 8.0f - hpUISize.y};
 	//　生成
 	hpUI_ = std::make_unique<HpUI>();
 	float maxHp = static_cast<float>(boss_->GetHP());

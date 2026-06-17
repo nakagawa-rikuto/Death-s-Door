@@ -19,7 +19,7 @@ void GameSceneUI::Initialize(Player* player, BossEnemy* boss) {
 
 	/// ===BossUi=== ///
 	bossUI_ = std::make_unique<BossUI>();
-	bossUI_->Initialize(boss);
+	bossUI_->Initialize(boss, windowSize);
 
 	/// ===OptionSprite=== ///
 	optionMenuSprite_ = std::make_unique<Object2d>();
