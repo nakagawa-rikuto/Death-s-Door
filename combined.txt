@@ -17008,8 +17008,8 @@ namespace MiiEngine {
 			{ PipelineType::Obj3D, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 			// SkyBox（深度有効, 書き込みなし, 比較LessEqual）
 			{ PipelineType::PrimitiveSkyBox, CreateDepthDesc(true,  D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
-			// Ocean（深度有効, 書き込みなし, 比較LessEqual）
-			{ PipelineType::FFTOcean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
+			// Ocean（深度有効, 書き込みあり, 比較LessEqual）
+			{ PipelineType::FFTOcean, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 			// Particle（深度有効, 書き込みなし, 比較LessEqual）
 			{ PipelineType::Particle, CreateDepthDesc(true, D3D12_DEPTH_WRITE_MASK_ZERO, D3D12_COMPARISON_FUNC_LESS_EQUAL) },
 			// Skinning 3D（深度有効, 書き込みあり, 比較LessEqual）
@@ -38754,8 +38754,8 @@ private:
 
 	/// ===OrbitBullet=== ///
 	struct OrbitBulletInfo {
-		int bulletCount = 0; // OrbitBulletの数
-		float lifeTime = 0.0f; // OrbitBulletの生存時間
+		int bulletCount = 0;	 // OrbitBulletの数
+		float lifeTime = 0.0f;   // OrbitBulletの生存時間
 		float orbitSpeed = 0.0f; // OrbitBulletの公転速度
 	};
 	std::vector<std::unique_ptr<BossEnemyBullet>> orbitingBullets_{};
@@ -38879,7 +38879,7 @@ void BossEnemyBullet::Create(const Vector3 & translate, float lifeTim) {
 		bulletParticle_ = nullptr;
 	}
 	// パーティクルの再生
-	bulletParticle_ = Service::Particle::Emit("EnemyAttack", transform_.translate);
+	bulletParticle_ = Service::Particle::Emit("followflame", transform_.translate);
 	bulletParticle_->SetEmitterPosition(transform_.translate);
 }
 
@@ -40302,6 +40302,7 @@ void BossRotateAttackState::StartAttack() {
 	if (phase_ != Phase::Idle && phase_ != Phase::Finished) return;
 
 	state_.phaseTimer = 0.0f;
+	state_.rotate = boss_->GetTransform().rotate;
 	phase_ = Phase::WindUp;
 	isFinished_ = false;
 }
@@ -40844,22 +40845,18 @@ Vector3 BossParabolicShotState::CalcInitialVelocity(const Vector3 & from, const 
 		const float denomFull = 2.0f * cos2 * denom;
 		v0 = std::sqrt(numerator / denomFull);
 	} else {
-		// フォールバック: 水平速度上限を使用
-		v0 = (dx > 1e-3f)
-			? (component.maxHorizontalSpeed / (std::max)(cosTheta, 1e-3f))
-			: component.maxHorizontalSpeed;
+		// 水平速度上限を使用
+		v0 = (dx > 1e-3f) ? (component.maxHorizontalSpeed / (std::max)(cosTheta, 1e-3f)) : component.maxHorizontalSpeed;
 	}
 
-	// 水平速度上限を適用（v0 * cosθ <= maxHorizontalSpeed）
+	// 水平速度上限を適用
 	const float hSpeed = v0 * cosTheta;
 	if (hSpeed > component.maxHorizontalSpeed) {
 		v0 = component.maxHorizontalSpeed / (std::max)(cosTheta, 1e-3f);
 	}
 
 	// 水平方向の単位ベクトル
-	const Vector3 hDir = (dx > 1e-6f)
-		? Vector3{ horizontal.x / dx, 0.0f, horizontal.z / dx }
-	: Vector3{ 0.0f, 0.0f, 1.0f };
+	const Vector3 hDir = (dx > 1e-6f) ? Vector3{ horizontal.x / dx, 0.0f, horizontal.z / dx } : Vector3{ 0.0f, 0.0f, 1.0f };
 
 	return Vector3{
 		hDir.x * v0 * cosTheta,
@@ -40923,9 +40920,9 @@ private:
 	struct State {
 		float lifeTimer = 0.0f;       // 攻撃の生存時間
 		float lockOnTimer = 0.0f;     // LockOnの経過時間
-		Vector3 bulletVelocity{};     // 弾の移動方向（正規化されたベクトル）
+		Vector3 bulletVelocity{};     // 弾のvelocity
 		Vector3 bulletPosition{};     // 弾のワールド座標
-		Quaternion rotate{};		  // LockOn中の顔の向き（プレイヤー方向）
+		Quaternion rotate{};		  // LockOn中の顔の向き
 	};
 	State state_{};
 
@@ -41408,28 +41405,34 @@ void BossMoveState::UpdateMove() {
 ///-------------------------------------------///
 bool BossMoveState::ChangeStateIfNeeded(float dist) {
 
-	/// ===遷移状態の判定=== ///
-	if (boss_->CanRotateAttack(dist)) {
-		// Rotate攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
-		return true;
-	} else if (boss_->CanDownSwingAttack(dist)) {
-		// Downswing攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-		return true;
-	} else if (boss_->CanParabolicShot(dist)) {
+	if (boss_->CanParabolicShot(dist)) {
 		// ParabolicShot攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
 		return true;
-	} else if (boss_->CanOrbitingOrbs(dist)) {
-		// OrbitingOrbs攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
-		return true;
-	} else if (boss_->CanJumpSmashAttack(dist)) {
-		// JumpSmash攻撃へ遷移
-		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
-		return true;
 	}
+
+	/// ===遷移状態の判定=== ///
+	//if (boss_->CanRotateAttack(dist)) {
+	//	// Rotate攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossRotateAttackState>());
+	//	return true;
+	//} else if (boss_->CanDownSwingAttack(dist)) {
+	//	// Downswing攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+	//	return true;
+	//} else if (boss_->CanParabolicShot(dist)) {
+	//	// ParabolicShot攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+	//	return true;
+	//} else if (boss_->CanOrbitingOrbs(dist)) {
+	//	// OrbitingOrbs攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
+	//	return true;
+	//} else if (boss_->CanJumpSmashAttack(dist)) {
+	//	// JumpSmash攻撃へ遷移
+	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+	//	return true;
+	//}
 
 	return false;
 }
@@ -41940,7 +41943,7 @@ void BossWeapon::SetActive(bool flag) {
 
 	if (isActive_) {
 		Service::Collision::AddCollider(this);
-		attackParticle_ = Service::Particle::Emit("EnemyAttack", object3d_->GetWorldTranslate());
+		attackParticle_ = Service::Particle::Emit("followflame", object3d_->GetWorldTranslate());
 		attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 		object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	}
@@ -47131,7 +47134,6 @@ File Path: Project/application/Scene/Game/GameScene.cpp
 #include "Service/Camera.h"
 #include "Service/Particle.h"
 #include "Service/Collision.h"
-#include "Service/GraphicsResourceGetter.h"
 #include "Service/Audio.h"
 // State
 #include "State/GameSceneInitializeState.h"
@@ -47341,6 +47343,7 @@ void GameScene::LoadParticle() {
 
 	// Boss
 	Service::Particle::LoadParticleDefinition("EnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("followflame.json");
 	Service::Particle::LoadParticleDefinition("EnemyHitEffect.json");
 	Service::Particle::LoadParticleDefinition("EnemyTeleportParticle.json");
 	Service::Particle::LoadParticleDefinition("EnemyDeathParticle.json");
