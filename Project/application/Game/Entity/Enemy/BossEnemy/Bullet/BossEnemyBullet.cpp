@@ -90,7 +90,7 @@ void BossEnemyBullet::Create(const Vector3 & translate, float lifeTim) {
 		bulletParticle_ = nullptr;
 	}
 	// パーティクルの再生
-	bulletParticle_ = Service::Particle::Emit("EnemyAttack", transform_.translate);
+	bulletParticle_ = Service::Particle::Emit("followflame", transform_.translate);
 	bulletParticle_->SetEmitterPosition(transform_.translate);
 }
 

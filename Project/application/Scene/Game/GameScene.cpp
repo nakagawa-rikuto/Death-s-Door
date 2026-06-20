@@ -5,7 +5,6 @@
 #include "Service/Camera.h"
 #include "Service/Particle.h"
 #include "Service/Collision.h"
-#include "Service/GraphicsResourceGetter.h"
 #include "Service/Audio.h"
 // State
 #include "State/GameSceneInitializeState.h"
@@ -215,6 +214,7 @@ void GameScene::LoadParticle() {
 
 	// Boss
 	Service::Particle::LoadParticleDefinition("EnemyAttack.json");
+	Service::Particle::LoadParticleDefinition("followflame.json");
 	Service::Particle::LoadParticleDefinition("EnemyHitEffect.json");
 	Service::Particle::LoadParticleDefinition("EnemyTeleportParticle.json");
 	Service::Particle::LoadParticleDefinition("EnemyDeathParticle.json");

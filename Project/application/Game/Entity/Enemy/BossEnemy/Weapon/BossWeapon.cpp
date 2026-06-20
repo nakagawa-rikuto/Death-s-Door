@@ -82,7 +82,7 @@ void BossWeapon::SetActive(bool flag) {
 
 	if (isActive_) {
 		Service::Collision::AddCollider(this);
-		attackParticle_ = Service::Particle::Emit("EnemyAttack", object3d_->GetWorldTranslate());
+		attackParticle_ = Service::Particle::Emit("followflame", object3d_->GetWorldTranslate());
 		attackParticle_->SetEmitterPosition(object3d_->GetWorldTranslate());
 		object3d_->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 	}

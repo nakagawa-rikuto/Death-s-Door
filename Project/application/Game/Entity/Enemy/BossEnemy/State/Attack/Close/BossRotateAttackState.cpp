@@ -79,6 +79,7 @@ void BossRotateAttackState::StartAttack() {
 	if (phase_ != Phase::Idle && phase_ != Phase::Finished) return;
 
 	state_.phaseTimer = 0.0f;
+	state_.rotate = boss_->GetTransform().rotate;
 	phase_ = Phase::WindUp;
 	isFinished_ = false;
 }
