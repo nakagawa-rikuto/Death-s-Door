@@ -194,22 +194,18 @@ Vector3 BossParabolicShotState::CalcInitialVelocity(const Vector3 & from, const 
 		const float denomFull = 2.0f * cos2 * denom;
 		v0 = std::sqrt(numerator / denomFull);
 	} else {
-		// フォールバック: 水平速度上限を使用
-		v0 = (dx > 1e-3f)
-			? (component.maxHorizontalSpeed / (std::max)(cosTheta, 1e-3f))
-			: component.maxHorizontalSpeed;
+		// 水平速度上限を使用
+		v0 = (dx > 1e-3f) ? (component.maxHorizontalSpeed / (std::max)(cosTheta, 1e-3f)) : component.maxHorizontalSpeed;
 	}
 
-	// 水平速度上限を適用（v0 * cosθ <= maxHorizontalSpeed）
+	// 水平速度上限を適用
 	const float hSpeed = v0 * cosTheta;
 	if (hSpeed > component.maxHorizontalSpeed) {
 		v0 = component.maxHorizontalSpeed / (std::max)(cosTheta, 1e-3f);
 	}
 
 	// 水平方向の単位ベクトル
-	const Vector3 hDir = (dx > 1e-6f)
-		? Vector3{ horizontal.x / dx, 0.0f, horizontal.z / dx }
-	: Vector3{ 0.0f, 0.0f, 1.0f };
+	const Vector3 hDir = (dx > 1e-6f) ? Vector3{ horizontal.x / dx, 0.0f, horizontal.z / dx } : Vector3{ 0.0f, 0.0f, 1.0f };
 
 	return Vector3{
 		hDir.x * v0 * cosTheta,

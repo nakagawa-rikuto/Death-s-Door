@@ -49,9 +49,9 @@ private:
 	struct State {
 		float lifeTimer = 0.0f;       // 攻撃の生存時間
 		float lockOnTimer = 0.0f;     // LockOnの経過時間
-		Vector3 bulletVelocity{};     // 弾の移動方向（正規化されたベクトル）
+		Vector3 bulletVelocity{};     // 弾のvelocity
 		Vector3 bulletPosition{};     // 弾のワールド座標
-		Quaternion rotate{};		  // LockOn中の顔の向き（プレイヤー方向）
+		Quaternion rotate{};		  // LockOn中の顔の向き
 	};
 	State state_{};
 

@@ -80,8 +80,8 @@ private:
 
 	/// ===OrbitBullet=== ///
 	struct OrbitBulletInfo {
-		int bulletCount = 0; // OrbitBulletの数
-		float lifeTime = 0.0f; // OrbitBulletの生存時間
+		int bulletCount = 0;	 // OrbitBulletの数
+		float lifeTime = 0.0f;   // OrbitBulletの生存時間
 		float orbitSpeed = 0.0f; // OrbitBulletの公転速度
 	};
 	std::vector<std::unique_ptr<BossEnemyBullet>> orbitingBullets_{};
