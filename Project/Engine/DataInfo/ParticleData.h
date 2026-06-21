@@ -89,12 +89,12 @@ namespace MiiEngine {
     /// パーティクル発生設定
     ///=====================================================///
     struct ParticleEmissionSettings {
-        float lifetimeMin = 1.0f;                          // 寿命最小値
-        float lifetimeMax = 2.0f;                          // 寿命最大値
-        float emissionRate = 10.0f;                        // 発生レート（秒間発生数）
-        uint32_t burstCount = 0;                           // バースト数（0なら連続発生）
-        float frequency = 0.5f;                            // 発生頻度（秒）
-        bool isBurst = false;                              // バーストモード
+        float lifetimeMin = 1.0f;           // 寿命最小値
+        float lifetimeMax = 2.0f;           // 寿命最大値
+        float emissionRate = 10.0f;         // 発生レート（秒間発生数）
+        uint32_t burstCount = 0;            // バースト数（0なら連続発生）
+        float frequency = 0.5f;             // 発生頻度（秒）
+        bool isBurst = false;               // バーストモード
     };
 
     ///=====================================================/// 
@@ -115,10 +115,11 @@ namespace MiiEngine {
         float rotationInfluence = 1.2f;        // 回転速度の影響係数
 
         // 速度減衰
+		bool enableVelocityDamping = true;     // 速度減衰を有効化
         float velocityDamping = 0.95f;         // 速度減衰率(0.0~1.0)
 
         // ビルボード回転
-        bool enableBillboardRotation = false;   // ビルボード回転を有効化
+        bool enableBillboardRotation = false;  // ビルボード回転を有効化
         float billboardRotationSpeed = 3.0f;   // ビルボード回転速度
     };
 
