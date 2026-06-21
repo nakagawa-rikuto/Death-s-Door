@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{BE
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "externals\imgui\imgui.vcxproj", "{0AA149AB-5699-40CE-9E94-7007000CEB29}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FallenAscent", "FallenAscent.vcxproj", "{A75EB43D-A0A1-4770-9630-303DC69102D1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KaijounoKessen", "KaijounoKessen.vcxproj", "{A75EB43D-A0A1-4770-9630-303DC69102D1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0AA149AB-5699-40CE-9E94-7007000CEB29} = {0AA149AB-5699-40CE-9E94-7007000CEB29}
 	EndProjectSection
