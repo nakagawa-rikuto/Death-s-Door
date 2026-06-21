@@ -5,7 +5,7 @@ on:
       - master
 env:
   # リポジトリのルートディレクトリを基点としたソリューションファイルパス
-  SOLUTION_FILE_PATH: project/FallenAscent.sln
+  SOLUTION_FILE_PATH: project/KaijounoKessen.sln
   # Visual Studio の構成(Debug / Release)
   CONFIGURATION: Debug
 jobs:
