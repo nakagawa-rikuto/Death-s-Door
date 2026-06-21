@@ -964,9 +964,17 @@ namespace MiiEngine {
 		ImGui::Spacing();
 
 		// 速度減衰
-		if (ImGui::SliderFloat("速度減衰率", &motion.velocityDamping, 0.0f, 1.0f)) {
+		if (ImGui::Checkbox("速度減衰を有効化", &motion.enableVelocityDamping)) {
 			if (previewParticle_) {
 				previewParticle_->SetDefinition(currentDefinition_);
+			}
+		}
+		if (motion.enableVelocityDamping) {
+			ImGui::Indent();
+			if (ImGui::SliderFloat("速度減衰率", &motion.velocityDamping, 0.0f, 1.0f)) {
+				if (previewParticle_) {
+					previewParticle_->SetDefinition(currentDefinition_);
+				}
 			}
 		}
 		ImGui::TextDisabled("毎フレーム速度に掛ける係数 (1.0 = 減衰なし)");

@@ -446,7 +446,7 @@ namespace MiiEngine {
             }
 
             // 速度減衰
-            if (definition_.advanced.motion.velocityDamping < 1.0f) {
+            if (definition_.advanced.motion.enableVelocityDamping) {
                 it->velocity = it->velocity * definition_.advanced.motion.velocityDamping;
             }
 

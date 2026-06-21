@@ -1,0 +1,142 @@
+{
+    "advanced": {
+        "clearOnStop": true,
+        "colorGradient": {
+            "colorBlendCurve": 1.0,
+            "oscillateColor": false,
+            "primaryColor": [
+                0.20000000298023224,
+                0.800000011920929,
+                1.0,
+                1.0
+            ],
+            "secondaryColor": [
+                1.0,
+                0.8999999761581421,
+                0.30000001192092896,
+                1.0
+            ],
+            "useGradient": false
+        },
+        "emissionPattern": {
+            "particlesPerEmit": 5,
+            "pattern": "Sphere",
+            "patternAngle": 0.0,
+            "patternRadius": 0.25
+        },
+        "isTrajectoryParticle": false,
+        "motion": {
+            "billboardRotationSpeed": 3.0,
+            "enableBillboardRotation": false,
+            "enableSwirling": false,
+            "expansionRate": 0.800000011920929,
+            "followEmitter": false,
+            "followStrength": 1.0,
+            "rotationInfluence": 1.2000000476837158,
+            "swirlingSpeed": 3.0,
+            "useRotationInfluence": false,
+            "velocityDamping": 0.949999988079071
+        },
+        "scaleAnimation": {
+            "endScale": 0.10000000149011612,
+            "maxScale": 1.5,
+            "startScale": 0.30000001192092896,
+            "type": "Bounce"
+        },
+        "trailSpacing": 0.00800000037997961
+    },
+    "appearance": {
+        "endColor": [
+            0.0,
+            0.5137255191802979,
+            0.5372549295425415,
+            1.0
+        ],
+        "endScale": [
+            0.5,
+            0.5,
+            0.5
+        ],
+        "startColor": [
+            0.0,
+            0.5155156850814819,
+            0.5358649492263794,
+            1.0
+        ],
+        "startScaleMax": [
+            5.0,
+            5.0,
+            5.0
+        ],
+        "startScaleMin": [
+            3.0,
+            3.0,
+            3.0
+        ],
+        "texturePath": "Particle",
+        "useColorGradient": true,
+        "useScaleAnimation": true
+    },
+    "emission": {
+        "burstCount": 7,
+        "emissionRate": 10.0,
+        "frequency": 0.5,
+        "isBurst": true,
+        "lifetimeMax": 3.0,
+        "lifetimeMin": 2.0
+    },
+    "maxInstance": 100,
+    "modelName": "sphere",
+    "name": "waterdrop",
+    "physics": {
+        "acceleration": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "explosionRange": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "gravity": -18.5,
+        "upwardForce": 16.799999237060547,
+        "useRandomVelocity": true,
+        "velocityMax": [
+            8.0,
+            2.0,
+            8.0
+        ],
+        "velocityMin": [
+            -8.0,
+            1.0,
+            -8.0
+        ]
+    },
+    "rotation": {
+        "enableRotation": false,
+        "initialRotationMax": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "initialRotationMin": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "randomInitialRotation": false,
+        "randomRotation": false,
+        "rotationSpeedMax": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "rotationSpeedMin": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    },
+    "shape": "None"
+}
