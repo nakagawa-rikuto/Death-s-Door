@@ -133,3 +133,10 @@ void MoveState::ApplyStickMovement(const Vector2& stick) {
 	player_->SetVelocity(state_.velocity);
 	player_->SetRotate(state_.rotation);
 }
+
+///-------------------------------------------/// 
+/// キーボード入力に基づいて移動処理を行います。
+///-------------------------------------------///
+void MoveState::MoveKeyboard() {
+
+}

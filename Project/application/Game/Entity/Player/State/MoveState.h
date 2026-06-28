@@ -60,5 +60,10 @@ private:
 	/// </summary>
 	/// <param name="stick">スティックの入力を表す2Dベクトル。</param>
 	void ApplyStickMovement(const Vector2& stick);
+
+	/// <summary>
+	/// キーボード入力に基づいて移動処理を行います。
+	/// </summary>
+	void MoveKeyboard();
 };
 

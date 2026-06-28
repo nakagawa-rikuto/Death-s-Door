@@ -52,7 +52,7 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// マウスの押下チェック
 	///-------------------------------------------///
-	bool Mouse::PushMouseButton(MouseButtonType button) {
+	bool Mouse::PushMouseButton(MouseButtonType button) const {
 		// マウスボタンが押されている場合にtrueを返す
 		return (mouseState_.rgbButtons[static_cast<int>(button)] & 0x80) != 0;
 	}
@@ -60,10 +60,18 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// マウスのトリガーチェック
 	///-------------------------------------------///
-	bool Mouse::TriggerMouseButton(MouseButtonType button) {
+	bool Mouse::TriggerMouseButton(MouseButtonType button) const {
 		// マウスボタンがトリガー（押された瞬間）の場合にtrueを返す
 		return (mouseState_.rgbButtons[static_cast<int>(button)] & 0x80) &&
 			!(preMouseState_.rgbButtons[static_cast<int>(button)] & 0x80);
+	}
+
+	///-------------------------------------------/// 
+	/// マウスのリリースチェック
+	///-------------------------------------------///
+	bool Mouse::ReleaseMouseButton(MouseButtonType button) const {
+		return !(mouseState_.rgbButtons[static_cast<int>(button)] & 0x80) &&
+			(preMouseState_.rgbButtons[static_cast<int>(button)] & 0x80);
 	}
 
 	///-------------------------------------------/// 

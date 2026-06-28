@@ -597,6 +597,7 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp" />
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
     <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp" />
+    <ClCompile Include="Engine\System\Input\InputTracker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1155,6 +1156,7 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
     <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
     <ClInclude Include="application\Game\Entity\Player\State\DeathState.h" />
+    <ClInclude Include="Engine\System\Input\InputTracker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

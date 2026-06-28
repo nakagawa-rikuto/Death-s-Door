@@ -43,6 +43,19 @@ namespace MiiEngine {
 		/// <returns>フラグを返す</returns>
 		bool TriggerKey(BYTE keyNum);
 
+		/// <summary>
+		/// キーのリリースをチェック
+		/// </summary>
+		/// <param name="keyNum">キーのタイプ</param>
+		/// <returns>フラグを返す</returns>
+		bool ReleaseKey(BYTE keyNum);
+
+		/// <summary>
+		/// いずれかのキー入力があるかどうかをチェック
+		/// </summary>
+		/// <returns>フラグを返す</returns>
+		bool HasAnyKeyInput() const;
+
 	private:
 		// キーボード用のDirectInputデバイス
 		ComPtr<IDirectInputDevice8> keyboard_;

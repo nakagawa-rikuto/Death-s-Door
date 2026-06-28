@@ -45,9 +45,6 @@ namespace MiiEngine {
 		if (SUCCEEDED(hr)) {
 			keyboard_->GetDeviceState(sizeof(key_), key_);
 		}
-
-		// 全キーの入力情報を取得
-		hr = keyboard_->GetDeviceState(sizeof(key_), key_);
 	}
 
 	///-------------------------------------------/// 
@@ -71,6 +68,30 @@ namespace MiiEngine {
 			return true;
 		}
 		// そうでなければFalseを返す
+		return false;
+	}
+
+	///-------------------------------------------/// 
+	/// キーのリリースをチェック
+	///-------------------------------------------///
+	bool Keyboard::ReleaseKey(BYTE keyNum)	{
+		// 指定キーがリリースされていればtrueを返す
+		if (!key_[keyNum] && preKey_[keyNum]) {
+			return true;
+		}
+		// そうでなければFalseを返す
+		return false;
+	}
+
+	///-------------------------------------------/// 
+	/// いずれかのキー入力があるかどうかをチェック
+	///-------------------------------------------///
+	bool Keyboard::HasAnyKeyInput() const {
+		for (int i = 0; i < 256; i++) {
+			if (key_[i]) {
+				return true;
+			}
+		}
 		return false;
 	}
 }

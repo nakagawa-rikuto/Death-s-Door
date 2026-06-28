@@ -38,6 +38,7 @@ namespace Service {
 		assert(registry.keyboard);
 		assert(registry.mouse);
 		assert(registry.controller);
+		assert(registry.inputTracker);
 		// CameraManager
 		assert(registry.cameraManager);
 		// ParticleManager
@@ -80,6 +81,7 @@ namespace Service {
 		keyboard_ = registry.keyboard;
 		mouse_ = registry.mouse;
 		controller_ = registry.controller;
+		inputTracker_ = registry.inputTracker;
 		// CameraManager
 		cameraManager_ = registry.cameraManager;
 		// ParticleManager
@@ -103,6 +105,7 @@ namespace Service {
 		controller_ = nullptr;
 		mouse_ = nullptr;
 		keyboard_ = nullptr;
+		inputTracker_ = nullptr;
 		levelManager_ = nullptr;
 		csvManager_ = nullptr;
 		audioManager_ = nullptr;
@@ -196,6 +199,7 @@ namespace Service {
 	MiiEngine::Keyboard* Locator::GetKeyboard() { return keyboard_; }
 	MiiEngine::Mouse* Locator::GetMouse() { return mouse_; }
 	MiiEngine::Controller* Locator::GetController() { return controller_; }
+	MiiEngine::InputTracker* Locator::GetInputTracker() { return inputTracker_; }
 
 	///-------------------------------------------/// 
 	/// CameraManager

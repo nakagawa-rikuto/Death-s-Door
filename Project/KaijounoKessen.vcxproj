@@ -146,6 +146,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
+    <ClCompile Include="Engine\System\Input\InputTracker.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -336,6 +337,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
+    <ClInclude Include="Engine\System\Input\InputTracker.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />

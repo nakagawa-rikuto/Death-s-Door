@@ -9,11 +9,6 @@ namespace Service {
 	class Input {
 	public: // メンバ関数
 
-		/// <summary>
-		/// 更新処理
-		/// </summary>
-		static void Update();
-
 		/// ===キーボード=== ///
 
 		/// <summary>
@@ -30,6 +25,13 @@ namespace Service {
 		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
 		static bool TriggerKey(BYTE keyNum);
 
+		/// <summary>
+		/// キーのリリースをチェック
+		/// </summary>
+		/// <param name="keyNum">リリースするキーを識別する BYTE 型の番号。</param>
+		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
+		static bool ReleaseKey(BYTE keyNum);
+
 		/// ===マウス=== ///
 
 		/// <summary>
@@ -45,6 +47,13 @@ namespace Service {
 		/// <param name="button">トリガーするマウスボタンを示す MouseButtonType 型の値。</param>
 		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
 		static bool TriggerMouse(MouseButtonType button);
+
+		/// <summary>
+		/// マウスボタンのリリースをチェック
+		/// </summary>
+		/// <param name="button">リリースするマウスボタンを示す MouseButtonType 型の値。</param>
+		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
+		static bool ReleaseMouse(MouseButtonType button);
 
 		/// <summary>
 		/// マウスカーソルの位置を取得（スクリーン座標系）
@@ -155,5 +164,16 @@ namespace Service {
 		static bool FlickLeftStick(int stickNo, float threshold = 0.7f);
 		static bool FlickRightStick(int stickNo, float threshold = 0.7f);
 
+		/// <summary>
+		/// 現在アクティブな入力デバイスを取得
+		/// </summary>
+		/// <returns>デバイスの種類</returns>
+		static DeviceType GetActiveDevice();
+
+		/// <summary>
+		/// 入力デバイスの変更をチェック
+		/// </summary>
+		/// <returns>デバイスが変更された場合は true、そうでない場合は false</returns>
+		static bool IsDeviceChanged();
 	};
 }

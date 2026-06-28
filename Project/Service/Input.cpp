@@ -5,18 +5,11 @@
 #include "Engine/System/Input/Keyboard.h"
 #include "Engine/System/Input/Mouse.h"
 #include "Engine/System/Input/Controller.h"
+#include "Engine/System/Input/InputTracker.h"
 // Locator
 #include "Locator.h"
 
 namespace Service {
-	///-------------------------------------------/// 
-	/// 更新
-	///-------------------------------------------///
-	void Input::Update() {
-		Locator::GetKeyboard()->Update();
-		Locator::GetMouse()->Update();
-		Locator::GetController()->Update();
-	}
 
 	///-------------------------------------------/// 
 	/// キーボード処理
@@ -29,6 +22,10 @@ namespace Service {
 	bool Input::TriggerKey(BYTE keyNum) {
 		return Locator::GetKeyboard()->TriggerKey(keyNum);
 	}
+	// キーのリリースをチェック
+	bool Input::ReleaseKey(BYTE keyNum) {
+		return Locator::GetKeyboard()->ReleaseKey(keyNum);
+	}
 
 	///-------------------------------------------/// 
 	/// マウス処理
@@ -40,6 +37,10 @@ namespace Service {
 	// マウスのトリガーをチェック
 	bool Input::TriggerMouse(MouseButtonType button) {
 		return Locator::GetMouse()->TriggerMouseButton(button);
+	}
+	// マウスのリリースをチェック
+	bool Input::ReleaseMouse(MouseButtonType button) {
+		return Locator::GetMouse()->ReleaseMouseButton(button);
 	}
 	// マウスカーソルの位置を取得（スクリーン座標系）
 	POINT Input::GetMousePosition() {
@@ -111,5 +112,14 @@ namespace Service {
 	}
 	bool Input::FlickRightStick(int stickNo, float threshold) {
 		return Locator::GetController()->FlickRightStick(stickNo, threshold);
+	}
+
+	// デバイスの種類を取得
+	DeviceType Input::GetActiveDevice() {
+		return Locator::GetInputTracker()->GetActiveDevice();
+	}
+	// デバイスが変更されたかどうかを取得
+	bool Input::IsDeviceChanged() {
+		return Locator::GetInputTracker()->IsDeviceChanged();
 	}
 }
