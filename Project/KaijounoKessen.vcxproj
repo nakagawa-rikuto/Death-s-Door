@@ -146,6 +146,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
+    <ClCompile Include="Engine\System\Input\InputTracker.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -295,6 +296,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
+    <ClCompile Include="Math\TransformationMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h" />
@@ -336,6 +338,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
+    <ClInclude Include="Engine\System\Input\InputTracker.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -499,6 +502,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
+    <ClInclude Include="Math\TransformationMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

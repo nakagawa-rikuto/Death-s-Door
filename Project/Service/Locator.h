@@ -29,6 +29,7 @@ namespace MiiEngine {
 	class Keyboard;
 	class Mouse;
 	class Controller;
+	class InputTracker;
 	// Camera
 	class CameraManager;
 	// Particle
@@ -61,6 +62,7 @@ namespace Service {
 		MiiEngine::Keyboard* keyboard = nullptr;
 		MiiEngine::Mouse* mouse = nullptr;
 		MiiEngine::Controller* controller = nullptr;
+		MiiEngine::InputTracker* inputTracker = nullptr;
 		MiiEngine::CameraManager* cameraManager = nullptr;
 		MiiEngine::ParticleManager* particleManager = nullptr;
 		MiiEngine::ColliderManager* colliderManager = nullptr;
@@ -110,6 +112,7 @@ namespace Service {
 		static MiiEngine::Keyboard* GetKeyboard();
 		static MiiEngine::Mouse* GetMouse();
 		static MiiEngine::Controller* GetController();
+		static MiiEngine::InputTracker* GetInputTracker();
 		// CameraManager
 		static MiiEngine::CameraManager* GetCameraManager();
 		// ParticleManager
@@ -122,6 +125,7 @@ namespace Service {
 		static MiiEngine::GameTime* GetGameTime();
 
 	private:
+		/// ===Engine=== ///
 		// Core
 		static inline MiiEngine::WinApp* winApp_ = nullptr;
 		static inline MiiEngine::DXCommon* dxCommon_ = nullptr;
@@ -139,15 +143,23 @@ namespace Service {
 		static inline MiiEngine::LevelManager* levelManager_ = nullptr;
 		// Audio
 		static inline MiiEngine::AudioManager* audioManager_ = nullptr;
-		// Game
+		// Camera
+		static inline MiiEngine::CameraManager* cameraManager_ = nullptr;
+		// Parrticle
+		static inline MiiEngine::ParticleManager* particleManager_ = nullptr;
+		// Collider
+		static inline MiiEngine::ColliderManager* colliderManager_ = nullptr;
+		// Sprite
+		static inline MiiEngine::SpriteManager* spriteManager_ = nullptr;
+		// Line
 		static inline MiiEngine::LineObject3D* lineObject3D_ = nullptr;
+		// Input
 		static inline MiiEngine::Keyboard* keyboard_ = nullptr;
 		static inline MiiEngine::Mouse* mouse_ = nullptr;
 		static inline MiiEngine::Controller* controller_ = nullptr;
-		static inline MiiEngine::CameraManager* cameraManager_ = nullptr;
-		static inline MiiEngine::ParticleManager* particleManager_ = nullptr;
-		static inline MiiEngine::ColliderManager* colliderManager_ = nullptr;
-		static inline MiiEngine::SpriteManager* spriteManager_ = nullptr;
+		static inline MiiEngine::InputTracker* inputTracker_ = nullptr;
+		/// ===Game=== ///
+		// GameTime
 		static inline MiiEngine::GameTime* gameTime_ = nullptr;
 	};
 }

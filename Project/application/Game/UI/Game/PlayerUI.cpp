@@ -4,8 +4,7 @@
 // Service
 #include <Service/GraphicsResourceGetter.h>
 #include <Service/Sprite.h>
-#include <Service/Camera.h>
-#include <Engine/Camera/Base/CameraCommon.h>
+#include <Service/Input.h>
 // Math
 #include <Math/MatrixMath.h>
 #include <Math/Matrix4x4.h>
@@ -20,7 +19,6 @@ PlayerUI::~PlayerUI() {
 	xButton_.reset();
 	aButton_.reset();
 	leftStick_.reset();
-	rightStick_.reset();
 	hpUI_.reset();
 }
 
@@ -41,18 +39,14 @@ void PlayerUI::Initialize(Player* player, const Vector2& windowSize) {
 	moveUIPos_ = moveUI_->GetPosition();
 
 	/// ===HPUI=== ///
-	hpUI_ = std::make_unique<HpUI>();
-	// HPUIの初期化
-	float maxHp = static_cast<float>(player_->GetHP());
-	// HPUIのオフセットの設定
-	hpUIOffset_ = { -50.0f, -150.0f };
-	hpUIOffset_ *= scale_;
-	// HPUIの位置の設定
-	hpUIPos_ = Service::Sprite::WorldToScreen(player_->GetTransform().translate);
 	// HPUIのサイズの設定
-	Vector2 hpUISize = { 100.0f, 10.0f };
+	Vector2 hpUISize = { 300.0f, 30.0f };
 	hpUISize *= scale_;
-	hpUI_->Initialize(hpUIPos_ + hpUIOffset_, hpUISize, maxHp);
+	Vector2 hpUIPosition = { windowSize.x / 12.0f - hpUISize.x / 2.0f, windowSize.y * 7.0f / 8.0f + hpUISize.y * 2.0f * scale_.y };
+	// HPUIの初期化
+	hpUI_ = std::make_unique<HpUI>();
+	float maxHp = static_cast<float>(player_->GetHP());
+	hpUI_->Initialize(hpUIPosition, hpUISize, maxHp);
 }
 
 ///-------------------------------------------/// 
@@ -62,14 +56,17 @@ void PlayerUI::Update() {
 	// フラグと色のリセット
 	if (colorChange_.attackUI) {
 		colorChange_.attackUI = false;
+		attackUI_->SetSize(uiInfo_.size);
 		attackUI_->SetColor(baseColor_);
 	} 
 	if (colorChange_.dodgeActiveUI) {
 		colorChange_.dodgeActiveUI = false;
+		dodgeUI_->SetSize(uiInfo_.size);
 		dodgeUI_->SetColor(baseColor_);
 	} 
 	if (colorChange_.dodgeCooldownUI) {
 		colorChange_.dodgeCooldownUI = false;
+		dodgeUI_->SetSize(uiInfo_.size);
 		dodgeUI_->SetColor(baseColor_);
 	}
 
@@ -81,9 +78,6 @@ void PlayerUI::Update() {
 
 	// HPUIの更新処理
 	float currentHp = static_cast<float>(player_->GetHP());
-	// 座標返還後の座標を保存してHPUIに渡す
-	hpUIPos_ = Service::Sprite::WorldToScreen(player_->GetTransform().translate);
-	hpUI_->SetPosition(hpUIPos_ + hpUIOffset_);
 	hpUI_->Update(player_->GetDeltaTime(), currentHp);
 }
 
@@ -94,63 +88,72 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 
 	/// ===object2dの生成=== ///
 	moveUI_ = std::make_unique<Object2d>();
-	leftStick_ = std::make_unique<Object2d>();
-	rightStick_ = std::make_unique<Object2d>();
 	attackUI_ = std::make_unique<Object2d>();
-	xButton_ = std::make_unique<Object2d>();
 	dodgeUI_ = std::make_unique<Object2d>();
+
+	leftStick_ = std::make_unique<Object2d>();
+	xButton_ = std::make_unique<Object2d>();
 	aButton_ = std::make_unique<Object2d>();
 
 	/// ===基準の設定=== ///
 	// 基準点
 	Vector2 point = {
-		windowSize.x * (3.0f / 4.0f) - (20.0f * scale_.x),
-		windowSize.y * (7.0f / 8.0f)
+		windowSize.x / 12.0f - (100.0f * scale_.x),
+		windowSize.y* (7.0f / 8.0f) - 30.0f * scale_.y
 	};
 	// 基準の間隔
-	float spaceX = (windowSize.x - point.x) / 8.0f + (2.0f * scale_.x);
-	// コントローラーUIのY座標
-	float controllerPosY = point.y + (90.0f * scale_.y);
+	float spaceX = point.x - 30.0f * scale_.x;
+	// デバイスUIのY座標
+	float devicePosY = point.y + (60.0f * scale_.y);
+
+	// UI情報
+	uiInfo_.size = { 60.0f * scale_.x, 60.0f * scale_.y };
+	uiInfo_.activeSize = uiInfo_.size * 1.2f;
+	uiInfo_.anchorPoint = { 0.5f, 0.5f };
+	uiInfo_.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	// デバイスUIのサイズ
+	Vector2 deviceUISize = { 30.0f * scale_.x, 30.0f * scale_.y };
 
 	// 移動UIの初期化
 	moveUI_->Initialize("MoveUI");
-	moveUI_->SetPosition({ point.x + spaceX, point.y });
+	moveUI_->SetPosition({ point.x, point.y });
+	moveUI_->SetSize(uiInfo_.size);
+	moveUI_->SetAnchorPoint(uiInfo_.anchorPoint);
+	moveUI_->SetColor(uiInfo_.color);
 	moveUIPos_ = moveUI_->GetPosition();
-	moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	moveUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	moveUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 	// 左スティックUIの初期化
 	leftStick_->Initialize("leftStick");
-	leftStick_->SetPosition({ moveUI_->GetPosition().x, controllerPosY });
-	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
+	leftStick_->SetPosition({ moveUI_->GetPosition().x, devicePosY });
+	leftStick_->SetSize(deviceUISize);
+	leftStick_->SetAnchorPoint(uiInfo_.anchorPoint);
 
 	// 攻撃UIの初期化
 	attackUI_->Initialize("AttackUI");
 	attackUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
-	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	attackUI_->SetSize(uiInfo_.size);
+	attackUI_->SetAnchorPoint(uiInfo_.anchorPoint);
+	attackUI_->SetColor(uiInfo_.color);
 
 	// XボタンUIの初期化
 	xButton_->Initialize("xButton");
-	xButton_->SetPosition({ attackUI_->GetPosition().x,  controllerPosY });
-	xButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
+	xButton_->SetPosition({ attackUI_->GetPosition().x,  devicePosY });
+	xButton_->SetSize(deviceUISize);
+	xButton_->SetAnchorPoint(uiInfo_.anchorPoint);
 
 	// 回避UIの初期化
 	dodgeUI_->Initialize("DodgeUI");
-	dodgeUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
-	dodgeUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	dodgeUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	dodgeUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	dodgeUI_->SetPosition({ point.x + (spaceX * 6.0f), point.y });
+	dodgeUI_->SetSize(uiInfo_.size);
+	dodgeUI_->SetAnchorPoint(uiInfo_.anchorPoint);
+	dodgeUI_->SetColor(uiInfo_.color);
 
 	// AボタンUIの初期化
 	aButton_->Initialize("aButton");
-	aButton_->SetPosition({ dodgeUI_->GetPosition().x, controllerPosY });
-	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
+	aButton_->SetPosition({ dodgeUI_->GetPosition().x, devicePosY });
+	aButton_->SetSize(deviceUISize);
+	aButton_->SetAnchorPoint(uiInfo_.anchorPoint);
 	aButton_->Update();
 }
 
@@ -159,21 +162,32 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 ///-------------------------------------------///
 void PlayerUI::SpriteUpdate() {
 
-	/// ===スティックの取得=== ///
-	Vector2 leftStick = player_->GetLeftStickValue();
-	leftStick.y *= -1.0f;
+	/// ===入力値の取得=== ///
+	Vector2 leftStickValue = player_->GetLeftStickValue();
+	leftStickValue.y *= -1.0f;
+	Vector2 keybordValue = player_->GetKeybordValue();
+	keybordValue.y *= -1.0f;
 
 	/// ===位置の更新=== ///
-	// 移動UI
-	moveUI_->SetPosition(moveUIPos_ + leftStick * 15.0f);
-
-	/// ===サイズの管理=== ///
-	if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
-		// サイズを大きくする
-		moveUI_->SetSize({ 100.0f * scale_.x, 100.0f * scale_.y });
+	DeviceType activeDevice = Service::Input::GetActiveDevice();
+	bool isValue = false;
+	Vector2 moveValue = { 0.0f, 0.0f };
+	// デバイスの判定
+	if (activeDevice == DeviceType::Controller) {
+		isValue = std::abs(leftStickValue.x) > 0.1f || std::abs(leftStickValue.y) > 0.1f;
+		moveValue = leftStickValue;
 	} else {
-		// サイズを元に戻す
-		moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
+		isValue = std::abs(keybordValue.x) > 0.1f || std::abs(keybordValue.y) > 0.1f;
+		moveValue = keybordValue;
+	}
+
+	// 移動UIの位置更新
+	moveUI_->SetPosition(moveUIPos_ + moveValue * 5.0f);
+	// 移動UIのサイズ更新
+	if (isValue) {
+		moveUI_->SetSize(uiInfo_.activeSize);
+	} else {
+		moveUI_->SetSize(uiInfo_.size);
 	}
 }
 
@@ -185,12 +199,15 @@ void PlayerUI::ColorUpdate() {
 	// 攻撃UI
 	if (player_->GetActiveAttackFlag() && !colorChange_.attackUI) {
 		colorChange_.attackUI = true;
+		attackUI_->SetSize(uiInfo_.activeSize);
 	}
 	// 回避UI
 	if (player_->GetActiveDodgeFlag() && !colorChange_.dodgeActiveUI) {
 		colorChange_.dodgeActiveUI = true;
+		dodgeUI_->SetSize(uiInfo_.activeSize);
 	} else if (!player_->CanDodge() && !colorChange_.dodgeCooldownUI) {
 		colorChange_.dodgeCooldownUI = true;
+		dodgeUI_->SetSize(uiInfo_.size * 0.8f);
 	}
 
 	/// ===UIの色更新=== ///

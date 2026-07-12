@@ -171,7 +171,7 @@ namespace MiiEngine {
 				ImGui::DragFloat2("風向", &p.windDirection.x, 0.01f, -1.0f, 1.0f);
 				ImGui::DragFloat("振幅", &p.amplitude, 0.0001f, 0.0001f, 50.0f);
 				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 30.0f);
-				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 5.0f);
+				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 1.0f);
 			}
 
 			/// ===Ripple（波紋）=== ///

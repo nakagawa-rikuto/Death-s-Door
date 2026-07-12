@@ -45,9 +45,6 @@ namespace MiiEngine {
 		if (SUCCEEDED(hr)) {
 			keyboard_->GetDeviceState(sizeof(key_), key_);
 		}
-
-		// 全キーの入力情報を取得
-		hr = keyboard_->GetDeviceState(sizeof(key_), key_);
 	}
 
 	///-------------------------------------------/// 
@@ -72,5 +69,87 @@ namespace MiiEngine {
 		}
 		// そうでなければFalseを返す
 		return false;
+	}
+
+	///-------------------------------------------/// 
+	/// キーのリリースをチェック
+	///-------------------------------------------///
+	bool Keyboard::ReleaseKey(BYTE keyNum)	{
+		// 指定キーがリリースされていればtrueを返す
+		if (!key_[keyNum] && preKey_[keyNum]) {
+			return true;
+		}
+		// そうでなければFalseを返す
+		return false;
+	}
+
+	///-------------------------------------------/// 
+	/// いずれかのキー入力があるかどうかをチェック
+	///-------------------------------------------///
+	bool Keyboard::HasAnyKeyInput() const {
+		for (int i = 0; i < 256; i++) {
+			if (key_[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	///-------------------------------------------/// 
+	/// WASDキーの入力値を取得 
+	///-------------------------------------------///
+	Vector2 Keyboard::GetKeybordWASDValue() {
+		Vector2 input = { 0.0f, 0.0f };
+
+		if (PushKey(DIK_D)) {
+			input.x += 1.0f;
+		}
+		if (PushKey(DIK_A)) {
+			input.x -= 1.0f;
+		}
+		if (PushKey(DIK_W)) {
+			input.y += 1.0f;
+		}
+		if (PushKey(DIK_S)) {
+			input.y -= 1.0f;
+		}
+
+		// 斜め移動時に速度が大きくなりすぎないよう正規化
+		if (Length(Vector2{ input.x, input.y }) > 1.0f) {
+			Vector2 normalized = Normalize(Vector2{ input.x, input.y });
+			input.x = normalized.x;
+			input.y = normalized.y;
+		}
+
+		return input;
+	}
+
+	///-------------------------------------------/// 
+	/// 矢印キーの入力値を取得
+	///-------------------------------------------///
+	Vector2 Keyboard::GetKeybordArrowValue() {
+		Vector2 input = { 0.0f, 0.0f };
+
+		if (PushKey(DIK_RIGHT)) {
+			input.x += 1.0f;
+		}
+		if (PushKey(DIK_LEFT)) {
+			input.x -= 1.0f;
+		}
+		if (PushKey(DIK_UP)) {
+			input.y += 1.0f;
+		}
+		if (PushKey(DIK_DOWN)) {
+			input.y -= 1.0f;
+		}
+
+		// 斜め移動時に速度が大きくなりすぎないよう正規化
+		if (Length(Vector2{ input.x, input.y }) > 1.0f) {
+			Vector2 normalized = Normalize(Vector2{ input.x, input.y });
+			input.x = normalized.x;
+			input.y = normalized.y;
+		}
+
+		return input;
 	}
 }

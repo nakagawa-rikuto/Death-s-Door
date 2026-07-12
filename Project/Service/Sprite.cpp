@@ -48,22 +48,4 @@ namespace Service {
 		Vector2 scale = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
 		return scale;
 	}
-
-
-	///-------------------------------------------/// 
-	/// ワールド座標をスクリーン座標に変換		
-	///-------------------------------------------///
-	Vector2 Sprite::WorldToScreen(const Vector3& worldPos) {
-		MiiEngine::CameraCommon* camera = Service::Camera::GetActiveCamera();
-		Vector3 playerPos = worldPos;
-		Matrix4x4 viewProj = camera->GetViewProjectionMatrix();
-		float width = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth());
-		float height = static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
-
-		Vector3 screenPos3d = Math::TransformCoordinates(playerPos, viewProj);
-		float screenX = (screenPos3d.x + 1.0f) * 0.5f * width;
-		float screenY = (1.0f - screenPos3d.y) * 0.5f * height;
-
-		return Vector2{ screenX, screenY };
-	}
 }

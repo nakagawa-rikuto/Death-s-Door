@@ -1,6 +1,8 @@
 #include "SelectScene.h"
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
+// Service
+#include "Service/PostEffect.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -18,8 +20,16 @@ void SelectScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
+	// ポストエフェクトをクリア
+	Service::PostEffect::ClearEffects();
+	Service::PostEffect::AddEffect(MiiEngine::OffScreenType::CopyImage);
+
+	// Oceanを生成
 	oceanGround_ = std::make_unique<GroundOcean>();
 	oceanGround_->Initialize();
+
+	// カメラの位置を設定
+	defaultCamera_->SetTranslate({ 0.0f, 50.0f, -100.0f });
 }
 
 ///-------------------------------------------/// 

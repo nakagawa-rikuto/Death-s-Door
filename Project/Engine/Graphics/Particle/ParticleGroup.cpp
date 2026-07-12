@@ -9,6 +9,7 @@
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
+#include "Math/TransformationMath.h"
 // c++
 #include <numbers>
 
@@ -331,7 +332,7 @@ namespace MiiEngine {
         // 軌跡モードの場合、エミッタの回転を考慮
         if (definition_.advanced.isTrajectoryParticle) {
             // エミッタの回転をクォータニオンに変換
-            Quaternion emitterQuat = Math::QuaternionFromVector(group_.transform.rotate);
+            Quaternion emitterQuat = Math::EulerToQuaternion(group_.transform.rotate);
 
             // 発生位置のオフセットをエミッタの回転空間で適用
             Vector3 localOffset = particle.transform.translate - translate;
@@ -343,7 +344,7 @@ namespace MiiEngine {
 
             // パーティクル自体の初期回転もエミッタに合わせる
             if (definition_.rotation.enableRotation) {
-                Quaternion particleRot = Math::QuaternionFromVector(particle.transform.rotate);
+                Quaternion particleRot = Math::EulerToQuaternion(particle.transform.rotate);
                 Quaternion finalRot = Multiply(emitterQuat, particleRot);
                 particle.transform.rotate = Math::QuaternionToEuler(finalRot);
             }
@@ -490,7 +491,7 @@ namespace MiiEngine {
         };
 
         // エミッタの回転をクォータニオンに変換
-        Quaternion emitterRotation = Math::QuaternionFromVector(group_.transform.rotate);
+        Quaternion emitterRotation = Math::EulerToQuaternion(group_.transform.rotate);
 
         // ワールド空間に変換して適用
         Vector3 worldSwirlingOffset = Math::RotateVector(localSwirlingOffset, emitterRotation);
@@ -503,8 +504,8 @@ namespace MiiEngine {
     void ParticleGroup::ApplyRotationInfluence(ParticleData& particle, float progress) {
         progress;
         // 現在と前回のエミッタ回転を比較
-        Quaternion currentRot = Math::QuaternionFromVector(group_.transform.rotate);
-        Quaternion previousRot = Math::QuaternionFromVector(group_.previousEmitterRotation);
+        Quaternion currentRot = Math::EulerToQuaternion(group_.transform.rotate);
+        Quaternion previousRot = Math::EulerToQuaternion(group_.previousEmitterRotation);
         Quaternion rotationDelta = Multiply(currentRot, Math::Conjugate(previousRot));
 
         // 回転による遠心力的な速度を追加

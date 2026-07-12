@@ -146,10 +146,9 @@ void Player::Update() {
 		}
 	}
 
-	/// ===スティックの取得=== ///
-	StickState leftStick = Service::Input::GetLeftStickState(0);
-	// スティック情報を保存
-	leftStickValue_ = { leftStick.x, leftStick.y };
+	/// ===入力値の取得=== ///
+	leftStickValue_ = Service::Input::GetLeftStickState(0);
+	keybordValue_ = Service::Input::GetKeybordWASDValue();
 
 	/// ===タイマーを進める=== ///
 	advanceTimer();

@@ -95,20 +95,6 @@ namespace Math {
 	float GetYAngle(const Quaternion& quaternion);
 
 	/// <summary>
-	/// Quaternionを対応するオイラー角に変換
-	/// </summary>
-	/// <param name="quaternion">変換対象の四元数。回転を表します。</param>
-	/// <returns>対応するオイラー角を格納した Vector3。各成分は軸周りの回転角（順序や角度の単位は実装に依存します）。</returns>
-	Vector3 QuaternionToEuler(const Quaternion& quaternion);
-
-	/// <summary>
-	/// 3次元ベクトルからQuaternionを生成
-	/// </summary>
-	/// <param name="vector">四元数に変換する3次元ベクトル（const参照）。</param>
-	/// <returns>入力ベクトルに基づいて生成された四元数。</returns>
-	Quaternion QuaternionFromVector(const Vector3& vector);
-
-	/// <summary>
 	/// 指定した前方ベクトルと上方向ベクトルに基づいて向きを表すQuaternionを生成
 	/// </summary>
 	/// <param name="forward">対象が向く前方方向を表すベクトル。通常は正規化されたベクトルを渡し、ゼロベクトルは避けてください。</param>

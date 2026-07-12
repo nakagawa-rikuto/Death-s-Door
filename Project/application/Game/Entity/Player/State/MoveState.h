@@ -56,9 +56,9 @@ private:
 	void StopMoveParticle();
 
 	/// <summary>
-	/// スティックの動きを適用します。
+	/// 動きを適用します。
 	/// </summary>
-	/// <param name="stick">スティックの入力を表す2Dベクトル。</param>
-	void ApplyStickMovement(const Vector2& stick);
+	/// <param name="input">入力を表す2Dベクトル。</param>
+	void ApplyMovement(const Vector2& input);
 };
 

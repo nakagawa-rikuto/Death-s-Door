@@ -88,6 +88,9 @@ namespace MiiEngine {
 		// Controllerの生成
 		controller_ = std::make_unique<Controller>();
 		controller_->Initialize();
+
+		// InputTrackerの生成
+		inputTracker_ = std::make_unique<InputTracker>();
 	}
 
 	///=====================================================/// 
@@ -101,6 +104,7 @@ namespace MiiEngine {
 		keyboard_->Update();
 		mouse_->Update();
 		controller_->Update();
+		inputTracker_->Update(*keyboard_, *mouse_, *controller_);
 
 #ifdef USE_IMGUI
 		// FPSの計測・表示
@@ -134,6 +138,7 @@ namespace MiiEngine {
 		keyboard_.reset();			// Keyboard
 		inputCommon_.reset();		// InputCommon
 		lineObject3D_.reset();      // LineObject3D
+		inputTracker_.reset();      // InputTracker
 
 		// Manager
 		levelManager_.reset();		// LevelManager
@@ -268,5 +273,7 @@ namespace MiiEngine {
 	Mouse* Mii::GetMouse() { return mouse_.get(); }
 	// Controller
 	Controller* Mii::GetController() { return controller_.get(); }
+	// InputTracker
+	InputTracker* Mii::GetInputTracker() { return inputTracker_.get(); }
 	#pragma endregion
 }

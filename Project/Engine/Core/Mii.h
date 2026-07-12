@@ -10,6 +10,7 @@
 #include "Engine/System/Input/Keyboard.h"
 #include "Engine/System/Input/Mouse.h"
 #include "Engine/System/Input/Controller.h"
+#include "Engine/System/Input/InputTracker.h"
 // Manager
 #include "Engine/System/Managers/SRVManager.h"
 #include "Engine/System/Managers/RTVManager.h"
@@ -110,6 +111,8 @@ namespace MiiEngine {
 		Mouse* GetMouse();
 		// Controllerの取得
 		Controller* GetController();
+		// InputTrackerの取得
+		InputTracker* GetInputTracker();
 
 	private:/// ===Variables(変数)=== ///
 		// Core
@@ -120,6 +123,7 @@ namespace MiiEngine {
 		std::unique_ptr<Keyboard> keyboard_;                 // Keyboard
 		std::unique_ptr<Mouse> mouse_;                       // Mouse
 		std::unique_ptr<Controller> controller_;             // Controller
+		std::unique_ptr<InputTracker> inputTracker_;         // InputTracker
 		// Manager
 		std::unique_ptr<SRVManager> srvManager_;             // SRVManager
 		std::unique_ptr<RTVManager> rtvManager_;             // RTVManager
@@ -138,7 +142,7 @@ namespace MiiEngine {
 		// Line
 		std::unique_ptr<LineObject3D> lineObject3D_;          // LineObject3D
 		// Level
-		std::unique_ptr<LevelManager> levelManager_;			  // LevelLoader
+		std::unique_ptr<LevelManager> levelManager_;		   // LevelLoader
 
 	private:
 		///=====================================================/// 

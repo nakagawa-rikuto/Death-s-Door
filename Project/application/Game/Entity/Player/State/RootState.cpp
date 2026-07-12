@@ -23,28 +23,30 @@ void RootState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 void RootState::Update() {
 
 	/// ===左スティックの取得=== ///
-	StickState leftStick = Service::Input::GetLeftStickState(0);
+	Vector2 leftStick = player_->GetLeftStickValue();
+	Vector2 keybordInput = player_->GetKeybordValue();
 
 	/// ===死亡していなければ=== ///
 	if (!player_->GetIsDead()) {
 		/// ===Stateの変更=== ///
 		// 攻撃ボタンが押されたら攻撃状態へ
-		if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
+		if (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left)) {
 			// 攻撃状態へ移行
 			player_->ChangState(std::make_unique<AttackState>());
 
-			// RBボタンが押されたら進んでいる突進状態へ
-		} else if (Service::Input::TriggerButton(0, ControllerButtonType::RB)) {
+			// RBボタンが押されたら遠距離攻撃へ
+		} else if (Service::Input::TriggerButton(0, ControllerButtonType::RB) || Service::Input::TriggerMouse(MouseButtonType::Right)) {
 
 			// Aボタンが押されたら回避状態へ
-		} else if (Service::Input::TriggerButton(0, ControllerButtonType::A)) {
+		} else if (Service::Input::TriggerButton(0, ControllerButtonType::A) || Service::Input::TriggerKey(DIK_SPACE)) {
 			// 回避行動へ移動
 			player_->ChangState(std::make_unique<DodgeState>(Normalize(player_->GetVelocity())));
 
 			// 移動が有れば
-		} else if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
+		} else if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f || std::abs(keybordInput.x) > 0.0f || std::abs(keybordInput.y) > 0.0f) {
 			// 移動状態へ移行
 			player_->ChangState(std::make_unique<MoveState>());
+
 		}
 	}
 }

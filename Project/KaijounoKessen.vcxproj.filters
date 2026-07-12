@@ -85,9 +85,15 @@
     <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl">
       <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl" />
-    <FxCompile Include="Resource\Shaders\OffScreen\BloomComposite.PS.hlsl" />
-    <FxCompile Include="Resource\Shaders\OffScreen\HighLuminance.PS.hlsl" />
+    <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\OffScreen\BloomComposite.PS.hlsl">
+      <Filter>Resource\Shaders\OffScreen</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\OffScreen\HighLuminance.PS.hlsl">
+      <Filter>Resource\Shaders\OffScreen</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -424,23 +430,11 @@
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp">
-      <Filter>Engine\Scene\Transition</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
       <Filter>Engine\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp">
-      <Filter>application\Game\Entity\Player\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp">
-      <Filter>application\Game\Entity\Player\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
       <Filter>application\Scene\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp">
-      <Filter>application\Game\UI\Game</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp">
       <Filter>application\Game\UI\Game</Filter>
@@ -450,9 +444,6 @@
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp">
       <Filter>Engine\Graphics\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\System\Editor\Particle\ParticleEditor.cpp">
-      <Filter>Engine\System\Editor</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp">
       <Filter>Engine\Graphics\Particle</Filter>
@@ -547,9 +538,6 @@
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.cpp">
-      <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp">
       <Filter>Engine\Camera\Base</Filter>
     </ClCompile>
@@ -574,29 +562,97 @@
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp">
       <Filter>Engine\Graphics\Ocean\FFT</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
-    <ClCompile Include="Service\Sprite.cpp" />
-    <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
-    <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
-    <ClCompile Include="application\Game\UI\Game\BossUI.cpp" />
-    <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
-    <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
-    <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Move</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Move</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Long</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Long</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\HitReaction</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp">
+      <Filter>application\Game\Entity\Player\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp">
+      <Filter>application\Game\Entity\Player\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp">
+      <Filter>Engine\System\Editor\Partice</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\Particle\ParticleEditor.cpp">
+      <Filter>Engine\System\Editor\Partice</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp">
+      <Filter>Engine\System\Editor\Attack</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp">
+      <Filter>Engine\System\Editor\Attack</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Managers\SpriteManager.cpp">
+      <Filter>Engine\System\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Service\Sprite.cpp">
+      <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp">
+      <Filter>Engine\Graphics\Ocean\Ripples</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Input\InputTracker.cpp">
+      <Filter>Engine\System\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp">
+      <Filter>Engine\Graphics\OffScreen\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp">
+      <Filter>Engine\Scene\Transition\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\HP\HpUI.cpp">
+      <Filter>application\Game\UI\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\Game\BossUI.cpp">
+      <Filter>application\Game\UI\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp">
+      <Filter>application\Scene\Game\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\TransformationMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -974,26 +1030,14 @@
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h">
-      <Filter>Engine\Scene\Transition</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
       <Filter>Engine\Scene\Debug</Filter>
     </ClInclude>
     <ClInclude Include="Engine\System\Editor\Attack\Data\AttackData.h">
-      <Filter>application\Game\Entity\Player\Editor\Data</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\System\Editor\Attack\AttackDataSerializer.h">
-      <Filter>application\Game\Entity\Player\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\System\Editor\Attack\AttackEditor.h">
-      <Filter>application\Game\Entity\Player\Editor</Filter>
+      <Filter>Engine\System\Editor\Attack\Data</Filter>
     </ClInclude>
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h">
       <Filter>application\Scene\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h">
-      <Filter>application\Game\UI\Game</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h">
       <Filter>application\Game\UI\Game</Filter>
@@ -1006,9 +1050,6 @@
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Base\UAV.h">
       <Filter>Engine\Graphics\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\System\Editor\Particle\ParticleEditor.h">
-      <Filter>Engine\System\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h">
       <Filter>Engine\Graphics\Particle</Filter>
@@ -1103,10 +1144,6 @@
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.h">
-      <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h">
       <Filter>Engine\Camera\Base</Filter>
     </ClInclude>
@@ -1131,30 +1168,103 @@
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h">
       <Filter>Engine\Graphics\Ocean\FFT</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
-    <ClInclude Include="Service\Sprite.h" />
-    <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
-    <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
-    <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
-    <ClInclude Include="application\Game\UI\Game\BossUI.h" />
-    <ClInclude Include="application\Game\UI\HP\HpUI.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h" />
-    <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
-    <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
-    <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Move</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Move</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Long</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Long</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\HitReaction</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h">
+      <Filter>application\Game\Entity\Player\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h">
+      <Filter>application\Game\Entity\Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h">
+      <Filter>application\Game\Entity\Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h">
+      <Filter>Engine\System\Editor\Partice</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\Particle\ParticleEditor.h">
+      <Filter>Engine\System\Editor\Partice</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\Attack\AttackDataSerializer.h">
+      <Filter>Engine\System\Editor\Attack</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\Attack\AttackEditor.h">
+      <Filter>Engine\System\Editor\Attack</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Managers\SpriteManager.h">
+      <Filter>Engine\System\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Service\Sprite.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h">
+      <Filter>Engine\Graphics\Ocean\Ripples</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Input\InputTracker.h">
+      <Filter>Engine\System\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h">
+      <Filter>Engine\Graphics\OffScreen\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h">
+      <Filter>Engine\Scene\Transition\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\HP\HpUI.h">
+      <Filter>application\Game\UI\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\Game\BossUI.h">
+      <Filter>application\Game\UI\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h">
+      <Filter>application\Scene\Game\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\TransformationMath.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -1354,12 +1464,6 @@
     <Filter Include="Engine\Scene\Transition\Base">
       <UniqueIdentifier>{3fe90dc3-309c-4aee-99f8-5f17af7419de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\Game\Entity\Player\Editor">
-      <UniqueIdentifier>{2c3ac7a9-47d3-448e-be28-647f35a1a93d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Player\Editor\Data">
-      <UniqueIdentifier>{65879f64-944d-4769-8aa5-ce77abb979cb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\Scene\Debug">
       <UniqueIdentifier>{a6189ce8-a125-4857-ac37-26ab038ad5ba}</UniqueIdentifier>
     </Filter>
@@ -1408,26 +1512,8 @@
     <Filter Include="application\Game\Entity\Player\Hand">
       <UniqueIdentifier>{9a77ee97-049d-4e63-a362-2a27182dd571}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy">
-      <UniqueIdentifier>{603e5bb7-c360-4af7-beb3-94c0fef82c3d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\Game\Entity\Enemy\BossEnemy">
       <UniqueIdentifier>{a94a7827-caa4-4b35-b14c-1d27475220f1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\State">
-      <UniqueIdentifier>{3c568908-0279-4052-95cc-e14938c40a84}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\State\Base">
-      <UniqueIdentifier>{a96e1b4a-6cf5-477e-ad7a-2d1ec1853299}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\LongRange">
-      <UniqueIdentifier>{829a48a3-1384-42a5-b4a5-0db1799284b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\Component">
-      <UniqueIdentifier>{bfbf771b-4eb8-4f58-9987-8362cb1d9598}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\CloseRange">
-      <UniqueIdentifier>{8762c489-74ef-4f11-81b8-7d564aff190c}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\Game\Entity\Enemy\BossEnemy\Component">
       <UniqueIdentifier>{59640972-08a3-4c19-87c5-e0a423f7abe7}</UniqueIdentifier>
@@ -1437,9 +1523,6 @@
     </Filter>
     <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Base">
       <UniqueIdentifier>{ebd1b9d0-4f48-4b5d-b16d-c983b193835d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\Base">
-      <UniqueIdentifier>{cf30d564-3fef-4db6-815b-cbce2445bae2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Service">
       <UniqueIdentifier>{482e8d8e-2156-475d-93ae-2d00c96bdd5c}</UniqueIdentifier>
@@ -1461,6 +1544,51 @@
     </Filter>
     <Filter Include="Engine\Graphics\Ocean\FFT">
       <UniqueIdentifier>{de13c019-91ec-4868-a5b4-5f61e3542050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\Bullet">
+      <UniqueIdentifier>{4f3dc4d0-69c0-42c5-ad83-f537df2d6878}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\Weapon">
+      <UniqueIdentifier>{2ae1adf9-7530-436b-9b28-93c4143294d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator">
+      <UniqueIdentifier>{5c86299d-137b-45b6-944f-772e265b3e83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Attack">
+      <UniqueIdentifier>{d7db9754-ead2-41ad-ab95-8dbf089a5afb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\HitReaction">
+      <UniqueIdentifier>{281d6651-13f9-4cc4-bad2-7b5e8e6b83e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Move">
+      <UniqueIdentifier>{d26fa323-d92d-44cd-aa97-9f8639a75c13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close">
+      <UniqueIdentifier>{92fc3120-47b3-4a58-b044-f262e88ba12c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long">
+      <UniqueIdentifier>{773d82e1-f0e7-4de8-b69c-8fe704ac32dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Editor\Partice">
+      <UniqueIdentifier>{52baa78f-d593-428c-9285-50e44fa9ab63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Editor\Attack">
+      <UniqueIdentifier>{872206fc-ce73-49f9-930a-43d8814e6881}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Editor\Attack\Data">
+      <UniqueIdentifier>{65879f64-944d-4769-8aa5-ce77abb979cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Ocean\Ripples">
+      <UniqueIdentifier>{ecc98099-9594-49f2-b2e6-4817f15c363a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Scene\Transition\Manager">
+      <UniqueIdentifier>{c8ad8361-08b7-4fb6-ad90-bb26331cdbf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\UI\UI">
+      <UniqueIdentifier>{088fadd8-74d7-4297-a2f4-915af94728f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Game\UI">
+      <UniqueIdentifier>{2da8bd9e-8740-414f-aa52-7a6cf1a83f85}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

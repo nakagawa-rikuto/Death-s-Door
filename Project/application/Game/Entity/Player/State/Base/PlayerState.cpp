@@ -1,6 +1,8 @@
 #include "PlayerState.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// Service
+#include "Service/Input.h"
 
 ///-------------------------------------------/// 
 /// 終了処理

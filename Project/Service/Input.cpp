@@ -5,18 +5,11 @@
 #include "Engine/System/Input/Keyboard.h"
 #include "Engine/System/Input/Mouse.h"
 #include "Engine/System/Input/Controller.h"
+#include "Engine/System/Input/InputTracker.h"
 // Locator
 #include "Locator.h"
 
 namespace Service {
-	///-------------------------------------------/// 
-	/// 更新
-	///-------------------------------------------///
-	void Input::Update() {
-		Locator::GetKeyboard()->Update();
-		Locator::GetMouse()->Update();
-		Locator::GetController()->Update();
-	}
 
 	///-------------------------------------------/// 
 	/// キーボード処理
@@ -29,6 +22,22 @@ namespace Service {
 	bool Input::TriggerKey(BYTE keyNum) {
 		return Locator::GetKeyboard()->TriggerKey(keyNum);
 	}
+	// キーのリリースをチェック
+	bool Input::ReleaseKey(BYTE keyNum) {
+		return Locator::GetKeyboard()->ReleaseKey(keyNum);
+	}
+	// いずれかのキー入力があるかどうかをチェック
+	bool Input::HasAnyKeyInput() {
+		return Locator::GetKeyboard()->HasAnyKeyInput();
+	}
+	// WASDキーの入力値を取得
+	Vector2 Input::GetKeybordWASDValue() {
+		return Locator::GetKeyboard()->GetKeybordWASDValue();
+	}
+	// 矢印キーの入力値を取得
+	Vector2 Input::GetKeybordArrowValue() {
+		return Locator::GetKeyboard()->GetKeybordArrowValue();
+	}
 
 	///-------------------------------------------/// 
 	/// マウス処理
@@ -40,6 +49,10 @@ namespace Service {
 	// マウスのトリガーをチェック
 	bool Input::TriggerMouse(MouseButtonType button) {
 		return Locator::GetMouse()->TriggerMouseButton(button);
+	}
+	// マウスのリリースをチェック
+	bool Input::ReleaseMouse(MouseButtonType button) {
+		return Locator::GetMouse()->ReleaseMouseButton(button);
 	}
 	// マウスカーソルの位置を取得（スクリーン座標系）
 	POINT Input::GetMousePosition() {
@@ -89,20 +102,20 @@ namespace Service {
 		return Locator::GetController()->GetTriggerValue(stickNo, button);
 	}
 	// スティックの状況を取得
-	StickState Input::GetLeftStickState(int stickNo) {
+	Vector2 Input::GetLeftStickState(int stickNo) {
 		return Locator::GetController()->GetLeftStickState(stickNo);
 	}
-	StickState Input::GetRightStickState(int stickNo) {
+	Vector2 Input::GetRightStickState(int stickNo) {
 		return Locator::GetController()->GetRightStickState(stickNo);
 	}
 	float Input::GetStickValue(int stickNo, ControllerValueType valueType) {
 		return Locator::GetController()->GetStickValue(stickNo, valueType);
 	}
 	// スティックの前フレーム状態を取得する関数
-	StickState Input::GetLeftStickStatePrevious(int stickNo) {
+	Vector2 Input::GetLeftStickStatePrevious(int stickNo) {
 		return Locator::GetController()->GetLeftStickStatePrevious(stickNo);
 	}
-	StickState Input::GetRightStickStatePrevious(int stickNo) {
+	Vector2 Input::GetRightStickStatePrevious(int stickNo) {
 		return Locator::GetController()->GetRightStickStatePrevious(stickNo);
 	}
 	// スティックのはじき（ Flick ）を検出する関数
@@ -111,5 +124,14 @@ namespace Service {
 	}
 	bool Input::FlickRightStick(int stickNo, float threshold) {
 		return Locator::GetController()->FlickRightStick(stickNo, threshold);
+	}
+
+	// デバイスの種類を取得
+	DeviceType Input::GetActiveDevice() {
+		return Locator::GetInputTracker()->GetActiveDevice();
+	}
+	// デバイスが変更されたかどうかを取得
+	bool Input::IsDeviceChanged() {
+		return Locator::GetInputTracker()->IsDeviceChanged();
 	}
 }

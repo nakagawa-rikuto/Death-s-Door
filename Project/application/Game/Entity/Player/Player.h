@@ -77,6 +77,7 @@ public: /// ===Getter=== ///
 	const PlayerComponent::Parameters& GetParameters() const { return parameters_; }
 	// Stick
 	const Vector2& GetLeftStickValue() const { return leftStickValue_; }
+	const Vector2& GetKeybordValue() const { return keybordValue_; }
 	// 攻撃データをIDで取得できるようにする
 	const AttackData* GetAttackData(int attackID) const;
 	// 回避行動可能判定
@@ -126,8 +127,9 @@ private: /// ===変数の宣言=== ///
 	/// ===攻撃データ=== ///
 	std::unordered_map<int, AttackData> attackDataMap_;
 
-	/// ===スティック情報=== ///
+	/// ===入力情報=== ///
 	Vector2 leftStickValue_;  // 左スティックの入力値
+	Vector2 keybordValue_;    // キーボードの入力値
 
 	/// ===無敵時間の情報=== ///
 	struct InvincibleInfo {

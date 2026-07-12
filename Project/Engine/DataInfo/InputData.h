@@ -9,6 +9,13 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "xinput.lib")
 
+/// ===デバイスの種類=== ///
+enum class DeviceType {
+	Controller,
+	Keyboard,
+	None,
+};
+
 /// ===マウスのキーを指定する為の列挙型=== ///
 enum class MouseButtonType {
 	Left,       // 左クリック
@@ -43,10 +50,4 @@ enum class ControllerValueType {
 	LY, // 左スティックY軸
 	RX, // 右スティックX軸
 	RY, // 右スティックY軸
-};
-
-/// ===コントローラーの処理を管理するための構造体=== ///
-struct StickState {
-	float x;
-	float y;
 };

@@ -1,6 +1,7 @@
 #pragma once
 /// ===Include=== ///
 #include "Engine/DataInfo/InputData.h"
+#include "Math/Vector2.h"
 
 namespace Service {
 	///=====================================================/// 
@@ -8,11 +9,6 @@ namespace Service {
 	///=====================================================///
 	class Input {
 	public: // メンバ関数
-
-		/// <summary>
-		/// 更新処理
-		/// </summary>
-		static void Update();
 
 		/// ===キーボード=== ///
 
@@ -30,6 +26,31 @@ namespace Service {
 		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
 		static bool TriggerKey(BYTE keyNum);
 
+		/// <summary>
+		/// キーのリリースをチェック
+		/// </summary>
+		/// <param name="keyNum">リリースするキーを識別する BYTE 型の番号。</param>
+		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
+		static bool ReleaseKey(BYTE keyNum);
+
+		/// <summary>
+		/// いずれかのキー入力があるかどうかをチェック
+		/// </summary>
+		/// <returns></returns>
+		static bool HasAnyKeyInput();
+
+		/// <summary>
+		/// WASDキーの入力値を取得
+		/// </summary>
+		/// <returns></returns>
+		static Vector2 GetKeybordWASDValue();
+
+		/// <summary>
+		/// 矢印キーの入力値を取得
+		/// </summary>
+		/// <returns></returns>
+		static Vector2 GetKeybordArrowValue();
+
 		/// ===マウス=== ///
 
 		/// <summary>
@@ -45,6 +66,13 @@ namespace Service {
 		/// <param name="button">トリガーするマウスボタンを示す MouseButtonType 型の値。</param>
 		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
 		static bool TriggerMouse(MouseButtonType button);
+
+		/// <summary>
+		/// マウスボタンのリリースをチェック
+		/// </summary>
+		/// <param name="button">リリースするマウスボタンを示す MouseButtonType 型の値。</param>
+		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
+		static bool ReleaseMouse(MouseButtonType button);
 
 		/// <summary>
 		/// マウスカーソルの位置を取得（スクリーン座標系）
@@ -127,16 +155,16 @@ namespace Service {
 		/// </summary>
 		/// <param name="stickNo">状態を取得するスティックの番号を指定します。</param>
 		/// <returns>指定したスティックの左スティックの状態を示す StickState 値を返します。</returns>
-		static StickState GetLeftStickState(int stickNo);
-		static StickState GetRightStickState(int stickNo);
+		static Vector2 GetLeftStickState(int stickNo);
+		static Vector2 GetRightStickState(int stickNo);
 
 		/// <summary>
 		/// スティックの前フレーム状態を取得する関数
 		/// </summary>
 		/// <param name="stickNo">状態を取得する左スティックの番号（インデックス）。通常はコントローラや入力デバイスのスティック識別子を指定します。</param>
 		/// <returns>指定したスティック番号に対応する左スティックの直前の状態を表す StickState 値。</returns>
-		static StickState GetLeftStickStatePrevious(int stickNo);
-		static StickState GetRightStickStatePrevious(int stickNo);
+		static Vector2 GetLeftStickStatePrevious(int stickNo);
+		static Vector2 GetRightStickStatePrevious(int stickNo);
 
 		/// <summary>
 		/// コントローラーのスティックの値を取得
@@ -155,5 +183,16 @@ namespace Service {
 		static bool FlickLeftStick(int stickNo, float threshold = 0.7f);
 		static bool FlickRightStick(int stickNo, float threshold = 0.7f);
 
+		/// <summary>
+		/// 現在アクティブな入力デバイスを取得
+		/// </summary>
+		/// <returns>デバイスの種類</returns>
+		static DeviceType GetActiveDevice();
+
+		/// <summary>
+		/// 入力デバイスの変更をチェック
+		/// </summary>
+		/// <returns>デバイスが変更された場合は true、そうでない場合は false</returns>
+		static bool IsDeviceChanged();
 	};
 }

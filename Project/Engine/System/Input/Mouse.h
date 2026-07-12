@@ -34,14 +34,21 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="button">マウスボタンの場所</param>
 		/// <returns>フラグを返す</returns>
-		bool PushMouseButton(MouseButtonType button);
+		bool PushMouseButton(MouseButtonType button) const;
 
 		/// <summary>
 		/// マウスボタンのトリガーをチェック
 		/// </summary>
 		/// <param name="button">マウスボタンの種類</param>
 		/// <returns>フラグを返す</returns>
-		bool TriggerMouseButton(MouseButtonType button);
+		bool TriggerMouseButton(MouseButtonType button) const;
+
+		/// <summary>
+		/// マウスボタンのリリースをチェック
+		/// </summary>
+		/// <param name="button">マウスボタンの種類</param>
+		/// <returns>フラグを返す</returns>
+		bool ReleaseMouseButton(MouseButtonType button) const;
 
 		/// <summary>
 		/// マウスカーソルの位置を取得（スクリーン座標系）
@@ -70,9 +77,8 @@ namespace MiiEngine {
 	private:
 		WinApp* winApp_ = nullptr;
 
-		/*NOTE : 今回はDIMOUSESTATEを使用しているがマウスのボタンの数が４つじゃなりないのなら
-				 DIMOUSESTATE2を使用すると良い*/
-				 // マウス用のDirectInputデバイス
+		/*NOTE : 今回はDIMOUSESTATEを使用しているがマウスのボタンの数が４つじゃなりないのならDIMOUSESTATE2を使用すると良い*/
+		// マウス用のDirectInputデバイス
 		ComPtr<IDirectInputDevice8> mouse_;
 		// 現在のマウスの状態
 		DIMOUSESTATE mouseState_ = {};

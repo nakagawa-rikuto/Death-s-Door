@@ -33,5 +33,8 @@ private:
 	/// ===Object2D=== ///
 	// HPUI
 	std::unique_ptr<HpUI> hpUI_;
+
+	/// ===参照スケール倍率=== ///
+	Vector2 scale_ = { 1.0f, 1.0f }; // スケール
 };
 

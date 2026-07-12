@@ -51,6 +51,7 @@ namespace MiiEngine {
 			Engine_->GetKeyboard(),
 			Engine_->GetMouse(),
 			Engine_->GetController(),
+			Engine_->GetInputTracker(),
 			cameraManager_.get(),
 			particleManager_.get(),
 			colliderManager_.get(),

@@ -2,7 +2,7 @@
 // Service
 #include "Service/GraphicsResourceGetter.h"
 // Math
-#include "Math/sMath.h"
+#include "Math/TransformationMath.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -96,7 +96,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 				ground->GameInit(stage.fileName);
 				// 座標設定
 				ground->SetTranslate(stage.translation);
-				ground->SetRotate(Math::QuaternionFromVector(stage.rotation));
+				ground->SetRotate(Math::EulerToQuaternion(stage.rotation));
 				ground->SetScale(stage.scaling);
 				// HalfSizeの設定
 				ground->SetHalfSize(stage.colliderInfo2 * 0.5f);
@@ -111,7 +111,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 			object->GameInit(stage.fileName);
 			// Transformを設定
 			object->SetTranslate(stage.translation);
-			object->SetRotate(Math::QuaternionFromVector(stage.rotation));
+			object->SetRotate(Math::EulerToQuaternion(stage.rotation));
 			object->SetScale(stage.scaling);
 			// 一回更新
 			object->Update();
