@@ -231,6 +231,8 @@
 └── └──     └── ├── Controller.h
 └── └──     └── ├── InputCommon.cpp
 └── └──     └── ├── InputCommon.h
+└── └──     └── ├── InputTracker.cpp
+└── └──     └── ├── InputTracker.h
 └── └──     └── ├── Keyboard.cpp
 └── └──     └── ├── Keyboard.h
 └── └──     └── ├── Mouse.cpp
@@ -281,6 +283,8 @@
 └── └── ├── MatrixMath.h
 └── └── ├── Quaternion.cpp
 └── └── ├── Quaternion.h
+└── └── ├── TransformationMath.cpp
+└── └── ├── TransformationMath.h
 └── └── ├── Vector2.cpp
 └── └── ├── Vector2.h
 └── └── ├── Vector3.cpp
@@ -3834,6 +3838,9 @@ namespace MiiEngine {
 		// Controllerの生成
 		controller_ = std::make_unique<Controller>();
 		controller_->Initialize();
+
+		// InputTrackerの生成
+		inputTracker_ = std::make_unique<InputTracker>();
 	}
 
 	///=====================================================/// 
@@ -3847,6 +3854,7 @@ namespace MiiEngine {
 		keyboard_->Update();
 		mouse_->Update();
 		controller_->Update();
+		inputTracker_->Update(*keyboard_, *mouse_, *controller_);
 
 #ifdef USE_IMGUI
 		// FPSの計測・表示
@@ -3880,6 +3888,7 @@ namespace MiiEngine {
 		keyboard_.reset();			// Keyboard
 		inputCommon_.reset();		// InputCommon
 		lineObject3D_.reset();      // LineObject3D
+		inputTracker_.reset();      // InputTracker
 
 		// Manager
 		levelManager_.reset();		// LevelManager
@@ -4014,6 +4023,8 @@ namespace MiiEngine {
 	Mouse* Mii::GetMouse() { return mouse_.get(); }
 	// Controller
 	Controller* Mii::GetController() { return controller_.get(); }
+	// InputTracker
+	InputTracker* Mii::GetInputTracker() { return inputTracker_.get(); }
 	#pragma endregion
 }
 
@@ -4032,6 +4043,7 @@ File Path: Project/Engine/Core/Mii.h
 #include "Engine/System/Input/Keyboard.h"
 #include "Engine/System/Input/Mouse.h"
 #include "Engine/System/Input/Controller.h"
+#include "Engine/System/Input/InputTracker.h"
 // Manager
 #include "Engine/System/Managers/SRVManager.h"
 #include "Engine/System/Managers/RTVManager.h"
@@ -4132,6 +4144,8 @@ namespace MiiEngine {
 		Mouse* GetMouse();
 		// Controllerの取得
 		Controller* GetController();
+		// InputTrackerの取得
+		InputTracker* GetInputTracker();
 
 	private:/// ===Variables(変数)=== ///
 		// Core
@@ -4142,6 +4156,7 @@ namespace MiiEngine {
 		std::unique_ptr<Keyboard> keyboard_;                 // Keyboard
 		std::unique_ptr<Mouse> mouse_;                       // Mouse
 		std::unique_ptr<Controller> controller_;             // Controller
+		std::unique_ptr<InputTracker> inputTracker_;         // InputTracker
 		// Manager
 		std::unique_ptr<SRVManager> srvManager_;             // SRVManager
 		std::unique_ptr<RTVManager> rtvManager_;             // RTVManager
@@ -4160,7 +4175,7 @@ namespace MiiEngine {
 		// Line
 		std::unique_ptr<LineObject3D> lineObject3D_;          // LineObject3D
 		// Level
-		std::unique_ptr<LevelManager> levelManager_;			  // LevelLoader
+		std::unique_ptr<LevelManager> levelManager_;		   // LevelLoader
 
 	private:
 		///=====================================================/// 
@@ -5066,6 +5081,13 @@ File Path: Project/Engine/DataInfo/InputData.h
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "xinput.lib")
 
+/// ===デバイスの種類=== ///
+enum class DeviceType {
+	Controller,
+	Keyboard,
+	None,
+};
+
 /// ===マウスのキーを指定する為の列挙型=== ///
 enum class MouseButtonType {
 	Left,       // 左クリック
@@ -5100,12 +5122,6 @@ enum class ControllerValueType {
 	LY, // 左スティックY軸
 	RX, // 右スティックX軸
 	RY, // 右スティックY軸
-};
-
-/// ===コントローラーの処理を管理するための構造体=== ///
-struct StickState {
-	float x;
-	float y;
 };
 
 ============================================================
@@ -10689,7 +10705,7 @@ namespace MiiEngine {
 				ImGui::DragFloat2("風向", &p.windDirection.x, 0.01f, -1.0f, 1.0f);
 				ImGui::DragFloat("振幅", &p.amplitude, 0.0001f, 0.0001f, 50.0f);
 				ImGui::DragFloat("波長", &p.lambda, 0.01f, 0.0f, 30.0f);
-				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 5.0f);
+				ImGui::DragFloat("泡のしきい値", &p.foamThreshold, 0.01f, 0.0f, 1.0f);
 			}
 
 			/// ===Ripple（波紋）=== ///
@@ -14664,6 +14680,7 @@ File Path: Project/Engine/Graphics/Particle/ParticleGroup.cpp
 // Math
 #include "Math/sMath.h"
 #include "Math/MatrixMath.h"
+#include "Math/TransformationMath.h"
 // c++
 #include <numbers>
 
@@ -14986,7 +15003,7 @@ namespace MiiEngine {
         // 軌跡モードの場合、エミッタの回転を考慮
         if (definition_.advanced.isTrajectoryParticle) {
             // エミッタの回転をクォータニオンに変換
-            Quaternion emitterQuat = Math::QuaternionFromVector(group_.transform.rotate);
+            Quaternion emitterQuat = Math::EulerToQuaternion(group_.transform.rotate);
 
             // 発生位置のオフセットをエミッタの回転空間で適用
             Vector3 localOffset = particle.transform.translate - translate;
@@ -14998,7 +15015,7 @@ namespace MiiEngine {
 
             // パーティクル自体の初期回転もエミッタに合わせる
             if (definition_.rotation.enableRotation) {
-                Quaternion particleRot = Math::QuaternionFromVector(particle.transform.rotate);
+                Quaternion particleRot = Math::EulerToQuaternion(particle.transform.rotate);
                 Quaternion finalRot = Multiply(emitterQuat, particleRot);
                 particle.transform.rotate = Math::QuaternionToEuler(finalRot);
             }
@@ -15145,7 +15162,7 @@ namespace MiiEngine {
         };
 
         // エミッタの回転をクォータニオンに変換
-        Quaternion emitterRotation = Math::QuaternionFromVector(group_.transform.rotate);
+        Quaternion emitterRotation = Math::EulerToQuaternion(group_.transform.rotate);
 
         // ワールド空間に変換して適用
         Vector3 worldSwirlingOffset = Math::RotateVector(localSwirlingOffset, emitterRotation);
@@ -15158,8 +15175,8 @@ namespace MiiEngine {
     void ParticleGroup::ApplyRotationInfluence(ParticleData& particle, float progress) {
         progress;
         // 現在と前回のエミッタ回転を比較
-        Quaternion currentRot = Math::QuaternionFromVector(group_.transform.rotate);
-        Quaternion previousRot = Math::QuaternionFromVector(group_.previousEmitterRotation);
+        Quaternion currentRot = Math::EulerToQuaternion(group_.transform.rotate);
+        Quaternion previousRot = Math::EulerToQuaternion(group_.previousEmitterRotation);
         Quaternion rotationDelta = Multiply(currentRot, Math::Conjugate(previousRot));
 
         // 回転による遠心力的な速度を追加
@@ -19122,6 +19139,7 @@ namespace MiiEngine {
 			Engine_->GetKeyboard(),
 			Engine_->GetMouse(),
 			Engine_->GetController(),
+			Engine_->GetInputTracker(),
 			cameraManager_.get(),
 			particleManager_.get(),
 			colliderManager_.get(),
@@ -20757,12 +20775,15 @@ File Path: Project/Engine/System/Editor/Attack/AttackEditor.cpp
 #include "Service/Locator.h"
 // Line
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
+// C++
+#include <filesystem>
+// Math
+#include "Math/TransformationMath.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif
 
-#include <filesystem>
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -21458,7 +21479,7 @@ void AttackEditor::RenderChannelControlPoints(TrajectoryChannel& channel, int ch
         // 回転はオイラー角で編集→Quaternionに変換して保存
         if (i < static_cast<int>(eulerList.size())) {
             if (ImGui::DragFloat3("回転 (deg)", &eulerList[i].x, 0.5f)) {
-                points[i].rotation = Math::QuaternionFromVector(eulerList[i]);
+                points[i].rotation = Math::EulerToQuaternion(eulerList[i]);
             }
         }
 
@@ -24114,8 +24135,8 @@ namespace MiiEngine {
 	/// スティックの状況を取得 対応済み
 	///-------------------------------------------///
 	// 左スティックの状況を取得
-	StickState Controller::GetLeftStickState(int stickNo) const {
-		StickState state = { 0.0f, 0.0f };
+	Vector2 Controller::GetLeftStickState(int stickNo) const {
+		Vector2 state = { 0.0f, 0.0f };
 		if (stickNo < 0 || stickNo >= XUSER_MAX_COUNT) return state;
 
 		// XInput のスティック値（-1.0f ～ 1.0f）
@@ -24139,8 +24160,8 @@ namespace MiiEngine {
 		return state;
 	}
 	// 右スティックの状況を取得
-	StickState Controller::GetRightStickState(int stickNo) const {
-		StickState state = { 0.0f, 0.0f };
+	Vector2 Controller::GetRightStickState(int stickNo) const {
+		Vector2 state = { 0.0f, 0.0f };
 		if (stickNo < 0 || stickNo >= XUSER_MAX_COUNT) return state;
 
 		// XInput のスティック値（-1.0f ～ 1.0f）
@@ -24209,8 +24230,8 @@ namespace MiiEngine {
 	/// スティックの前フレーム状態を取得する関数
 	///-------------------------------------------///
 	// 左スティック
-	StickState Controller::GetLeftStickStatePrevious(int stickNo) const {
-		StickState state = { 0.0f, 0.0f };
+	Vector2 Controller::GetLeftStickStatePrevious(int stickNo) const {
+		Vector2 state = { 0.0f, 0.0f };
 		if (stickNo < 0 || stickNo >= XUSER_MAX_COUNT) return state;
 
 		float lxXInput = static_cast<float>(previousState_[stickNo].Gamepad.sThumbLX) / NORMALIZE_RANGE;
@@ -24230,8 +24251,8 @@ namespace MiiEngine {
 		return state;
 	}
 	// 右スティック
-	StickState Controller::GetRightStickStatePrevious(int stickNo) const {
-		StickState state = { 0.0f, 0.0f };
+	Vector2 Controller::GetRightStickStatePrevious(int stickNo) const {
+		Vector2 state = { 0.0f, 0.0f };
 		if (stickNo < 0 || stickNo >= XUSER_MAX_COUNT) return state;
 
 		float rxXInput = static_cast<float>(previousState_[stickNo].Gamepad.sThumbRX) / NORMALIZE_RANGE;
@@ -24257,8 +24278,8 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	// 左スティック
 	bool Controller::FlickLeftStick(int stickNo, float threshold) const {
-		StickState prev = GetLeftStickStatePrevious(stickNo);
-		StickState curr = GetLeftStickState(stickNo);
+		Vector2 prev = GetLeftStickStatePrevious(stickNo);
+		Vector2 curr = GetLeftStickState(stickNo);
 
 		float prevLen = std::sqrt(prev.x * prev.x + prev.y * prev.y);
 		float currLen = std::sqrt(curr.x * curr.x + curr.y * curr.y);
@@ -24267,8 +24288,8 @@ namespace MiiEngine {
 	}
 	// 右スティック
 	bool Controller::FlickRightStick(int stickNo, float threshold) const {
-		StickState prev = GetRightStickStatePrevious(stickNo);
-		StickState curr = GetRightStickState(stickNo);
+		Vector2 prev = GetRightStickStatePrevious(stickNo);
+		Vector2 curr = GetRightStickState(stickNo);
 
 		float prevLen = std::sqrt(prev.x * prev.x + prev.y * prev.y);
 		float currLen = std::sqrt(curr.x * curr.x + curr.y * curr.y);
@@ -24325,6 +24346,7 @@ File Path: Project/Engine/System/Input/Controller.h
 // Engine
 #include "Engine/Core/ComPtr.h"
 #include "Engine/DataInfo/InputData.h"
+#include "Math/Vector2.h"
 // c++
 #include <cstdint>
 #include <map>
@@ -24384,8 +24406,8 @@ namespace MiiEngine {
         /// </summary>
         /// <param name="stickNo">コントローラーの番号</param>
         /// <returns>スティックの状態を返す</returns>
-        StickState GetLeftStickState(int stickNo) const;
-        StickState GetRightStickState(int stickNo) const;
+        Vector2 GetLeftStickState(int stickNo) const;
+        Vector2 GetRightStickState(int stickNo) const;
         float GetStickValue(int stickNo, ControllerValueType valueType) const;
 
         /// <summary>
@@ -24393,8 +24415,8 @@ namespace MiiEngine {
         /// </summary>
         /// <param name="stickNo">コントローラーの番号</param>
         /// <returns>スティックの状態を返す</returns>
-        StickState GetLeftStickStatePrevious(int stickNo) const;
-        StickState GetRightStickStatePrevious(int stickNo) const;
+        Vector2 GetLeftStickStatePrevious(int stickNo) const;
+        Vector2 GetRightStickStatePrevious(int stickNo) const;
 
         /// <summary>
         /// スティックのはじき（ Flick ）を検出する関数
@@ -24515,6 +24537,113 @@ namespace MiiEngine {
 
 
 ============================================================
+File Path: Project/Engine/System/Input/InputTracker.cpp
+============================================================
+#include "InputTracker.h"
+
+///-------------------------------------------/// 
+/// Getter
+///-------------------------------------------///
+// アクティブなデバイスを取得
+DeviceType MiiEngine::InputTracker::GetActiveDevice() const { return activeDevice_; }
+// デバイスが変更されたかどうかを取得
+bool MiiEngine::InputTracker::IsDeviceChanged() const { return isChanged_; }
+
+///-------------------------------------------/// 
+/// 更新
+///-------------------------------------------///
+void MiiEngine::InputTracker::Update(const Keyboard& keyboard, const Mouse& mouse, const Controller& controller) {
+	// デバイスの状態を保存
+	preDevice_ = activeDevice_;
+
+	// コントローラーを優先して判定
+	if (HasControllerInput(controller)) {
+		activeDevice_ = DeviceType::Controller;
+	} else if (mouse.GetMouseDeltaX() != 0 || mouse.GetMouseDeltaY() != 0 || mouse.PushMouseButton(MouseButtonType::Left) || mouse.PushMouseButton(MouseButtonType::Right) || keyboard.HasAnyKeyInput()) {
+		activeDevice_ = DeviceType::Keyboard;
+	}
+
+	isChanged_ = (activeDevice_ != preDevice_);
+}
+
+///-------------------------------------------/// 
+/// コントローラー入力があるかどうかを判定
+///-------------------------------------------///
+bool MiiEngine::InputTracker::HasControllerInput(const Controller & controller) const {
+    for (int i = 0; i < XUSER_MAX_COUNT; ++i) {
+        XINPUT_STATE state{};
+        if (!controller.GetJoystickState(i, state)) continue;
+
+        // ボタン入力チェック
+        if (state.Gamepad.wButtons != 0) return true;
+
+        // スティック入力チェック（デッドゾーン考慮）
+        auto leftX = std::abs(state.Gamepad.sThumbLX / 32768.0f);
+        auto leftY = std::abs(state.Gamepad.sThumbLY / 32768.0f);
+        auto rightX = std::abs(state.Gamepad.sThumbRX / 32768.0f);
+        auto rightY = std::abs(state.Gamepad.sThumbRY / 32768.0f);
+        if (leftX > 0.15f || leftY > 0.15f || rightX > 0.15f || rightY > 0.15f) return true;
+
+        // トリガー入力チェック
+        if (state.Gamepad.bLeftTrigger > 30 || state.Gamepad.bRightTrigger > 30) return true;
+    }
+    return false;
+}
+
+
+============================================================
+File Path: Project/Engine/System/Input/InputTracker.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Controller.h"
+#include "Keyboard.h"
+#include "Mouse.h"
+
+namespace MiiEngine {
+	///=====================================================/// 
+	/// InputTracker
+	/// どのデバイスが操作されているかを追跡するクラス
+	///=====================================================///
+	class InputTracker {
+	public:
+
+		/// <summary>
+		/// 更新処理
+		/// </summary>
+		/// <param name="keyboard">キーボード</param>
+		/// <param name="mouse">マウス</param>
+		/// <param name="controller">コントローラ</param>
+		void Update(const Keyboard& keyboard, const Mouse& mouse, const Controller& controller);
+
+	public: /// ===Getter=== ///
+		// アクティブなデバイスを取得
+		DeviceType GetActiveDevice() const;
+		// デバイスが変更されたかどうかを取得
+		bool IsDeviceChanged() const;
+
+	private:
+
+		DeviceType activeDevice_ = DeviceType::None; // 現在アクティブなデバイス
+		DeviceType preDevice_ = DeviceType::None;	 // 前回アクティブなデバイス
+		bool isChanged_ = false;				     // デバイスが変更されたかどうかのフラグ
+
+	private:
+
+		/// <summary>
+		/// コントローラー入力があるかどうかを判定
+		/// </summary>
+		/// <param name="controller">コントローラー</param>
+		/// <returns></returns>
+		bool HasControllerInput(const Controller& controller) const;
+	};
+
+}
+
+
+
+
+============================================================
 File Path: Project/Engine/System/Input/Keyboard.cpp
 ============================================================
 #include "Keyboard.h"
@@ -24564,9 +24693,6 @@ namespace MiiEngine {
 		if (SUCCEEDED(hr)) {
 			keyboard_->GetDeviceState(sizeof(key_), key_);
 		}
-
-		// 全キーの入力情報を取得
-		hr = keyboard_->GetDeviceState(sizeof(key_), key_);
 	}
 
 	///-------------------------------------------/// 
@@ -24592,6 +24718,88 @@ namespace MiiEngine {
 		// そうでなければFalseを返す
 		return false;
 	}
+
+	///-------------------------------------------/// 
+	/// キーのリリースをチェック
+	///-------------------------------------------///
+	bool Keyboard::ReleaseKey(BYTE keyNum)	{
+		// 指定キーがリリースされていればtrueを返す
+		if (!key_[keyNum] && preKey_[keyNum]) {
+			return true;
+		}
+		// そうでなければFalseを返す
+		return false;
+	}
+
+	///-------------------------------------------/// 
+	/// いずれかのキー入力があるかどうかをチェック
+	///-------------------------------------------///
+	bool Keyboard::HasAnyKeyInput() const {
+		for (int i = 0; i < 256; i++) {
+			if (key_[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	///-------------------------------------------/// 
+	/// WASDキーの入力値を取得 
+	///-------------------------------------------///
+	Vector2 Keyboard::GetKeybordWASDValue() {
+		Vector2 input = { 0.0f, 0.0f };
+
+		if (PushKey(DIK_D)) {
+			input.x += 1.0f;
+		}
+		if (PushKey(DIK_A)) {
+			input.x -= 1.0f;
+		}
+		if (PushKey(DIK_W)) {
+			input.y += 1.0f;
+		}
+		if (PushKey(DIK_S)) {
+			input.y -= 1.0f;
+		}
+
+		// 斜め移動時に速度が大きくなりすぎないよう正規化
+		if (Length(Vector2{ input.x, input.y }) > 1.0f) {
+			Vector2 normalized = Normalize(Vector2{ input.x, input.y });
+			input.x = normalized.x;
+			input.y = normalized.y;
+		}
+
+		return input;
+	}
+
+	///-------------------------------------------/// 
+	/// 矢印キーの入力値を取得
+	///-------------------------------------------///
+	Vector2 Keyboard::GetKeybordArrowValue() {
+		Vector2 input = { 0.0f, 0.0f };
+
+		if (PushKey(DIK_RIGHT)) {
+			input.x += 1.0f;
+		}
+		if (PushKey(DIK_LEFT)) {
+			input.x -= 1.0f;
+		}
+		if (PushKey(DIK_UP)) {
+			input.y += 1.0f;
+		}
+		if (PushKey(DIK_DOWN)) {
+			input.y -= 1.0f;
+		}
+
+		// 斜め移動時に速度が大きくなりすぎないよう正規化
+		if (Length(Vector2{ input.x, input.y }) > 1.0f) {
+			Vector2 normalized = Normalize(Vector2{ input.x, input.y });
+			input.x = normalized.x;
+			input.y = normalized.y;
+		}
+
+		return input;
+	}
 }
 
 
@@ -24603,6 +24811,7 @@ File Path: Project/Engine/System/Input/Keyboard.h
 // Engine
 #include "Engine/Core/ComPtr.h"
 #include "Engine/DataInfo/InputData.h"
+#include "Math/Vector2.h"
 
 namespace MiiEngine {
 	/// ===前方宣言=== ///
@@ -24642,6 +24851,31 @@ namespace MiiEngine {
 		/// <param name="keyNum">キーのタイプ</param>
 		/// <returns>フラグを返す</returns>
 		bool TriggerKey(BYTE keyNum);
+
+		/// <summary>
+		/// キーのリリースをチェック
+		/// </summary>
+		/// <param name="keyNum">キーのタイプ</param>
+		/// <returns>フラグを返す</returns>
+		bool ReleaseKey(BYTE keyNum);
+
+		/// <summary>
+		/// いずれかのキー入力があるかどうかをチェック
+		/// </summary>
+		/// <returns>フラグを返す</returns>
+		bool HasAnyKeyInput() const;
+
+		/// <summary>
+		/// WASDキーの入力値を取得
+		/// </summary>
+		/// <returns></returns>
+		Vector2 GetKeybordWASDValue();
+
+		/// <summary>
+		/// 矢印キーの入力値を取得
+		/// </summary>
+		/// <returns></returns>
+		Vector2 GetKeybordArrowValue();
 
 	private:
 		// キーボード用のDirectInputデバイス
@@ -24712,7 +24946,7 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// マウスの押下チェック
 	///-------------------------------------------///
-	bool Mouse::PushMouseButton(MouseButtonType button) {
+	bool Mouse::PushMouseButton(MouseButtonType button) const {
 		// マウスボタンが押されている場合にtrueを返す
 		return (mouseState_.rgbButtons[static_cast<int>(button)] & 0x80) != 0;
 	}
@@ -24720,10 +24954,18 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// マウスのトリガーチェック
 	///-------------------------------------------///
-	bool Mouse::TriggerMouseButton(MouseButtonType button) {
+	bool Mouse::TriggerMouseButton(MouseButtonType button) const {
 		// マウスボタンがトリガー（押された瞬間）の場合にtrueを返す
 		return (mouseState_.rgbButtons[static_cast<int>(button)] & 0x80) &&
 			!(preMouseState_.rgbButtons[static_cast<int>(button)] & 0x80);
+	}
+
+	///-------------------------------------------/// 
+	/// マウスのリリースチェック
+	///-------------------------------------------///
+	bool Mouse::ReleaseMouseButton(MouseButtonType button) const {
+		return !(mouseState_.rgbButtons[static_cast<int>(button)] & 0x80) &&
+			(preMouseState_.rgbButtons[static_cast<int>(button)] & 0x80);
 	}
 
 	///-------------------------------------------/// 
@@ -24804,14 +25046,21 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="button">マウスボタンの場所</param>
 		/// <returns>フラグを返す</returns>
-		bool PushMouseButton(MouseButtonType button);
+		bool PushMouseButton(MouseButtonType button) const;
 
 		/// <summary>
 		/// マウスボタンのトリガーをチェック
 		/// </summary>
 		/// <param name="button">マウスボタンの種類</param>
 		/// <returns>フラグを返す</returns>
-		bool TriggerMouseButton(MouseButtonType button);
+		bool TriggerMouseButton(MouseButtonType button) const;
+
+		/// <summary>
+		/// マウスボタンのリリースをチェック
+		/// </summary>
+		/// <param name="button">マウスボタンの種類</param>
+		/// <returns>フラグを返す</returns>
+		bool ReleaseMouseButton(MouseButtonType button) const;
 
 		/// <summary>
 		/// マウスカーソルの位置を取得（スクリーン座標系）
@@ -24840,9 +25089,8 @@ namespace MiiEngine {
 	private:
 		WinApp* winApp_ = nullptr;
 
-		/*NOTE : 今回はDIMOUSESTATEを使用しているがマウスのボタンの数が４つじゃなりないのなら
-				 DIMOUSESTATE2を使用すると良い*/
-				 // マウス用のDirectInputデバイス
+		/*NOTE : 今回はDIMOUSESTATEを使用しているがマウスのボタンの数が４つじゃなりないのならDIMOUSESTATE2を使用すると良い*/
+		// マウス用のDirectInputデバイス
 		ComPtr<IDirectInputDevice8> mouse_;
 		// 現在のマウスの状態
 		DIMOUSESTATE mouseState_ = {};
@@ -29427,6 +29675,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
+    <ClCompile Include="Engine\System\Input\InputTracker.cpp" />
     <ClCompile Include="Service\DeltaTime.cpp" />
     <ClCompile Include="Engine\System\GameTime\GameTime.cpp" />
     <ClCompile Include="Engine\Graphics\OffScreen\Effect\DissolveEffect.cpp" />
@@ -29576,6 +29825,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\Scene\Title\Animation\TitleSceneAnimation.cpp" />
     <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
     <ClCompile Include="Service\Sprite.cpp" />
+    <ClCompile Include="Math\TransformationMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\BossEnemy.h" />
@@ -29617,6 +29867,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Game\UI\HP\HpUI.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
+    <ClInclude Include="Engine\System\Input\InputTracker.h" />
     <ClInclude Include="Service\DeltaTime.h" />
     <ClInclude Include="Engine\System\GameTime\GameTime.h" />
     <ClInclude Include="Engine\DataInfo\OceanData.h" />
@@ -29780,6 +30031,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\Scene\Title\Animation\TitleSceneAnimation.h" />
     <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
     <ClInclude Include="Service\Sprite.h" />
+    <ClInclude Include="Math\TransformationMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -30099,9 +30351,15 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <FxCompile Include="Resource\Shaders\Ocean\FFTOcean.CS.hlsl">
       <Filter>Resource\Shaders\Ocean</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl" />
-    <FxCompile Include="Resource\Shaders\OffScreen\BloomComposite.PS.hlsl" />
-    <FxCompile Include="Resource\Shaders\OffScreen\HighLuminance.PS.hlsl" />
+    <FxCompile Include="Resource\Shaders\Ocean\Ripples.CS.hlsl">
+      <Filter>Resource\Shaders\Ocean</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\OffScreen\BloomComposite.PS.hlsl">
+      <Filter>Resource\Shaders\OffScreen</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\Shaders\OffScreen\HighLuminance.PS.hlsl">
+      <Filter>Resource\Shaders\OffScreen</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -30438,23 +30696,11 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp">
-      <Filter>Engine\Scene\Transition</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
       <Filter>Engine\Scene\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp">
-      <Filter>application\Game\Entity\Player\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp">
-      <Filter>application\Game\Entity\Player\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
       <Filter>application\Scene\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp">
-      <Filter>application\Game\UI\Game</Filter>
     </ClCompile>
     <ClCompile Include="application\Game\UI\Game\PlayerUI.cpp">
       <Filter>application\Game\UI\Game</Filter>
@@ -30464,9 +30710,6 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp">
       <Filter>Engine\Graphics\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\System\Editor\Particle\ParticleEditor.cpp">
-      <Filter>Engine\System\Editor</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp">
       <Filter>Engine\Graphics\Particle</Filter>
@@ -30561,9 +30804,6 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.cpp">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
     </ClCompile>
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.cpp">
-      <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Camera\Base\CameraCommon.cpp">
       <Filter>Engine\Camera\Base</Filter>
     </ClCompile>
@@ -30588,29 +30828,97 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClCompile Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.cpp">
       <Filter>Engine\Graphics\Ocean\FFT</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\System\Managers\SpriteManager.cpp" />
-    <ClCompile Include="Service\Sprite.cpp" />
-    <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp" />
-    <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp" />
-    <ClCompile Include="application\Game\UI\Game\BossUI.cpp" />
-    <ClCompile Include="application\Game\UI\HP\HpUI.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp" />
-    <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp" />
-    <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp" />
-    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp" />
-    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp" />
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Move</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Move</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Long</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Long</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.cpp">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\HitReaction</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\State\DeathState.cpp">
+      <Filter>application\Game\Entity\Player\State</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\Entity\Player\State\HitReactionState.cpp">
+      <Filter>application\Game\Entity\Player\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\Particle\ParticleHistory.cpp">
+      <Filter>Engine\System\Editor\Partice</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\Particle\ParticleEditor.cpp">
+      <Filter>Engine\System\Editor\Partice</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\Attack\AttackDataSerializer.cpp">
+      <Filter>Engine\System\Editor\Attack</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Editor\Attack\AttackEditor.cpp">
+      <Filter>Engine\System\Editor\Attack</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Managers\SpriteManager.cpp">
+      <Filter>Engine\System\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Service\Sprite.cpp">
+      <Filter>Service</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.cpp">
+      <Filter>Engine\Graphics\Ocean\Ripples</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\System\Input\InputTracker.cpp">
+      <Filter>Engine\System\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleCurve.cpp">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\OffScreen\Effect\BloomEffect.cpp">
+      <Filter>Engine\Graphics\OffScreen\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\Transition\Manager\SceneTransitionManager.cpp">
+      <Filter>Engine\Scene\Transition\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Scene\Transition\BlackOutTransition.cpp">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\HP\HpUI.cpp">
+      <Filter>application\Game\UI\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Game\UI\Game\BossUI.cpp">
+      <Filter>application\Game\UI\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp">
+      <Filter>application\Scene\Game\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\TransformationMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -30988,26 +31296,14 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h">
-      <Filter>Engine\Scene\Transition</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
       <Filter>Engine\Scene\Debug</Filter>
     </ClInclude>
     <ClInclude Include="Engine\System\Editor\Attack\Data\AttackData.h">
-      <Filter>application\Game\Entity\Player\Editor\Data</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\System\Editor\Attack\AttackDataSerializer.h">
-      <Filter>application\Game\Entity\Player\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\System\Editor\Attack\AttackEditor.h">
-      <Filter>application\Game\Entity\Player\Editor</Filter>
+      <Filter>Engine\System\Editor\Attack\Data</Filter>
     </ClInclude>
     <ClInclude Include="application\Scene\Debug\AttackEditorScene.h">
       <Filter>application\Scene\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h">
-      <Filter>application\Game\UI\Game</Filter>
     </ClInclude>
     <ClInclude Include="application\Game\UI\Game\PlayerUI.h">
       <Filter>application\Game\UI\Game</Filter>
@@ -31020,9 +31316,6 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Base\UAV.h">
       <Filter>Engine\Graphics\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\System\Editor\Particle\ParticleEditor.h">
-      <Filter>Engine\System\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h">
       <Filter>Engine\Graphics\Particle</Filter>
@@ -31117,10 +31410,6 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Base\BossState.h">
       <Filter>application\Game\Entity\Enemy\BossEnemy\State\Base</Filter>
     </ClInclude>
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.h">
-      <Filter>application\Game\Entity\Enemy\BossEnemy\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h" />
     <ClInclude Include="Engine\Camera\Base\CameraCommon.h">
       <Filter>Engine\Camera\Base</Filter>
     </ClInclude>
@@ -31145,30 +31434,103 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanBase.h">
       <Filter>Engine\Graphics\Ocean\FFT</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\System\Managers\SpriteManager.h" />
-    <ClInclude Include="Service\Sprite.h" />
-    <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h" />
-    <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h" />
-    <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h" />
-    <ClInclude Include="application\Game\UI\Game\BossUI.h" />
-    <ClInclude Include="application\Game\UI\HP\HpUI.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h" />
-    <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h" />
-    <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h" />
-    <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h" />
-    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h" />
-    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h" />
-    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h" />
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Component\BossComponent.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossEnemyBullet.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\BossBulletManager.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator\BossOrbitingOrbsCalculator.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\Weapon\BossWeapon.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossMoveState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Move</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Move\BossTeleportState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Move</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossDownwarAttackState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossJumpSmashAttackState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close\BossRotateAttackState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Close</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossOrbitingOrbsState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Long</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long\BossParabolicShotState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\Attack\Long</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Enemy\BossEnemy\State\HItReaction\BossHitReactionState.h">
+      <Filter>application\Game\Entity\Enemy\BossEnemy\State\HitReaction</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\Component\PlayerComponent.h">
+      <Filter>application\Game\Entity\Player\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\State\DeathState.h">
+      <Filter>application\Game\Entity\Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\Entity\Player\State\HitReactionState.h">
+      <Filter>application\Game\Entity\Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\Particle\ParticleHistory.h">
+      <Filter>Engine\System\Editor\Partice</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\Particle\ParticleEditor.h">
+      <Filter>Engine\System\Editor\Partice</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\Attack\AttackDataSerializer.h">
+      <Filter>Engine\System\Editor\Attack</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Editor\Attack\AttackEditor.h">
+      <Filter>Engine\System\Editor\Attack</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Managers\SpriteManager.h">
+      <Filter>Engine\System\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Service\Sprite.h">
+      <Filter>Service</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\Ripples\RippleSimulator.h">
+      <Filter>Engine\Graphics\Ocean\Ripples</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Ocean\FFT\FFTOceanCompute.h">
+      <Filter>Engine\Graphics\Ocean\FFT</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\System\Input\InputTracker.h">
+      <Filter>Engine\System\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\Particle\ParticleCurve.h">
+      <Filter>Engine\Graphics\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\OffScreen\Effect\BloomEffect.h">
+      <Filter>Engine\Graphics\OffScreen\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\Transition\Manager\SceneTransitionManager.h">
+      <Filter>Engine\Scene\Transition\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Scene\Transition\BlackOutTransition.h">
+      <Filter>Engine\Scene\Transition</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\HP\HpUI.h">
+      <Filter>application\Game\UI\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Game\UI\Game\BossUI.h">
+      <Filter>application\Game\UI\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h">
+      <Filter>application\Scene\Game\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\TransformationMath.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -31368,12 +31730,6 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <Filter Include="Engine\Scene\Transition\Base">
       <UniqueIdentifier>{3fe90dc3-309c-4aee-99f8-5f17af7419de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\Game\Entity\Player\Editor">
-      <UniqueIdentifier>{2c3ac7a9-47d3-448e-be28-647f35a1a93d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Player\Editor\Data">
-      <UniqueIdentifier>{65879f64-944d-4769-8aa5-ce77abb979cb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\Scene\Debug">
       <UniqueIdentifier>{a6189ce8-a125-4857-ac37-26ab038ad5ba}</UniqueIdentifier>
     </Filter>
@@ -31422,26 +31778,8 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <Filter Include="application\Game\Entity\Player\Hand">
       <UniqueIdentifier>{9a77ee97-049d-4e63-a362-2a27182dd571}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy">
-      <UniqueIdentifier>{603e5bb7-c360-4af7-beb3-94c0fef82c3d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\Game\Entity\Enemy\BossEnemy">
       <UniqueIdentifier>{a94a7827-caa4-4b35-b14c-1d27475220f1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\State">
-      <UniqueIdentifier>{3c568908-0279-4052-95cc-e14938c40a84}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\State\Base">
-      <UniqueIdentifier>{a96e1b4a-6cf5-477e-ad7a-2d1ec1853299}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\LongRange">
-      <UniqueIdentifier>{829a48a3-1384-42a5-b4a5-0db1799284b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\Component">
-      <UniqueIdentifier>{bfbf771b-4eb8-4f58-9987-8362cb1d9598}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\CloseRange">
-      <UniqueIdentifier>{8762c489-74ef-4f11-81b8-7d564aff190c}</UniqueIdentifier>
     </Filter>
     <Filter Include="application\Game\Entity\Enemy\BossEnemy\Component">
       <UniqueIdentifier>{59640972-08a3-4c19-87c5-e0a423f7abe7}</UniqueIdentifier>
@@ -31451,9 +31789,6 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     </Filter>
     <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Base">
       <UniqueIdentifier>{ebd1b9d0-4f48-4b5d-b16d-c983b193835d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\Game\Entity\Enemy\MobEnemy\Base">
-      <UniqueIdentifier>{cf30d564-3fef-4db6-815b-cbce2445bae2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Service">
       <UniqueIdentifier>{482e8d8e-2156-475d-93ae-2d00c96bdd5c}</UniqueIdentifier>
@@ -31475,6 +31810,51 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     </Filter>
     <Filter Include="Engine\Graphics\Ocean\FFT">
       <UniqueIdentifier>{de13c019-91ec-4868-a5b4-5f61e3542050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\Bullet">
+      <UniqueIdentifier>{4f3dc4d0-69c0-42c5-ad83-f537df2d6878}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\Weapon">
+      <UniqueIdentifier>{2ae1adf9-7530-436b-9b28-93c4143294d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\Bullet\Calculator">
+      <UniqueIdentifier>{5c86299d-137b-45b6-944f-772e265b3e83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Attack">
+      <UniqueIdentifier>{d7db9754-ead2-41ad-ab95-8dbf089a5afb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\HitReaction">
+      <UniqueIdentifier>{281d6651-13f9-4cc4-bad2-7b5e8e6b83e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Move">
+      <UniqueIdentifier>{d26fa323-d92d-44cd-aa97-9f8639a75c13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Close">
+      <UniqueIdentifier>{92fc3120-47b3-4a58-b044-f262e88ba12c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\Entity\Enemy\BossEnemy\State\Attack\Long">
+      <UniqueIdentifier>{773d82e1-f0e7-4de8-b69c-8fe704ac32dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Editor\Partice">
+      <UniqueIdentifier>{52baa78f-d593-428c-9285-50e44fa9ab63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Editor\Attack">
+      <UniqueIdentifier>{872206fc-ce73-49f9-930a-43d8814e6881}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\System\Editor\Attack\Data">
+      <UniqueIdentifier>{65879f64-944d-4769-8aa5-ce77abb979cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Graphics\Ocean\Ripples">
+      <UniqueIdentifier>{ecc98099-9594-49f2-b2e6-4817f15c363a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Scene\Transition\Manager">
+      <UniqueIdentifier>{c8ad8361-08b7-4fb6-ad90-bb26331cdbf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Game\UI\UI">
+      <UniqueIdentifier>{088fadd8-74d7-4297-a2f4-915af94728f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\Scene\Game\UI">
+      <UniqueIdentifier>{2da8bd9e-8740-414f-aa52-7a6cf1a83f85}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
@@ -32798,6 +33178,160 @@ Quaternion Normalize(const Quaternion& quaternion);
 
 
 ============================================================
+File Path: Project/Math/TransformationMath.cpp
+============================================================
+#include "TransformationMath.h"
+// C++
+#include <algorithm>
+// CameraCommon
+#include "Engine/Camera/Base/CameraCommon.h"
+// Service
+#include "Service/GraphicsResourceGetter.h"
+#include "Service/Camera.h"
+// Math
+#include "sMath.h"
+#include "MatrixMath.h"
+
+///-------------------------------------------/// 
+/// ワールド座標をスクリーン座標に変換
+///-------------------------------------------///
+Vector2 Math::WorldToScreen(const Vector3& worldPos) {
+    // カメラの取得
+    MiiEngine::CameraCommon* camera = Service::Camera::GetActiveCamera();
+	// ビュー射影行列の取得
+	Matrix4x4 viewProj = camera->GetViewProjectionMatrix();
+    // スクリーンの取得
+	float width = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth());
+	float height = static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
+
+	// ワールド座標をスクリーン座標に変換
+	Vector3 screenPos3D = Math::TransformCoordinates(worldPos, viewProj);
+    Vector2 screenPos = {
+        .x = (screenPos3D.x + 1.0f) * 0.5f * width,
+        .y = (1.0f - screenPos3D.y) * 0.5f * height
+    };
+
+    return screenPos;
+}
+
+///-------------------------------------------/// 
+/// スクリーン座標をワールド座標に変換
+///-------------------------------------------///
+Vector3 Math::ScreenToWorld(const Vector2& screenPos) {
+    // カメラの取得
+    MiiEngine::CameraCommon* camera = Service::Camera::GetActiveCamera();
+    // ビュー射影行列の取得
+    Matrix4x4 viewProj = camera->GetViewProjectionMatrix();
+    // ビュー射影行列の逆行列を取得
+    Matrix4x4 invViewProj = Math::Inverse4x4(viewProj);
+
+    // スクリーンの取得
+    float width = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth());
+    float height = static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
+
+    // スクリーン座標をNDC座標に変換
+    Vector3 ndcPos = {
+        .x = (screenPos.x / width) * 2.0f - 1.0f,
+        .y = 1.0f - (screenPos.y / height) * 2.0f,
+        .z = 0.0f
+    };
+
+    // NDC座標をワールド座標に変換
+    Vector3 worldPos = Math::TransformCoordinates(ndcPos, invViewProj);
+
+    return worldPos;
+}
+
+///-------------------------------------------/// 
+/// QuaternionをEuler角に変換
+///-------------------------------------------///
+Vector3 Math::QuaternionToEuler(const Quaternion& quaternion) {
+    Vector3 euler = {};
+
+    // Yaw (ヨー: Y軸回転)
+    euler.y = std::atan2(2.0f * (quaternion.w * quaternion.y + quaternion.x * quaternion.z), 1.0f - 2.0f * (quaternion.y * quaternion.y + quaternion.z * quaternion.z));
+
+    // Pitch (ピッチ: X軸回転)
+    float sinp = 2.0f * (quaternion.w * quaternion.x - quaternion.y * quaternion.z);
+    if (std::abs(sinp) >= 1.0f)
+        euler.x = std::copysign(Pi() / 2.0f, sinp); // ±90度にクランプ
+    else
+        euler.x = std::asin(sinp);
+
+    // Roll (ロール: Z軸回転)
+    euler.z = std::atan2(2.0f * (quaternion.w * quaternion.z + quaternion.x * quaternion.y), 1.0f - 2.0f * (quaternion.x * quaternion.x + quaternion.z * quaternion.z));
+
+    return euler;
+}
+
+///-------------------------------------------/// 
+/// Euler角をQuaternionに変換
+///-------------------------------------------///
+Quaternion Math::EulerToQuaternion(const Vector3& euler) {
+    // 度数をラジアンに変換する (degree * pi / 180)
+    float radX = euler.x * (Pi() / 180.0f);
+    float radY = euler.y * (Pi() / 180.0f);
+    float radZ = euler.z * (Pi() / 180.0f);
+
+    float cx = std::cos(radX * 0.5f);
+    float sx = std::sin(radX * 0.5f);
+    float cy = std::cos(radY * 0.5f);
+    float sy = std::sin(radY * 0.5f);
+    float cz = std::cos(radZ * 0.5f);
+    float sz = std::sin(radZ * 0.5f);
+
+    Quaternion q = {};
+
+    // Q = Qz * Qy * Qx (各軸の回転をこの順で適用する場合)
+    q.w = cx * cy * cz + sx * sy * sz;
+    q.x = sx * cy * cz - cx * sy * sz;
+    q.y = cx * sy * cz + sx * cy * sz;
+    q.z = cx * cy * sz - sx * sy * cz;
+
+    return q;
+}
+
+============================================================
+File Path: Project/Math/TransformationMath.h
+============================================================
+#pragma once
+#include "Vector2.h"
+#include "Vector3.h"
+#include "Quaternion.h"
+
+namespace Math {
+
+	/// <summary>
+	/// ワールド座標をスクリーン座標に変換します。
+	/// </summary>
+	/// <param name="worldPos">変換するワールド座標。</param>
+	/// <returns>変換されたスクリーン座標。</returns>
+	Vector2 WorldToScreen(const Vector3& worldPos);
+
+	/// <summary>
+	/// スクリーン座標をワールド座標に変換します。
+	/// </summary>
+	/// <param name="screenPos">変換するスクリーン座標。</param>
+	/// <returns>変換されたワールド座標。</returns>
+	Vector3 ScreenToWorld(const Vector2& screenPos);
+
+	/// <summary>
+	/// Quaternionを対応するオイラー角に変換
+	/// </summary>
+	/// <param name="quaternion">変換対象の四元数。回転を表します。</param>
+	/// <returns>対応するオイラー角を格納した Vector3。各成分は軸周りの回転角（順序や角度の単位は実装に依存します）。</returns>
+	Vector3 QuaternionToEuler(const Quaternion& quaternion);
+
+	/// <summary>
+	/// 3次元ベクトルからQuaternionを生成
+	/// </summary>
+	/// <param name="vector">四元数に変換する3次元ベクトル（const参照）。</param>
+	/// <returns>入力ベクトルに基づいて生成された四元数。</returns>
+	Quaternion EulerToQuaternion(const Vector3& euler);
+}
+
+
+============================================================
 File Path: Project/Math/Vector2.cpp
 ============================================================
 #define _USE_MATH_DEFINES
@@ -33370,6 +33904,7 @@ File Path: Project/Math/sMath.cpp
 #include <algorithm>
 // MatrixMath
 #include "MatrixMath.h"
+#include "TransformationMath.h"
 
 ///=====================================================///
 /// π（πを使用する際に用いる関数）
@@ -33481,49 +34016,6 @@ float Math::GetYAngle(const Quaternion& quaternion) {
     Vector3 forward = RotateVector(Vector3(0.0f, 0.0f, 1.0f), quaternion);
     // atan2(forward.x, forward.z) で Yaw（水平回転） を取得。
     return std::atan2(forward.x, forward.z); // Yaw 角度（ラジアン）
-}
-// QuaternionをEulerAngles(Vector3)に変換する関数
-Vector3 Math::QuaternionToEuler(const Quaternion& quaternion) {
-    Vector3 euler = {};
-
-    // Yaw (ヨー: Y軸回転)
-    euler.y = std::atan2(2.0f * (quaternion.w * quaternion.y + quaternion.x * quaternion.z), 1.0f - 2.0f * (quaternion.y * quaternion.y + quaternion.z * quaternion.z));
-
-    // Pitch (ピッチ: X軸回転)
-    float sinp = 2.0f * (quaternion.w * quaternion.x - quaternion.y * quaternion.z);
-    if (std::abs(sinp) >= 1.0f)
-        euler.x = std::copysign(Pi() / 2.0f, sinp); // ±90度にクランプ
-    else
-        euler.x = std::asin(sinp);
-
-    // Roll (ロール: Z軸回転)
-    euler.z = std::atan2(2.0f * (quaternion.w * quaternion.z + quaternion.x * quaternion.y), 1.0f - 2.0f * (quaternion.x * quaternion.x + quaternion.z * quaternion.z));
-
-    return euler;
-}
-// Vector3からQuaternionに変換する関数
-Quaternion Math::QuaternionFromVector(const Vector3& vector) {
-    // 度数をラジアンに変換する (degree * pi / 180)
-    float radX = vector.x * (Pi() / 180.0f);
-    float radY = vector.y * (Pi() / 180.0f);
-    float radZ = vector.z * (Pi() / 180.0f);
-
-    float cx = std::cos(radX * 0.5f);
-    float sx = std::sin(radX * 0.5f);
-    float cy = std::cos(radY * 0.5f);
-    float sy = std::sin(radY * 0.5f);
-    float cz = std::cos(radZ * 0.5f);
-    float sz = std::sin(radZ * 0.5f);
-
-    Quaternion q = {};
-
-    // Q = Qz * Qy * Qx (各軸の回転をこの順で適用する場合)
-    q.w = cx * cy * cz + sx * sy * sz;
-    q.x = sx * cy * cz - cx * sy * sz;
-    q.y = cx * sy * cz + sx * cy * sz;
-    q.z = cx * cy * sz - sx * sy * cz;
-
-    return q;
 }
 // ある方向（forward）を向くクォータニオン（回転）を作る
 Quaternion Math::LookRotation(Vector3 forward, Vector3 up) {
@@ -33849,20 +34341,6 @@ namespace Math {
 	/// <param name="quaternion">回転を表す四元数。Y軸周りの角度を計算するために使用されます。</param>
 	/// <returns>Y軸周りの回転角をfloat型で返します（角度の単位は実装に依存します）。</returns>
 	float GetYAngle(const Quaternion& quaternion);
-
-	/// <summary>
-	/// Quaternionを対応するオイラー角に変換
-	/// </summary>
-	/// <param name="quaternion">変換対象の四元数。回転を表します。</param>
-	/// <returns>対応するオイラー角を格納した Vector3。各成分は軸周りの回転角（順序や角度の単位は実装に依存します）。</returns>
-	Vector3 QuaternionToEuler(const Quaternion& quaternion);
-
-	/// <summary>
-	/// 3次元ベクトルからQuaternionを生成
-	/// </summary>
-	/// <param name="vector">四元数に変換する3次元ベクトル（const参照）。</param>
-	/// <returns>入力ベクトルに基づいて生成された四元数。</returns>
-	Quaternion QuaternionFromVector(const Vector3& vector);
 
 	/// <summary>
 	/// 指定した前方ベクトルと上方向ベクトルに基づいて向きを表すQuaternionを生成
@@ -34536,18 +35014,11 @@ File Path: Project/Service/Input.cpp
 #include "Engine/System/Input/Keyboard.h"
 #include "Engine/System/Input/Mouse.h"
 #include "Engine/System/Input/Controller.h"
+#include "Engine/System/Input/InputTracker.h"
 // Locator
 #include "Locator.h"
 
 namespace Service {
-	///-------------------------------------------/// 
-	/// 更新
-	///-------------------------------------------///
-	void Input::Update() {
-		Locator::GetKeyboard()->Update();
-		Locator::GetMouse()->Update();
-		Locator::GetController()->Update();
-	}
 
 	///-------------------------------------------/// 
 	/// キーボード処理
@@ -34560,6 +35031,22 @@ namespace Service {
 	bool Input::TriggerKey(BYTE keyNum) {
 		return Locator::GetKeyboard()->TriggerKey(keyNum);
 	}
+	// キーのリリースをチェック
+	bool Input::ReleaseKey(BYTE keyNum) {
+		return Locator::GetKeyboard()->ReleaseKey(keyNum);
+	}
+	// いずれかのキー入力があるかどうかをチェック
+	bool Input::HasAnyKeyInput() {
+		return Locator::GetKeyboard()->HasAnyKeyInput();
+	}
+	// WASDキーの入力値を取得
+	Vector2 Input::GetKeybordWASDValue() {
+		return Locator::GetKeyboard()->GetKeybordWASDValue();
+	}
+	// 矢印キーの入力値を取得
+	Vector2 Input::GetKeybordArrowValue() {
+		return Locator::GetKeyboard()->GetKeybordArrowValue();
+	}
 
 	///-------------------------------------------/// 
 	/// マウス処理
@@ -34571,6 +35058,10 @@ namespace Service {
 	// マウスのトリガーをチェック
 	bool Input::TriggerMouse(MouseButtonType button) {
 		return Locator::GetMouse()->TriggerMouseButton(button);
+	}
+	// マウスのリリースをチェック
+	bool Input::ReleaseMouse(MouseButtonType button) {
+		return Locator::GetMouse()->ReleaseMouseButton(button);
 	}
 	// マウスカーソルの位置を取得（スクリーン座標系）
 	POINT Input::GetMousePosition() {
@@ -34620,20 +35111,20 @@ namespace Service {
 		return Locator::GetController()->GetTriggerValue(stickNo, button);
 	}
 	// スティックの状況を取得
-	StickState Input::GetLeftStickState(int stickNo) {
+	Vector2 Input::GetLeftStickState(int stickNo) {
 		return Locator::GetController()->GetLeftStickState(stickNo);
 	}
-	StickState Input::GetRightStickState(int stickNo) {
+	Vector2 Input::GetRightStickState(int stickNo) {
 		return Locator::GetController()->GetRightStickState(stickNo);
 	}
 	float Input::GetStickValue(int stickNo, ControllerValueType valueType) {
 		return Locator::GetController()->GetStickValue(stickNo, valueType);
 	}
 	// スティックの前フレーム状態を取得する関数
-	StickState Input::GetLeftStickStatePrevious(int stickNo) {
+	Vector2 Input::GetLeftStickStatePrevious(int stickNo) {
 		return Locator::GetController()->GetLeftStickStatePrevious(stickNo);
 	}
-	StickState Input::GetRightStickStatePrevious(int stickNo) {
+	Vector2 Input::GetRightStickStatePrevious(int stickNo) {
 		return Locator::GetController()->GetRightStickStatePrevious(stickNo);
 	}
 	// スティックのはじき（ Flick ）を検出する関数
@@ -34643,6 +35134,15 @@ namespace Service {
 	bool Input::FlickRightStick(int stickNo, float threshold) {
 		return Locator::GetController()->FlickRightStick(stickNo, threshold);
 	}
+
+	// デバイスの種類を取得
+	DeviceType Input::GetActiveDevice() {
+		return Locator::GetInputTracker()->GetActiveDevice();
+	}
+	// デバイスが変更されたかどうかを取得
+	bool Input::IsDeviceChanged() {
+		return Locator::GetInputTracker()->IsDeviceChanged();
+	}
 }
 
 ============================================================
@@ -34651,6 +35151,7 @@ File Path: Project/Service/Input.h
 #pragma once
 /// ===Include=== ///
 #include "Engine/DataInfo/InputData.h"
+#include "Math/Vector2.h"
 
 namespace Service {
 	///=====================================================/// 
@@ -34658,11 +35159,6 @@ namespace Service {
 	///=====================================================///
 	class Input {
 	public: // メンバ関数
-
-		/// <summary>
-		/// 更新処理
-		/// </summary>
-		static void Update();
 
 		/// ===キーボード=== ///
 
@@ -34680,6 +35176,31 @@ namespace Service {
 		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
 		static bool TriggerKey(BYTE keyNum);
 
+		/// <summary>
+		/// キーのリリースをチェック
+		/// </summary>
+		/// <param name="keyNum">リリースするキーを識別する BYTE 型の番号。</param>
+		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
+		static bool ReleaseKey(BYTE keyNum);
+
+		/// <summary>
+		/// いずれかのキー入力があるかどうかをチェック
+		/// </summary>
+		/// <returns></returns>
+		static bool HasAnyKeyInput();
+
+		/// <summary>
+		/// WASDキーの入力値を取得
+		/// </summary>
+		/// <returns></returns>
+		static Vector2 GetKeybordWASDValue();
+
+		/// <summary>
+		/// 矢印キーの入力値を取得
+		/// </summary>
+		/// <returns></returns>
+		static Vector2 GetKeybordArrowValue();
+
 		/// ===マウス=== ///
 
 		/// <summary>
@@ -34695,6 +35216,13 @@ namespace Service {
 		/// <param name="button">トリガーするマウスボタンを示す MouseButtonType 型の値。</param>
 		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
 		static bool TriggerMouse(MouseButtonType button);
+
+		/// <summary>
+		/// マウスボタンのリリースをチェック
+		/// </summary>
+		/// <param name="button">リリースするマウスボタンを示す MouseButtonType 型の値。</param>
+		/// <returns>操作が成功した場合は true、失敗した場合は false を返します。</returns>
+		static bool ReleaseMouse(MouseButtonType button);
 
 		/// <summary>
 		/// マウスカーソルの位置を取得（スクリーン座標系）
@@ -34777,16 +35305,16 @@ namespace Service {
 		/// </summary>
 		/// <param name="stickNo">状態を取得するスティックの番号を指定します。</param>
 		/// <returns>指定したスティックの左スティックの状態を示す StickState 値を返します。</returns>
-		static StickState GetLeftStickState(int stickNo);
-		static StickState GetRightStickState(int stickNo);
+		static Vector2 GetLeftStickState(int stickNo);
+		static Vector2 GetRightStickState(int stickNo);
 
 		/// <summary>
 		/// スティックの前フレーム状態を取得する関数
 		/// </summary>
 		/// <param name="stickNo">状態を取得する左スティックの番号（インデックス）。通常はコントローラや入力デバイスのスティック識別子を指定します。</param>
 		/// <returns>指定したスティック番号に対応する左スティックの直前の状態を表す StickState 値。</returns>
-		static StickState GetLeftStickStatePrevious(int stickNo);
-		static StickState GetRightStickStatePrevious(int stickNo);
+		static Vector2 GetLeftStickStatePrevious(int stickNo);
+		static Vector2 GetRightStickStatePrevious(int stickNo);
 
 		/// <summary>
 		/// コントローラーのスティックの値を取得
@@ -34805,6 +35333,17 @@ namespace Service {
 		static bool FlickLeftStick(int stickNo, float threshold = 0.7f);
 		static bool FlickRightStick(int stickNo, float threshold = 0.7f);
 
+		/// <summary>
+		/// 現在アクティブな入力デバイスを取得
+		/// </summary>
+		/// <returns>デバイスの種類</returns>
+		static DeviceType GetActiveDevice();
+
+		/// <summary>
+		/// 入力デバイスの変更をチェック
+		/// </summary>
+		/// <returns>デバイスが変更された場合は true、そうでない場合は false</returns>
+		static bool IsDeviceChanged();
 	};
 }
 
@@ -35031,6 +35570,7 @@ namespace Service {
 		assert(registry.keyboard);
 		assert(registry.mouse);
 		assert(registry.controller);
+		assert(registry.inputTracker);
 		// CameraManager
 		assert(registry.cameraManager);
 		// ParticleManager
@@ -35073,6 +35613,7 @@ namespace Service {
 		keyboard_ = registry.keyboard;
 		mouse_ = registry.mouse;
 		controller_ = registry.controller;
+		inputTracker_ = registry.inputTracker;
 		// CameraManager
 		cameraManager_ = registry.cameraManager;
 		// ParticleManager
@@ -35096,6 +35637,7 @@ namespace Service {
 		controller_ = nullptr;
 		mouse_ = nullptr;
 		keyboard_ = nullptr;
+		inputTracker_ = nullptr;
 		levelManager_ = nullptr;
 		csvManager_ = nullptr;
 		audioManager_ = nullptr;
@@ -35189,6 +35731,7 @@ namespace Service {
 	MiiEngine::Keyboard* Locator::GetKeyboard() { return keyboard_; }
 	MiiEngine::Mouse* Locator::GetMouse() { return mouse_; }
 	MiiEngine::Controller* Locator::GetController() { return controller_; }
+	MiiEngine::InputTracker* Locator::GetInputTracker() { return inputTracker_; }
 
 	///-------------------------------------------/// 
 	/// CameraManager
@@ -35250,6 +35793,7 @@ namespace MiiEngine {
 	class Keyboard;
 	class Mouse;
 	class Controller;
+	class InputTracker;
 	// Camera
 	class CameraManager;
 	// Particle
@@ -35282,6 +35826,7 @@ namespace Service {
 		MiiEngine::Keyboard* keyboard = nullptr;
 		MiiEngine::Mouse* mouse = nullptr;
 		MiiEngine::Controller* controller = nullptr;
+		MiiEngine::InputTracker* inputTracker = nullptr;
 		MiiEngine::CameraManager* cameraManager = nullptr;
 		MiiEngine::ParticleManager* particleManager = nullptr;
 		MiiEngine::ColliderManager* colliderManager = nullptr;
@@ -35331,6 +35876,7 @@ namespace Service {
 		static MiiEngine::Keyboard* GetKeyboard();
 		static MiiEngine::Mouse* GetMouse();
 		static MiiEngine::Controller* GetController();
+		static MiiEngine::InputTracker* GetInputTracker();
 		// CameraManager
 		static MiiEngine::CameraManager* GetCameraManager();
 		// ParticleManager
@@ -35343,6 +35889,7 @@ namespace Service {
 		static MiiEngine::GameTime* GetGameTime();
 
 	private:
+		/// ===Engine=== ///
 		// Core
 		static inline MiiEngine::WinApp* winApp_ = nullptr;
 		static inline MiiEngine::DXCommon* dxCommon_ = nullptr;
@@ -35360,15 +35907,23 @@ namespace Service {
 		static inline MiiEngine::LevelManager* levelManager_ = nullptr;
 		// Audio
 		static inline MiiEngine::AudioManager* audioManager_ = nullptr;
-		// Game
+		// Camera
+		static inline MiiEngine::CameraManager* cameraManager_ = nullptr;
+		// Parrticle
+		static inline MiiEngine::ParticleManager* particleManager_ = nullptr;
+		// Collider
+		static inline MiiEngine::ColliderManager* colliderManager_ = nullptr;
+		// Sprite
+		static inline MiiEngine::SpriteManager* spriteManager_ = nullptr;
+		// Line
 		static inline MiiEngine::LineObject3D* lineObject3D_ = nullptr;
+		// Input
 		static inline MiiEngine::Keyboard* keyboard_ = nullptr;
 		static inline MiiEngine::Mouse* mouse_ = nullptr;
 		static inline MiiEngine::Controller* controller_ = nullptr;
-		static inline MiiEngine::CameraManager* cameraManager_ = nullptr;
-		static inline MiiEngine::ParticleManager* particleManager_ = nullptr;
-		static inline MiiEngine::ColliderManager* colliderManager_ = nullptr;
-		static inline MiiEngine::SpriteManager* spriteManager_ = nullptr;
+		static inline MiiEngine::InputTracker* inputTracker_ = nullptr;
+		/// ===Game=== ///
+		// GameTime
 		static inline MiiEngine::GameTime* gameTime_ = nullptr;
 	};
 }
@@ -35886,24 +36441,6 @@ namespace Service {
 		Vector2 scale = { windowSize.x / BASE_WIDTH, windowSize.y / BASE_HEIGHT };
 		return scale;
 	}
-
-
-	///-------------------------------------------/// 
-	/// ワールド座標をスクリーン座標に変換		
-	///-------------------------------------------///
-	Vector2 Sprite::WorldToScreen(const Vector3& worldPos) {
-		MiiEngine::CameraCommon* camera = Service::Camera::GetActiveCamera();
-		Vector3 playerPos = worldPos;
-		Matrix4x4 viewProj = camera->GetViewProjectionMatrix();
-		float width = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth());
-		float height = static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
-
-		Vector3 screenPos3d = Math::TransformCoordinates(playerPos, viewProj);
-		float screenX = (screenPos3d.x + 1.0f) * 0.5f * width;
-		float screenY = (1.0f - screenPos3d.y) * 0.5f * height;
-
-		return Vector2{ screenX, screenY };
-	}
 }
 
 
@@ -35949,13 +36486,6 @@ namespace Service {
 		/// </summary>
 		/// <returns>基本スケールのベクトル。</returns>
 		static Vector2 GetBaseScale();
-
-		/// <summary>
-		/// ワールド座標をスクリーン座標に変換します。
-		/// </summary>
-		/// <param name="worldPos">変換するワールド座標。</param>
-		/// <returns>変換されたスクリーン座標。</returns>
-		static Vector2 WorldToScreen(const Vector3& worldPos);
 	};
 
 }
@@ -41413,36 +41943,36 @@ void BossMoveState::UpdateMove() {
 /// Stateの変更が必要か判定して、必要なら変更する。
 ///-------------------------------------------///
 bool BossMoveState::ChangeStateIfNeeded(float dist) {
-
+#ifdef DEBUG
 	if (boss_->CanParabolicShot(dist)) {
 		// ParabolicShot攻撃へ遷移
 		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
 		return true;
 	}
-
+#else
 	/// ===遷移状態の判定=== ///
-	//if (boss_->CanRotateAttack(dist)) {
-	//	// Rotate攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossRotateAttackState>());
-	//	return true;
-	//} else if (boss_->CanDownSwingAttack(dist)) {
-	//	// Downswing攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
-	//	return true;
-	//} else if (boss_->CanParabolicShot(dist)) {
-	//	// ParabolicShot攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossParabolicShotState>());
-	//	return true;
-	//} else if (boss_->CanOrbitingOrbs(dist)) {
-	//	// OrbitingOrbs攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
-	//	return true;
-	//} else if (boss_->CanJumpSmashAttack(dist)) {
-	//	// JumpSmash攻撃へ遷移
-	//	boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
-	//	return true;
-	//}
-
+	if (boss_->CanRotateAttack(dist)) {
+		// Rotate攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossRotateAttackState>());
+		return true;
+	} else if (boss_->CanDownSwingAttack(dist)) {
+		// Downswing攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossDownwarAttackState>());
+		return true;
+	} else if (boss_->CanParabolicShot(dist)) {
+		// ParabolicShot攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossParabolicShotState>());
+		return true;
+	} else if (boss_->CanOrbitingOrbs(dist)) {
+		// OrbitingOrbs攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossOrbitingOrbsState>());
+		return true;
+	} else if (boss_->CanJumpSmashAttack(dist)) {
+		// JumpSmash攻撃へ遷移
+		boss_->ChangeState(std::make_unique<BossJumpSmashAttackState>());
+		return true;
+	}
+#endif // DEBUG
 	return false;
 }
 
@@ -43279,10 +43809,9 @@ void Player::Update() {
 		}
 	}
 
-	/// ===スティックの取得=== ///
-	StickState leftStick = Service::Input::GetLeftStickState(0);
-	// スティック情報を保存
-	leftStickValue_ = { leftStick.x, leftStick.y };
+	/// ===入力値の取得=== ///
+	leftStickValue_ = Service::Input::GetLeftStickState(0);
+	keybordValue_ = Service::Input::GetKeybordWASDValue();
 
 	/// ===タイマーを進める=== ///
 	advanceTimer();
@@ -43576,6 +44105,7 @@ public: /// ===Getter=== ///
 	const PlayerComponent::Parameters& GetParameters() const { return parameters_; }
 	// Stick
 	const Vector2& GetLeftStickValue() const { return leftStickValue_; }
+	const Vector2& GetKeybordValue() const { return keybordValue_; }
 	// 攻撃データをIDで取得できるようにする
 	const AttackData* GetAttackData(int attackID) const;
 	// 回避行動可能判定
@@ -43625,8 +44155,9 @@ private: /// ===変数の宣言=== ///
 	/// ===攻撃データ=== ///
 	std::unordered_map<int, AttackData> attackDataMap_;
 
-	/// ===スティック情報=== ///
+	/// ===入力情報=== ///
 	Vector2 leftStickValue_;  // 左スティックの入力値
+	Vector2 keybordValue_;    // キーボードの入力値
 
 	/// ===無敵時間の情報=== ///
 	struct InvincibleInfo {
@@ -43705,7 +44236,6 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 攻撃の開始
 	if (StartAttack(0, player_->GetWeapon())) {
 		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
 		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
@@ -43758,7 +44288,7 @@ void AttackState::Update() {
 	}
 
 	// 攻撃ボタンが押されたらコンボを試行
-	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left)) {
 		if (canCombo_) {
 			if (TryCombo(player_->GetWeapon())) {
 				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
@@ -43888,6 +44418,20 @@ void AttackState::moveForwardOnAttackStart() {
 	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 1.0f, 0.05f);
 }
 
+///-------------------------------------------/// 
+/// マウスの方向に向く
+///-------------------------------------------///
+void AttackState::FaceMouseDirection() {
+	// 現在のデバイスがキーボードでない場合は処理を中止
+	if (Service::Input::GetActiveDevice() != DeviceType::Keyboard) return;
+
+	// マウスの位置を取得
+	POINT mousePos = Service::Input::GetMousePosition();
+	Vector2 mousePosVec2 = { static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) };
+
+
+}
+
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/State/AttackState.h
@@ -43985,6 +44529,11 @@ private:
 	/// 攻撃開始時に前方に移動します。
 	/// </summary>
 	void moveForwardOnAttackStart();
+
+	/// <summary>
+	/// Key入力の時にマウスの方向に向くようにする。
+	/// </summary>
+	void FaceMouseDirection();
 };
 
 ============================================================
@@ -43993,6 +44542,8 @@ File Path: Project/application/Game/Entity/Player/State/Base/PlayerState.cpp
 #include "PlayerState.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
+// Service
+#include "Service/Input.h"
 
 ///-------------------------------------------/// 
 /// 終了処理
@@ -44035,6 +44586,8 @@ void PlayerState::ApplyDeceleration(const float& deceleration) {
 File Path: Project/application/Game/Entity/Player/State/Base/PlayerState.h
 ============================================================
 #pragma once
+#include "Math/Vector2.h"
+
 /// ===前方宣言=== ///
 class Player;
 namespace MiiEngine {
@@ -44490,15 +45043,26 @@ void MoveState::Update() {
 	/// ===スティックの取得=== ///
 	Vector2 leftStickInput_ = player_->GetLeftStickValue();
 	bool hasInput = std::abs(leftStickInput_.x) > 0.1f || std::abs(leftStickInput_.y) > 0.1f;
+
+	/// ===キーボードの取得=== ///
+	Vector2 keybordInput = player_->GetKeybordValue();
+	bool hasKeybordInput = std::abs(keybordInput.x) > 0.0f || std::abs(keybordInput.y) > 0.0f;
+
+	/// ===移動処理=== ///
 	if (hasInput) {
 		// スティックの動きを適用
-		ApplyStickMovement(leftStickInput_);
+		ApplyMovement(leftStickInput_);
+
+	} else if (hasKeybordInput) {
+		// キーボード入力の動きを適用
+		ApplyMovement(keybordInput);
 
 	} else {
 		// 入力がない場合は減速処理を適用
 		PlayerState::ApplyDeceleration(player_->GetParameters().move.deceleration);
 	}
 
+	/// ===演出の追加=== ///
 	// 波紋を出す
 	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 0.5f, 0.01f);
 
@@ -44509,12 +45073,12 @@ void MoveState::Update() {
 
 	/// ===Stateの変更=== ///
 	// 攻撃ボタンが押されたら攻撃状態へ
-	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left)) {
 		/// AttackStateへ移行
 		player_->ChangState(std::make_unique<AttackState>());
 
 	// Aボタンが押されたら回避状態へ
-	} else if (Service::Input::TriggerButton(0, ControllerButtonType::A)) {
+	} else if (Service::Input::TriggerButton(0, ControllerButtonType::A) || Service::Input::TriggerKey(DIK_SPACE)) {
 		// DodgeStateへ移行
 		if (player_->CanDodge()) {
 			player_->ChangState(std::make_unique<DodgeState>(Normalize(state_.direction)));
@@ -44546,12 +45110,12 @@ void MoveState::StopMoveParticle() {
 }
 
 ///-------------------------------------------/// 
-/// スティックの動きを適用します。
+/// 動きを適用します。
 ///-------------------------------------------///
-void MoveState::ApplyStickMovement(const Vector2& stick) {
+void MoveState::ApplyMovement(const Vector2& input) {
 	/// ===移動処理=== ///
 	// 状態の更新
-	state_.direction = { stick.x, 0.0f, stick.y };
+	state_.direction = { input.x, 0.0f, input.y };
 	state_.velocity = state_.direction * player_->GetParameters().move.speed;
 
 	// 回転
@@ -44576,7 +45140,6 @@ void MoveState::ApplyStickMovement(const Vector2& stick) {
 	player_->SetVelocity(state_.velocity);
 	player_->SetRotate(state_.rotation);
 }
-
 
 ============================================================
 File Path: Project/application/Game/Entity/Player/State/MoveState.h
@@ -44639,10 +45202,10 @@ private:
 	void StopMoveParticle();
 
 	/// <summary>
-	/// スティックの動きを適用します。
+	/// 動きを適用します。
 	/// </summary>
-	/// <param name="stick">スティックの入力を表す2Dベクトル。</param>
-	void ApplyStickMovement(const Vector2& stick);
+	/// <param name="input">入力を表す2Dベクトル。</param>
+	void ApplyMovement(const Vector2& input);
 };
 
 
@@ -44675,28 +45238,30 @@ void RootState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 void RootState::Update() {
 
 	/// ===左スティックの取得=== ///
-	StickState leftStick = Service::Input::GetLeftStickState(0);
+	Vector2 leftStick = player_->GetLeftStickValue();
+	Vector2 keybordInput = player_->GetKeybordValue();
 
 	/// ===死亡していなければ=== ///
 	if (!player_->GetIsDead()) {
 		/// ===Stateの変更=== ///
 		// 攻撃ボタンが押されたら攻撃状態へ
-		if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
+		if (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left)) {
 			// 攻撃状態へ移行
 			player_->ChangState(std::make_unique<AttackState>());
 
-			// RBボタンが押されたら進んでいる突進状態へ
-		} else if (Service::Input::TriggerButton(0, ControllerButtonType::RB)) {
+			// RBボタンが押されたら遠距離攻撃へ
+		} else if (Service::Input::TriggerButton(0, ControllerButtonType::RB) || Service::Input::TriggerMouse(MouseButtonType::Right)) {
 
 			// Aボタンが押されたら回避状態へ
-		} else if (Service::Input::TriggerButton(0, ControllerButtonType::A)) {
+		} else if (Service::Input::TriggerButton(0, ControllerButtonType::A) || Service::Input::TriggerKey(DIK_SPACE)) {
 			// 回避行動へ移動
 			player_->ChangState(std::make_unique<DodgeState>(Normalize(player_->GetVelocity())));
 
 			// 移動が有れば
-		} else if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
+		} else if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f || std::abs(keybordInput.x) > 0.0f || std::abs(keybordInput.y) > 0.0f) {
 			// 移動状態へ移行
 			player_->ChangState(std::make_unique<MoveState>());
+
 		}
 	}
 }
@@ -45601,7 +46166,7 @@ File Path: Project/application/Game/Object/GameStage.cpp
 // Service
 #include "Service/GraphicsResourceGetter.h"
 // Math
-#include "Math/sMath.h"
+#include "Math/TransformationMath.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -45695,7 +46260,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 				ground->GameInit(stage.fileName);
 				// 座標設定
 				ground->SetTranslate(stage.translation);
-				ground->SetRotate(Math::QuaternionFromVector(stage.rotation));
+				ground->SetRotate(Math::EulerToQuaternion(stage.rotation));
 				ground->SetScale(stage.scaling);
 				// HalfSizeの設定
 				ground->SetHalfSize(stage.colliderInfo2 * 0.5f);
@@ -45710,7 +46275,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 			object->GameInit(stage.fileName);
 			// Transformを設定
 			object->SetTranslate(stage.translation);
-			object->SetRotate(Math::QuaternionFromVector(stage.rotation));
+			object->SetRotate(Math::EulerToQuaternion(stage.rotation));
 			object->SetScale(stage.scaling);
 			// 一回更新
 			object->Update();
@@ -45921,10 +46486,14 @@ void BossUI::Initialize(BossEnemy * boss, const Vector2& windowSize) {
 	// ボスの取得
 	boss_ = boss;
 
+	/// ===基準スケール=== ///
+	scale_ = Service::Sprite::GetBaseScale();
+
 	/// ===HPUI=== ///
 	// 位置とサイズの設定
-	Vector2 hpUISize = { 500.0f, 40.0f };
-	Vector2 hpUIPosition = { windowSize.x / 10.0f - 100.0f, windowSize.y / 8.0f - hpUISize.y};
+	Vector2 hpUISize = { 500.0f, 40.0f};
+	hpUISize *= scale_;
+	Vector2 hpUIPosition = { windowSize.x / 12.0f - hpUISize.x / 5.0f, windowSize.y / 8.0f - hpUISize.y * scale_.y };
 	//　生成
 	hpUI_ = std::make_unique<HpUI>();
 	float maxHp = static_cast<float>(boss_->GetHP());
@@ -45979,6 +46548,9 @@ private:
 	/// ===Object2D=== ///
 	// HPUI
 	std::unique_ptr<HpUI> hpUI_;
+
+	/// ===参照スケール倍率=== ///
+	Vector2 scale_ = { 1.0f, 1.0f }; // スケール
 };
 
 
@@ -45992,8 +46564,7 @@ File Path: Project/application/Game/UI/Game/PlayerUI.cpp
 // Service
 #include <Service/GraphicsResourceGetter.h>
 #include <Service/Sprite.h>
-#include <Service/Camera.h>
-#include <Engine/Camera/Base/CameraCommon.h>
+#include <Service/Input.h>
 // Math
 #include <Math/MatrixMath.h>
 #include <Math/Matrix4x4.h>
@@ -46008,7 +46579,6 @@ PlayerUI::~PlayerUI() {
 	xButton_.reset();
 	aButton_.reset();
 	leftStick_.reset();
-	rightStick_.reset();
 	hpUI_.reset();
 }
 
@@ -46029,18 +46599,14 @@ void PlayerUI::Initialize(Player* player, const Vector2& windowSize) {
 	moveUIPos_ = moveUI_->GetPosition();
 
 	/// ===HPUI=== ///
-	hpUI_ = std::make_unique<HpUI>();
-	// HPUIの初期化
-	float maxHp = static_cast<float>(player_->GetHP());
-	// HPUIのオフセットの設定
-	hpUIOffset_ = { -50.0f, -150.0f };
-	hpUIOffset_ *= scale_;
-	// HPUIの位置の設定
-	hpUIPos_ = Service::Sprite::WorldToScreen(player_->GetTransform().translate);
 	// HPUIのサイズの設定
-	Vector2 hpUISize = { 100.0f, 10.0f };
+	Vector2 hpUISize = { 300.0f, 30.0f };
 	hpUISize *= scale_;
-	hpUI_->Initialize(hpUIPos_ + hpUIOffset_, hpUISize, maxHp);
+	Vector2 hpUIPosition = { windowSize.x / 12.0f - hpUISize.x / 2.0f, windowSize.y * 7.0f / 8.0f + hpUISize.y * 2.0f * scale_.y };
+	// HPUIの初期化
+	hpUI_ = std::make_unique<HpUI>();
+	float maxHp = static_cast<float>(player_->GetHP());
+	hpUI_->Initialize(hpUIPosition, hpUISize, maxHp);
 }
 
 ///-------------------------------------------/// 
@@ -46050,14 +46616,17 @@ void PlayerUI::Update() {
 	// フラグと色のリセット
 	if (colorChange_.attackUI) {
 		colorChange_.attackUI = false;
+		attackUI_->SetSize(uiInfo_.size);
 		attackUI_->SetColor(baseColor_);
 	} 
 	if (colorChange_.dodgeActiveUI) {
 		colorChange_.dodgeActiveUI = false;
+		dodgeUI_->SetSize(uiInfo_.size);
 		dodgeUI_->SetColor(baseColor_);
 	} 
 	if (colorChange_.dodgeCooldownUI) {
 		colorChange_.dodgeCooldownUI = false;
+		dodgeUI_->SetSize(uiInfo_.size);
 		dodgeUI_->SetColor(baseColor_);
 	}
 
@@ -46069,9 +46638,6 @@ void PlayerUI::Update() {
 
 	// HPUIの更新処理
 	float currentHp = static_cast<float>(player_->GetHP());
-	// 座標返還後の座標を保存してHPUIに渡す
-	hpUIPos_ = Service::Sprite::WorldToScreen(player_->GetTransform().translate);
-	hpUI_->SetPosition(hpUIPos_ + hpUIOffset_);
 	hpUI_->Update(player_->GetDeltaTime(), currentHp);
 }
 
@@ -46082,63 +46648,72 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 
 	/// ===object2dの生成=== ///
 	moveUI_ = std::make_unique<Object2d>();
-	leftStick_ = std::make_unique<Object2d>();
-	rightStick_ = std::make_unique<Object2d>();
 	attackUI_ = std::make_unique<Object2d>();
-	xButton_ = std::make_unique<Object2d>();
 	dodgeUI_ = std::make_unique<Object2d>();
+
+	leftStick_ = std::make_unique<Object2d>();
+	xButton_ = std::make_unique<Object2d>();
 	aButton_ = std::make_unique<Object2d>();
 
 	/// ===基準の設定=== ///
 	// 基準点
 	Vector2 point = {
-		windowSize.x * (3.0f / 4.0f) - (20.0f * scale_.x),
-		windowSize.y * (7.0f / 8.0f)
+		windowSize.x / 12.0f - (100.0f * scale_.x),
+		windowSize.y* (7.0f / 8.0f) - 30.0f * scale_.y
 	};
 	// 基準の間隔
-	float spaceX = (windowSize.x - point.x) / 8.0f + (2.0f * scale_.x);
-	// コントローラーUIのY座標
-	float controllerPosY = point.y + (90.0f * scale_.y);
+	float spaceX = point.x - 30.0f * scale_.x;
+	// デバイスUIのY座標
+	float devicePosY = point.y + (60.0f * scale_.y);
+
+	// UI情報
+	uiInfo_.size = { 60.0f * scale_.x, 60.0f * scale_.y };
+	uiInfo_.activeSize = uiInfo_.size * 1.2f;
+	uiInfo_.anchorPoint = { 0.5f, 0.5f };
+	uiInfo_.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	// デバイスUIのサイズ
+	Vector2 deviceUISize = { 30.0f * scale_.x, 30.0f * scale_.y };
 
 	// 移動UIの初期化
 	moveUI_->Initialize("MoveUI");
-	moveUI_->SetPosition({ point.x + spaceX, point.y });
+	moveUI_->SetPosition({ point.x, point.y });
+	moveUI_->SetSize(uiInfo_.size);
+	moveUI_->SetAnchorPoint(uiInfo_.anchorPoint);
+	moveUI_->SetColor(uiInfo_.color);
 	moveUIPos_ = moveUI_->GetPosition();
-	moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	moveUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	moveUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 	// 左スティックUIの初期化
 	leftStick_->Initialize("leftStick");
-	leftStick_->SetPosition({ moveUI_->GetPosition().x, controllerPosY });
-	leftStick_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	leftStick_->SetAnchorPoint({ 0.5f, 0.5f });
+	leftStick_->SetPosition({ moveUI_->GetPosition().x, devicePosY });
+	leftStick_->SetSize(deviceUISize);
+	leftStick_->SetAnchorPoint(uiInfo_.anchorPoint);
 
 	// 攻撃UIの初期化
 	attackUI_->Initialize("AttackUI");
 	attackUI_->SetPosition({ point.x + (spaceX * 3.0f), point.y });
-	attackUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	attackUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	attackUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	attackUI_->SetSize(uiInfo_.size);
+	attackUI_->SetAnchorPoint(uiInfo_.anchorPoint);
+	attackUI_->SetColor(uiInfo_.color);
 
 	// XボタンUIの初期化
 	xButton_->Initialize("xButton");
-	xButton_->SetPosition({ attackUI_->GetPosition().x,  controllerPosY });
-	xButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	xButton_->SetAnchorPoint({ 0.5f, 0.5f });
+	xButton_->SetPosition({ attackUI_->GetPosition().x,  devicePosY });
+	xButton_->SetSize(deviceUISize);
+	xButton_->SetAnchorPoint(uiInfo_.anchorPoint);
 
 	// 回避UIの初期化
 	dodgeUI_->Initialize("DodgeUI");
-	dodgeUI_->SetPosition({ point.x + (spaceX * 5.0f), point.y });
-	dodgeUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
-	dodgeUI_->SetAnchorPoint({ 0.5f, 0.5f });
-	dodgeUI_->SetColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	dodgeUI_->SetPosition({ point.x + (spaceX * 6.0f), point.y });
+	dodgeUI_->SetSize(uiInfo_.size);
+	dodgeUI_->SetAnchorPoint(uiInfo_.anchorPoint);
+	dodgeUI_->SetColor(uiInfo_.color);
 
 	// AボタンUIの初期化
 	aButton_->Initialize("aButton");
-	aButton_->SetPosition({ dodgeUI_->GetPosition().x, controllerPosY });
-	aButton_->SetSize({ 50.0f * scale_.x, 50.0f * scale_.y });
-	aButton_->SetAnchorPoint({ 0.5f, 0.5f });
+	aButton_->SetPosition({ dodgeUI_->GetPosition().x, devicePosY });
+	aButton_->SetSize(deviceUISize);
+	aButton_->SetAnchorPoint(uiInfo_.anchorPoint);
 	aButton_->Update();
 }
 
@@ -46147,21 +46722,32 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 ///-------------------------------------------///
 void PlayerUI::SpriteUpdate() {
 
-	/// ===スティックの取得=== ///
-	Vector2 leftStick = player_->GetLeftStickValue();
-	leftStick.y *= -1.0f;
+	/// ===入力値の取得=== ///
+	Vector2 leftStickValue = player_->GetLeftStickValue();
+	leftStickValue.y *= -1.0f;
+	Vector2 keybordValue = player_->GetKeybordValue();
+	keybordValue.y *= -1.0f;
 
 	/// ===位置の更新=== ///
-	// 移動UI
-	moveUI_->SetPosition(moveUIPos_ + leftStick * 15.0f);
-
-	/// ===サイズの管理=== ///
-	if (std::abs(leftStick.x) > 0.1f || std::abs(leftStick.y) > 0.1f) {
-		// サイズを大きくする
-		moveUI_->SetSize({ 100.0f * scale_.x, 100.0f * scale_.y });
+	DeviceType activeDevice = Service::Input::GetActiveDevice();
+	bool isValue = false;
+	Vector2 moveValue = { 0.0f, 0.0f };
+	// デバイスの判定
+	if (activeDevice == DeviceType::Controller) {
+		isValue = std::abs(leftStickValue.x) > 0.1f || std::abs(leftStickValue.y) > 0.1f;
+		moveValue = leftStickValue;
 	} else {
-		// サイズを元に戻す
-		moveUI_->SetSize({ 80.0f * scale_.x, 80.0f * scale_.y });
+		isValue = std::abs(keybordValue.x) > 0.1f || std::abs(keybordValue.y) > 0.1f;
+		moveValue = keybordValue;
+	}
+
+	// 移動UIの位置更新
+	moveUI_->SetPosition(moveUIPos_ + moveValue * 5.0f);
+	// 移動UIのサイズ更新
+	if (isValue) {
+		moveUI_->SetSize(uiInfo_.activeSize);
+	} else {
+		moveUI_->SetSize(uiInfo_.size);
 	}
 }
 
@@ -46173,12 +46759,15 @@ void PlayerUI::ColorUpdate() {
 	// 攻撃UI
 	if (player_->GetActiveAttackFlag() && !colorChange_.attackUI) {
 		colorChange_.attackUI = true;
+		attackUI_->SetSize(uiInfo_.activeSize);
 	}
 	// 回避UI
 	if (player_->GetActiveDodgeFlag() && !colorChange_.dodgeActiveUI) {
 		colorChange_.dodgeActiveUI = true;
+		dodgeUI_->SetSize(uiInfo_.activeSize);
 	} else if (!player_->CanDodge() && !colorChange_.dodgeCooldownUI) {
 		colorChange_.dodgeCooldownUI = true;
+		dodgeUI_->SetSize(uiInfo_.size * 0.8f);
 	}
 
 	/// ===UIの色更新=== ///
@@ -46237,24 +46826,30 @@ private:
 	// アクション
 	std::unique_ptr<Object2d> moveUI_;      // 移動UI
 	std::unique_ptr<Object2d> attackUI_;    // 攻撃UI
-	std::unique_ptr<Object2d> dodgeUI_; // 回避UI
+	std::unique_ptr<Object2d> dodgeUI_;		// 回避UI
 	// コントローラー
 	std::unique_ptr<Object2d> xButton_;		// X
 	std::unique_ptr<Object2d> aButton_;		// A
 	std::unique_ptr<Object2d> leftStick_;	// 左スティック
-	std::unique_ptr<Object2d> rightStick_;  // 右スティック
 	// HPUI
 	std::unique_ptr<HpUI> hpUI_;			// HPUI
 
 	/// ===位置=== ///
 	Vector2 moveUIPos_ = { 100.0f, 500.0f };      // 移動UI位置
-	Vector2 hpUIPos_ = { 0.0f, 0.0f };			  // HPUI位置
-	Vector2 hpUIOffset_ = { 0.0f, 0.0f };			  // HPUIのオフセット
 
 	/// ===Color=== ///
 	Vector4 baseColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };     // 基本カラー
 	Vector4 activeColor_ = { 1.0f, 0.0f, 0.0f, 1.0f };   // アクティブカラー
 	Vector4 cooldownColor_ = { 1.0f, 1.0f, 0.0f, 1.0f }; // クールダウンカラー
+
+	/// ===UI情報=== ///
+	struct UIInfo {
+		Vector2 size;
+		Vector2 activeSize;
+		Vector2 anchorPoint;
+		Vector4 color;
+	};
+	UIInfo uiInfo_{};
 
 	/// ===フラグ=== ///
 	struct ColorChange {
@@ -48424,6 +49019,8 @@ File Path: Project/application/Scene/Select/SelectScene.cpp
 #include "SelectScene.h"
 // SceneManager
 #include "Engine/System/Managers/SceneManager.h"
+// Service
+#include "Service/PostEffect.h"
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -48441,8 +49038,16 @@ void SelectScene::Initialize() {
 	// ISceneの初期化(デフォルトカメラとカメラマネージャ)
 	IScene::Initialize();
 
+	// ポストエフェクトをクリア
+	Service::PostEffect::ClearEffects();
+	Service::PostEffect::AddEffect(MiiEngine::OffScreenType::CopyImage);
+
+	// Oceanを生成
 	oceanGround_ = std::make_unique<GroundOcean>();
 	oceanGround_->Initialize();
+
+	// カメラの位置を設定
+	defaultCamera_->SetTranslate({ 0.0f, 50.0f, -100.0f });
 }
 
 ///-------------------------------------------/// 
