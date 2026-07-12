@@ -19,7 +19,6 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	// 攻撃の開始
 	if (StartAttack(0, player_->GetWeapon())) {
 		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
 		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
@@ -72,7 +71,7 @@ void AttackState::Update() {
 	}
 
 	// 攻撃ボタンが押されたらコンボを試行
-	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left)) {
 		if (canCombo_) {
 			if (TryCombo(player_->GetWeapon())) {
 				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
@@ -200,4 +199,18 @@ void AttackState::moveForwardOnAttackStart() {
 	}
 	// 波紋を出す
 	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 1.0f, 0.05f);
+}
+
+///-------------------------------------------/// 
+/// マウスの方向に向く
+///-------------------------------------------///
+void AttackState::FaceMouseDirection() {
+	// 現在のデバイスがキーボードでない場合は処理を中止
+	if (Service::Input::GetActiveDevice() != DeviceType::Keyboard) return;
+
+	// マウスの位置を取得
+	POINT mousePos = Service::Input::GetMousePosition();
+	Vector2 mousePosVec2 = { static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) };
+
+
 }

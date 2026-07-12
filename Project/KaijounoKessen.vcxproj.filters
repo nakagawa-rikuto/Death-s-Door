@@ -652,6 +652,7 @@
     <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp">
       <Filter>application\Scene\Game\UI</Filter>
     </ClCompile>
+    <ClCompile Include="Math\TransformationMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -1263,6 +1264,7 @@
     <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h">
       <Filter>application\Scene\Game\UI</Filter>
     </ClInclude>
+    <ClInclude Include="Math\TransformationMath.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">

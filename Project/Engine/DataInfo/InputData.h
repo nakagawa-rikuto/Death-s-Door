@@ -51,9 +51,3 @@ enum class ControllerValueType {
 	RX, // 右スティックX軸
 	RY, // 右スティックY軸
 };
-
-/// ===コントローラーの処理を管理するための構造体=== ///
-struct StickState {
-	float x;
-	float y;
-};

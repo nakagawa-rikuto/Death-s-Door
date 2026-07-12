@@ -5,6 +5,7 @@
 #include <algorithm>
 // MatrixMath
 #include "MatrixMath.h"
+#include "TransformationMath.h"
 
 ///=====================================================///
 /// π（πを使用する際に用いる関数）
@@ -116,49 +117,6 @@ float Math::GetYAngle(const Quaternion& quaternion) {
     Vector3 forward = RotateVector(Vector3(0.0f, 0.0f, 1.0f), quaternion);
     // atan2(forward.x, forward.z) で Yaw（水平回転） を取得。
     return std::atan2(forward.x, forward.z); // Yaw 角度（ラジアン）
-}
-// QuaternionをEulerAngles(Vector3)に変換する関数
-Vector3 Math::QuaternionToEuler(const Quaternion& quaternion) {
-    Vector3 euler = {};
-
-    // Yaw (ヨー: Y軸回転)
-    euler.y = std::atan2(2.0f * (quaternion.w * quaternion.y + quaternion.x * quaternion.z), 1.0f - 2.0f * (quaternion.y * quaternion.y + quaternion.z * quaternion.z));
-
-    // Pitch (ピッチ: X軸回転)
-    float sinp = 2.0f * (quaternion.w * quaternion.x - quaternion.y * quaternion.z);
-    if (std::abs(sinp) >= 1.0f)
-        euler.x = std::copysign(Pi() / 2.0f, sinp); // ±90度にクランプ
-    else
-        euler.x = std::asin(sinp);
-
-    // Roll (ロール: Z軸回転)
-    euler.z = std::atan2(2.0f * (quaternion.w * quaternion.z + quaternion.x * quaternion.y), 1.0f - 2.0f * (quaternion.x * quaternion.x + quaternion.z * quaternion.z));
-
-    return euler;
-}
-// Vector3からQuaternionに変換する関数
-Quaternion Math::QuaternionFromVector(const Vector3& vector) {
-    // 度数をラジアンに変換する (degree * pi / 180)
-    float radX = vector.x * (Pi() / 180.0f);
-    float radY = vector.y * (Pi() / 180.0f);
-    float radZ = vector.z * (Pi() / 180.0f);
-
-    float cx = std::cos(radX * 0.5f);
-    float sx = std::sin(radX * 0.5f);
-    float cy = std::cos(radY * 0.5f);
-    float sy = std::sin(radY * 0.5f);
-    float cz = std::cos(radZ * 0.5f);
-    float sz = std::sin(radZ * 0.5f);
-
-    Quaternion q = {};
-
-    // Q = Qz * Qy * Qx (各軸の回転をこの順で適用する場合)
-    q.w = cx * cy * cz + sx * sy * sz;
-    q.x = sx * cy * cz - cx * sy * sz;
-    q.y = cx * sy * cz + sx * cy * sz;
-    q.z = cx * cy * sz - sx * sy * cz;
-
-    return q;
 }
 // ある方向（forward）を向くクォータニオン（回転）を作る
 Quaternion Math::LookRotation(Vector3 forward, Vector3 up) {

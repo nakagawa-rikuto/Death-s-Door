@@ -3,6 +3,7 @@
 // Engine
 #include "Engine/Core/ComPtr.h"
 #include "Engine/DataInfo/InputData.h"
+#include "Math/Vector2.h"
 // c++
 #include <cstdint>
 #include <map>
@@ -62,8 +63,8 @@ namespace MiiEngine {
         /// </summary>
         /// <param name="stickNo">コントローラーの番号</param>
         /// <returns>スティックの状態を返す</returns>
-        StickState GetLeftStickState(int stickNo) const;
-        StickState GetRightStickState(int stickNo) const;
+        Vector2 GetLeftStickState(int stickNo) const;
+        Vector2 GetRightStickState(int stickNo) const;
         float GetStickValue(int stickNo, ControllerValueType valueType) const;
 
         /// <summary>
@@ -71,8 +72,8 @@ namespace MiiEngine {
         /// </summary>
         /// <param name="stickNo">コントローラーの番号</param>
         /// <returns>スティックの状態を返す</returns>
-        StickState GetLeftStickStatePrevious(int stickNo) const;
-        StickState GetRightStickStatePrevious(int stickNo) const;
+        Vector2 GetLeftStickStatePrevious(int stickNo) const;
+        Vector2 GetRightStickStatePrevious(int stickNo) const;
 
         /// <summary>
         /// スティックのはじき（ Flick ）を検出する関数

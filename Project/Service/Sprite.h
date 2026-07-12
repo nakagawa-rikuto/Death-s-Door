@@ -37,13 +37,6 @@ namespace Service {
 		/// </summary>
 		/// <returns>基本スケールのベクトル。</returns>
 		static Vector2 GetBaseScale();
-
-		/// <summary>
-		/// ワールド座標をスクリーン座標に変換します。
-		/// </summary>
-		/// <param name="worldPos">変換するワールド座標。</param>
-		/// <returns>変換されたスクリーン座標。</returns>
-		static Vector2 WorldToScreen(const Vector3& worldPos);
 	};
 
 }

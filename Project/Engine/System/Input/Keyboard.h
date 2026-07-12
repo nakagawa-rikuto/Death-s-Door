@@ -3,6 +3,7 @@
 // Engine
 #include "Engine/Core/ComPtr.h"
 #include "Engine/DataInfo/InputData.h"
+#include "Math/Vector2.h"
 
 namespace MiiEngine {
 	/// ===前方宣言=== ///
@@ -55,6 +56,18 @@ namespace MiiEngine {
 		/// </summary>
 		/// <returns>フラグを返す</returns>
 		bool HasAnyKeyInput() const;
+
+		/// <summary>
+		/// WASDキーの入力値を取得
+		/// </summary>
+		/// <returns></returns>
+		Vector2 GetKeybordWASDValue();
+
+		/// <summary>
+		/// 矢印キーの入力値を取得
+		/// </summary>
+		/// <returns></returns>
+		Vector2 GetKeybordArrowValue();
 
 	private:
 		// キーボード用のDirectInputデバイス

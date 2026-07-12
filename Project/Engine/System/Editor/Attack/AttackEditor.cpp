@@ -5,12 +5,15 @@
 #include "Service/Locator.h"
 // Line
 #include "Engine/Graphics/3d/Line/LineObject3D.h"
+// C++
+#include <filesystem>
+// Math
+#include "Math/TransformationMath.h"
 // ImGui
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif
 
-#include <filesystem>
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -706,7 +709,7 @@ void AttackEditor::RenderChannelControlPoints(TrajectoryChannel& channel, int ch
         // 回転はオイラー角で編集→Quaternionに変換して保存
         if (i < static_cast<int>(eulerList.size())) {
             if (ImGui::DragFloat3("回転 (deg)", &eulerList[i].x, 0.5f)) {
-                points[i].rotation = Math::QuaternionFromVector(eulerList[i]);
+                points[i].rotation = Math::EulerToQuaternion(eulerList[i]);
             }
         }
 

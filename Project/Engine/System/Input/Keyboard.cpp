@@ -94,4 +94,62 @@ namespace MiiEngine {
 		}
 		return false;
 	}
+
+	///-------------------------------------------/// 
+	/// WASDキーの入力値を取得 
+	///-------------------------------------------///
+	Vector2 Keyboard::GetKeybordWASDValue() {
+		Vector2 input = { 0.0f, 0.0f };
+
+		if (PushKey(DIK_D)) {
+			input.x += 1.0f;
+		}
+		if (PushKey(DIK_A)) {
+			input.x -= 1.0f;
+		}
+		if (PushKey(DIK_W)) {
+			input.y += 1.0f;
+		}
+		if (PushKey(DIK_S)) {
+			input.y -= 1.0f;
+		}
+
+		// 斜め移動時に速度が大きくなりすぎないよう正規化
+		if (Length(Vector2{ input.x, input.y }) > 1.0f) {
+			Vector2 normalized = Normalize(Vector2{ input.x, input.y });
+			input.x = normalized.x;
+			input.y = normalized.y;
+		}
+
+		return input;
+	}
+
+	///-------------------------------------------/// 
+	/// 矢印キーの入力値を取得
+	///-------------------------------------------///
+	Vector2 Keyboard::GetKeybordArrowValue() {
+		Vector2 input = { 0.0f, 0.0f };
+
+		if (PushKey(DIK_RIGHT)) {
+			input.x += 1.0f;
+		}
+		if (PushKey(DIK_LEFT)) {
+			input.x -= 1.0f;
+		}
+		if (PushKey(DIK_UP)) {
+			input.y += 1.0f;
+		}
+		if (PushKey(DIK_DOWN)) {
+			input.y -= 1.0f;
+		}
+
+		// 斜め移動時に速度が大きくなりすぎないよう正規化
+		if (Length(Vector2{ input.x, input.y }) > 1.0f) {
+			Vector2 normalized = Normalize(Vector2{ input.x, input.y });
+			input.x = normalized.x;
+			input.y = normalized.y;
+		}
+
+		return input;
+	}
 }

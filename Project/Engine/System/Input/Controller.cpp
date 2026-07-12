@@ -202,8 +202,8 @@ namespace MiiEngine {
 	/// スティックの状況を取得 対応済み
 	///-------------------------------------------///
 	// 左スティックの状況を取得
-	StickState Controller::GetLeftStickState(int stickNo) const {
-		StickState state = { 0.0f, 0.0f };
+	Vector2 Controller::GetLeftStickState(int stickNo) const {
+		Vector2 state = { 0.0f, 0.0f };
 		if (stickNo < 0 || stickNo >= XUSER_MAX_COUNT) return state;
 
 		// XInput のスティック値（-1.0f ～ 1.0f）
@@ -227,8 +227,8 @@ namespace MiiEngine {
 		return state;
 	}
 	// 右スティックの状況を取得
-	StickState Controller::GetRightStickState(int stickNo) const {
-		StickState state = { 0.0f, 0.0f };
+	Vector2 Controller::GetRightStickState(int stickNo) const {
+		Vector2 state = { 0.0f, 0.0f };
 		if (stickNo < 0 || stickNo >= XUSER_MAX_COUNT) return state;
 
 		// XInput のスティック値（-1.0f ～ 1.0f）
@@ -297,8 +297,8 @@ namespace MiiEngine {
 	/// スティックの前フレーム状態を取得する関数
 	///-------------------------------------------///
 	// 左スティック
-	StickState Controller::GetLeftStickStatePrevious(int stickNo) const {
-		StickState state = { 0.0f, 0.0f };
+	Vector2 Controller::GetLeftStickStatePrevious(int stickNo) const {
+		Vector2 state = { 0.0f, 0.0f };
 		if (stickNo < 0 || stickNo >= XUSER_MAX_COUNT) return state;
 
 		float lxXInput = static_cast<float>(previousState_[stickNo].Gamepad.sThumbLX) / NORMALIZE_RANGE;
@@ -318,8 +318,8 @@ namespace MiiEngine {
 		return state;
 	}
 	// 右スティック
-	StickState Controller::GetRightStickStatePrevious(int stickNo) const {
-		StickState state = { 0.0f, 0.0f };
+	Vector2 Controller::GetRightStickStatePrevious(int stickNo) const {
+		Vector2 state = { 0.0f, 0.0f };
 		if (stickNo < 0 || stickNo >= XUSER_MAX_COUNT) return state;
 
 		float rxXInput = static_cast<float>(previousState_[stickNo].Gamepad.sThumbRX) / NORMALIZE_RANGE;
@@ -345,8 +345,8 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	// 左スティック
 	bool Controller::FlickLeftStick(int stickNo, float threshold) const {
-		StickState prev = GetLeftStickStatePrevious(stickNo);
-		StickState curr = GetLeftStickState(stickNo);
+		Vector2 prev = GetLeftStickStatePrevious(stickNo);
+		Vector2 curr = GetLeftStickState(stickNo);
 
 		float prevLen = std::sqrt(prev.x * prev.x + prev.y * prev.y);
 		float currLen = std::sqrt(curr.x * curr.x + curr.y * curr.y);
@@ -355,8 +355,8 @@ namespace MiiEngine {
 	}
 	// 右スティック
 	bool Controller::FlickRightStick(int stickNo, float threshold) const {
-		StickState prev = GetRightStickStatePrevious(stickNo);
-		StickState curr = GetRightStickState(stickNo);
+		Vector2 prev = GetRightStickStatePrevious(stickNo);
+		Vector2 curr = GetRightStickState(stickNo);
 
 		float prevLen = std::sqrt(prev.x * prev.x + prev.y * prev.y);
 		float currLen = std::sqrt(curr.x * curr.x + curr.y * curr.y);

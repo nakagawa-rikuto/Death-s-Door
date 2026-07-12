@@ -1,4 +1,6 @@
 #pragma once
+#include "Math/Vector2.h"
+
 /// ===前方宣言=== ///
 class Player;
 namespace MiiEngine {

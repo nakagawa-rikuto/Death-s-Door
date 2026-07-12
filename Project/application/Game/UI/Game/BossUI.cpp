@@ -19,10 +19,14 @@ void BossUI::Initialize(BossEnemy * boss, const Vector2& windowSize) {
 	// ボスの取得
 	boss_ = boss;
 
+	/// ===基準スケール=== ///
+	scale_ = Service::Sprite::GetBaseScale();
+
 	/// ===HPUI=== ///
 	// 位置とサイズの設定
-	Vector2 hpUISize = { 500.0f, 40.0f };
-	Vector2 hpUIPosition = { windowSize.x / 10.0f - 100.0f, windowSize.y / 8.0f - hpUISize.y};
+	Vector2 hpUISize = { 500.0f, 40.0f};
+	hpUISize *= scale_;
+	Vector2 hpUIPosition = { windowSize.x / 12.0f - hpUISize.x / 5.0f, windowSize.y / 8.0f - hpUISize.y * scale_.y };
 	//　生成
 	hpUI_ = std::make_unique<HpUI>();
 	float maxHp = static_cast<float>(boss_->GetHP());

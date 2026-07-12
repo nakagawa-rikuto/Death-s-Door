@@ -47,15 +47,26 @@ void MoveState::Update() {
 	/// ===スティックの取得=== ///
 	Vector2 leftStickInput_ = player_->GetLeftStickValue();
 	bool hasInput = std::abs(leftStickInput_.x) > 0.1f || std::abs(leftStickInput_.y) > 0.1f;
+
+	/// ===キーボードの取得=== ///
+	Vector2 keybordInput = player_->GetKeybordValue();
+	bool hasKeybordInput = std::abs(keybordInput.x) > 0.0f || std::abs(keybordInput.y) > 0.0f;
+
+	/// ===移動処理=== ///
 	if (hasInput) {
 		// スティックの動きを適用
-		ApplyStickMovement(leftStickInput_);
+		ApplyMovement(leftStickInput_);
+
+	} else if (hasKeybordInput) {
+		// キーボード入力の動きを適用
+		ApplyMovement(keybordInput);
 
 	} else {
 		// 入力がない場合は減速処理を適用
 		PlayerState::ApplyDeceleration(player_->GetParameters().move.deceleration);
 	}
 
+	/// ===演出の追加=== ///
 	// 波紋を出す
 	player_->GetGroundOcean()->AddRipple(player_->GetTransform().translate, 0.5f, 0.01f);
 
@@ -66,12 +77,12 @@ void MoveState::Update() {
 
 	/// ===Stateの変更=== ///
 	// 攻撃ボタンが押されたら攻撃状態へ
-	if (Service::Input::TriggerButton(0, ControllerButtonType::X)) {
+	if (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left)) {
 		/// AttackStateへ移行
 		player_->ChangState(std::make_unique<AttackState>());
 
 	// Aボタンが押されたら回避状態へ
-	} else if (Service::Input::TriggerButton(0, ControllerButtonType::A)) {
+	} else if (Service::Input::TriggerButton(0, ControllerButtonType::A) || Service::Input::TriggerKey(DIK_SPACE)) {
 		// DodgeStateへ移行
 		if (player_->CanDodge()) {
 			player_->ChangState(std::make_unique<DodgeState>(Normalize(state_.direction)));
@@ -103,12 +114,12 @@ void MoveState::StopMoveParticle() {
 }
 
 ///-------------------------------------------/// 
-/// スティックの動きを適用します。
+/// 動きを適用します。
 ///-------------------------------------------///
-void MoveState::ApplyStickMovement(const Vector2& stick) {
+void MoveState::ApplyMovement(const Vector2& input) {
 	/// ===移動処理=== ///
 	// 状態の更新
-	state_.direction = { stick.x, 0.0f, stick.y };
+	state_.direction = { input.x, 0.0f, input.y };
 	state_.velocity = state_.direction * player_->GetParameters().move.speed;
 
 	// 回転
@@ -132,11 +143,4 @@ void MoveState::ApplyStickMovement(const Vector2& stick) {
 	state_.velocity.y = player_->GetVelocity().y; // 現在のY軸の速度を維持
 	player_->SetVelocity(state_.velocity);
 	player_->SetRotate(state_.rotation);
-}
-
-///-------------------------------------------/// 
-/// キーボード入力に基づいて移動処理を行います。
-///-------------------------------------------///
-void MoveState::MoveKeyboard() {
-
 }

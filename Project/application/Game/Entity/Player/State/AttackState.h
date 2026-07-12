@@ -91,4 +91,9 @@ private:
 	/// 攻撃開始時に前方に移動します。
 	/// </summary>
 	void moveForwardOnAttackStart();
+
+	/// <summary>
+	/// Key入力の時にマウスの方向に向くようにする。
+	/// </summary>
+	void FaceMouseDirection();
 };
