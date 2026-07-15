@@ -22,21 +22,13 @@ template void GameCharacterCollision::ProcessCollision<MiiEngine::OBBCollider, M
 /// 球体GameCharacter同士の衝突処理
 ///-------------------------------------------///
 void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<MiiEngine::SphereCollider>* characterA, GameCharacter<MiiEngine::SphereCollider>* characterB, const float pushBackRatio) {
-
+	// 位置情報の取得
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
 
 	// 中心点間の距離ベクトル
-	Vector3 direction = posA - posB;
-	float distance = Length(direction);
-
-	// 距離が0に近い場合は適当な方向に設定
-	if (distance < 1e-6f) {
-		direction = Vector3(1.0f, 0.0f, 0.0f);
-		distance = 1e-6f;
-	} else {
-		direction = Normalize(direction);
-	}
+	float distance = 0.0f;
+	Vector3 direction = CalculatePushBackDirection(posA, posB, Vector3(1.0f, 0.0f, 0.0f), EPSILON_, distance);
 
 	// 半径の合計
 	float radiusA = characterA->GetSphere().radius;
@@ -45,14 +37,10 @@ void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<MiiEngine
 
 	// 重なり分
 	float overlap = totalRadius - distance;
-	if (overlap > 0.0f) {
-		// 押し戻し処理
-		float pushBackDistanceA = overlap * pushBackRatio;
-		float pushBackDistanceB = overlap * (1.0f - pushBackRatio);
 
-		posA += direction * pushBackDistanceA;
-		posB -= direction * pushBackDistanceB;
-
+	// 押し戻し処理
+	if (ApplyPushBack(posA, posB, direction, overlap, pushBackRatio)) {
+		// 位置更新
 		characterA->SetTranslate(posA);
 		characterB->SetTranslate(posB);
 	}
@@ -62,20 +50,13 @@ void GameCharacterCollision::HandleSphereSphereCollision(GameCharacter<MiiEngine
 /// OBBGameCharacter同士の衝突処理
 ///-------------------------------------------///
 void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<MiiEngine::OBBCollider>* characterA, GameCharacter<MiiEngine::OBBCollider>* characterB, const float pushBackRatio) {
-
+	// 位置情報の取得
 	Vector3 posA = characterA->GetTransform().translate;
 	Vector3 posB = characterB->GetTransform().translate;
 
-	// 簡略化された押し戻し処理（中心点間のベクトルを使用）
-	Vector3 direction = posA - posB;
-	float distance = Length(direction);
-
-	if (distance < EPSILON_) {
-		direction = Vector3(1.0f, 0.0f, 0.0f);
-		distance = EPSILON_;
-	} else {
-		direction = Normalize(direction);
-	}
+	/// 中心間の距離ベクトル
+	float distance = 0.0f;
+	Vector3 direction = CalculatePushBackDirection(posA, posB, Vector3(1.0f, 0.0f, 0.0f), EPSILON_, distance);
 
 	// OBBのサイズから推定される最小押し戻し距離
 	Vector3 sizeA = characterA->GetOBB().halfSize * 2.0f;
@@ -83,17 +64,13 @@ void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<MiiEngine::OBBC
 	float avgSizeA = (sizeA.x + sizeA.y + sizeA.z) / 3.0f;
 	float avgSizeB = (sizeB.x + sizeB.y + sizeB.z) / 3.0f;
 
+	// 重なり分
 	float minDistance = (avgSizeA + avgSizeB) * 0.5f;
 	float overlap = minDistance - distance;
 
-	if (overlap > 0.0f) {
-		// 押し戻し処理
-		float pushA = overlap * (1.0f - pushBackRatio);;
-		float pushB = overlap * pushBackRatio;
-
-		posA += direction * pushA;
-		posB -= direction * pushB;
-
+	// 押し戻し処理
+	if (ApplyPushBack(posA, posB, direction, overlap, pushBackRatio)) {
+		// 位置更新
 		characterA->SetTranslate(posA);
 		characterB->SetTranslate(posB);
 	}
@@ -105,6 +82,7 @@ void GameCharacterCollision::HandleOBBOBBCollision(GameCharacter<MiiEngine::OBBC
 template<typename TColliderA, typename TColliderB> requires IsCollider<TColliderA>&& IsCollider<TColliderB>
 void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>* characterA, GameCharacter<TColliderB>* characterB, const float pushBackRatio) {
 
+	// ===キャラクターの型を判定してキャスト=== ///
 	GameCharacter<MiiEngine::OBBCollider>* obbCharacter = nullptr;
 	GameCharacter<MiiEngine::SphereCollider>* sphereCharacter = nullptr;
 	/// ===キャスト=== ///
@@ -131,28 +109,15 @@ void GameCharacterCollision::HandleSphereOBBCollision(GameCharacter<TColliderA>*
 	Vector3 closestPoint = CalculateClosestPointOnOBBFromCharacter(spherePos, obbCharacter);
 
 	// 球体の中心から最も近い点への方向
-	Vector3 direction = spherePos - closestPoint;
-	float distance = Length(direction);
-
-	// 距離が0に近い場合は適当な方向に設定
-	if (distance < 1e-6f) {
-		direction = Vector3(0.0f, 1.0f, 0.0f);
-		distance = 1e-6f;
-	} else {
-		direction = Normalize(direction);
-	}
+	float distance = 0.0f;
+	Vector3 direction = CalculatePushBackDirection(spherePos, closestPoint, Vector3(0.0f, 1.0f, 0.0f), EPSILON_, distance);
 
 	// 重なり分
 	float overlap = sphereRadius - distance;
-	if (overlap > 0.0f) {
-		// 押し戻し処理
-		float pushBackDistanceSphere = overlap * pushBackRatio;
-		float pushBackDistanceOBB = overlap * (1.0f - pushBackRatio);
 
-		spherePos += direction * pushBackDistanceSphere;
-		obbPos -= direction * pushBackDistanceOBB;
-
-		// 位置の更新
+	// 押し戻し処理
+	if (ApplyPushBack(spherePos, obbPos, direction, overlap, pushBackRatio)) {
+		// 位置更新
 		obbCharacter->SetTranslate(obbPos);
 		sphereCharacter->SetTranslate(spherePos);
 	}
@@ -183,7 +148,37 @@ void GameCharacterCollision::ProcessCollision(GameCharacter<TColliderA>* charact
 	} else if (typeA != typeB) {
 		HandleSphereOBBCollision(characterA, characterB, pushBackRatio);
 	}
+}
 
+///-------------------------------------------/// 
+/// 押し戻し処理の汎用関数
+///-------------------------------------------///
+Vector3 GameCharacterCollision::CalculatePushBackDirection(const Vector3& from, const Vector3& to, const Vector3& fallbackDirection, float epsilon, float& outDistance) const {
+	Vector3 direction = from - to;
+	float distance = Length(direction);
+	// 距離が0に近い場合は適当な方向に設定	
+	if (distance < epsilon) {
+		direction = fallbackDirection;
+		distance = epsilon;
+	} else {
+		direction = Normalize(direction);
+	}
+	outDistance = distance;
+	return direction;
+}
+///-------------------------------------------///	
+/// 押し戻し処理の適用（共通処理）	
+///-------------------------------------------///	
+bool GameCharacterCollision::ApplyPushBack(Vector3& posA, Vector3& posB, const Vector3& direction, float overlap, float pushBackRatio) const {
+	if (overlap <= 0.0f) {
+		return false;
+	}
+	// 押し戻し処理	
+	float pushBackDistanceA = overlap * pushBackRatio;
+	float pushBackDistanceB = overlap * (1.0f - pushBackRatio);
+	posA += direction * pushBackDistanceA;
+	posB -= direction * pushBackDistanceB;
+	return true;
 }
 
 ///-------------------------------------------/// 

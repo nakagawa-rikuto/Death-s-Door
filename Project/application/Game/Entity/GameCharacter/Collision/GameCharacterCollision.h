@@ -67,6 +67,30 @@ private:
 	const float EPSILON_ = 1e-6f;
 
     /// <summary>
+    /// 2点間の方向ベクトルを計算する共通処理。
+    /// 距離が epsilon 未満の場合は fallbackDirection を採用する。
+    /// </summary>
+    /// <param name="from">基準となる点（この点から to への方向を求める）。</param>
+    /// <param name="to">対象となる点。</param>
+    /// <param name="fallbackDirection">距離がepsilon未満の場合に使用する方向。</param>
+    /// <param name="epsilon">距離0とみなす閾値。</param>
+    /// <param name="outDistance">計算された距離（epsilon未満の場合はepsilonにクランプされる）。</param>
+    /// <returns>正規化された方向ベクトル（from - to 方向）。</returns>
+    Vector3 CalculatePushBackDirection(const Vector3& from, const Vector3& to, const Vector3& fallbackDirection, float epsilon, float& outDistance) const;
+
+    /// <summary>
+    /// 重なり量に応じて2つの位置へ押し戻しを適用する共通処理。
+    /// overlapが正の場合のみ適用し、pushBackRatioが1.0でposA側、0.0でposB側のみが押し戻される。
+    /// </summary>
+    /// <param name="posA">押し戻し対象の位置A（参照渡しで更新される）。</param>
+    /// <param name="posB">押し戻し対象の位置B（参照渡しで更新される）。</param>
+    /// <param name="direction">押し戻し方向（posA側が+方向）。</param>
+    /// <param name="overlap">重なり量。</param>
+    /// <param name="pushBackRatio">押し戻しの比率。</param>
+    /// <returns>overlapが正で実際に押し戻しを適用した場合はtrue。</returns>
+    bool ApplyPushBack(Vector3& posA, Vector3& posB, const Vector3& direction, float overlap, float pushBackRatio) const;
+
+    /// <summary>
     /// GameCharacter からコライダーの種類 (ColliderType) を取得
     /// </summary>
     /// <typeparam name="TCollider">キャラクターが使用するコライダーの型。</typeparam>

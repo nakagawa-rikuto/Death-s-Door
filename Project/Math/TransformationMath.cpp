@@ -61,6 +61,56 @@ Vector3 Math::ScreenToWorld(const Vector2& screenPos) {
 }
 
 ///-------------------------------------------/// 
+/// スクリーン座標から指定Y平面とレイの交点を取得
+///-------------------------------------------///
+std::optional<Vector3> Math::ScreenToWorldOnPlane(const Vector2& screenPos, float planeY) {
+    // カメラの取得
+    MiiEngine::CameraCommon* camera = Service::Camera::GetActiveCamera();
+    // ビュー射影行列の取得
+    Matrix4x4 viewProj = camera->GetViewProjectionMatrix();
+    // ビュー射影行列の逆行列を取得
+    Matrix4x4 invViewProj = Math::Inverse4x4(viewProj);
+
+    // スクリーンの取得
+    float width = static_cast<float>(Service::GraphicsResourceGetter::GetWindowWidth());
+    float height = static_cast<float>(Service::GraphicsResourceGetter::GetWindowHeight());
+
+    // NDC座標（近接面 z=0 と 遠方面 z=1）を作成
+    Vector3 ndcNear = {
+        .x = (screenPos.x / width) * 2.0f - 1.0f,
+        .y = 1.0f - (screenPos.y / height) * 2.0f,
+        .z = 0.0f
+    };
+    Vector3 ndcFar = {
+        .x = ndcNear.x,
+        .y = ndcNear.y,
+        .z = 1.0f
+    };
+
+    // ワールド座標に変換し、レイの始点と方向を求める
+    Vector3 rayOrigin = Math::TransformCoordinates(ndcNear, invViewProj);
+    Vector3 rayTarget = Math::TransformCoordinates(ndcFar, invViewProj);
+    Vector3 rayDir = rayTarget - rayOrigin;
+
+    // レイがY平面とほぼ平行な場合は交点なし
+    if (std::abs(rayDir.y) < 0.0001f) {
+        return std::nullopt;
+    }
+
+    // レイとplaneYの交点を求める
+    float t = (planeY - rayOrigin.y) / rayDir.y;
+    if (t < 0.0f) {
+        // 交点がレイの始点より後ろにある場合は無効
+        return std::nullopt;
+    }
+
+    Vector3 hitPos = rayOrigin + rayDir * t;
+    hitPos.y = planeY;
+
+    return hitPos;
+}
+
+///-------------------------------------------/// 
 /// QuaternionをEuler角に変換
 ///-------------------------------------------///
 Vector3 Math::QuaternionToEuler(const Quaternion& quaternion) {

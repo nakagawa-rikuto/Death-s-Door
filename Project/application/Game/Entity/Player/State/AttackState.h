@@ -56,6 +56,9 @@ private:
 	// 攻撃開始時の前方移動の強さ
 	float moveForwardStrength_ = 0.5f; 
 
+	// マウスの方向を向くサイの補間速度
+	float rotationLerpSpeed_ = 55.0f;
+
 private:
 	/// <summary>
 	/// 攻撃を開始

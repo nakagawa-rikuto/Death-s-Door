@@ -10,6 +10,7 @@
 #include "RootState.h"
 // Math
 #include "Math/sMath.h"
+#include "Math/TransformationMath.h"
 
 ///-------------------------------------------/// 
 /// 状態に入ったときに呼ばれる
@@ -102,6 +103,9 @@ void AttackState::Finalize() {
 bool AttackState::StartAttack(int attackID, PlayerWeapon* weapon) {
 	// 既存の攻撃をキャンセル
 	CancelAttack(); 
+
+	// キーボード操作時はマウスの方向を向く
+	FaceMouseDirection();
 
 	// 攻撃データを取得
 	const AttackData* attackData = player_->GetAttackData(attackID);
@@ -212,5 +216,24 @@ void AttackState::FaceMouseDirection() {
 	POINT mousePos = Service::Input::GetMousePosition();
 	Vector2 mousePosVec2 = { static_cast<float>(mousePos.x), static_cast<float>(mousePos.y) };
 
+	// プレイヤーのY座標の平面とマウスレイの交点を取得（Y軸は使用しないためプレイヤーの高さで固定）
+	float playerY = player_->GetTransform().translate.y;
+	std::optional<Vector3> hitPos = Math::ScreenToWorldOnPlane(mousePosVec2, playerY);
+	if (!hitPos.has_value()) return;
 
+	// プレイヤーから交点への方向（XZ平面のみ）
+	Vector3 toMouse = hitPos.value() - player_->GetTransform().translate;
+	toMouse.y = 0.0f;
+	if (toMouse.x == 0.0f && toMouse.z == 0.0f) return;
+	toMouse = Normalize(toMouse);
+
+	// Yaw角を求める
+	float yawRad = std::atan2(toMouse.x, toMouse.z);
+	float yawDeg = yawRad * (180.0f / Math::Pi());
+	Quaternion targetRotate = Math::EulerToQuaternion({ 0.0f, yawDeg, 0.0f });
+
+	// 現在の回転から目標の回転へ滑らかに補間
+	Quaternion currentRotate = player_->GetTransform().rotate;
+	Quaternion newRotate = Math::SLerp(currentRotate, targetRotate, rotationLerpSpeed_ * player_->GetDeltaTime());
+	player_->SetRotate(newRotate);
 }
