@@ -36,6 +36,7 @@ private:
 	std::unique_ptr<Object2d> moveUI_;      // 移動UI
 	std::unique_ptr<Object2d> attackUI_;    // 攻撃UI
 	std::unique_ptr<Object2d> dodgeUI_;		// 回避UI
+	std::unique_ptr<Object2d> attackDirectionUI_; // 攻撃方向UI
 	// コントローラー
 	std::unique_ptr<Object2d> xButton_;		// X
 	std::unique_ptr<Object2d> aButton_;		// A
@@ -45,6 +46,9 @@ private:
 
 	/// ===位置=== ///
 	Vector2 moveUIPos_ = { 100.0f, 500.0f };      // 移動UI位置
+
+	/// ===攻撃方向UI=== ///
+	float attackDirectionMinDistance_ = 0.0f; // 攻撃方向UIの最小距離
 
 	/// ===Color=== ///
 	Vector4 baseColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };     // 基本カラー
@@ -80,6 +84,18 @@ private:
 	void SetUpControllerUI(const Vector2& windowSize);
 
 	/// <summary>
+	/// 攻撃方向UIをセットアップします。
+	/// </summary>
+	/// <param name="windowSize">ウィンドウのサイズ。</param>
+	void SetUpAttackDirectionUI(const Vector2& windowSize);
+
+	/// <summary>
+	/// HPUIをセットアップします。
+	/// </summary>
+	/// <param name="windowSize">ウィンドウのサイズ。</param>
+	void SetUpHPUI(const Vector2& windowSize);
+
+	/// <summary>
 	/// スプライトの更新処理
 	/// </summary>
 	void SpriteUpdate();
@@ -88,5 +104,16 @@ private:
 	/// 色の更新処理
 	/// </summary>
 	void ColorUpdate();
+
+	/// <summary>
+	/// 攻撃方向UIの更新処理
+	/// マウスカーソル位置に追従させ、Playerから見たマウス方向を向くように回転させる
+	/// </summary>
+	void AttackDirectionUpdate();
+
+	/// <summary>
+	/// デバイス変更時の処理
+	/// </summary>
+	void ChangeDevice();
 };
 

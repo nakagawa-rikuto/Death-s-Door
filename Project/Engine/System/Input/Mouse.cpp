@@ -31,6 +31,9 @@ namespace MiiEngine {
 		// 排他的制御レベルのセット
 		hr = mouse_->SetCooperativeLevel(winApp_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 		assert(SUCCEEDED(hr));
+
+		// マウスカーソルを見えないようにする
+		ShowCursor(false);
 	}
 
 	///-------------------------------------------/// 
