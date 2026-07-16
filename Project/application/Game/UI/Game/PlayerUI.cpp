@@ -8,6 +8,7 @@
 // Math
 #include <Math/MatrixMath.h>
 #include <Math/Matrix4x4.h>
+#include <Math/TransformationMath.h>
 
 ///-------------------------------------------/// 
 /// デストラクタ
@@ -19,6 +20,7 @@ PlayerUI::~PlayerUI() {
 	xButton_.reset();
 	aButton_.reset();
 	leftStick_.reset();
+	attackDirectionUI_.reset();
 	hpUI_.reset();
 }
 
@@ -35,25 +37,29 @@ void PlayerUI::Initialize(Player* player, const Vector2& windowSize) {
 	// コントローラーUIのセットアップ
 	SetUpControllerUI(windowSize);
 
+	/// ===攻撃方向UIのセットアップ=== ///
+	SetUpAttackDirectionUI(windowSize);
+
+	/// ===HPUI=== ///
+	SetUpHPUI(windowSize);
+
 	// UIの位置の保存
 	moveUIPos_ = moveUI_->GetPosition();
 
-	/// ===HPUI=== ///
-	// HPUIのサイズの設定
-	Vector2 hpUISize = { 300.0f, 30.0f };
-	hpUISize *= scale_;
-	Vector2 hpUIPosition = { windowSize.x / 12.0f - hpUISize.x / 2.0f, windowSize.y * 7.0f / 8.0f + hpUISize.y * 2.0f * scale_.y };
-	// HPUIの初期化
-	hpUI_ = std::make_unique<HpUI>();
-	float maxHp = static_cast<float>(player_->GetHP());
-	hpUI_->Initialize(hpUIPosition, hpUISize, maxHp);
+	// デバイス毎の処理
+	ChangeDevice();
 }
 
 ///-------------------------------------------/// 
 /// 更新処理
 ///-------------------------------------------///
 void PlayerUI::Update() {
-	// フラグと色のリセット
+	/// ===デバイスに応じての処理=== ///
+	if (Service::Input::IsDeviceChanged()) {
+		ChangeDevice();
+	}
+
+	/// ===フラグと色のリセット=== ///
 	if (colorChange_.attackUI) {
 		colorChange_.attackUI = false;
 		attackUI_->SetSize(uiInfo_.size);
@@ -76,6 +82,9 @@ void PlayerUI::Update() {
 	// 色の更新処理
 	ColorUpdate();
 
+	// 攻撃方向UIの更新処理
+	AttackDirectionUpdate();
+
 	// HPUIの更新処理
 	float currentHp = static_cast<float>(player_->GetHP());
 	hpUI_->Update(player_->GetDeltaTime(), currentHp);
@@ -85,7 +94,6 @@ void PlayerUI::Update() {
 /// コントローラーUIのセットアップ
 ///-------------------------------------------///
 void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
-
 	/// ===object2dの生成=== ///
 	moveUI_ = std::make_unique<Object2d>();
 	attackUI_ = std::make_unique<Object2d>();
@@ -158,6 +166,38 @@ void PlayerUI::SetUpControllerUI(const Vector2& windowSize) {
 }
 
 ///-------------------------------------------/// 
+/// 攻撃方向UIのセットアップ
+///-------------------------------------------///
+void PlayerUI::SetUpAttackDirectionUI(const Vector2& windowSize) {
+	// 攻撃方向UIのサイズ設定
+	Vector2 attackDirectionUISize = { 90.0f * scale_.x, 90.0f * scale_.y };
+	// 最小距離を設定
+	attackDirectionMinDistance_ = Length(attackDirectionUISize);
+
+	// 攻撃方向UIの初期化
+	attackDirectionUI_ = std::make_unique<Object2d>();
+	attackDirectionUI_->Initialize("AttackDirection");
+	attackDirectionUI_->SetPosition({ windowSize.x * 0.5f, windowSize.y * 0.5f });
+	attackDirectionUI_->SetSize(attackDirectionUISize);
+	attackDirectionUI_->SetAnchorPoint({ 0.5f, 0.5f });
+	attackDirectionUI_->SetColor(baseColor_);
+}
+
+///-------------------------------------------/// 
+/// HPUIのセットアップ
+///-------------------------------------------///
+void PlayerUI::SetUpHPUI(const Vector2& windowSize) {
+	// HPUIのサイズの設定
+	Vector2 hpUISize = { 300.0f, 30.0f };
+	hpUISize *= scale_;
+	Vector2 hpUIPosition = { windowSize.x / 12.0f - hpUISize.x / 2.0f, windowSize.y * 7.0f / 8.0f + hpUISize.y * 2.0f * scale_.y };
+	// HPUIの初期化
+	hpUI_ = std::make_unique<HpUI>();
+	float maxHp = static_cast<float>(player_->GetHP());
+	hpUI_->Initialize(hpUIPosition, hpUISize, maxHp);
+}
+
+///-------------------------------------------/// 
 /// スプライトの更新処理
 ///-------------------------------------------///
 void PlayerUI::SpriteUpdate() {
@@ -222,5 +262,67 @@ void PlayerUI::ColorUpdate() {
 	if (colorChange_.dodgeCooldownUI) {
 		// 回避UI
 		dodgeUI_->SetColor(cooldownColor_);
+	}
+}
+
+///-------------------------------------------/// 
+/// 攻撃方向UIの更新処理
+///-------------------------------------------///
+void PlayerUI::AttackDirectionUpdate() {
+	// 早期リターン
+	if (Service::Input::GetActiveDevice() != DeviceType::Keyboard) return;
+
+	/// ===マウスカーソル位置(スクリーン座標)の取得=== ///
+	POINT mousePosition = Service::Input::GetMousePosition();
+	Vector2 mouseScreenPos = {
+		static_cast<float>(mousePosition.x),
+		static_cast<float>(mousePosition.y)
+	};
+
+	/// ===Playerのスクリーン座標の取得=== ///
+	Vector2 playerScreenPos = Math::WorldToScreen(player_->GetTransform().translate);
+
+	/// ===Playerからマウス位置への方向・距離を計算=== ///
+	Vector2 direction = mouseScreenPos - playerScreenPos;
+	float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+	/// ===UIの表示位置を決定=== ///
+	Vector2 uiPosition = mouseScreenPos;
+
+	if (distance < attackDirectionMinDistance_) {
+		Vector2 normalizedDirection;
+		if (distance > 0.0001f) {
+			// 現在の方向を正規化
+			normalizedDirection = { direction.x / distance, direction.y / distance };
+		}
+		// Playerから最小距離分だけ離した位置にクランプ
+		uiPosition = playerScreenPos + normalizedDirection * attackDirectionMinDistance_;
+		// 向きの計算にも正規化済みの方向を反映
+		direction = normalizedDirection;
+	}
+
+	// 攻撃方向UIの位置を更新
+	attackDirectionUI_->SetPosition(uiPosition);
+
+	/// ===向きの計算=== ///
+	if (direction.x != 0.0f || direction.y != 0.0f) {
+		float rotation = std::atan2(direction.x, -direction.y);
+		attackDirectionUI_->SetRotation(rotation);
+	}
+}
+
+///-------------------------------------------/// 
+/// デバイス変更時の処理
+///-------------------------------------------///
+void PlayerUI::ChangeDevice() {
+	// キーボードの場合
+	if (Service::Input::GetActiveDevice() == DeviceType::Keyboard) {
+		// 攻撃方向UIの描画を有効化
+		attackDirectionUI_->SetIsDraw(true);
+
+	// コントローラーの場合
+	} else {
+		// 攻撃方向UIの描画を無効化
+		attackDirectionUI_->SetIsDraw(false);
 	}
 }
