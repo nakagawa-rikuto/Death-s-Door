@@ -124,20 +124,20 @@ namespace MiiEngine {
     ///=====================================================///
     
     struct OceanRenderCB {
-        Vector3 sunDirection; // 太陽の方向
-        float sunPower; // 太陽の強度
-        Vector3 sunColor; // 太陽の色
-        float fresnelBias; // Fresnelの最小反射率
-        Vector3 deepColor; // 深海の色
-        float roughness; // 海面の粗さ
-        Vector3 shallowColor; // 浅瀬・波頂点の色
-        float sssStrength; // SSS強度
-        Vector3 foamColor; // 泡の色
-        float foamSoftness; // 泡のエッジの柔らかさ
+        Vector3 sunDirection;    // 太陽の方向
+        float sunPower;          // 太陽の強度
+        Vector3 sunColor;        // 太陽の色
+        float fresnelBias;       // Fresnelの最小反射率
+        Vector3 deepColor;       // 深海の色
+        float roughness;         // 海面の粗さ
+        Vector3 shallowColor;    // 浅瀬・波頂点の色
+        float sssStrength;       // SSS強度
+        Vector3 foamColor;       // 泡の色
+        float foamSoftness;      // 泡のエッジの柔らかさ
         Vector3 skyColorHorizon; // 地平線の空の色
         float pad0;
-        Vector3 skyColorZenith; // 天頂の空の色
-        float pad1;
+        Vector3 skyColorZenith;  // 天頂の空の色
+        float OceanOpacity;      // 海面の基本不透明度
     };
 
     ///=====================================================/// 

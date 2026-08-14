@@ -37,6 +37,23 @@ namespace MiiEngine {
 	const Vector3& ModelCommon::GetParentOffset() const { return parentOffset_; }
 
 	///-------------------------------------------/// 
+	/// Joint
+	///-------------------------------------------///
+	// ジョイントのワールド行列を取得
+	Matrix4x4 ModelCommon::GetJointWorldMatrix(const std::string& jointName) const {
+		jointName;
+		Matrix4x4 worldMatrix = Math::MakeIdentity4x4();
+		return worldMatrix;
+	}
+	// ジョイントの親を設定
+	void ModelCommon::SetJointParent(ModelCommon* parent, const std::string& jointName) {
+		jointParentModel_ = parent;
+		jointParentName_ = jointName;
+	}
+	// ジョイントの親を解除
+	void ModelCommon::ClearJointParent() { jointParentModel_ = nullptr; }
+
+	///-------------------------------------------/// 
 	/// Setter
 	///-------------------------------------------///
 	// Transform
@@ -163,6 +180,8 @@ namespace MiiEngine {
 	}
 	// Color
 	const Vector4& ModelCommon::GetColor() const { return color_; }
+	// WorldMatrix
+	const Matrix4x4& ModelCommon::GetWorldMatrix() const { return worldMatrix_; }
 
 	///-------------------------------------------/// 
 	/// 初期化 
@@ -283,13 +302,16 @@ namespace MiiEngine {
 	/// Transform情報の書き込み
 	///-------------------------------------------///
 	void ModelCommon::TransformDataWrite() {
-
+		// ワールド行列の作成
 		worldMatrix_ = Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate);
 		Matrix4x4 worldViewProjectionMatrix;
 
 		/// ===親の確認=== ///
-		if (parent_) {
-
+		if (jointParentModel_) {
+			// ボーンのワールド行列を親として合成
+			Matrix4x4 jointWorldMatrix = jointParentModel_->GetJointWorldMatrix(jointParentName_);
+			worldMatrix_ = Multiply(worldMatrix_, jointWorldMatrix);
+		} else if (parent_) {
 			// 親のワールド行列
 			Matrix4x4 parentWorldMatrix = Math::MakeAffineQuaternionMatrix(parent_->worldTransform_.scale, parent_->worldTransform_.rotate, parent_->worldTransform_.translate);
 			// オフセット行列を作成（親の回転と拡大縮小を適用するため）

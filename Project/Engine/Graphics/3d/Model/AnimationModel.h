@@ -33,6 +33,10 @@ namespace MiiEngine {
 		/// <param name="mode">描画に使用する合成（ブレンド）モードを指定します。</param>
 		void Draw(BlendMode mode) override;
 
+	public: /// ===Joint=== ///
+		// ジョイントのワールド行列を取得
+		Matrix4x4 GetJointWorldMatrix(const std::string& jointName) const override;
+
 	public: /// ===Setter=== ///
 		// Animation
 		void SetAnimation(const std::string& animationName, bool isLoop);

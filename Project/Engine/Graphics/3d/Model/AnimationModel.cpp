@@ -24,6 +24,18 @@ namespace MiiEngine {
 	AnimationModel::~AnimationModel() {}
 
 	///-------------------------------------------/// 
+	/// ジョイントのワールド行列を取得
+	///-------------------------------------------///
+	Matrix4x4 AnimationModel::GetJointWorldMatrix(const std::string& jointName) const {
+		auto it = skeleton_.jointMap.find(jointName);
+		assert(it != skeleton_.jointMap.end()); // 存在しないボーン名を弾く
+
+		// skeletonSpaceMatrix はモデル空間基準なので、自身のワールド行列と合成する
+		Matrix4x4 worldMatrix = Multiply(skeleton_.joints[it->second].skeletonSpaceMatrix, GetWorldMatrix());
+		return worldMatrix;
+	}
+
+	///-------------------------------------------/// 
 	/// Setter
 	///-------------------------------------------///
 	/// ===AnimationName=== ///

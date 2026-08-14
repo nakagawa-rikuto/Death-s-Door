@@ -61,4 +61,9 @@ namespace MiiEngine {
 		// 描画（Drawコール）
 		commandList->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);
 	}
+
+	///-------------------------------------------/// 
+	/// ジョイントのワールド行列を取得
+	///-------------------------------------------///
+	Matrix4x4 Model::GetJointWorldMatrix(const std::string& jointName) const { return ModelCommon::GetJointWorldMatrix(jointName); }
 }

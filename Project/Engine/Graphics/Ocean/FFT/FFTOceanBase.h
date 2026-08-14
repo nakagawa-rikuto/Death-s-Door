@@ -104,7 +104,7 @@ namespace MiiEngine {
 			{ 0.6f, 0.7f, 0.9f },     // skyColorHorizon
 			0.0f,                     // pad0
 			{ 0.1f, 0.2f, 0.5f },     // skyColorZenith
-			0.0f                      // pad1
+			1.0f                      // OceanOpacity
 		};
 
 	private:

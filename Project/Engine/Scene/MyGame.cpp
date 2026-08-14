@@ -59,7 +59,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
-		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -172,24 +172,22 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void MyGame::LoadModel() {
 		/// ===Particle=== ///
-		Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");
-		Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");
-		Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");
-		Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");
+		Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");					// Particle用の平面モデル
+		Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");					// Particle用の球体モデル
+		Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");						// Particle用の立方体モデル
+		Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");			// Particle用の三角形モデル
 
 		/// ===Entity=== ///
 		Loader::LoadModel("Player", "Entity/Player/Player.gltf");							// プレイヤー
 		Loader::LoadModel("PlayerHand", "Entity/Player/PlayerHand/PlayerHand.gltf");		// プレイヤー手
 		Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.gltf");	// プレイヤー武器
-		Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
 		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
 		Loader::LoadModel("Boss", "Entity/Enemy/Boss/Boss.gltf");							// ボス
 		Loader::LoadModel("BossWeapon", "Entity/Enemy/Boss/Weapon/BossWeapon.gltf");		// ボス武器
 
 		/// ===Object=== ///
-		Loader::LoadModel("Ground", "Object/Ground/Ground2.gltf");
-		Loader::LoadModel("Ground2", "Object/Ground/Ground.gltf");
-		Loader::LoadModel("Object", "Object/Object/Wall/BossStageWall.gltf");
+		Loader::LoadModel("desert", "Object/Ground/desert.gltf");							// 地面（砂漠）
+		Loader::LoadModel("Object", "Object/Object/Wall/BossStageWall.gltf");				// 壁
 	}
 
 	///-------------------------------------------/// 
@@ -207,5 +205,6 @@ namespace MiiEngine {
 	void MyGame::LoadJson() {
 		/// ===Game=== ///
 		Loader::LoadLevelJson("Level/BossStage.json");
+		Loader::LoadLevelJson("Level/stage.json");
 	}
 } 

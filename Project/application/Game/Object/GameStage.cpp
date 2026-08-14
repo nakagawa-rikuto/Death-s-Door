@@ -58,9 +58,6 @@ void GameStage::Update() {
 void GameStage::Draw(MiiEngine::BlendMode mode) {
 
 	// GroundOceanの更新
-	Oceans_->Draw();
-
-	// GroundOceanの更新
 	for (const auto& ground : grounds_) {
 		if (ground) {
 			ground->Draw(mode);
@@ -73,6 +70,9 @@ void GameStage::Draw(MiiEngine::BlendMode mode) {
 			obj->Draw(mode);
 		}
 	}
+
+	// GroundOceanの更新
+	Oceans_->Draw();
 }
 
 ///-------------------------------------------/// 
@@ -106,6 +106,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 				grounds_.emplace_back(std::move(ground));
 			}
 			continue;
+
 		} else if (stage.classType == LevelData::ClassTypeLevel::Object) {
 			std::unique_ptr<StageObject> object = std::make_unique<StageObject>();
 			object->GameInit(stage.fileName);
@@ -118,6 +119,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 			// 配列に追加
 			objects_.emplace_back(std::move(object));
 			continue;
+
 		} else {
 			// その他のクラスは無視
 			continue;
