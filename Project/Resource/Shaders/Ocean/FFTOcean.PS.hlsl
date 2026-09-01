@@ -22,7 +22,7 @@ cbuffer OceanRenderCB : register(b1)
     float Pad0;
 
     float3 SkyColorZenith;      // 天頂の空の色
-    float Pad1;
+    float OceanOpacity;         // 海面の基本不透明度
 }
 
 /// ================================================================
@@ -54,7 +54,7 @@ float FresnelSchlick(float cosTheta, float F0)
     return F0 + (1.0 - F0) * pow(saturate(1.0 - cosTheta), 5.0);
 }
 
-/// GGX/Trowbridge-Reitz 法線分布（スペキュラ）
+/// GGX/Trowbridge-Reitz 法線分布
 float GGX_NDF(float NdotH, float roughness)
 {
     float a = roughness * roughness;
@@ -63,14 +63,14 @@ float GGX_NDF(float NdotH, float roughness)
     return a2 / (3.14159265 * d * d + 1e-7);
 }
 
-/// スペキュラ用幾何学減衰（Schlick-GGX）
+/// スペキュラ用幾何学減衰
 float SchlickGGX(float NdotV, float roughness)
 {
     float k = (roughness + 1.0) * (roughness + 1.0) / 8.0;
     return NdotV / (NdotV * (1.0 - k) + k + 1e-7);
 }
 
-/// 簡易スカイカラー（法線ベースの環境反射）
+/// 簡易スカイカラー
 float3 GetSkyColor(float3 reflectDir)
 {
     float t = saturate(reflectDir.y * 0.5 + 0.5);
@@ -93,7 +93,7 @@ float4 main(PSInput input) : SV_TARGET
     float VdotH = saturate(dot(V, H));
 
     // --------------------------------------------------------
-    //    Fresnel 反射（Schlick 近似）
+    //    Fresnel 反射
     //    水の屈折率 ~1.33 → F0 = ((1.33-1)/(1.33+1))^2 ≈ 0.02
     // --------------------------------------------------------
     float F0 = max(FresnelBias, 0.02);
@@ -110,7 +110,7 @@ float4 main(PSInput input) : SV_TARGET
     float3 baseColor = lerp(refractionColor, reflectionColor, fresnel);
 
     // --------------------------------------------------------
-    //    スペキュラ（GGX ベースの太陽ギラつき）
+    //    スペキュラ
     //    サン・グリント：複雑な波面で太陽が無数にキラキラ反射する
     // --------------------------------------------------------
     float D = GGX_NDF(NdotH, OceanRoughness);
@@ -123,7 +123,7 @@ float4 main(PSInput input) : SV_TARGET
     float3 specular = (D * G * F / denom) * SunColor * SunPower * NdotL;
 
     // --------------------------------------------------------
-    //    SSS（サブサーフェス・スキャッタリング簡易実装）
+    //    SSS
     //    波の頂点が逆光で透き通る青緑の輝き
     // --------------------------------------------------------
     // 視線が太陽の逆方向を見ていて、かつ波が高い部分に適用
@@ -133,7 +133,7 @@ float4 main(PSInput input) : SV_TARGET
     float3 sssColor = OceanShallowColor * sssFactor * SunColor;
 
     // --------------------------------------------------------
-    //    泡（Foam）
+    //    泡
     //    Jacobian ベースの泡強度に泡テクスチャを乗算してマスク
     // --------------------------------------------------------
     // 泡ノイズテクスチャをスクロールしてリアルに見せる
@@ -158,5 +158,11 @@ float4 main(PSInput input) : SV_TARGET
     // 最低限のアンビエント（真っ暗になるのを防ぐ）
     finalColor += OceanDeepColor * 0.03;
 
-    return float4(finalColor, 1.0);
+    // --------------------------------------------------------
+    // 透明度
+    // --------------------------------------------------------
+    float alpha = saturate(OceanOpacity + fresnel * (1.0 - OceanOpacity));
+    alpha = max(alpha, foamIntensity);
+
+    return float4(finalColor, alpha);
 }

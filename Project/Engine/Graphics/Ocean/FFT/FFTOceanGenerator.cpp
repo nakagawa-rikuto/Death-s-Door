@@ -161,6 +161,7 @@ namespace MiiEngine {
 				ImGui::DragFloat("泡の柔らかさ", &r.foamSoftness, 0.01f, 0.01f, 1.0f);
 				ImGui::ColorEdit3("空の色（地平線）", &r.skyColorHorizon.x);
 				ImGui::ColorEdit3("空の色（天頂）", &r.skyColorZenith.x);
+				ImGui::DragFloat("海面の不透明度", &r.OceanOpacity, 0.01f, 0.0f, 1.0f);
 			}
 
 			// --- OceanParams（CS用）---

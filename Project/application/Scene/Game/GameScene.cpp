@@ -66,7 +66,7 @@ void GameScene::Initialize() {
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/BossStage.json");
+	stage_->Initialize("Level/stage.json");
 
 	// ColliderServiceのライト設定
 	Service::Collision::SetLight(MiiEngine::LightType::HalfLambert);

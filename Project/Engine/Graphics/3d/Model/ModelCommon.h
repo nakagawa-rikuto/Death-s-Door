@@ -57,7 +57,7 @@ namespace MiiEngine {
 		/// <summary>
 		/// 親オブジェクトを設定
 		/// </summary>
-		/// <param name="parent">親となる ModelCommon 型のポインタ。設定する親オブジェクトを指します。nullptr の取り扱い（親の解除を意味するかどうかなど）は実装に依存します。</param>
+		/// <param name="parent">親となる ModelCommon 型のポインタ。設定する親オブジェクトを指します。nullptr の取り扱いは実装に依存します。</param>
 		void SetParent(ModelCommon* parent);
 		/// <summary>
 		///  親の解除
@@ -66,6 +66,14 @@ namespace MiiEngine {
 		// Offset
 		void SetParentOffset(const Vector3& offset);
 		const Vector3& GetParentOffset() const;
+
+	public: /// ===ジョイント関係=== ///
+		// ジョイントを取得
+		virtual Matrix4x4 GetJointWorldMatrix(const std::string& jointName) const;
+		// ジョイントの親を設定
+		void SetJointParent(ModelCommon* parent, const std::string& jointName);
+		// ジョイントの親を解除
+		void ClearJointParent();
 
 	public:/// ===Setter=== ///
 		// Translate
@@ -84,13 +92,16 @@ namespace MiiEngine {
 		void SetEnvironmentMapData(bool flag, float string);
 
 	public: /// ===Getter=== ///
-		// Transform（位置、回転、拡縮）を取得
+		// Transformを取得
 		const Vector3& GetWorldTranslate() const;
 		const Quaternion& GetWorldRotate() const;
 		const Vector3& GetWorldScale() const;
 		const QuaternionTransform& GetWorldTransform() const;
 		// Color（色）を取得
 		const Vector4& GetColor() const;
+		// WorldMatrixを取得
+		const Matrix4x4& GetWorldMatrix() const;
+
 
 	protected: /// ===継承先で使用する変数=== ///
 
@@ -120,6 +131,10 @@ namespace MiiEngine {
 
 		/// ===環境マップ=== ///
 		EnvironmentMapInfo environmentMapInfo_;
+
+		/// ===Joint=== ///
+		ModelCommon* jointParentModel_ = nullptr;
+		std::string jointParentName_;
 
 	private:/// ===Variables(変数)=== ///
 

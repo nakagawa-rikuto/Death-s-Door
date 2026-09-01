@@ -32,8 +32,12 @@ namespace MiiEngine {
 		hr = mouse_->SetCooperativeLevel(winApp_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 		assert(SUCCEEDED(hr));
 
-		// マウスカーソルを見えないようにする
+		// マウスカーソル表示の有無
+#ifdef _DEBUG
+		ShowCursor(true);
+#else
 		ShowCursor(false);
+#endif // _DEBUG
 	}
 
 	///-------------------------------------------/// 

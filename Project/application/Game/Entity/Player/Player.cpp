@@ -27,8 +27,6 @@
 Player::~Player() {
 	// weapon、hand、stateの解放
 	weapon_.reset();
-	rightHand_.reset();
-	leftHand_.reset();
 	currentState_.reset();
 	// Object3dの解放
 	object3d_.reset();
@@ -70,16 +68,6 @@ void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera)
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
 
-	/// ===Handの初期化=== ///
-	// 右手
-	rightHand_ = std::make_unique<PlayerHand>();
-	rightHand_->Initialize();
-	rightHand_->SetUpParent(this);
-	// 左手
-	leftHand_ = std::make_unique<PlayerHand>();
-	leftHand_->Initialize();
-	leftHand_->SetUpParent(this);
-
 	/// ===Weaponの初期化=== ///
 	weapon_ = std::make_unique<PlayerWeapon>();
 	weapon_->Initialize();
@@ -110,7 +98,7 @@ void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera)
 void Player::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Player");
+	object3d_->Init(std::make_unique<MiiEngine::AnimationModel>(), "AnimationPlayer");
 
 	// GameCharacterの設定
 	GameCharacter::Initialize();
@@ -173,10 +161,6 @@ void Player::Update() {
 ///-------------------------------------------///
 void Player::UpdateAnimation() {
 
-	/// ===Hand=== ///
-	rightHand_->Update();
-	leftHand_->Update();
-
 	/// ===Weapon=== ///
 	weapon_->Update();
 
@@ -191,10 +175,6 @@ void Player::UpdateAnimation() {
 /// 描画
 ///-------------------------------------------///
 void Player::Draw(MiiEngine::BlendMode mode) {
-
-	/// ===Hand=== ///
-	rightHand_->Draw(mode);
-	leftHand_->Draw(mode);
 
 	/// ===Weapon=== ///
 	weapon_->Draw(mode);
@@ -260,6 +240,29 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			SetInvincibleTime(0.5f);
 		}
 	}
+}
+
+///-------------------------------------------/// 
+/// Animation
+///-------------------------------------------///
+// アニメーションの再生
+void Player::PlayAnimation(const std::string& animationName, bool isLoop) {
+	// AnimationModelとして取得
+	auto* animModel = static_cast<MiiEngine::AnimationModel*>(object3d_->GetModelCommon());
+	// Animationをセット
+	animModel->SetAnimation(animationName, isLoop);
+}
+// 現在再生中のアニメーションが終了したか
+bool Player::IsAnimationFinished() const {
+	// AnimationModelとして取得
+	auto* animModel = static_cast<MiiEngine::AnimationModel*>(object3d_->GetModelCommon());
+	return animModel->IsAnimationFinished();
+}
+// アニメーションの進捗
+float Player::GetAnimationNormalizeTime() const {
+	// AnimationModelとして取得
+	auto* animModel = static_cast<MiiEngine::AnimationModel*>(object3d_->GetModelCommon());
+	return animModel->GetAnimationNormalizeTime();
 }
 
 ///-------------------------------------------/// 

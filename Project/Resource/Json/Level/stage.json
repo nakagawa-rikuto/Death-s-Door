@@ -1,0 +1,460 @@
+{
+    "name": "scene",
+    "objects": [
+        {
+            "type": "MESH",
+            "name": "Ocean",
+            "transform": {
+                "translation": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    400.0,
+                    400.0,
+                    1.0
+                ]
+            },
+            "class_name": "Ground",
+            "file_name": "Ocean",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    0.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall",
+            "transform": {
+                "translation": [
+                    -272.0,
+                    405.3001403808594,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.001",
+            "transform": {
+                "translation": [
+                    0.0,
+                    459.3001403808594,
+                    26.476224899291992
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.002",
+            "transform": {
+                "translation": [
+                    400.0,
+                    200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    90.00000762939453
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.003",
+            "transform": {
+                "translation": [
+                    -400.0,
+                    200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    -90.00000762939453
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.004",
+            "transform": {
+                "translation": [
+                    272.0,
+                    405.3001403808594,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.005",
+            "transform": {
+                "translation": [
+                    -476.6377258300781,
+                    459.3001403808594,
+                    26.476224899291992
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.006",
+            "transform": {
+                "translation": [
+                    450.6670837402344,
+                    459.3001403808594,
+                    26.476224899291992
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.007",
+            "transform": {
+                "translation": [
+                    -400.0,
+                    -229.57662963867188,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    -90.00000762939453
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.008",
+            "transform": {
+                "translation": [
+                    400.0,
+                    -249.00924682617188,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    90.00000762939453
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.009",
+            "transform": {
+                "translation": [
+                    -272.0938720703125,
+                    -397.3269348144531,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    179.99998474121094
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "Wall.010",
+            "transform": {
+                "translation": [
+                    271.8980712890625,
+                    -394.3678894042969,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    179.99998474121094
+                ],
+                "scaling": [
+                    2.5,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Object",
+            "file_name": "Object",
+            "collider": {
+                "type": "OBB",
+                "info1": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "info2": [
+                    2.0,
+                    2.0,
+                    2.0
+                ]
+            }
+        },
+        {
+            "type": "MESH",
+            "name": "desert",
+            "transform": {
+                "translation": [
+                    0.0,
+                    0.0,
+                    -2.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scaling": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "class_name": "Ground",
+            "file_name": "desert"
+        }
+    ]
+}

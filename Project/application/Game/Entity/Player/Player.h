@@ -6,8 +6,6 @@
 #include "Component/PlayerComponent.h"
 // State
 #include "State/Base/PlayerState.h"
-// Hand
-#include "Hand/PlayerHand.h"
 // Weapon
 #include "Weapon/PlayerWeapon.h"
 // C++
@@ -67,10 +65,15 @@ public: /// ===衝突判定=== ///
 	/// <param name="collider">衝突した相手の Collider へのポインター。</param>
 	void OnCollision(MiiEngine::Collider* collider) override;
 
+public: /// ===Animation=== ///
+	// アニメーションの再生
+	void PlayAnimation(const std::string& animationName, bool isLoop);
+	// 現在のアニメーションが終了したか
+	bool IsAnimationFinished() const;
+	// アニメーションの進捗
+	float GetAnimationNormalizeTime() const;
+
 public: /// ===Getter=== ///
-	// Hand
-	PlayerHand* GetRightHand() const { return rightHand_.get(); };
-	PlayerHand* GetLeftHand() const { return leftHand_.get(); };
 	// Weapon
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
 	// Component
@@ -110,10 +113,6 @@ public: /// ===State用関数=== ///
 private: /// ===変数の宣言=== ///
 	// カメラ
 	MiiEngine::FollowCamera* camera_ = nullptr;
-
-	/// ===Hand=== ///
-	std::unique_ptr<PlayerHand> rightHand_;
-	std::unique_ptr<PlayerHand> leftHand_;
 
 	/// ===Weapon=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;

@@ -22,13 +22,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -283,7 +283,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleEditor.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp" />
-    <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp" />
+    <ClCompile Include="Engine\Scene\ParticleEditor\ParticleEditorScene.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
@@ -489,7 +489,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h" />
-    <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h" />
+    <ClInclude Include="Engine\Scene\ParticleEditor\ParticleEditorScene.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />

@@ -1,9 +1,8 @@
 /// ===Include=== ///
 #include "Base/PlayerState.h"
-// AttackData
-#include "Engine/System/Editor/Attack/Data/AttackData.h"
-// Math
-#include "Math/Vector3.h"
+// C++
+#include <array>
+#include <string>
 
 /// ===前方宣言=== ///
 class PlayerWeapon;
@@ -14,6 +13,7 @@ class PlayerWeapon;
 class AttackState : public PlayerState {
 public:
 
+	AttackState();
 	~AttackState() override = default;
 
 	/// <summary>
@@ -34,24 +34,26 @@ public:
 	void Finalize() override;
 
 private:
-	/// ===状態=== ///
-	struct State {
-		int attackID = -1;		   // 攻撃ID
-		int previousAttackID = -1; // 前の攻撃ID
-		int comboCount = 0;		   // コンボカウント
-		float timer = 0.0f;		   // タイマー
-		float comboTimer = 0.0f;   // コンボタイマー
-	};
-	State state_{};
+	// 攻撃アニメーションの名前
+	std::array<const char*, 3> attackAnimationNames_;
+
+	// 入力を受け付ける進捗
+	float comboAcceptNormalizeTime_ = 0.8f;
+
+	// アニメーション終了後のコンボ受付時間
+	float comboAcceptExtraTime_ = 0.2f;
+
+	// 現在の攻撃
+	int attackIndex_ = 0;
 
 	// 攻撃中フラグ
 	bool isAttacking_ = false;
 
 	// コンボ可能フラグ
 	bool canCombo_ = false;
-
-	// 攻撃データ
-	AttackData attackData_{};
+	
+	//アニメーション終了後のコンボ受付タイマー
+	float comboAcceptTimer_ = 0.0f;
 
 	// 攻撃開始時の前方移動の強さ
 	float moveForwardStrength_ = 0.5f; 
@@ -63,32 +65,13 @@ private:
 	/// <summary>
 	/// 攻撃を開始
 	/// </summary>
-	/// <param name="attackID">開始する攻撃のID</param>
-	/// <param name="weapon">使用する武器</param>
-	bool StartAttack(int attackID, PlayerWeapon* weapon);
-
-	/// <summary>
-	/// コンボ攻撃を試行
-	/// </summary>
-	/// <param name="weapon">使用する武器</param>
-	bool TryCombo(PlayerWeapon* weapon);
+	/// <param name="attackIndex">開始する攻撃のIndex</param>
+	void StartAttack(int attackIndex);
 
 	/// <summary>
 	/// 攻撃をキャンセル
 	/// </summary>
 	void CancelAttack();
-
-	/// <summary>
-	/// タイマーの更新
-	/// </summary>
-	void UpdateTimers(const float deltaTime);
-
-	/// <summary>
-	/// 武器に攻撃軌道を設定
-	/// </summary>
-	/// <param name="data"></param>
-	/// <param name="weapon"></param>
-	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
 
 	/// <summary>
 	/// 攻撃開始時に前方に移動します。

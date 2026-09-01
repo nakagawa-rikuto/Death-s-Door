@@ -15,6 +15,9 @@ void RootState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
+
+	// アニメーションの設定
+	player_->PlayAnimation("Root", true);
 }
 
 ///-------------------------------------------/// 

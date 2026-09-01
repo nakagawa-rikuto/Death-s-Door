@@ -45,6 +45,7 @@ void GroundOcean::Initialize() {
 	oceanRenderCB.roughness = 0.08f;
 	oceanRenderCB.sssStrength = 0.01f;
 	oceanRenderCB.foamSoftness = 1.0f;
+	oceanRenderCB.OceanOpacity = 1.0f;
 	fftOcean_->SetOceanRenderCB(oceanRenderCB);
 
 	// 初回更新
