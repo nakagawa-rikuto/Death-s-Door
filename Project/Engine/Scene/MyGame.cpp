@@ -140,7 +140,7 @@ namespace MiiEngine {
 
 		/// ===Game=== ///
 		// SceneTransition
-		Loader::LoadTexture("ShatterGlass", "Animation/SceneTransitionSpirte.png");
+		Loader::LoadTexture("ShatterGlassABCD", "Animation/SceneTransitionSpirte.png");
 		// TitleUI
 		Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
 		Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
@@ -173,9 +173,9 @@ namespace MiiEngine {
 	void MyGame::LoadModel() {
 		/// ===Particle=== ///
 		Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");					// Particle用の平面モデル
-		Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");					// Particle用の球体モデル
-		Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");						// Particle用の立方体モデル
-		Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");			// Particle用の三角形モデル
+		Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.gltf");					// Particle用の球体モデル
+		Loader::LoadModel("cube", "Particle/Cube/ParticleCube.gltf");						// Particle用の立方体モデル
+		Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.gltf");			// Particle用の三角形モデル
 
 		/// ===Entity=== ///
 		Loader::LoadModel("Player", "Entity/Player/Player.gltf");							// プレイヤー
@@ -197,6 +197,9 @@ namespace MiiEngine {
 		/// ===Engine=== ///
 		Loader::LoadAnimation("simpleSkin", "simpleSkin/simpleSkin.gltf");
 		Loader::LoadAnimation("human", "human/sneakWalk.gltf");
+
+		/// ====== ///
+		Loader::LoadAnimation("AnimationPlayer", "Player/Player.gltf");
 	}
 
 	///-------------------------------------------/// 

@@ -36,6 +36,16 @@ namespace MiiEngine {
 	public: /// ===Joint=== ///
 		// ジョイントのワールド行列を取得
 		Matrix4x4 GetJointWorldMatrix(const std::string& jointName) const override;
+		// 現在のアニメーションの時間
+		float GetAnimationTime() const;
+		// 現在再生中のアニメーションの総時間
+		float GetAnimationDuration() const;
+		// アニメーションが最後まで再生し終わったか
+		bool IsAnimationFinished() const;
+		// アニメーションの進捗
+		float GetAnimationNormalizeTime() const;
+		// 現在再生中のアニメーションの名前
+		const std::string& GetAnimationName() const;
 
 	public: /// ===Setter=== ///
 		// Animation

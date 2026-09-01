@@ -37,6 +37,9 @@ void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	Vector3 particlePosition = player_->GetTransform().translate - Vector3{ 0.0f, player_->GetOBB().halfSize.y, 0.0f };
 	moveParticle_ = Service::Particle::Emit("PlayerMove", particlePosition);
 	moveParticle_->SetEmitterPosition(player_->GetTransform().translate);
+
+	// アニメーションの設定
+	player_->PlayAnimation("Run", true);
 }
 
 ///-------------------------------------------/// 

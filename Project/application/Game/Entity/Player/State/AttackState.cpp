@@ -3,7 +3,6 @@
 #include "Service/Input.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
@@ -13,6 +12,23 @@
 #include "Math/TransformationMath.h"
 
 ///-------------------------------------------/// 
+/// コンストラクタ
+///-------------------------------------------///
+AttackState::AttackState() {
+	// 攻撃アニメーションの名前を設定
+	attackAnimationNames_ = { "Attack1", "Attack2", "Attack3" };
+
+	// コンボ受付開始のアニメーションの進捗
+	comboAcceptNormalizeTime_ = 0.8f;
+
+	// アニメーション終了後のコンボ受付時間
+	comboAcceptExtraTime_ = 0.2f;
+
+	// 攻撃開始時の前方移動の強さを初期化
+	moveForwardStrength_ = 0.5f;
+}
+
+///-------------------------------------------/// 
 /// 状態に入ったときに呼ばれる
 ///-------------------------------------------///
 void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
@@ -20,10 +36,10 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	if (StartAttack(0, player_->GetWeapon())) {
-		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
-		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
-	}
+	// 攻撃の開始
+	StartAttack(0);
+	// 前方に移動
+	moveForwardOnAttackStart();
 
 	// 攻撃のアクティブフラグを設定
 	player_->SetActiveAttackFlag(isAttacking_);
@@ -37,48 +53,47 @@ void AttackState::Update() {
 	/// ===減速処理=== ///
 	PlayerState::ApplyDeceleration(0.4f); // 攻撃中は減速率を高めに設定
 
-	/// ===タイマーの更新=== ///
-	UpdateTimers(player_->GetDeltaTime());
+	// その攻撃が最後が最後の攻撃か
+	bool isLastAttack = (attackIndex_ >= static_cast<int>(attackAnimationNames_.size()) - 1);
 
 	/// ===攻撃中の処理=== ///
 	if (isAttacking_) {
-		// 攻撃時間が終了していないかチェック
-		const AttackData* currentData = player_->GetAttackData(state_.attackID);
+		// 最後の攻撃かどうかを判別
+		float normalizeTime = player_->GetAnimationNormalizeTime();
 
-		if (currentData && state_.timer >= currentData->activeDuration) {
+		// 最後の攻撃以外ならコンボの受付
+		if (!canCombo_ && !isLastAttack && normalizeTime >= comboAcceptNormalizeTime_) {
+			canCombo_ = true;
+		}
+
+		// アニメーションが終了したら
+		if (player_->IsAnimationFinished()) {
 			isAttacking_ = false;
-			state_.previousAttackID = state_.attackID; // 前の攻撃IDを保存
-			state_.attackID = -1; // 攻撃IDをリセット
 
-			// コンボ受付の開始
-			if (currentData->canComboToNext) {
-				canCombo_ = true; // コンボ受付開始
-				state_.comboTimer = 0.0f; // コンボタイマーリセット
+			// 最後の攻撃なら強制終了
+			if (isLastAttack) {
+				canCombo_ = false;
 			}
+
+			// コンボ受付タイマーの計測開始
+			comboAcceptTimer_ = 0.0f;
+		}
+	} else if (canCombo_) {
+
+		/// ===時間の更新=== ///
+		comboAcceptTimer_ += player_->GetDeltaTime();
+
+		// コンボ受付が終了したら
+		if (comboAcceptTimer_ >= comboAcceptExtraTime_) {
+			canCombo_ = false;
 		}
 	}
 
-	/// ===コンボ受付時間の管理=== ///
-	if (canCombo_) {
-		// 前の攻撃IDからデータを取得
-		const AttackData* previousData = player_->GetAttackData(state_.previousAttackID);
-
-		// コンボ受付時間が終了していないかチェック
-		if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
-			canCombo_ = false; // コンボ受付終了
-			state_.comboTimer = 0.0f; // コンボタイマーリセット
-			state_.previousAttackID = -1; // 前の攻撃IDリセット
-		}
-	}
-
-	// 攻撃ボタンが押されたらコンボを試行
-	if (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left)) {
-		if (canCombo_) {
-			if (TryCombo(player_->GetWeapon())) {
-				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
-				moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
-			}
-		}
+	/// ===攻撃ボタンが押されたら=== ///
+	if (canCombo_ && (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left))) {
+		moveForwardStrength_ = 2.5f;
+		StartAttack(attackIndex_ + 1);
+		moveForwardOnAttackStart();
 	}
 
 	/// ===Stateの移動=== ///
@@ -100,52 +115,17 @@ void AttackState::Finalize() {
 ///-------------------------------------------/// 
 /// 攻撃開始処理
 ///-------------------------------------------///
-bool AttackState::StartAttack(int attackID, PlayerWeapon* weapon) {
-	// 既存の攻撃をキャンセル
-	CancelAttack(); 
+void AttackState::StartAttack(int attackIndex) {
 
 	// キーボード操作時はマウスの方向を向く
 	FaceMouseDirection();
 
-	// 攻撃データを取得
-	const AttackData* attackData = player_->GetAttackData(attackID);
-	if (!attackData) {
-		return false;
-	}
-	attackData_ = *attackData;
+	attackIndex_ = attackIndex;
+	player_->PlayAnimation(attackAnimationNames_[attackIndex_], false);
 
-	// 攻撃データを武器に適用
-	ApplyAttackToWeapon(attackData_, weapon);
-
-	// 状態の更新
 	isAttacking_ = true;
-	state_.attackID = attackID;
-	state_.timer = 0.0f;
-	state_.comboCount = 0;
 	canCombo_ = false;
-
-	return true;
-}
-
-///-------------------------------------------/// 
-/// コンボ攻撃の試行
-///-------------------------------------------///
-bool AttackState::TryCombo(PlayerWeapon* weapon) {
-	// コンボ可能かどうかのチェック
-	if (!canCombo_) return false;
-
-	// 前の攻撃データを取得
-	const AttackData* previousData = player_->GetAttackData(state_.previousAttackID);
-	if (!previousData || !previousData->canComboToNext) return false;
-
-	// 次の攻撃IDを取得
-	int nextAttackID = previousData->nextComboID;
-	if (nextAttackID < 0) return false;
-
-	// 次の攻撃を開始
-	canCombo_ = false;
-	state_.comboCount++;
-	return StartAttack(nextAttackID, weapon);
+	comboAcceptTimer_ = 0.0f;
 }
 
 ///-------------------------------------------/// 
@@ -154,40 +134,8 @@ bool AttackState::TryCombo(PlayerWeapon* weapon) {
 void AttackState::CancelAttack() {
 	isAttacking_ = false;
 	canCombo_ = false;
-	state_.attackID = -1;
-	state_.previousAttackID = -1;
-	state_.comboCount = 0;
-	state_.timer = 0.0f;
-	state_.comboTimer = 0.0f;
-}
-
-///-------------------------------------------/// 
-/// タイマーの更新
-///-------------------------------------------///
-void AttackState::UpdateTimers(const float deltaTime) {
-	// 攻撃中なら攻撃タイマーを更新
-	if (isAttacking_) {
-		state_.timer += deltaTime;
-	}
-	
-	// コンボ受付中ならコンボタイマーも更新
-	if (canCombo_) {
-		state_.comboTimer += deltaTime;
-	}
-}
-
-///-------------------------------------------/// 
-/// 攻撃データを武器に適用
-///-------------------------------------------///
-void AttackState::ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon) {
-	// 早期リターン
-	if (!weapon) return;
-
-	// チャンネル0
-	const TrajectoryChannel* weaponChannel = data.GetChannel(0);
-	if (weapon && weaponChannel && weaponChannel->enabled && weaponChannel->points.size() >= 2) {
-		weapon->StartAttack(weaponChannel->points, data.activeDuration);
-	}
+	comboAcceptTimer_ = 0.0f;
+	attackIndex_ = 0;
 }
 
 ///-------------------------------------------/// 

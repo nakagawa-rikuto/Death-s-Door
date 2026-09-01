@@ -24,8 +24,9 @@ namespace MiiEngine {
 	AnimationModel::~AnimationModel() {}
 
 	///-------------------------------------------/// 
-	/// ジョイントのワールド行列を取得
+	/// Gettter
 	///-------------------------------------------///
+	// ジョイントのワールド行列を取得
 	Matrix4x4 AnimationModel::GetJointWorldMatrix(const std::string& jointName) const {
 		auto it = skeleton_.jointMap.find(jointName);
 		assert(it != skeleton_.jointMap.end()); // 存在しないボーン名を弾く
@@ -34,6 +35,27 @@ namespace MiiEngine {
 		Matrix4x4 worldMatrix = Multiply(skeleton_.joints[it->second].skeletonSpaceMatrix, GetWorldMatrix());
 		return worldMatrix;
 	}
+	// 現在のアニメーション時間を取得
+	float AnimationModel::GetAnimationTime() const { return animationTime_; }
+	// 現在再生中のアニメーションの総時間
+	float AnimationModel::GetAnimationDuration() const {
+		auto it = animation_.find(animationName_);
+		if (it == animation_.end()) return 0.0f;
+		return it->second.duration;
+	}
+	// アニメーションが最後まで再生し終わったか
+	bool AnimationModel::IsAnimationFinished() const {
+		if (isLoop_) return false;
+		return animationTime_ >= GetAnimationDuration();
+	}
+	// アニメーションの進捗
+	float AnimationModel::GetAnimationNormalizeTime() const {
+		const float duration = GetAnimationDuration();
+		if (duration <= 0.0f) return 0.0f;
+		return std::clamp(animationTime_ / duration, 0.0f, 1.0f);
+	}
+	// 現在再生中のアニメーションの名前
+	const std::string& AnimationModel::GetAnimationName() const { return animationName_; }
 
 	///-------------------------------------------/// 
 	/// Setter

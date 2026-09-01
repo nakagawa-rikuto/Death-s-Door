@@ -321,3 +321,13 @@ Project/imgui.ini
 # Blender
 .blend
 .blend1
+
+# AssimpのDebugとReleaseのライブラリを追跡対象にする設定
+![Ee]xternal*/assimp/lib/Debug/
+![Ee]xternal*/assimp/lib/Release/
+
+# ファルダ内の.libと.dllファイルを除外から解除
+![Ee]xternal*/assimp/lib/Debug/*.lib
+![Ee]xternal*/assimp/lib/Release/*.lib
+![Ee]xternal*/assimp/lib/Debug/*.dll
+![Ee]xternal*/assimp/lib/Release/*.dll
