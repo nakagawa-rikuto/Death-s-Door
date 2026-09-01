@@ -184,15 +184,15 @@
 └── └── ├── Scene/
 └── └── └── ├── AbstractSceneFactory.cpp
 └── └── └── ├── AbstractSceneFactory.h
-└── └── └── ├── Debug/
-└── └── └── └── ├── ParticleEditorScene.cpp
-└── └── └── └── └── ParticleEditorScene.h
 └── └── └── ├── Framework.cpp
 └── └── └── ├── Framework.h
 └── └── └── ├── IScene.cpp
 └── └── └── ├── IScene.h
 └── └── └── ├── MyGame.cpp
 └── └── └── ├── MyGame.h
+└── └── └── ├── ParticleEditor/
+└── └── └── └── ├── ParticleEditorScene.cpp
+└── └── └── └── └── ParticleEditorScene.h
 └── └── └── ├── SceneFactory.cpp
 └── └── └── ├── SceneFactory.h
 └── └── └── └── Transition/
@@ -295,6 +295,7 @@
 └── └── └── sMath.h
 └── ├── Resource/
 └── └── ├── Animations/
+└── └── └── ├── Player/
 └── └── └── ├── human/
 └── └── └── └── simpleSkin/
 └── └── ├── BGM/
@@ -320,6 +321,7 @@
 └── └── └── └── └── ├── Ground/
 └── └── └── └── └── └── Wall/
 └── └── └── └── ├── Object/
+└── └── └── └── └── ├── Grass/
 └── └── └── └── └── ├── Stone/
 └── └── └── └── └── └── Wall/
 └── └── └── └── ├── Object1/
@@ -5392,20 +5394,20 @@ namespace MiiEngine {
     ///=====================================================///
     
     struct OceanRenderCB {
-        Vector3 sunDirection; // 太陽の方向
-        float sunPower; // 太陽の強度
-        Vector3 sunColor; // 太陽の色
-        float fresnelBias; // Fresnelの最小反射率
-        Vector3 deepColor; // 深海の色
-        float roughness; // 海面の粗さ
-        Vector3 shallowColor; // 浅瀬・波頂点の色
-        float sssStrength; // SSS強度
-        Vector3 foamColor; // 泡の色
-        float foamSoftness; // 泡のエッジの柔らかさ
+        Vector3 sunDirection;    // 太陽の方向
+        float sunPower;          // 太陽の強度
+        Vector3 sunColor;        // 太陽の色
+        float fresnelBias;       // Fresnelの最小反射率
+        Vector3 deepColor;       // 深海の色
+        float roughness;         // 海面の粗さ
+        Vector3 shallowColor;    // 浅瀬・波頂点の色
+        float sssStrength;       // SSS強度
+        Vector3 foamColor;       // 泡の色
+        float foamSoftness;      // 泡のエッジの柔らかさ
         Vector3 skyColorHorizon; // 地平線の空の色
         float pad0;
-        Vector3 skyColorZenith; // 天頂の空の色
-        float pad1;
+        Vector3 skyColorZenith;  // 天頂の空の色
+        float OceanOpacity;      // 海面の基本不透明度
     };
 
     ///=====================================================/// 
@@ -7614,6 +7616,40 @@ namespace MiiEngine {
 	AnimationModel::~AnimationModel() {}
 
 	///-------------------------------------------/// 
+	/// Gettter
+	///-------------------------------------------///
+	// ジョイントのワールド行列を取得
+	Matrix4x4 AnimationModel::GetJointWorldMatrix(const std::string& jointName) const {
+		auto it = skeleton_.jointMap.find(jointName);
+		assert(it != skeleton_.jointMap.end()); // 存在しないボーン名を弾く
+
+		// skeletonSpaceMatrix はモデル空間基準なので、自身のワールド行列と合成する
+		Matrix4x4 worldMatrix = Multiply(skeleton_.joints[it->second].skeletonSpaceMatrix, GetWorldMatrix());
+		return worldMatrix;
+	}
+	// 現在のアニメーション時間を取得
+	float AnimationModel::GetAnimationTime() const { return animationTime_; }
+	// 現在再生中のアニメーションの総時間
+	float AnimationModel::GetAnimationDuration() const {
+		auto it = animation_.find(animationName_);
+		if (it == animation_.end()) return 0.0f;
+		return it->second.duration;
+	}
+	// アニメーションが最後まで再生し終わったか
+	bool AnimationModel::IsAnimationFinished() const {
+		if (isLoop_) return false;
+		return animationTime_ >= GetAnimationDuration();
+	}
+	// アニメーションの進捗
+	float AnimationModel::GetAnimationNormalizeTime() const {
+		const float duration = GetAnimationDuration();
+		if (duration <= 0.0f) return 0.0f;
+		return std::clamp(animationTime_ / duration, 0.0f, 1.0f);
+	}
+	// 現在再生中のアニメーションの名前
+	const std::string& AnimationModel::GetAnimationName() const { return animationName_; }
+
+	///-------------------------------------------/// 
 	/// Setter
 	///-------------------------------------------///
 	/// ===AnimationName=== ///
@@ -7957,6 +7993,20 @@ namespace MiiEngine {
 		/// <param name="mode">描画に使用する合成（ブレンド）モードを指定します。</param>
 		void Draw(BlendMode mode) override;
 
+	public: /// ===Joint=== ///
+		// ジョイントのワールド行列を取得
+		Matrix4x4 GetJointWorldMatrix(const std::string& jointName) const override;
+		// 現在のアニメーションの時間
+		float GetAnimationTime() const;
+		// 現在再生中のアニメーションの総時間
+		float GetAnimationDuration() const;
+		// アニメーションが最後まで再生し終わったか
+		bool IsAnimationFinished() const;
+		// アニメーションの進捗
+		float GetAnimationNormalizeTime() const;
+		// 現在再生中のアニメーションの名前
+		const std::string& GetAnimationName() const;
+
 	public: /// ===Setter=== ///
 		// Animation
 		void SetAnimation(const std::string& animationName, bool isLoop);
@@ -8105,6 +8155,11 @@ namespace MiiEngine {
 		// 描画（Drawコール）
 		commandList->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);
 	}
+
+	///-------------------------------------------/// 
+	/// ジョイントのワールド行列を取得
+	///-------------------------------------------///
+	Matrix4x4 Model::GetJointWorldMatrix(const std::string& jointName) const { return ModelCommon::GetJointWorldMatrix(jointName); }
 }
 
 ============================================================
@@ -8142,6 +8197,10 @@ namespace MiiEngine {
 		/// </summary>
 		/// <param name="mode">描画に使用する合成（ブレンド）モードを指定します。</param>
 		void Draw(BlendMode mode) override;
+
+	public: /// ===Joint=== ///
+		// ジョイントのワールド行列を取得
+		Matrix4x4 GetJointWorldMatrix(const std::string& jointName) const override;
 	};
 }
 
@@ -8187,6 +8246,23 @@ namespace MiiEngine {
 	// Offset
 	void ModelCommon::SetParentOffset(const Vector3& offset) { parentOffset_ = offset; }
 	const Vector3& ModelCommon::GetParentOffset() const { return parentOffset_; }
+
+	///-------------------------------------------/// 
+	/// Joint
+	///-------------------------------------------///
+	// ジョイントのワールド行列を取得
+	Matrix4x4 ModelCommon::GetJointWorldMatrix(const std::string& jointName) const {
+		jointName;
+		Matrix4x4 worldMatrix = Math::MakeIdentity4x4();
+		return worldMatrix;
+	}
+	// ジョイントの親を設定
+	void ModelCommon::SetJointParent(ModelCommon* parent, const std::string& jointName) {
+		jointParentModel_ = parent;
+		jointParentName_ = jointName;
+	}
+	// ジョイントの親を解除
+	void ModelCommon::ClearJointParent() { jointParentModel_ = nullptr; }
 
 	///-------------------------------------------/// 
 	/// Setter
@@ -8315,6 +8391,8 @@ namespace MiiEngine {
 	}
 	// Color
 	const Vector4& ModelCommon::GetColor() const { return color_; }
+	// WorldMatrix
+	const Matrix4x4& ModelCommon::GetWorldMatrix() const { return worldMatrix_; }
 
 	///-------------------------------------------/// 
 	/// 初期化 
@@ -8435,13 +8513,16 @@ namespace MiiEngine {
 	/// Transform情報の書き込み
 	///-------------------------------------------///
 	void ModelCommon::TransformDataWrite() {
-
+		// ワールド行列の作成
 		worldMatrix_ = Math::MakeAffineQuaternionMatrix(worldTransform_.scale, worldTransform_.rotate, worldTransform_.translate);
 		Matrix4x4 worldViewProjectionMatrix;
 
 		/// ===親の確認=== ///
-		if (parent_) {
-
+		if (jointParentModel_) {
+			// ボーンのワールド行列を親として合成
+			Matrix4x4 jointWorldMatrix = jointParentModel_->GetJointWorldMatrix(jointParentName_);
+			worldMatrix_ = Multiply(worldMatrix_, jointWorldMatrix);
+		} else if (parent_) {
 			// 親のワールド行列
 			Matrix4x4 parentWorldMatrix = Math::MakeAffineQuaternionMatrix(parent_->worldTransform_.scale, parent_->worldTransform_.rotate, parent_->worldTransform_.translate);
 			// オフセット行列を作成（親の回転と拡大縮小を適用するため）
@@ -8579,7 +8660,7 @@ namespace MiiEngine {
 		/// <summary>
 		/// 親オブジェクトを設定
 		/// </summary>
-		/// <param name="parent">親となる ModelCommon 型のポインタ。設定する親オブジェクトを指します。nullptr の取り扱い（親の解除を意味するかどうかなど）は実装に依存します。</param>
+		/// <param name="parent">親となる ModelCommon 型のポインタ。設定する親オブジェクトを指します。nullptr の取り扱いは実装に依存します。</param>
 		void SetParent(ModelCommon* parent);
 		/// <summary>
 		///  親の解除
@@ -8588,6 +8669,14 @@ namespace MiiEngine {
 		// Offset
 		void SetParentOffset(const Vector3& offset);
 		const Vector3& GetParentOffset() const;
+
+	public: /// ===ジョイント関係=== ///
+		// ジョイントを取得
+		virtual Matrix4x4 GetJointWorldMatrix(const std::string& jointName) const;
+		// ジョイントの親を設定
+		void SetJointParent(ModelCommon* parent, const std::string& jointName);
+		// ジョイントの親を解除
+		void ClearJointParent();
 
 	public:/// ===Setter=== ///
 		// Translate
@@ -8606,13 +8695,16 @@ namespace MiiEngine {
 		void SetEnvironmentMapData(bool flag, float string);
 
 	public: /// ===Getter=== ///
-		// Transform（位置、回転、拡縮）を取得
+		// Transformを取得
 		const Vector3& GetWorldTranslate() const;
 		const Quaternion& GetWorldRotate() const;
 		const Vector3& GetWorldScale() const;
 		const QuaternionTransform& GetWorldTransform() const;
 		// Color（色）を取得
 		const Vector4& GetColor() const;
+		// WorldMatrixを取得
+		const Matrix4x4& GetWorldMatrix() const;
+
 
 	protected: /// ===継承先で使用する変数=== ///
 
@@ -8642,6 +8734,10 @@ namespace MiiEngine {
 
 		/// ===環境マップ=== ///
 		EnvironmentMapInfo environmentMapInfo_;
+
+		/// ===Joint=== ///
+		ModelCommon* jointParentModel_ = nullptr;
+		std::string jointParentName_;
 
 	private:/// ===Variables(変数)=== ///
 
@@ -9835,7 +9931,7 @@ namespace MiiEngine {
 			{ 0.6f, 0.7f, 0.9f },     // skyColorHorizon
 			0.0f,                     // pad0
 			{ 0.1f, 0.2f, 0.5f },     // skyColorZenith
-			0.0f                      // pad1
+			1.0f                      // OceanOpacity
 		};
 
 	private:
@@ -10695,6 +10791,7 @@ namespace MiiEngine {
 				ImGui::DragFloat("泡の柔らかさ", &r.foamSoftness, 0.01f, 0.01f, 1.0f);
 				ImGui::ColorEdit3("空の色（地平線）", &r.skyColorHorizon.x);
 				ImGui::ColorEdit3("空の色（天頂）", &r.skyColorZenith.x);
+				ImGui::DragFloat("海面の不透明度", &r.OceanOpacity, 0.01f, 0.0f, 1.0f);
 			}
 
 			// --- OceanParams（CS用）---
@@ -18711,379 +18808,6 @@ namespace MiiEngine {
 
 
 ============================================================
-File Path: Project/Engine/Scene/Debug/ParticleEditorScene.cpp
-============================================================
-#include "ParticleEditorScene.h"
-// SceneManager
-#include "Engine/System/Managers/SceneManager.h"
-// Service
-#include "Service/Particle.h"
-#include "Service/DeltaTime.h"
-#ifdef USE_IMGUI
-// ImGui
-#include <imgui.h>
-#endif // USE_IMGUI
-
-namespace MiiEngine {
-	///-------------------------------------------/// 
-	/// デストラクタ
-	///-------------------------------------------///
-	ParticleEditorScene::~ParticleEditorScene() {
-#ifdef USE_IMGUI
-		particleEditor_.reset();
-		// ISceneのデストラクタ
-		IScene::~IScene();
-#endif // USE_IMGUI
-	}
-
-	///-------------------------------------------/// 
-	/// 初期化
-	///-------------------------------------------///
-	void ParticleEditorScene::Initialize() {
-		// ISceneの初期化(デフォルトカメラとカメラマネージャ)
-		IScene::Initialize();
-#ifdef USE_IMGUI
-		cameraPosition_ = { 0.0f, 45.0f, -50.0f };
-		cameraRotation_ = { 0.343f, 0.0f, 0.0f, 0.939f };
-		defaultCamera_->SetTranslate(cameraPosition_);
-		defaultCamera_->SetRotate(cameraRotation_);
-
-		/// ===エディターの初期化=== ///
-		particleEditor_ = std::make_unique<ParticleEditor>();
-		particleEditor_->Initialize();
-		particleEditor_->SetVisible(true);
-
-		/// ===Line=== ///
-		line_ = std::make_unique<Line>();
-
-		/// ===カメラの初期設定=== ///
-		// デフォルトカメラの位置を設定
-		// camera_->SetTranslate(cameraPosition_);
-		// camera_->SetRotate(cameraRotation_);
-#endif // USE_IMGUI
-	}
-
-	///-------------------------------------------/// 
-	/// 更新
-	///-------------------------------------------///
-	void ParticleEditorScene::Update() {
-#ifdef USE_IMGUI
-		/// ===エディターの更新=== ///
-		if (particleEditor_) {
-			particleEditor_->Update();
-		}
-
-		/// ===ImGui描画=== ///
-		//RenderMenuBar();
-		defaultCamera_->ImGuiUpdate();
-		defaultCamera_->DebugUpdate();
-
-		// エディターメインウィンドウ
-		particleEditor_->Render();
-
-		// サブウィンドウ
-		/*if (showHelp_) {
-			RenderHelpWindow();
-		}
-		if (showStats_) {
-			RenderStatsWindow();
-		}*/
-
-		//RenderCameraControl();
-#endif // USE_IMGUI
-	}
-
-	///-------------------------------------------/// 
-	/// 描画
-	///-------------------------------------------///
-	void ParticleEditorScene::Draw() {
-#ifdef USE_IMGUI
-		/// ===グリッドの描画=== ///
-		line_->DrawGrid({ 0.0f, -10.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
-
-		/// ===エディタープレビューの描画=== ///
-		if (particleEditor_) {
-			particleEditor_->DrawPreview();
-		}
-#endif // USE_IMGUI
-	}
-
-#ifdef USE_IMGUI
-	///-------------------------------------------/// 
-/// メニューバーの描画
-///-------------------------------------------///
-	void ParticleEditorScene::RenderMenuBar() {
-		if (ImGui::BeginMainMenuBar()) {
-			if (ImGui::BeginMenu("ファイル")) {
-				if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
-					// エディターの新規作成機能を呼び出し
-				}
-				if (ImGui::MenuItem("開く", "Ctrl+O")) {
-					// 開く処理
-				}
-				if (ImGui::MenuItem("保存", "Ctrl+S")) {
-					// 保存処理
-				}
-				ImGui::Separator();
-				if (ImGui::MenuItem("終了", "Alt+F4")) {
-					// シーン遷移などの終了処理
-				}
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("表示")) {
-				bool editorVisible = particleEditor_ ? particleEditor_->IsVisible() : false;
-				if (ImGui::MenuItem("エディター", nullptr, &editorVisible)) {
-					if (particleEditor_) {
-						particleEditor_->SetVisible(editorVisible);
-					}
-				}
-				ImGui::MenuItem("統計情報", nullptr, &showStats_);
-				ImGui::MenuItem("カメラコントロール", nullptr, nullptr);
-				ImGui::MenuItem("グリッド", nullptr, &showGrid_);
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("ヘルプ")) {
-				if (ImGui::MenuItem("使い方")) {
-					showHelp_ = true;
-				}
-				ImGui::Separator();
-				if (ImGui::MenuItem("バージョン情報")) {
-					// バージョン情報表示
-				}
-				ImGui::EndMenu();
-			}
-
-			ImGui::EndMainMenuBar();
-		}
-	}
-
-	///-------------------------------------------/// 
-	/// ヘルプウィンドウの描画
-	///-------------------------------------------///
-	void ParticleEditorScene::RenderHelpWindow() {
-		ImGui::Begin("使い方", &showHelp_);
-
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "パーティクルエディターの使い方");
-		ImGui::Separator();
-
-		ImGui::Text("■ 基本操作");
-		ImGui::BulletText("左側のタブで各種設定を調整できます");
-		ImGui::BulletText("プレビューボタンで効果を確認できます");
-		ImGui::BulletText("保存ボタンでJSONファイルに保存されます");
-
-		ImGui::Spacing();
-		ImGui::Text("■ タブの説明");
-		ImGui::BulletText("基本設定: 名前、モデル、形状などの基本パラメータ");
-		ImGui::BulletText("物理設定: 重力、速度、爆発半径などの物理挙動");
-		ImGui::BulletText("見た目設定: 色、スケール、テクスチャなどの視覚効果");
-		ImGui::BulletText("回転設定: パーティクルの回転に関する設定");
-		ImGui::BulletText("発生設定: 寿命、発生レート、バーストなどの発生パターン");
-
-		ImGui::Spacing();
-		ImGui::Text("■ カメラ操作");
-		ImGui::BulletText("WASDキー: カメラの移動");
-		ImGui::BulletText("矢印キー: カメラの回転");
-		ImGui::BulletText("カメラコントロールウィンドウで詳細設定可能");
-
-		ImGui::Spacing();
-		ImGui::Text("■ ショートカット");
-		ImGui::BulletText("Ctrl+N: 新規作成");
-		ImGui::BulletText("Ctrl+S: 保存");
-		ImGui::BulletText("Ctrl+O: 開く");
-		ImGui::BulletText("Space: プレビュー再生/停止");
-
-		ImGui::Spacing();
-		ImGui::Separator();
-		if (ImGui::Button("閉じる", ImVec2(120, 30))) {
-			showHelp_ = false;
-		}
-
-		ImGui::End();
-	}
-
-	///-------------------------------------------/// 
-	/// 統計情報ウィンドウの描画
-	///-------------------------------------------///
-	void ParticleEditorScene::RenderStatsWindow() {
-		ImGui::Begin("統計情報", &showStats_);
-
-		// FPS表示
-		float deltaTime = Service::DeltaTime::GetDeltaTime();
-		float fps = 1.0f / deltaTime;
-		ImGui::Text("FPS: %.1f", fps);
-		ImGui::Text("デルタタイム: %.3f ms", deltaTime * 1000.0f);
-
-		ImGui::Separator();
-
-		// 登録されているパーティクル定義一覧
-		ImGui::Text("登録済みパーティクル:");
-		std::vector<std::string> names = Service::Particle::GetDefinitionNames();
-		if (names.empty()) {
-			ImGui::TextDisabled("（なし）");
-		} else {
-			for (const auto& name : names) {
-				ImGui::BulletText("%s", name.c_str());
-				ImGui::Indent();
-
-				// アクティブなグループ数とパーティクル数
-				size_t groupCount = Service::Particle::GetActiveGroupCount(name);
-				uint32_t particleCount = Service::Particle::GetActiveParticleCount(name);
-
-				ImGui::Text("グループ数: %zu", groupCount);
-				ImGui::Text("パーティクル数: %u", particleCount);
-
-				ImGui::Unindent();
-			}
-		}
-
-		ImGui::Separator();
-
-		// カメラ情報
-		ImGui::Text("カメラ位置:");
-		ImGui::Text("  X: %.2f, Y: %.2f, Z: %.2f",
-			cameraPosition_.x, cameraPosition_.y, cameraPosition_.z);
-		ImGui::Text("カメラ回転:");
-		ImGui::Text("  X: %.2f, Y: %.2f, Z: %.2f",
-			cameraRotation_.x, cameraRotation_.y, cameraRotation_.z);
-
-		ImGui::End();
-	}
-
-	///-------------------------------------------/// 
-	/// カメラコントロールウィンドウの描画
-	///-------------------------------------------///
-	void ParticleEditorScene::RenderCameraControl() {
-		ImGui::Begin("カメラコントロール");
-
-		ImGui::Text("カメラ設定");
-		ImGui::Separator();
-
-		// 位置
-		if (ImGui::DragFloat3("位置", &cameraPosition_.x, 0.1f)) {
-			// カメラ位置を更新
-			// camera_->SetTranslate(cameraPosition_);
-		}
-
-		// 回転
-		if (ImGui::DragFloat3("回転", &cameraRotation_.x, 0.01f)) {
-			// カメラ回転を更新
-			// camera_->SetRotate(cameraRotation_);
-		}
-
-		ImGui::Spacing();
-
-		// 速度設定
-		ImGui::DragFloat("移動速度", &cameraSpeed_, 0.01f, 0.01f, 1.0f);
-		ImGui::DragFloat("回転速度", &cameraRotationSpeed_, 0.001f, 0.001f, 0.1f);
-
-		ImGui::Spacing();
-		ImGui::Separator();
-
-		// リセットボタン
-		if (ImGui::Button("カメラをリセット", ImVec2(150, 30))) {
-			cameraPosition_ = { 0.0f, 5.0f, -10.0f };
-			cameraRotation_ = { 0.3f, 0.0f, 0.0f };
-			// camera_->SetTranslate(cameraPosition_);
-			// camera_->SetRotate(cameraRotation_);
-		}
-
-		ImGui::Spacing();
-		ImGui::TextDisabled("WASDキー: 移動");
-		ImGui::TextDisabled("矢印キー: 回転");
-		ImGui::TextDisabled("QE: 上下移動");
-
-		ImGui::End();
-	}
-#endif // USE_IMGUI
-}
-
-============================================================
-File Path: Project/Engine/Scene/Debug/ParticleEditorScene.h
-============================================================
-#pragma once
-/// ===Include=== ///
-#include "Engine/Scene/IScene.h"
-
-#ifdef USE_IMGUI
-// Editor
-#include "Engine/System/Editor/Particle/ParticleEditor.h"
-// Line
-#include "application/Drawing/3d/Line.h"
-#endif // USE_IMGUI
-
-// c++
-#include <memory>
-
-namespace MiiEngine {
-	///=====================================================/// 
-	/// パーティクルエディターシーン
-	///=====================================================///
-	class ParticleEditorScene : public IScene {
-	public:
-
-		ParticleEditorScene() = default;
-		~ParticleEditorScene();
-
-		/// <summary>
-		/// 初期化処理
-		/// </summary>
-		void Initialize() override;
-
-		/// <summary>
-		/// 更新処理
-		/// </summary>
-		void Update() override;
-
-		/// <summary>
-		/// 描画処理
-		/// </summary>
-		void Draw() override;
-
-	private:
-#ifdef USE_IMGUI
-		/// ===Line=== ///
-		std::unique_ptr<Line> line_;
-		/// ===エディター=== ///
-		std::unique_ptr<ParticleEditor> particleEditor_;
-
-		/// ===エディター設定=== ///
-		bool showHelp_ = false;              // ヘルプ表示フラグ
-		bool showStats_ = true;              // 統計情報表示フラグ
-		bool showGrid_ = true;               // グリッド表示フラグ
-
-		/// ===カメラ制御=== ///
-		Vector3 cameraPosition_ = { 0.0f, 5.0f, -10.0f };
-		Quaternion cameraRotation_ = { 0.3f, 0.0f, 0.0f };
-		float cameraSpeed_ = 0.1f;
-		float cameraRotationSpeed_ = 0.02f;
-	private:
-
-		/// <summary>
-		/// メニューバーの描画
-		/// </summary>
-		void RenderMenuBar();
-
-		/// <summary>
-		/// ヘルプウィンドウの描画
-		/// </summary>
-		void RenderHelpWindow();
-
-		/// <summary>
-		/// 統計情報ウィンドウの描画
-		/// </summary>
-		void RenderStatsWindow();
-
-		/// <summary>
-		/// カメラコントロールウィンドウの描画
-		/// </summary>
-		void RenderCameraControl();
-#endif // USE_IMGUI
-	};
-}
-
-============================================================
 File Path: Project/Engine/Scene/Framework.cpp
 ============================================================
 #include "Framework.h"
@@ -19488,7 +19212,7 @@ namespace MiiEngine {
 		// シーンマネージャの初期化
 		sceneManager_ = std::make_unique<SceneManager>();
 		sceneManager_->Initialize(sceneFactory_.get(), spriteManager_.get());
-		sceneManager_->ChangeScene(SceneType::Title);   //　スタートシーンの設定
+		sceneManager_->ChangeScene(SceneType::Game);   //　スタートシーンの設定
 	}
 
 	///-------------------------------------------/// 
@@ -19569,7 +19293,7 @@ namespace MiiEngine {
 
 		/// ===Game=== ///
 		// SceneTransition
-		Loader::LoadTexture("ShatterGlass", "Animation/SceneTransitionSpirte.png");
+		Loader::LoadTexture("ShatterGlassABCD", "Animation/SceneTransitionSpirte.png");
 		// TitleUI
 		Loader::LoadTexture("TitleBG", "TitleUI/SkyBG.png");
 		Loader::LoadTexture("TitleBGKiri", "TitleUI/BGsecond.png");
@@ -19601,24 +19325,22 @@ namespace MiiEngine {
 	///-------------------------------------------///
 	void MyGame::LoadModel() {
 		/// ===Particle=== ///
-		Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");
-		Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.obj");
-		Loader::LoadModel("cube", "Particle/Cube/ParticleCube.obj");
-		Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.obj");
+		Loader::LoadModel("plane", "Particle/Plane/ParticlePlane.gltf");					// Particle用の平面モデル
+		Loader::LoadModel("sphere", "Particle/Sphere/ParticleSphere.gltf");					// Particle用の球体モデル
+		Loader::LoadModel("cube", "Particle/Cube/ParticleCube.gltf");						// Particle用の立方体モデル
+		Loader::LoadModel("triangle", "Particle/Triangle/ParticleTriangle.gltf");			// Particle用の三角形モデル
 
 		/// ===Entity=== ///
 		Loader::LoadModel("Player", "Entity/Player/Player.gltf");							// プレイヤー
 		Loader::LoadModel("PlayerHand", "Entity/Player/PlayerHand/PlayerHand.gltf");		// プレイヤー手
 		Loader::LoadModel("PlayerWeapon", "Entity/Player/PlayerWeapon/PlayerWeapon.gltf");	// プレイヤー武器
-		Loader::LoadModel("LongEnemy", "Entity/Enemy/LongEnemy/LongEnemy.gltf");			// 遠距離敵
 		Loader::LoadModel("CloseEnemy", "Entity/Enemy/CloseEnemy/CloseEnemy.gltf");			// 近距離敵
 		Loader::LoadModel("Boss", "Entity/Enemy/Boss/Boss.gltf");							// ボス
 		Loader::LoadModel("BossWeapon", "Entity/Enemy/Boss/Weapon/BossWeapon.gltf");		// ボス武器
 
 		/// ===Object=== ///
-		Loader::LoadModel("Ground", "Object/Ground/Ground2.gltf");
-		Loader::LoadModel("Ground2", "Object/Ground/Ground.gltf");
-		Loader::LoadModel("Object", "Object/Object/Wall/BossStageWall.gltf");
+		Loader::LoadModel("desert", "Object/Ground/desert.gltf");							// 地面（砂漠）
+		Loader::LoadModel("Object", "Object/Object/Wall/BossStageWall.gltf");				// 壁
 	}
 
 	///-------------------------------------------/// 
@@ -19628,6 +19350,9 @@ namespace MiiEngine {
 		/// ===Engine=== ///
 		Loader::LoadAnimation("simpleSkin", "simpleSkin/simpleSkin.gltf");
 		Loader::LoadAnimation("human", "human/sneakWalk.gltf");
+
+		/// ====== ///
+		Loader::LoadAnimation("AnimationPlayer", "Player/Player.gltf");
 	}
 
 	///-------------------------------------------/// 
@@ -19636,6 +19361,7 @@ namespace MiiEngine {
 	void MyGame::LoadJson() {
 		/// ===Game=== ///
 		Loader::LoadLevelJson("Level/BossStage.json");
+		Loader::LoadLevelJson("Level/stage.json");
 	}
 } 
 
@@ -19718,6 +19444,379 @@ namespace MiiEngine {
 
 
 ============================================================
+File Path: Project/Engine/Scene/ParticleEditor/ParticleEditorScene.cpp
+============================================================
+#include "ParticleEditorScene.h"
+// SceneManager
+#include "Engine/System/Managers/SceneManager.h"
+// Service
+#include "Service/Particle.h"
+#include "Service/DeltaTime.h"
+#ifdef USE_IMGUI
+// ImGui
+#include <imgui.h>
+#endif // USE_IMGUI
+
+namespace MiiEngine {
+	///-------------------------------------------/// 
+	/// デストラクタ
+	///-------------------------------------------///
+	ParticleEditorScene::~ParticleEditorScene() {
+#ifdef USE_IMGUI
+		particleEditor_.reset();
+		// ISceneのデストラクタ
+		IScene::~IScene();
+#endif // USE_IMGUI
+	}
+
+	///-------------------------------------------/// 
+	/// 初期化
+	///-------------------------------------------///
+	void ParticleEditorScene::Initialize() {
+		// ISceneの初期化(デフォルトカメラとカメラマネージャ)
+		IScene::Initialize();
+#ifdef USE_IMGUI
+		cameraPosition_ = { 0.0f, 45.0f, -50.0f };
+		cameraRotation_ = { 0.343f, 0.0f, 0.0f, 0.939f };
+		defaultCamera_->SetTranslate(cameraPosition_);
+		defaultCamera_->SetRotate(cameraRotation_);
+
+		/// ===エディターの初期化=== ///
+		particleEditor_ = std::make_unique<ParticleEditor>();
+		particleEditor_->Initialize();
+		particleEditor_->SetVisible(true);
+
+		/// ===Line=== ///
+		line_ = std::make_unique<Line>();
+
+		/// ===カメラの初期設定=== ///
+		// デフォルトカメラの位置を設定
+		// camera_->SetTranslate(cameraPosition_);
+		// camera_->SetRotate(cameraRotation_);
+#endif // USE_IMGUI
+	}
+
+	///-------------------------------------------/// 
+	/// 更新
+	///-------------------------------------------///
+	void ParticleEditorScene::Update() {
+#ifdef USE_IMGUI
+		/// ===エディターの更新=== ///
+		if (particleEditor_) {
+			particleEditor_->Update();
+		}
+
+		/// ===ImGui描画=== ///
+		//RenderMenuBar();
+		defaultCamera_->ImGuiUpdate();
+		defaultCamera_->DebugUpdate();
+
+		// エディターメインウィンドウ
+		particleEditor_->Render();
+
+		// サブウィンドウ
+		/*if (showHelp_) {
+			RenderHelpWindow();
+		}
+		if (showStats_) {
+			RenderStatsWindow();
+		}*/
+
+		//RenderCameraControl();
+#endif // USE_IMGUI
+	}
+
+	///-------------------------------------------/// 
+	/// 描画
+	///-------------------------------------------///
+	void ParticleEditorScene::Draw() {
+#ifdef USE_IMGUI
+		/// ===グリッドの描画=== ///
+		line_->DrawGrid({ 0.0f, -10.0f, 0.0f }, { 500.0f, 0.0f, 500.0f }, 100, { 1.0f, 1.0f, 1.0f, 1.0f });
+
+		/// ===エディタープレビューの描画=== ///
+		if (particleEditor_) {
+			particleEditor_->DrawPreview();
+		}
+#endif // USE_IMGUI
+	}
+
+#ifdef USE_IMGUI
+	///-------------------------------------------/// 
+/// メニューバーの描画
+///-------------------------------------------///
+	void ParticleEditorScene::RenderMenuBar() {
+		if (ImGui::BeginMainMenuBar()) {
+			if (ImGui::BeginMenu("ファイル")) {
+				if (ImGui::MenuItem("新規作成", "Ctrl+N")) {
+					// エディターの新規作成機能を呼び出し
+				}
+				if (ImGui::MenuItem("開く", "Ctrl+O")) {
+					// 開く処理
+				}
+				if (ImGui::MenuItem("保存", "Ctrl+S")) {
+					// 保存処理
+				}
+				ImGui::Separator();
+				if (ImGui::MenuItem("終了", "Alt+F4")) {
+					// シーン遷移などの終了処理
+				}
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("表示")) {
+				bool editorVisible = particleEditor_ ? particleEditor_->IsVisible() : false;
+				if (ImGui::MenuItem("エディター", nullptr, &editorVisible)) {
+					if (particleEditor_) {
+						particleEditor_->SetVisible(editorVisible);
+					}
+				}
+				ImGui::MenuItem("統計情報", nullptr, &showStats_);
+				ImGui::MenuItem("カメラコントロール", nullptr, nullptr);
+				ImGui::MenuItem("グリッド", nullptr, &showGrid_);
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("ヘルプ")) {
+				if (ImGui::MenuItem("使い方")) {
+					showHelp_ = true;
+				}
+				ImGui::Separator();
+				if (ImGui::MenuItem("バージョン情報")) {
+					// バージョン情報表示
+				}
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
+		}
+	}
+
+	///-------------------------------------------/// 
+	/// ヘルプウィンドウの描画
+	///-------------------------------------------///
+	void ParticleEditorScene::RenderHelpWindow() {
+		ImGui::Begin("使い方", &showHelp_);
+
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "パーティクルエディターの使い方");
+		ImGui::Separator();
+
+		ImGui::Text("■ 基本操作");
+		ImGui::BulletText("左側のタブで各種設定を調整できます");
+		ImGui::BulletText("プレビューボタンで効果を確認できます");
+		ImGui::BulletText("保存ボタンでJSONファイルに保存されます");
+
+		ImGui::Spacing();
+		ImGui::Text("■ タブの説明");
+		ImGui::BulletText("基本設定: 名前、モデル、形状などの基本パラメータ");
+		ImGui::BulletText("物理設定: 重力、速度、爆発半径などの物理挙動");
+		ImGui::BulletText("見た目設定: 色、スケール、テクスチャなどの視覚効果");
+		ImGui::BulletText("回転設定: パーティクルの回転に関する設定");
+		ImGui::BulletText("発生設定: 寿命、発生レート、バーストなどの発生パターン");
+
+		ImGui::Spacing();
+		ImGui::Text("■ カメラ操作");
+		ImGui::BulletText("WASDキー: カメラの移動");
+		ImGui::BulletText("矢印キー: カメラの回転");
+		ImGui::BulletText("カメラコントロールウィンドウで詳細設定可能");
+
+		ImGui::Spacing();
+		ImGui::Text("■ ショートカット");
+		ImGui::BulletText("Ctrl+N: 新規作成");
+		ImGui::BulletText("Ctrl+S: 保存");
+		ImGui::BulletText("Ctrl+O: 開く");
+		ImGui::BulletText("Space: プレビュー再生/停止");
+
+		ImGui::Spacing();
+		ImGui::Separator();
+		if (ImGui::Button("閉じる", ImVec2(120, 30))) {
+			showHelp_ = false;
+		}
+
+		ImGui::End();
+	}
+
+	///-------------------------------------------/// 
+	/// 統計情報ウィンドウの描画
+	///-------------------------------------------///
+	void ParticleEditorScene::RenderStatsWindow() {
+		ImGui::Begin("統計情報", &showStats_);
+
+		// FPS表示
+		float deltaTime = Service::DeltaTime::GetDeltaTime();
+		float fps = 1.0f / deltaTime;
+		ImGui::Text("FPS: %.1f", fps);
+		ImGui::Text("デルタタイム: %.3f ms", deltaTime * 1000.0f);
+
+		ImGui::Separator();
+
+		// 登録されているパーティクル定義一覧
+		ImGui::Text("登録済みパーティクル:");
+		std::vector<std::string> names = Service::Particle::GetDefinitionNames();
+		if (names.empty()) {
+			ImGui::TextDisabled("（なし）");
+		} else {
+			for (const auto& name : names) {
+				ImGui::BulletText("%s", name.c_str());
+				ImGui::Indent();
+
+				// アクティブなグループ数とパーティクル数
+				size_t groupCount = Service::Particle::GetActiveGroupCount(name);
+				uint32_t particleCount = Service::Particle::GetActiveParticleCount(name);
+
+				ImGui::Text("グループ数: %zu", groupCount);
+				ImGui::Text("パーティクル数: %u", particleCount);
+
+				ImGui::Unindent();
+			}
+		}
+
+		ImGui::Separator();
+
+		// カメラ情報
+		ImGui::Text("カメラ位置:");
+		ImGui::Text("  X: %.2f, Y: %.2f, Z: %.2f",
+			cameraPosition_.x, cameraPosition_.y, cameraPosition_.z);
+		ImGui::Text("カメラ回転:");
+		ImGui::Text("  X: %.2f, Y: %.2f, Z: %.2f",
+			cameraRotation_.x, cameraRotation_.y, cameraRotation_.z);
+
+		ImGui::End();
+	}
+
+	///-------------------------------------------/// 
+	/// カメラコントロールウィンドウの描画
+	///-------------------------------------------///
+	void ParticleEditorScene::RenderCameraControl() {
+		ImGui::Begin("カメラコントロール");
+
+		ImGui::Text("カメラ設定");
+		ImGui::Separator();
+
+		// 位置
+		if (ImGui::DragFloat3("位置", &cameraPosition_.x, 0.1f)) {
+			// カメラ位置を更新
+			// camera_->SetTranslate(cameraPosition_);
+		}
+
+		// 回転
+		if (ImGui::DragFloat3("回転", &cameraRotation_.x, 0.01f)) {
+			// カメラ回転を更新
+			// camera_->SetRotate(cameraRotation_);
+		}
+
+		ImGui::Spacing();
+
+		// 速度設定
+		ImGui::DragFloat("移動速度", &cameraSpeed_, 0.01f, 0.01f, 1.0f);
+		ImGui::DragFloat("回転速度", &cameraRotationSpeed_, 0.001f, 0.001f, 0.1f);
+
+		ImGui::Spacing();
+		ImGui::Separator();
+
+		// リセットボタン
+		if (ImGui::Button("カメラをリセット", ImVec2(150, 30))) {
+			cameraPosition_ = { 0.0f, 5.0f, -10.0f };
+			cameraRotation_ = { 0.3f, 0.0f, 0.0f };
+			// camera_->SetTranslate(cameraPosition_);
+			// camera_->SetRotate(cameraRotation_);
+		}
+
+		ImGui::Spacing();
+		ImGui::TextDisabled("WASDキー: 移動");
+		ImGui::TextDisabled("矢印キー: 回転");
+		ImGui::TextDisabled("QE: 上下移動");
+
+		ImGui::End();
+	}
+#endif // USE_IMGUI
+}
+
+============================================================
+File Path: Project/Engine/Scene/ParticleEditor/ParticleEditorScene.h
+============================================================
+#pragma once
+/// ===Include=== ///
+#include "Engine/Scene/IScene.h"
+
+#ifdef USE_IMGUI
+// Editor
+#include "Engine/System/Editor/Particle/ParticleEditor.h"
+// Line
+#include "application/Drawing/3d/Line.h"
+#endif // USE_IMGUI
+
+// c++
+#include <memory>
+
+namespace MiiEngine {
+	///=====================================================/// 
+	/// パーティクルエディターシーン
+	///=====================================================///
+	class ParticleEditorScene : public IScene {
+	public:
+
+		ParticleEditorScene() = default;
+		~ParticleEditorScene();
+
+		/// <summary>
+		/// 初期化処理
+		/// </summary>
+		void Initialize() override;
+
+		/// <summary>
+		/// 更新処理
+		/// </summary>
+		void Update() override;
+
+		/// <summary>
+		/// 描画処理
+		/// </summary>
+		void Draw() override;
+
+	private:
+#ifdef USE_IMGUI
+		/// ===Line=== ///
+		std::unique_ptr<Line> line_;
+		/// ===エディター=== ///
+		std::unique_ptr<ParticleEditor> particleEditor_;
+
+		/// ===エディター設定=== ///
+		bool showHelp_ = false;              // ヘルプ表示フラグ
+		bool showStats_ = true;              // 統計情報表示フラグ
+		bool showGrid_ = true;               // グリッド表示フラグ
+
+		/// ===カメラ制御=== ///
+		Vector3 cameraPosition_ = { 0.0f, 5.0f, -10.0f };
+		Quaternion cameraRotation_ = { 0.3f, 0.0f, 0.0f };
+		float cameraSpeed_ = 0.1f;
+		float cameraRotationSpeed_ = 0.02f;
+	private:
+
+		/// <summary>
+		/// メニューバーの描画
+		/// </summary>
+		void RenderMenuBar();
+
+		/// <summary>
+		/// ヘルプウィンドウの描画
+		/// </summary>
+		void RenderHelpWindow();
+
+		/// <summary>
+		/// 統計情報ウィンドウの描画
+		/// </summary>
+		void RenderStatsWindow();
+
+		/// <summary>
+		/// カメラコントロールウィンドウの描画
+		/// </summary>
+		void RenderCameraControl();
+#endif // USE_IMGUI
+	};
+}
+
+============================================================
 File Path: Project/Engine/Scene/SceneFactory.cpp
 ============================================================
 #include "SceneFactory.h"
@@ -19727,8 +19826,10 @@ File Path: Project/Engine/Scene/SceneFactory.cpp
 #include "application/Scene/Game/GameScene.h"
 #include "application/Scene/Clear/ClearScene.h"
 #include "application/Scene/GameOver/GameOverScene.h"
-#include "Engine/Scene/Debug/ParticleEditorScene.h"
+#ifdef _DEBUG
+#include "Engine/Scene/ParticleEditor/ParticleEditorScene.h"
 #include "application/Scene/Debug/AttackEditorScene.h"
+#endif // _DEBUG
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -19751,12 +19852,14 @@ namespace MiiEngine {
 		} else if (type == SceneType::GameOver) {
 			//　ゲームオーバー
 			return std::make_unique<GameOverScene>();
+#ifdef _DEBUG
 		} else if (type == SceneType::ParticleEditor) {
 			// 粒子エディターシーン
 			return std::make_unique<ParticleEditorScene>();
 		} else if (type == SceneType::AttackEditor) {
 			// 攻撃エディターシーン
 			return std::make_unique<AttackEditorScene>();
+#endif // _DEBUG
 		}
 		return nullptr;
 	}
@@ -24927,8 +25030,12 @@ namespace MiiEngine {
 		hr = mouse_->SetCooperativeLevel(winApp_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 		assert(SUCCEEDED(hr));
 
-		// マウスカーソルを見えないようにする
+		// マウスカーソル表示の有無
+#ifdef _DEBUG
+		ShowCursor(true);
+#else
 		ShowCursor(false);
+#endif // _DEBUG
 	}
 
 	///-------------------------------------------/// 
@@ -28739,14 +28846,6 @@ File Path: Project/Engine/System/Managers/SceneManager.cpp
 #include "Engine/Scene/Transition/Manager/SceneTransitionManager.h"
 // SpriteManager
 #include "SpriteManager.h"
-// 各シーン
-#include "application/Scene/Title/TitleScene.h"
-#include "application/Scene/Select/SelectScene.h"
-#include "application/Scene/Game/GameScene.h"
-#include "application/Scene/Clear/ClearScene.h"
-#include "application/Scene/GameOver/GameOverScene.h"
-#include "Engine/Scene/Debug/ParticleEditorScene.h"
-#include "application/Scene/Debug/AttackEditorScene.h"
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -29555,13 +29654,13 @@ File Path: Project/KaijounoKessen.vcxproj
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -29816,7 +29915,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
     <ClCompile Include="Engine\System\Editor\Particle\ParticleEditor.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleFactory.cpp" />
-    <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp" />
+    <ClCompile Include="Engine\Scene\ParticleEditor\ParticleEditorScene.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleParameter.cpp" />
     <ClCompile Include="Engine\Graphics\Base\UAV.cpp" />
     <ClCompile Include="Engine\Graphics\Pipeline\PSOBase.cpp" />
@@ -30022,7 +30121,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
     <ClInclude Include="Engine\System\Editor\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleFactory.h" />
-    <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h" />
+    <ClInclude Include="Engine\Scene\ParticleEditor\ParticleEditorScene.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleParameter.h" />
     <ClInclude Include="Engine\Graphics\Base\UAV.h" />
     <ClInclude Include="Engine\Graphics\Pipeline\PSOBase.h" />
@@ -30700,7 +30799,7 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
+    <ClCompile Include="Engine\Scene\ParticleEditor\ParticleEditorScene.cpp">
       <Filter>Engine\Scene\Debug</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
@@ -31300,7 +31399,7 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
+    <ClInclude Include="Engine\Scene\ParticleEditor\ParticleEditorScene.h">
       <Filter>Engine\Scene\Debug</Filter>
     </ClInclude>
     <ClInclude Include="Engine\System\Editor\Attack\Data\AttackData.h">
@@ -43773,8 +43872,6 @@ File Path: Project/application/Game/Entity/Player/Player.cpp
 Player::~Player() {
 	// weapon、hand、stateの解放
 	weapon_.reset();
-	rightHand_.reset();
-	leftHand_.reset();
 	currentState_.reset();
 	// Object3dの解放
 	object3d_.reset();
@@ -43816,16 +43913,6 @@ void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera)
 	/// ===位置の設定=== ///
 	transform_.translate = translate;
 
-	/// ===Handの初期化=== ///
-	// 右手
-	rightHand_ = std::make_unique<PlayerHand>();
-	rightHand_->Initialize();
-	rightHand_->SetUpParent(this);
-	// 左手
-	leftHand_ = std::make_unique<PlayerHand>();
-	leftHand_->Initialize();
-	leftHand_->SetUpParent(this);
-
 	/// ===Weaponの初期化=== ///
 	weapon_ = std::make_unique<PlayerWeapon>();
 	weapon_->Initialize();
@@ -43856,7 +43943,7 @@ void Player::InitGame(const Vector3& translate, MiiEngine::FollowCamera* camera)
 void Player::Initialize() {
 	// Object3dの初期化
 	object3d_ = std::make_unique<Object3d>();
-	object3d_->Init(std::make_unique<MiiEngine::Model>(), "Player");
+	object3d_->Init(std::make_unique<MiiEngine::AnimationModel>(), "AnimationPlayer");
 
 	// GameCharacterの設定
 	GameCharacter::Initialize();
@@ -43919,10 +44006,6 @@ void Player::Update() {
 ///-------------------------------------------///
 void Player::UpdateAnimation() {
 
-	/// ===Hand=== ///
-	rightHand_->Update();
-	leftHand_->Update();
-
 	/// ===Weapon=== ///
 	weapon_->Update();
 
@@ -43937,10 +44020,6 @@ void Player::UpdateAnimation() {
 /// 描画
 ///-------------------------------------------///
 void Player::Draw(MiiEngine::BlendMode mode) {
-
-	/// ===Hand=== ///
-	rightHand_->Draw(mode);
-	leftHand_->Draw(mode);
 
 	/// ===Weapon=== ///
 	weapon_->Draw(mode);
@@ -44006,6 +44085,29 @@ void Player::OnCollision(MiiEngine::Collider* collider) {
 			SetInvincibleTime(0.5f);
 		}
 	}
+}
+
+///-------------------------------------------/// 
+/// Animation
+///-------------------------------------------///
+// アニメーションの再生
+void Player::PlayAnimation(const std::string& animationName, bool isLoop) {
+	// AnimationModelとして取得
+	auto* animModel = static_cast<MiiEngine::AnimationModel*>(object3d_->GetModelCommon());
+	// Animationをセット
+	animModel->SetAnimation(animationName, isLoop);
+}
+// 現在再生中のアニメーションが終了したか
+bool Player::IsAnimationFinished() const {
+	// AnimationModelとして取得
+	auto* animModel = static_cast<MiiEngine::AnimationModel*>(object3d_->GetModelCommon());
+	return animModel->IsAnimationFinished();
+}
+// アニメーションの進捗
+float Player::GetAnimationNormalizeTime() const {
+	// AnimationModelとして取得
+	auto* animModel = static_cast<MiiEngine::AnimationModel*>(object3d_->GetModelCommon());
+	return animModel->GetAnimationNormalizeTime();
 }
 
 ///-------------------------------------------/// 
@@ -44117,8 +44219,6 @@ File Path: Project/application/Game/Entity/Player/Player.h
 #include "Component/PlayerComponent.h"
 // State
 #include "State/Base/PlayerState.h"
-// Hand
-#include "Hand/PlayerHand.h"
 // Weapon
 #include "Weapon/PlayerWeapon.h"
 // C++
@@ -44178,10 +44278,15 @@ public: /// ===衝突判定=== ///
 	/// <param name="collider">衝突した相手の Collider へのポインター。</param>
 	void OnCollision(MiiEngine::Collider* collider) override;
 
+public: /// ===Animation=== ///
+	// アニメーションの再生
+	void PlayAnimation(const std::string& animationName, bool isLoop);
+	// 現在のアニメーションが終了したか
+	bool IsAnimationFinished() const;
+	// アニメーションの進捗
+	float GetAnimationNormalizeTime() const;
+
 public: /// ===Getter=== ///
-	// Hand
-	PlayerHand* GetRightHand() const { return rightHand_.get(); };
-	PlayerHand* GetLeftHand() const { return leftHand_.get(); };
 	// Weapon
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); };
 	// Component
@@ -44221,10 +44326,6 @@ public: /// ===State用関数=== ///
 private: /// ===変数の宣言=== ///
 	// カメラ
 	MiiEngine::FollowCamera* camera_ = nullptr;
-
-	/// ===Hand=== ///
-	std::unique_ptr<PlayerHand> rightHand_;
-	std::unique_ptr<PlayerHand> leftHand_;
 
 	/// ===Weapon=== ///
 	std::unique_ptr<PlayerWeapon> weapon_;
@@ -44303,7 +44404,6 @@ File Path: Project/application/Game/Entity/Player/State/AttackState.cpp
 #include "Service/Input.h"
 // Player
 #include "application/Game/Entity/Player/Player.h"
-#include "application/Game/Entity/Player/Weapon/PlayerWeapon.h"
 // GroundOcean
 #include <application/Game/Object/GameGround/GroundOcean.h>
 // State
@@ -44313,6 +44413,23 @@ File Path: Project/application/Game/Entity/Player/State/AttackState.cpp
 #include "Math/TransformationMath.h"
 
 ///-------------------------------------------/// 
+/// コンストラクタ
+///-------------------------------------------///
+AttackState::AttackState() {
+	// 攻撃アニメーションの名前を設定
+	attackAnimationNames_ = { "Attack1", "Attack2", "Attack3" };
+
+	// コンボ受付開始のアニメーションの進捗
+	comboAcceptNormalizeTime_ = 0.8f;
+
+	// アニメーション終了後のコンボ受付時間
+	comboAcceptExtraTime_ = 0.2f;
+
+	// 攻撃開始時の前方移動の強さを初期化
+	moveForwardStrength_ = 0.5f;
+}
+
+///-------------------------------------------/// 
 /// 状態に入ったときに呼ばれる
 ///-------------------------------------------///
 void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
@@ -44320,10 +44437,10 @@ void AttackState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	player_ = player;
 	camera_ = camera;
 
-	if (StartAttack(0, player_->GetWeapon())) {
-		moveForwardStrength_ = 0.5f; // 通常攻撃の前方移動の強さ
-		moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
-	}
+	// 攻撃の開始
+	StartAttack(0);
+	// 前方に移動
+	moveForwardOnAttackStart();
 
 	// 攻撃のアクティブフラグを設定
 	player_->SetActiveAttackFlag(isAttacking_);
@@ -44337,48 +44454,47 @@ void AttackState::Update() {
 	/// ===減速処理=== ///
 	PlayerState::ApplyDeceleration(0.4f); // 攻撃中は減速率を高めに設定
 
-	/// ===タイマーの更新=== ///
-	UpdateTimers(player_->GetDeltaTime());
+	// その攻撃が最後が最後の攻撃か
+	bool isLastAttack = (attackIndex_ >= static_cast<int>(attackAnimationNames_.size()) - 1);
 
 	/// ===攻撃中の処理=== ///
 	if (isAttacking_) {
-		// 攻撃時間が終了していないかチェック
-		const AttackData* currentData = player_->GetAttackData(state_.attackID);
+		// 最後の攻撃かどうかを判別
+		float normalizeTime = player_->GetAnimationNormalizeTime();
 
-		if (currentData && state_.timer >= currentData->activeDuration) {
+		// 最後の攻撃以外ならコンボの受付
+		if (!canCombo_ && !isLastAttack && normalizeTime >= comboAcceptNormalizeTime_) {
+			canCombo_ = true;
+		}
+
+		// アニメーションが終了したら
+		if (player_->IsAnimationFinished()) {
 			isAttacking_ = false;
-			state_.previousAttackID = state_.attackID; // 前の攻撃IDを保存
-			state_.attackID = -1; // 攻撃IDをリセット
 
-			// コンボ受付の開始
-			if (currentData->canComboToNext) {
-				canCombo_ = true; // コンボ受付開始
-				state_.comboTimer = 0.0f; // コンボタイマーリセット
+			// 最後の攻撃なら強制終了
+			if (isLastAttack) {
+				canCombo_ = false;
 			}
+
+			// コンボ受付タイマーの計測開始
+			comboAcceptTimer_ = 0.0f;
+		}
+	} else if (canCombo_) {
+
+		/// ===時間の更新=== ///
+		comboAcceptTimer_ += player_->GetDeltaTime();
+
+		// コンボ受付が終了したら
+		if (comboAcceptTimer_ >= comboAcceptExtraTime_) {
+			canCombo_ = false;
 		}
 	}
 
-	/// ===コンボ受付時間の管理=== ///
-	if (canCombo_) {
-		// 前の攻撃IDからデータを取得
-		const AttackData* previousData = player_->GetAttackData(state_.previousAttackID);
-
-		// コンボ受付時間が終了していないかチェック
-		if (previousData && state_.comboTimer >= previousData->comboWindowTime) {
-			canCombo_ = false; // コンボ受付終了
-			state_.comboTimer = 0.0f; // コンボタイマーリセット
-			state_.previousAttackID = -1; // 前の攻撃IDリセット
-		}
-	}
-
-	// 攻撃ボタンが押されたらコンボを試行
-	if (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left)) {
-		if (canCombo_) {
-			if (TryCombo(player_->GetWeapon())) {
-				moveForwardStrength_ = 2.5f; // コンボ攻撃の前方移動の強さ
-				moveForwardOnAttackStart(); // 攻撃開始時に前方に移動
-			}
-		}
+	/// ===攻撃ボタンが押されたら=== ///
+	if (canCombo_ && (Service::Input::TriggerButton(0, ControllerButtonType::X) || Service::Input::TriggerMouse(MouseButtonType::Left))) {
+		moveForwardStrength_ = 2.5f;
+		StartAttack(attackIndex_ + 1);
+		moveForwardOnAttackStart();
 	}
 
 	/// ===Stateの移動=== ///
@@ -44400,52 +44516,17 @@ void AttackState::Finalize() {
 ///-------------------------------------------/// 
 /// 攻撃開始処理
 ///-------------------------------------------///
-bool AttackState::StartAttack(int attackID, PlayerWeapon* weapon) {
-	// 既存の攻撃をキャンセル
-	CancelAttack(); 
+void AttackState::StartAttack(int attackIndex) {
 
 	// キーボード操作時はマウスの方向を向く
 	FaceMouseDirection();
 
-	// 攻撃データを取得
-	const AttackData* attackData = player_->GetAttackData(attackID);
-	if (!attackData) {
-		return false;
-	}
-	attackData_ = *attackData;
+	attackIndex_ = attackIndex;
+	player_->PlayAnimation(attackAnimationNames_[attackIndex_], false);
 
-	// 攻撃データを武器に適用
-	ApplyAttackToWeapon(attackData_, weapon);
-
-	// 状態の更新
 	isAttacking_ = true;
-	state_.attackID = attackID;
-	state_.timer = 0.0f;
-	state_.comboCount = 0;
 	canCombo_ = false;
-
-	return true;
-}
-
-///-------------------------------------------/// 
-/// コンボ攻撃の試行
-///-------------------------------------------///
-bool AttackState::TryCombo(PlayerWeapon* weapon) {
-	// コンボ可能かどうかのチェック
-	if (!canCombo_) return false;
-
-	// 前の攻撃データを取得
-	const AttackData* previousData = player_->GetAttackData(state_.previousAttackID);
-	if (!previousData || !previousData->canComboToNext) return false;
-
-	// 次の攻撃IDを取得
-	int nextAttackID = previousData->nextComboID;
-	if (nextAttackID < 0) return false;
-
-	// 次の攻撃を開始
-	canCombo_ = false;
-	state_.comboCount++;
-	return StartAttack(nextAttackID, weapon);
+	comboAcceptTimer_ = 0.0f;
 }
 
 ///-------------------------------------------/// 
@@ -44454,40 +44535,8 @@ bool AttackState::TryCombo(PlayerWeapon* weapon) {
 void AttackState::CancelAttack() {
 	isAttacking_ = false;
 	canCombo_ = false;
-	state_.attackID = -1;
-	state_.previousAttackID = -1;
-	state_.comboCount = 0;
-	state_.timer = 0.0f;
-	state_.comboTimer = 0.0f;
-}
-
-///-------------------------------------------/// 
-/// タイマーの更新
-///-------------------------------------------///
-void AttackState::UpdateTimers(const float deltaTime) {
-	// 攻撃中なら攻撃タイマーを更新
-	if (isAttacking_) {
-		state_.timer += deltaTime;
-	}
-	
-	// コンボ受付中ならコンボタイマーも更新
-	if (canCombo_) {
-		state_.comboTimer += deltaTime;
-	}
-}
-
-///-------------------------------------------/// 
-/// 攻撃データを武器に適用
-///-------------------------------------------///
-void AttackState::ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon) {
-	// 早期リターン
-	if (!weapon) return;
-
-	// チャンネル0
-	const TrajectoryChannel* weaponChannel = data.GetChannel(0);
-	if (weapon && weaponChannel && weaponChannel->enabled && weaponChannel->points.size() >= 2) {
-		weapon->StartAttack(weaponChannel->points, data.activeDuration);
-	}
+	comboAcceptTimer_ = 0.0f;
+	attackIndex_ = 0;
 }
 
 ///-------------------------------------------/// 
@@ -44544,10 +44593,9 @@ File Path: Project/application/Game/Entity/Player/State/AttackState.h
 ============================================================
 /// ===Include=== ///
 #include "Base/PlayerState.h"
-// AttackData
-#include "Engine/System/Editor/Attack/Data/AttackData.h"
-// Math
-#include "Math/Vector3.h"
+// C++
+#include <array>
+#include <string>
 
 /// ===前方宣言=== ///
 class PlayerWeapon;
@@ -44558,6 +44606,7 @@ class PlayerWeapon;
 class AttackState : public PlayerState {
 public:
 
+	AttackState();
 	~AttackState() override = default;
 
 	/// <summary>
@@ -44578,24 +44627,26 @@ public:
 	void Finalize() override;
 
 private:
-	/// ===状態=== ///
-	struct State {
-		int attackID = -1;		   // 攻撃ID
-		int previousAttackID = -1; // 前の攻撃ID
-		int comboCount = 0;		   // コンボカウント
-		float timer = 0.0f;		   // タイマー
-		float comboTimer = 0.0f;   // コンボタイマー
-	};
-	State state_{};
+	// 攻撃アニメーションの名前
+	std::array<const char*, 3> attackAnimationNames_;
+
+	// 入力を受け付ける進捗
+	float comboAcceptNormalizeTime_ = 0.8f;
+
+	// アニメーション終了後のコンボ受付時間
+	float comboAcceptExtraTime_ = 0.2f;
+
+	// 現在の攻撃
+	int attackIndex_ = 0;
 
 	// 攻撃中フラグ
 	bool isAttacking_ = false;
 
 	// コンボ可能フラグ
 	bool canCombo_ = false;
-
-	// 攻撃データ
-	AttackData attackData_{};
+	
+	//アニメーション終了後のコンボ受付タイマー
+	float comboAcceptTimer_ = 0.0f;
 
 	// 攻撃開始時の前方移動の強さ
 	float moveForwardStrength_ = 0.5f; 
@@ -44607,32 +44658,13 @@ private:
 	/// <summary>
 	/// 攻撃を開始
 	/// </summary>
-	/// <param name="attackID">開始する攻撃のID</param>
-	/// <param name="weapon">使用する武器</param>
-	bool StartAttack(int attackID, PlayerWeapon* weapon);
-
-	/// <summary>
-	/// コンボ攻撃を試行
-	/// </summary>
-	/// <param name="weapon">使用する武器</param>
-	bool TryCombo(PlayerWeapon* weapon);
+	/// <param name="attackIndex">開始する攻撃のIndex</param>
+	void StartAttack(int attackIndex);
 
 	/// <summary>
 	/// 攻撃をキャンセル
 	/// </summary>
 	void CancelAttack();
-
-	/// <summary>
-	/// タイマーの更新
-	/// </summary>
-	void UpdateTimers(const float deltaTime);
-
-	/// <summary>
-	/// 武器に攻撃軌道を設定
-	/// </summary>
-	/// <param name="data"></param>
-	/// <param name="weapon"></param>
-	void ApplyAttackToWeapon(const AttackData& data, PlayerWeapon* weapon);
 
 	/// <summary>
 	/// 攻撃開始時に前方に移動します。
@@ -45142,6 +45174,9 @@ void MoveState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	Vector3 particlePosition = player_->GetTransform().translate - Vector3{ 0.0f, player_->GetOBB().halfSize.y, 0.0f };
 	moveParticle_ = Service::Particle::Emit("PlayerMove", particlePosition);
 	moveParticle_->SetEmitterPosition(player_->GetTransform().translate);
+
+	// アニメーションの設定
+	player_->PlayAnimation("Run", true);
 }
 
 ///-------------------------------------------/// 
@@ -45339,6 +45374,9 @@ void RootState::Enter(Player* player, MiiEngine::CameraCommon* camera) {
 	// 引数の取得
 	player_ = player;
 	camera_ = camera;
+
+	// アニメーションの設定
+	player_->PlayAnimation("Root", true);
 }
 
 ///-------------------------------------------/// 
@@ -46036,6 +46074,7 @@ void GroundOcean::Initialize() {
 	oceanRenderCB.roughness = 0.08f;
 	oceanRenderCB.sssStrength = 0.01f;
 	oceanRenderCB.foamSoftness = 1.0f;
+	oceanRenderCB.OceanOpacity = 1.0f;
 	fftOcean_->SetOceanRenderCB(oceanRenderCB);
 
 	// 初回更新
@@ -46331,9 +46370,6 @@ void GameStage::Update() {
 void GameStage::Draw(MiiEngine::BlendMode mode) {
 
 	// GroundOceanの更新
-	Oceans_->Draw();
-
-	// GroundOceanの更新
 	for (const auto& ground : grounds_) {
 		if (ground) {
 			ground->Draw(mode);
@@ -46346,6 +46382,9 @@ void GameStage::Draw(MiiEngine::BlendMode mode) {
 			obj->Draw(mode);
 		}
 	}
+
+	// GroundOceanの更新
+	Oceans_->Draw();
 }
 
 ///-------------------------------------------/// 
@@ -46379,6 +46418,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 				grounds_.emplace_back(std::move(ground));
 			}
 			continue;
+
 		} else if (stage.classType == LevelData::ClassTypeLevel::Object) {
 			std::unique_ptr<StageObject> object = std::make_unique<StageObject>();
 			object->GameInit(stage.fileName);
@@ -46391,6 +46431,7 @@ void GameStage::LoadStageData(const std::string& stageData) {
 			// 配列に追加
 			objects_.emplace_back(std::move(object));
 			continue;
+
 		} else {
 			// その他のクラスは無視
 			continue;
@@ -48037,7 +48078,7 @@ void GameScene::Initialize() {
 
 	/// ===GameStage=== ///
 	stage_ = std::make_unique<GameStage>();
-	stage_->Initialize("Level/BossStage.json");
+	stage_->Initialize("Level/stage.json");
 
 	// ColliderServiceのライト設定
 	Service::Collision::SetLight(MiiEngine::LightType::HalfLambert);
