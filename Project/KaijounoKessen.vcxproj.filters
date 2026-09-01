@@ -430,7 +430,7 @@
     <ClCompile Include="Engine\Scene\Transition\Base\SceneTransitionBase.cpp">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Scene\Debug\ParticleEditorScene.cpp">
+    <ClCompile Include="Engine\Scene\ParticleEditor\ParticleEditorScene.cpp">
       <Filter>Engine\Scene\Debug</Filter>
     </ClCompile>
     <ClCompile Include="application\Scene\Debug\AttackEditorScene.cpp">
@@ -1030,7 +1030,7 @@
     <ClInclude Include="Engine\Scene\Transition\Base\SceneTransitionBase.h">
       <Filter>Engine\Scene\Transition\Base</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Scene\Debug\ParticleEditorScene.h">
+    <ClInclude Include="Engine\Scene\ParticleEditor\ParticleEditorScene.h">
       <Filter>Engine\Scene\Debug</Filter>
     </ClInclude>
     <ClInclude Include="Engine\System\Editor\Attack\Data\AttackData.h">

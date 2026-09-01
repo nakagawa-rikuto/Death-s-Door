@@ -5,8 +5,10 @@
 #include "application/Scene/Game/GameScene.h"
 #include "application/Scene/Clear/ClearScene.h"
 #include "application/Scene/GameOver/GameOverScene.h"
-#include "Engine/Scene/Debug/ParticleEditorScene.h"
+#ifdef _DEBUG
+#include "Engine/Scene/ParticleEditor/ParticleEditorScene.h"
 #include "application/Scene/Debug/AttackEditorScene.h"
+#endif // _DEBUG
 
 namespace MiiEngine {
 	///-------------------------------------------/// 
@@ -29,12 +31,14 @@ namespace MiiEngine {
 		} else if (type == SceneType::GameOver) {
 			//　ゲームオーバー
 			return std::make_unique<GameOverScene>();
+#ifdef _DEBUG
 		} else if (type == SceneType::ParticleEditor) {
 			// 粒子エディターシーン
 			return std::make_unique<ParticleEditorScene>();
 		} else if (type == SceneType::AttackEditor) {
 			// 攻撃エディターシーン
 			return std::make_unique<AttackEditorScene>();
+#endif // _DEBUG
 		}
 		return nullptr;
 	}
