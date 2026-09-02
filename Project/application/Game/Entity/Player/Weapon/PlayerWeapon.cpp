@@ -17,6 +17,14 @@
 /// デストラクタ
 ///-------------------------------------------///
 PlayerWeapon::~PlayerWeapon() {
+	// Particleの削除
+	if (attackInfo_.isAttacking) {
+		attackParticle_->Stop();
+		attackParticle_ = nullptr;
+	}
+	// Colliderの削除
+	Service::Collision::RemoveCollider(this);
+	// object3dの解放
 	object3d_.reset();
 }
 

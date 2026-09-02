@@ -25,9 +25,13 @@
 /// デストラクタ
 ///-------------------------------------------///
 Player::~Player() {
-	// weapon、hand、stateの解放
+	// weaponの解放
 	weapon_.reset();
+	// Stateの解放
+	currentState_->Finalize();
 	currentState_.reset();
+	// Colliderの削除
+	Service::Collision::RemoveCollider(this);
 	// Object3dの解放
 	object3d_.reset();
 }

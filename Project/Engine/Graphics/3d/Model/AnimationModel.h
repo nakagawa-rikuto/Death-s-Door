@@ -53,6 +53,9 @@ namespace MiiEngine {
 
 	private: /// ===Variables(変数)=== ///
 
+		// AllocateしたSRVのIndex
+		uint32_t paletteSrvIndex_ = 0;
+
 		/// ===Animation=== ///
 		float animationTime_;
 		std::map<std::string, Animation> animation_;

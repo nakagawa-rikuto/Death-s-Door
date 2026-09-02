@@ -20,7 +20,7 @@ namespace MiiEngine {
 	class ModelCommon {
 	public:
 		ModelCommon() = default;
-		~ModelCommon();
+		virtual ~ModelCommon();
 
 		/// <summary>
 		/// 初期化処理、順数仮想関数
