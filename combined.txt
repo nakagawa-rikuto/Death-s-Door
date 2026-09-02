@@ -7613,7 +7613,11 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// デストラクタ
 	///-------------------------------------------///
-	AnimationModel::~AnimationModel() {}
+	AnimationModel::~AnimationModel() {
+		if (modelData_.haveBone) {
+			Service::Locator::GetSRVManager()->Free(paletteSrvIndex_); // SRVの解放
+		}
+	}
 
 	///-------------------------------------------/// 
 	/// Gettter
@@ -7882,14 +7886,15 @@ namespace MiiEngine {
 		const ComPtr<ID3D12Device>& device, const Skeleton& skeleton, const ModelData& modelData) {
 
 		SkinCluster skinCluster;
+		SRVManager* srvManager = Service::Locator::GetSRVManager();
 		/// ===Palette用のResourceを確保=== ///
-		uint32_t paletteIndex = Service::Locator::GetSRVManager()->Allocate();
+		paletteSrvIndex_ = srvManager->Allocate(); // 解放用に保持しておく
 		skinCluster.paletteResource = CreateBufferResourceComPtr(device.Get(), sizeof(WellForGPU) * skeleton.joints.size());
 		WellForGPU* mappedPalette = nullptr;
 		skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));
 		skinCluster.mappedPalette = { mappedPalette, skeleton.joints.size() }; // spanを使ってアクセスするようにする
-		skinCluster.paletteSrvHandle.first = Service::Locator::GetSRVManager()->GetCPUDescriptorHandle(paletteIndex);
-		skinCluster.paletteSrvHandle.second = Service::Locator::GetSRVManager()->GetGPUDescriptorHandle(paletteIndex);
+		skinCluster.paletteSrvHandle.first = srvManager->GetCPUDescriptorHandle(paletteSrvIndex_);
+		skinCluster.paletteSrvHandle.second = srvManager->GetGPUDescriptorHandle(paletteSrvIndex_);
 
 		/// ===Palette用のSRVを作成。StructuredBufferでアクセスできるようにする=== ///
 		D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc{};
@@ -8012,6 +8017,9 @@ namespace MiiEngine {
 		void SetAnimation(const std::string& animationName, bool isLoop);
 
 	private: /// ===Variables(変数)=== ///
+
+		// AllocateしたSRVのIndex
+		uint32_t paletteSrvIndex_ = 0;
 
 		/// ===Animation=== ///
 		float animationTime_;
@@ -8623,7 +8631,7 @@ namespace MiiEngine {
 	class ModelCommon {
 	public:
 		ModelCommon() = default;
-		~ModelCommon();
+		virtual ~ModelCommon();
 
 		/// <summary>
 		/// 初期化処理、順数仮想関数
@@ -31021,7 +31029,9 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClCompile Include="application\Scene\Game\UI\GameSceneUI.cpp">
       <Filter>application\Scene\Game\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Math\TransformationMath.cpp" />
+    <ClCompile Include="Math\TransformationMath.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\Game\Entity\GameCharacter\GameCharacter.h">
@@ -31633,7 +31643,9 @@ File Path: Project/KaijounoKessen.vcxproj.filters
     <ClInclude Include="application\Scene\Game\UI\GameSceneUI.h">
       <Filter>application\Scene\Game\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Math\TransformationMath.h" />
+    <ClInclude Include="Math\TransformationMath.h">
+      <Filter>Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\Shaders\Obj.hlsli">
@@ -43870,9 +43882,13 @@ File Path: Project/application/Game/Entity/Player/Player.cpp
 /// デストラクタ
 ///-------------------------------------------///
 Player::~Player() {
-	// weapon、hand、stateの解放
+	// weaponの解放
 	weapon_.reset();
+	// Stateの解放
+	currentState_->Finalize();
 	currentState_.reset();
+	// Colliderの削除
+	Service::Collision::RemoveCollider(this);
 	// Object3dの解放
 	object3d_.reset();
 }
@@ -45478,6 +45494,14 @@ File Path: Project/application/Game/Entity/Player/Weapon/PlayerWeapon.cpp
 /// デストラクタ
 ///-------------------------------------------///
 PlayerWeapon::~PlayerWeapon() {
+	// Particleの削除
+	if (attackInfo_.isAttacking) {
+		attackParticle_->Stop();
+		attackParticle_ = nullptr;
+	}
+	// Colliderの削除
+	Service::Collision::RemoveCollider(this);
+	// object3dの解放
 	object3d_.reset();
 }
 
