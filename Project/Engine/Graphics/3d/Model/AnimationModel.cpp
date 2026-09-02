@@ -21,7 +21,11 @@ namespace MiiEngine {
 	///-------------------------------------------/// 
 	/// デストラクタ
 	///-------------------------------------------///
-	AnimationModel::~AnimationModel() {}
+	AnimationModel::~AnimationModel() {
+		if (modelData_.haveBone) {
+			Service::Locator::GetSRVManager()->Free(paletteSrvIndex_); // SRVの解放
+		}
+	}
 
 	///-------------------------------------------/// 
 	/// Gettter
@@ -290,14 +294,15 @@ namespace MiiEngine {
 		const ComPtr<ID3D12Device>& device, const Skeleton& skeleton, const ModelData& modelData) {
 
 		SkinCluster skinCluster;
+		SRVManager* srvManager = Service::Locator::GetSRVManager();
 		/// ===Palette用のResourceを確保=== ///
-		uint32_t paletteIndex = Service::Locator::GetSRVManager()->Allocate();
+		paletteSrvIndex_ = srvManager->Allocate(); // 解放用に保持しておく
 		skinCluster.paletteResource = CreateBufferResourceComPtr(device.Get(), sizeof(WellForGPU) * skeleton.joints.size());
 		WellForGPU* mappedPalette = nullptr;
 		skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));
 		skinCluster.mappedPalette = { mappedPalette, skeleton.joints.size() }; // spanを使ってアクセスするようにする
-		skinCluster.paletteSrvHandle.first = Service::Locator::GetSRVManager()->GetCPUDescriptorHandle(paletteIndex);
-		skinCluster.paletteSrvHandle.second = Service::Locator::GetSRVManager()->GetGPUDescriptorHandle(paletteIndex);
+		skinCluster.paletteSrvHandle.first = srvManager->GetCPUDescriptorHandle(paletteSrvIndex_);
+		skinCluster.paletteSrvHandle.second = srvManager->GetGPUDescriptorHandle(paletteSrvIndex_);
 
 		/// ===Palette用のSRVを作成。StructuredBufferでアクセスできるようにする=== ///
 		D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc{};
